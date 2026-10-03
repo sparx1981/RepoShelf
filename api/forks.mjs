@@ -1,9 +1,10 @@
+import {requireLegal} from '../lib/legal.mjs';
 import {randomUUID} from 'node:crypto';
 import {createAccounts,respond,accountFailure,only,fail,readBody} from '../lib/accounts.mjs';
 const full=s=>typeof s==='string'&&/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(s);
 export function createForksHandler({accounts=createAccounts(),fetcher=fetch,now=()=>Date.now()}={}){return async(req,res)=>{let lease,person;try{
 only(req,['GET','POST']);if(req.method==='POST')accounts.origin(req);
-person=await accounts.user(req,res);
+person=await accounts.user(req,res);if(req.method==='POST')await requireLegal(accounts,person);
 const params=new URL(req.url,accounts.config.origin).searchParams;
 if(req.method==='GET'){
 const cursor=params.get('cursor');if(cursor&&!/^[0-9]+$/.test(cursor))fail(400,'invalid_cursor','Invalid fork cursor.');

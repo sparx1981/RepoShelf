@@ -51,6 +51,8 @@ jobs:
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610030002_admin_user_management.sql
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610030003_unique_visitors.sql
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610030004_account_forks.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610030005_bookmarks_and_legal.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-legal.sql
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-forks.sql
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-permissions.sql
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-visitors.sql
@@ -60,7 +62,7 @@ jobs:
           npm install --no-save --package-lock=false playwright@1.56.1
           npx playwright install --with-deps chromium
       - name: Verify catalog search, sources, tracking, and responsive layout
-        run: node scripts/verify-ui.mjs && node scripts/verify-accounts-ui.mjs
+        run: node scripts/verify-ui.mjs && node scripts/verify-accounts-ui.mjs && node scripts/verify-legal-ui.mjs
       - name: Verify deployed agent routes
         if: github.event_name == 'push'
         run: node scripts/verify-deployed-api.mjs
@@ -79,4 +81,5 @@ jobs:
             admin-sync.png
             signin-desktop.png
             signin-mobile.png
+            legal-accept-mobile.png
           retention-days: 3
