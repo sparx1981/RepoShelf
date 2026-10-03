@@ -30,3 +30,11 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Verify catalog search, sources, tracking, and responsive layout
         run: node scripts/verify-ui.mjs
+      - name: Save storefront screenshots
+        uses: actions/upload-artifact@v4
+        with:
+          name: storefront-preview
+          path: |
+            ui-desktop.png
+            ui-mobile.png
+          retention-days: 3
