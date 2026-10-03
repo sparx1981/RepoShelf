@@ -23,6 +23,10 @@
     }
   ],
   "functions": {
+    "api/promotions.mjs": {
+      "includeFiles": "{dist/*.json,dist/*.js,data/readmes/**,data/context/**,data/sync-runs/**}",
+      "maxDuration": 60
+    },
     "api/*.mjs": {
       "includeFiles": "{dist/*.json,dist/*.js,data/readmes/**,data/context/**,data/sync-runs/**}",
       "maxDuration": 30
