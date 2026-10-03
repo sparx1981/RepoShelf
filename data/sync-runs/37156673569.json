@@ -1,20 +1,20 @@
 {
   "schema": 3,
-  "phase": "discovery",
-  "publication": "pending",
+  "phase": "complete",
+  "publication": "discovery_saved",
   "id": "37156673569",
   "attempt": 1,
   "startedAt": "2026-10-03T22:12:07.764Z",
-  "recordedAt": "2026-10-03T22:15:06.310Z",
+  "recordedAt": "2026-10-03T22:18:53.251Z",
   "trigger": "push",
   "status": "success",
   "counts": {
     "before": 3874,
     "after": 4179,
     "added": 305,
-    "updated": 286,
+    "updated": 344,
     "removed": 0,
-    "withDemo": 3059
+    "withDemo": 3056
   },
   "temporaryFailures": 0,
   "stages": [
@@ -89,6 +89,56 @@
       "warnings": 0
     },
     {
+      "id": "browser",
+      "name": "Screenshot browser installation",
+      "status": "success",
+      "temporaryFailures": 0,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "verify",
+      "name": "Storefront verification",
+      "status": "success",
+      "temporaryFailures": 0,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "health",
+      "name": "Demo health",
+      "status": "success",
+      "temporaryFailures": 0,
+      "checked": 1100,
+      "unavailableResponses": 3,
+      "inconclusiveChecks": 184,
+      "warnings": 0
+    },
+    {
+      "id": "previews",
+      "name": "Preview screenshots",
+      "status": "success",
+      "temporaryFailures": 0,
+      "checked": 400,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 7
+    },
+    {
+      "id": "growth",
+      "name": "Growth history",
+      "status": "success",
+      "temporaryFailures": 0,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
       "id": "validate",
       "name": "Application checks",
       "status": "success",
@@ -101,6 +151,16 @@
     {
       "id": "dependencies",
       "name": "Dependencies",
+      "status": "success",
+      "temporaryFailures": 0,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "checkpoint_publish",
+      "name": "Discovery publication",
       "status": "success",
       "temporaryFailures": 0,
       "checked": 0,
