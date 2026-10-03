@@ -1,0 +1,9 @@
+'use strict';
+(()=>{let pending=null;
+function protect(anchor){const raw=anchor.getAttribute('href');if(!raw)return;let url;try{url=new URL(raw,location.href)}catch{return}if(!['http:','https:'].includes(url.protocol))return;if(url.origin!==location.origin){anchor.setAttribute('href','/api/open?url='+encodeURIComponent(url.href));anchor.dataset.requiresLogin='true'}else if(url.pathname==='/api/open'){anchor.dataset.requiresLogin='true'}}
+function scan(node){if(node.nodeType!==1)return;if(node.matches('a[href]'))protect(node);node.querySelectorAll('a[href]').forEach(protect)}
+function loginTarget(){if(!pending)return;const button=document.querySelector('#account-auth a[href^="/api/auth?action=start"]');if(button){const target='/api/auth?action=start&return='+encodeURIComponent(pending);if(button.getAttribute('href')!==target)button.setAttribute('href',target)}}
+scan(document.documentElement);new MutationObserver(records=>{for(const record of records){if(record.type==='attributes')protect(record.target);else record.addedNodes.forEach(scan)}loginTarget()}).observe(document.documentElement,{subtree:true,childList:true,attributes:true,attributeFilter:['href']});
+function activate(event){if(event.type==='auxclick'&&event.button!==1)return;const anchor=event.target.closest?.('a[href]');if(!anchor)return;protect(anchor);const url=new URL(anchor.href);if(url.origin!==location.origin||url.pathname!=='/api/open')return;if(!window.RepoAccount?.user?.githubConnected&&typeof window.openAccount==='function'){event.preventDefault();event.stopImmediatePropagation();pending=url.pathname+url.search;window.openAccount();loginTarget()}}
+document.addEventListener('click',activate,true);document.addEventListener('auxclick',activate,true);document.addEventListener('contextmenu',event=>{const anchor=event.target.closest?.('a[href]');if(anchor)protect(anchor)},true);
+})();

@@ -124,3 +124,5 @@ Withdrawal of optional analytics applies to the current browser immediately, cle
 See [promotion setup](PROMOTIONS.md) for migration 6, Stripe test checkout/webhooks, hourly availability checks, owner requests and administrator approval. This uses a separate Sponsored ribbon and does not sell editorial placement. Real payments are disabled; test placements appear only to administrators.
 
 Sync reports now include **With demo page**. This excludes unavailable repositories and demos confirmed unavailable, deduplicates linked GitHub/Space listings consistently with the store, and includes available standalone Spaces. Earlier reports display a dash because their historical demo count was not recorded. It measures saved demo links, not a guarantee of complete demo functionality.
+
+All outgoing web links require verified GitHub sign-in, including README, licence, demo, repository, fork, Hugging Face, community discussion and documentation links. Links use the authenticated `/api/open` redirect, including new tabs and copied links. Signing in resumes the selected destination; internal browsing and legal pages stay accessible.
