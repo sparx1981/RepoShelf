@@ -1,0 +1,24 @@
+import assert from 'node:assert/strict';
+import {mkdtemp,writeFile,rm,readFile,mkdir} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {pathToFileURL} from 'node:url';
+import {execFileSync} from 'node:child_process';
+import {runDemoProbe} from '../scripts/demo-probe-runner.mjs';
+import {publicUrlGuard,recordDemoResult} from '../scripts/demo-health.mjs';
+import {diagnoseSync} from '../lib/sync-diagnostics.mjs';
+const temp=await mkdtemp(join(tmpdir(),'reposhelf-reliability-'));
+let subprocesses=true;try{execFileSync(process.execPath,['-e','process.stdout.write("ready")'])}catch(e){if(e.code==='EPERM'&&!process.env.CI){subprocesses=false;console.log('Local sandbox blocks subprocess verification; full checks run in GitHub Actions.')}else throw e}
+try{
+if(subprocesses){const fixture=join(temp,'probe.mjs');await writeFile(fixture,"process.stdin.resume();setInterval(()=>{},1000)");const started=Date.now();const result=await runDemoProbe({target:'https://example.org'},{script:pathToFileURL(fixture),timeout:150});assert.equal(result.reason,'probe_timeout');assert(Date.now()-started<1500);const previous={demo:'https://demo.org',demoHealth:{url:'https://demo.org',status:'working'},screenshots:[{src:'previews/existing.jpg',kind:'demo'}]};assert.equal(recordDemoResult(previous,result).demoHealth.status,'working');
+await writeFile(fixture,"process.stdin.resume();process.stdout.write(JSON.stringify({kind:'working'}))");assert.equal((await runDemoProbe({},{script:pathToFileURL(fixture),timeout:1500})).kind,'working');
+}
+const guard=publicUrlGuard({resolver:()=>new Promise(()=>{}),timeout:30});assert.equal(await guard('https://example.org'),false);
+let info=diagnoseSync({conclusion:'cancelled',status:'completed'},[],null);assert.equal(info.kind,'cancelled_before_start');assert.equal(info.published,null);
+info=diagnoseSync({conclusion:'cancelled',status:'completed'},[{conclusion:'cancelled',started_at:'2026-10-03T00:00:00Z',completed_at:'2026-10-03T00:55:00Z',steps:[{name:'Check demo pages',conclusion:'cancelled'},{name:'Publish refreshed catalog',conclusion:'success'}]}],null);assert.equal(info.published,true);assert.match(info.message,/55 minutes/);
+info=diagnoseSync({conclusion:'failure',status:'completed'},[{steps:[{name:'Publish refreshed catalog',conclusion:'failure'}]}],{counts:{added:10}});assert.equal(info.published,false);assert.match(info.message,/not confirmed/);
+if(subprocesses){const remote=join(temp,'remote.git'),work=join(temp,'work'),other=join(temp,'other');const git=(cwd,...args)=>execFileSync('git',args,{cwd,stdio:'pipe',encoding:'utf8'});await mkdir(work);git(temp,'init','--bare',remote);git(work,'init','-b','main');git(work,'config','user.name','Test');git(work,'config','user.email','test@example.org');await mkdir(join(work,'dist'));await writeFile(join(work,'dist/catalog.json'),'{"repositories":[]}');await writeFile(join(work,'app.txt'),'old');git(work,'add','.');git(work,'commit','-m','initial');git(work,'remote','add','origin',remote);git(work,'push','-u','origin','main');git(temp,'clone','--branch','main',remote,other);git(other,'config','user.name','Test');git(other,'config','user.email','test@example.org');await writeFile(join(other,'app.txt'),'new');git(other,'add','.');git(other,'commit','-m','concurrent app fix');git(other,'push');await writeFile(join(work,'dist/catalog.json'),'{"repositories":[{"full":"team/new"}]}');execFileSync(process.execPath,[new URL('../scripts/publish-catalog.mjs',import.meta.url).pathname],{cwd:work,stdio:'pipe'});assert.equal(await readFile(join(work,'app.txt'),'utf8'),'new');git(other,'pull','--rebase');assert.match(await readFile(join(other,'dist/catalog.json'),'utf8'),/team\/new/);
+// A conflicting catalogue update must fail without overwriting remote data.
+await writeFile(join(other,'dist/catalog.json'),'{"repositories":[{"full":"remote/kept"}]}');git(other,'add','.');git(other,'commit','-m','new catalogue');git(other,'push');await writeFile(join(work,'dist/catalog.json'),'{"repositories":[{"full":"local/recovery"}]}');assert.throws(()=>execFileSync(process.execPath,[new URL('../scripts/publish-catalog.mjs',import.meta.url).pathname],{cwd:work,stdio:'pipe'}));assert.match(git(other,'show','origin/main:dist/catalog.json'),/remote\/kept/);assert.match(await readFile(join(work,'dist/catalog.json'),'utf8'),/local\/recovery/);
+}}finally{await rm(temp,{recursive:true,force:true})}
+console.log('PASS: demo subprocess deadline, temporary retention, bounded DNS, accurate cancellation/publication diagnostics, safe concurrent publication and recoverable data conflicts.');

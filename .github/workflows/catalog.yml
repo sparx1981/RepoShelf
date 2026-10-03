@@ -18,6 +18,9 @@ on:
       - 'scripts/capture-previews.mjs'
       - 'scripts/demo-health.mjs'
       - 'scripts/check-demo-health.mjs'
+      - 'scripts/demo-probe.mjs'
+      - 'scripts/demo-probe-runner.mjs'
+      - 'scripts/publish-catalog.mjs'
       - 'scripts/project-insights.mjs'
       - 'scripts/ai-overviews.mjs'
       - 'scripts/generate-ai-overviews.mjs'
@@ -27,7 +30,6 @@ on:
       - 'dist/providers.js'
       - 'scripts/import-sources.mjs'
       - 'scripts/source-imports.mjs'
-      - 'scripts/verify-ui.mjs'
       - 'sources.config.json'
       - 'scripts/community-sources.mjs'
       - 'scripts/bluesky-stream.mjs'
@@ -135,19 +137,41 @@ jobs:
           mkdir -p .sync-logs
           set -o pipefail
           node scripts/generate-ai-overviews.mjs 2>&1 | tee .sync-logs/ai.log
+      - name: Record growth before browser checks
+        if: always() && steps.baseline.outcome == 'success'
+        id: growth_checkpoint
+        run: node scripts/record-growth.mjs
+      - name: Save discovery checkpoint report
+        if: always() && steps.baseline.outcome == 'success'
+        id: checkpoint_report
+        env:
+          SYNC_STEP_RESULTS: ${{ toJSON(steps) }}
+          SYNC_REPORT_PHASE: discovery
+        run: node scripts/sync-history.mjs finish
+      - name: Publish discoveries before browser checks
+        if: always() && steps.checkpoint_report.outcome == 'success'
+        id: checkpoint_publish
+        run: node scripts/publish-catalog.mjs
       - name: Install screenshot browser
         id: browser
+        timeout-minutes: 5
+        continue-on-error: true
         run: |
           npm install --no-save --package-lock=false playwright@1.56.1
           npx playwright install --with-deps chromium
       - name: Verify storefront in a browser
         id: verify
+        if: always() && steps.browser.outcome == 'success'
+        timeout-minutes: 3
         run: |
           mkdir -p .sync-logs
           set -o pipefail
           node scripts/verify-ui.mjs 2>&1 | tee .sync-logs/verify.log
       - name: Check public demo pages and review broken-demo reports
         id: health
+        if: always() && steps.verify.outcome == 'success'
+        timeout-minutes: 10
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
           DEMO_CHECK_BATCH: '100'
@@ -157,6 +181,9 @@ jobs:
           node scripts/check-demo-health.mjs 2>&1 | tee .sync-logs/health.log
       - name: Capture demo previews
         id: previews
+        if: always() && steps.verify.outcome == 'success'
+        timeout-minutes: 8
+        continue-on-error: true
         env:
           CATALOG_PREVIEW_BATCH: '20'
         run: |
@@ -165,6 +192,7 @@ jobs:
           node scripts/capture-previews.mjs 2>&1 | tee .sync-logs/previews.log
       - name: Record catalog growth
         id: growth
+        if: always() && steps.baseline.outcome == 'success'
         run: |
           mkdir -p .sync-logs
           set -o pipefail
@@ -177,13 +205,21 @@ jobs:
         run: node scripts/sync-history.mjs finish
       - name: Publish refreshed catalog
         if: always() && steps.report.outcome == 'success'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add dist/catalog.json dist/spaces.json dist/community.json dist/growth.json
-          if [ -d data ]; then git add data; fi
-          if [ -d dist/previews ]; then git add dist/previews; fi
-          if git diff --cached --quiet; then exit 0; fi
-          git commit -m "Refresh public demo catalog"
-          git pull --rebase origin main
-          git push origin HEAD:main
+        id: publish
+        run: node scripts/publish-catalog.mjs
+      - name: Retain sync diagnostics and generated files
+        if: always() && steps.baseline.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: catalog-recovery-${{ github.run_id }}-${{ github.run_attempt }}
+          include-hidden-files: true
+          path: |
+            .sync-logs/
+            .sync-before.json
+            dist/catalog.json
+            dist/spaces.json
+            dist/community.json
+            dist/growth.json
+            dist/previews/
+            data/
+          retention-days: 7

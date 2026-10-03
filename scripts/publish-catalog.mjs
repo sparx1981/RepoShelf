@@ -1,0 +1,7 @@
+import {execFileSync} from 'node:child_process';import {existsSync} from 'node:fs';
+const git=(...args)=>execFileSync('git',args,{encoding:'utf8',stdio:['ignore','pipe','pipe']});
+git('config','user.name','github-actions[bot]');git('config','user.email','41898282+github-actions[bot]@users.noreply.github.com');
+const paths=['dist/catalog.json','dist/spaces.json','dist/community.json','dist/growth.json','data','dist/previews'].filter(existsSync);git('add','--',...paths);
+if(!git('diff','--cached','--name-only').trim()){console.log('Catalog publication: no generated changes.');process.exit(0)}
+git('commit','--quiet','-m','Refresh public demo catalog');
+for(let attempt=1;attempt<=3;attempt++){git('fetch','origin','main');try{git('rebase','origin/main')}catch(e){console.error('Catalog publication stopped: generated data conflicted with a newer update. No remote files were overwritten. Generated files are retained in the workflow recovery artifact.');console.error(String(e.stderr||'').slice(-3000));try{git('rebase','--abort')}catch{}process.exit(1)}try{git('push','origin','HEAD:main');console.log('Catalog publication: saved '+git('rev-parse','HEAD').trim());process.exit(0)}catch(e){if(attempt===3){console.error('Catalog publication failed after three attempts. Generated files are retained in the workflow recovery artifact.');console.error(String(e.stderr||'').slice(-3000));process.exit(1)}}}
