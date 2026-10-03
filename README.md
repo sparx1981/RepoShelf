@@ -55,3 +55,15 @@ Each record can contain `availability`, `lastCheckedAt`, `lastAttemptAt`, and `l
 Timeouts, server errors, authentication errors, and rate limits preserve the previous status and demo link. A retry date and error kind are recorded; throttling or rejected authentication stops the revalidation pass promptly. A successful repository check clears stale errors and refreshes metadata, including renamed repositories and changed default branches. `lastDemoCheckedAt` separately records README demo-link checks. Removing a demo link does not delete its saved record, but it no longer appears under “Live demos only.” This checks repository access and published demo references, not demo uptime.
 
 Tracked personal forks remain in the local collection even if an upstream repository becomes unavailable. No user setup or new secrets are required: the existing six-hour GitHub Actions workflow uses its built-in token.
+
+## Storefront discovery and previews
+
+Curated is a storefront with Editor's picks, popular releases from the last 30 days, measured trends, and category ribbons. Each category supports Popular/Trending ranking and View all. Technology channels filter the entire storefront and carry into catalog search. Technologies come from GitHub topics, primary languages, and actual package dependencies; using Node as a build tool alone does not classify a project as a Node.js app.
+
+Popularity uses `0.7 * log(1 + stars) + 0.3 * log(1 + forks)`. These are tunable starting weights. Watcher counts are excluded. Daily star/fork snapshots are kept for 35 days. Trending requires at least 24 hours of history and positive measured growth; ranking compares weighted growth per day against the closest available seven-day baseline. Cards state the actual observation window. Recently created repositories and recently pushed code are separate from published GitHub releases.
+
+Each refresh enriches up to 80 projects with release dates and dependency evidence. A separate Playwright step captures up to 20 real live-demo screenshots per run and saves them in `dist/previews/`. Screenshots are refreshed after seven days; temporary capture failures preserve old previews. Only public network destinations are allowed during capture. Visitors load saved images, not a screenshot service. README screenshots can supplement the gallery and are labeled as project images. If a preview fails to load, the typographic cover remains available.
+
+Detail views show the gallery, technologies, license, latest release, code freshness, and availability-check dates. Try demo and Fork on GitHub are separate from Track this fork. Manual tracking does not claim that a fork has been verified.
+
+The workflow installs a pinned Playwright version and runs browser interaction checks at desktop/mobile widths before publishing preview assets. Measured trends will be empty until enough history exists. Releases and screenshots fill in progressively as background batches process the catalog; missing data is never invented.

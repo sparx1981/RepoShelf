@@ -8,6 +8,9 @@ on:
     paths:
       - 'scripts/index-catalog.mjs'
       - 'scripts/catalog-health.mjs'
+      - 'scripts/enrich-catalog.mjs'
+      - 'scripts/capture-previews.mjs'
+      - 'dist/storefront.js'
       - 'dist/discovery.js'
       - '.github/workflows/catalog.yml'
 permissions:
@@ -18,7 +21,7 @@ concurrency:
 jobs:
   refresh:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 55
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -37,11 +40,27 @@ jobs:
           CATALOG_BATCH_SIZE: '1500'
           CATALOG_REVALIDATE_BATCH: '250'
         run: node scripts/index-catalog.mjs
+      - name: Enrich releases, technologies, and historical counts
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          CATALOG_ENRICH_BATCH: '80'
+        run: node scripts/enrich-catalog.mjs
+      - name: Install screenshot browser
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Verify storefront in a browser
+        run: node scripts/verify-ui.mjs
+      - name: Capture demo previews
+        env:
+          CATALOG_PREVIEW_BATCH: '20'
+        run: node scripts/capture-previews.mjs
       - name: Publish refreshed catalog
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add dist/catalog.json
+          if [ -d dist/previews ]; then git add dist/previews; fi
           if git diff --cached --quiet; then exit 0; fi
           git commit -m "Refresh public demo catalog"
           git pull --rebase origin main
