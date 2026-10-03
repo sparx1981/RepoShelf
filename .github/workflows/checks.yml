@@ -11,6 +11,7 @@ on:
       - 'api/**'
       - 'vercel.json'
       - 'tests/**'
+      - 'supabase/**'
       - 'package.json'
       - '.github/workflows/checks.yml'
   pull_request:
@@ -19,7 +20,19 @@ permissions:
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: local-ci-password
+          POSTGRES_DB: reposhelf_test
+        ports: [5432:5432]
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -29,12 +42,19 @@ jobs:
         run: npm install --package-lock=false
       - name: Validate application and source logic
         run: npm test && npm run test:mcp && npm run build
+      - name: Verify database migration and permissions
+        env:
+          PGPASSWORD: local-ci-password
+        run: |
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-bootstrap.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610030001_accounts_editorial_analytics.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-permissions.sql
       - name: Install browser
         run: |
           npm install --no-save --package-lock=false playwright@1.56.1
           npx playwright install --with-deps chromium
       - name: Verify catalog search, sources, tracking, and responsive layout
-        run: node scripts/verify-ui.mjs
+        run: node scripts/verify-ui.mjs && node scripts/verify-accounts-ui.mjs
       - name: Verify deployed agent routes
         if: github.event_name == 'push'
         run: node scripts/verify-deployed-api.mjs
@@ -45,4 +65,7 @@ jobs:
           path: |
             ui-desktop.png
             ui-mobile.png
+            admin-editor.png
+            admin-analytics.png
+            likes-mobile.png
           retention-days: 3

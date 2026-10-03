@@ -13,6 +13,7 @@ on:
       - 'scripts/enrich-overviews.mjs'
       - 'scripts/agent-snapshots.mjs'
       - 'scripts/enrich-agent-context.mjs'
+      - 'scripts/record-growth.mjs'
       - 'scripts/capture-previews.mjs'
       - 'scripts/demo-health.mjs'
       - 'scripts/check-demo-health.mjs'
@@ -113,11 +114,13 @@ jobs:
         env:
           CATALOG_PREVIEW_BATCH: '20'
         run: node scripts/capture-previews.mjs
+      - name: Record catalog growth
+        run: node scripts/record-growth.mjs
       - name: Publish refreshed catalog
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add dist/catalog.json dist/spaces.json dist/community.json
+          git add dist/catalog.json dist/spaces.json dist/community.json dist/growth.json
           if [ -d data ]; then git add data; fi
           if [ -d dist/previews ]; then git add dist/previews; fi
           if git diff --cached --quiet; then exit 0; fi

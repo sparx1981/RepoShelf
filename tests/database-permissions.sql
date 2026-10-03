@@ -1,0 +1,44 @@
+insert into public.reposhelf_admins(user_id) values('00000000-0000-0000-0000-000000000001');
+set role authenticated;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
+select public.reposhelf_set_like('team/canvas',true);
+select public.reposhelf_set_like('team/canvas',true);
+select public.reposhelf_save_ribbon(null,0,'Published canvas','A curated row','','manual',true,'["team/canvas"]');
+select public.reposhelf_save_ribbon(null,0,'Private draft','','','manual',false,'[]');
+do $$declare row public.editorial_ribbons;begin
+if (select count(*) from public.user_likes)<>1 then raise exception 'Likes were not idempotent';end if;
+select * into row from public.editorial_ribbons where title='Published canvas';
+perform public.reposhelf_save_ribbon(row.id,row.revision,'Updated canvas','','','manual',true,'["team/canvas"]');
+begin perform public.reposhelf_save_ribbon(row.id,row.revision,'Stale edit','','','manual',true,'[]');raise exception 'Stale edit was allowed';exception when serialization_failure then null;end;
+end$$;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000002',false);
+do $$begin
+if public.reposhelf_is_admin() then raise exception 'Member became admin';end if;
+if (select count(*) from public.user_likes)<>0 then raise exception 'Another user likes leaked';end if;
+if (select count(*) from public.editorial_ribbons)<>1 then raise exception 'Draft leaked to member';end if;
+begin insert into public.user_likes(user_id,project_id) values('00000000-0000-0000-0000-000000000001','team/other');raise exception 'Cross-user insert was allowed';exception when insufficient_privilege then null;end;
+begin insert into public.reposhelf_admins(user_id) values(auth.uid());raise exception 'Self-promotion was allowed';exception when insufficient_privilege then null;end;
+begin perform public.reposhelf_set_editorial(false);raise exception 'Member changed editorial settings';exception when insufficient_privilege then null;end;
+begin perform public.reposhelf_save_ribbon(null,0,'Bad row','','','manual',true,'[]');raise exception 'Member saved ribbon';exception when insufficient_privilege then null;end;
+begin perform public.reposhelf_analytics(30);raise exception 'Analytics leaked';exception when insufficient_privilege then null;end;
+begin perform public.reposhelf_ingest_events('[]');raise exception 'Member ingested arbitrary events directly';exception when insufficient_privilege then null;end;
+end$$;
+select public.reposhelf_set_like('team/canvas',true);
+select public.reposhelf_set_like('team/canvas',false);
+do $$begin if (select count(*) from public.user_likes)<>0 then raise exception 'Unlike failed';end if;end$$;
+set role anon;
+select set_config('request.jwt.claim.sub','',false);
+do $$begin
+if (select count(*) from public.editorial_ribbons)<>1 then raise exception 'Anonymous draft visibility incorrect';end if;
+begin perform count(*) from public.user_likes;raise exception 'Anonymous likes read allowed';exception when insufficient_privilege then null;end;
+begin perform count(*) from public.analytics_daily;raise exception 'Anonymous analytics allowed';exception when insufficient_privilege then null;end;
+end$$;
+set role service_role;
+select public.reposhelf_ingest_events('[{"event_id":"10000000-0000-0000-0000-000000000001","kind":"page_view","session_hash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","visitor_hash":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","project_id":null},{"event_id":"10000000-0000-0000-0000-000000000002","kind":"listing_view","session_hash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","visitor_hash":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","project_id":"team/canvas"}]');
+select public.reposhelf_ingest_events('[{"event_id":"10000000-0000-0000-0000-000000000001","kind":"page_view","session_hash":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","visitor_hash":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","project_id":null}]');
+do $$begin if (select count(*) from public.analytics_events)<>2 then raise exception 'Events duplicated';end if;if exists(select 1 from public.analytics_daily where visits<>1 or visitors<>1 or page_views<>1 or listing_views<>1) then raise exception 'Daily counts incorrect';end if;end$$;
+set role authenticated;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
+do $$declare result jsonb;begin result:=public.reposhelf_analytics(30);if (result->>'totalLikes')::integer<>1 then raise exception 'Owner likes lost';end if;if (result->'topListings'->0->>'views')::integer<>1 then raise exception 'Listing views incorrect';end if;if jsonb_array_length(result->'daily')<>1 then raise exception 'Daily analytics missing';end if;end$$;
+reset role;
+select 'PASS: PostgreSQL enforces user isolation, admin roles, private drafts, optimistic editing, private analytics, service-only ingestion and deduplicated daily counts.' as result;

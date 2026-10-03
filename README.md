@@ -122,3 +122,9 @@ Every six-hour catalog refresh calls Hacker News's Algolia story search and Blue
 A read-only agent API is available under `/api/v1/` and an official-SDK MCP server under `/api/mcp`, both disabled until a private `REPOSHELF_API_KEY` is configured in Vercel and the app is redeployed. The same tools run locally over stdio without a hosted key, or bridge to the deployed API with the key in the client environment. See [the connection guide](docs/AGENT_API.md), the hosted `/agent-guide.html`, and `/openapi.json` for exact Codex/Claude setup, endpoints, safeguards, and context limits.
 
 Scheduled indexing saves full README snapshots and progressively adds licence files and available dependency manifests, with original source links, content hashes and dates. API search is keyword-based and returns compact results; document endpoints allow complete reading in chunks. Missing or unusually large documents are explicitly identified. The server never fetches live repositories on a client request, executes project code, modifies a repository, or manages the user's browser collection. `npm test` covers the catalog/API/security service; `npm run test:mcp` verifies the official MCP client over HTTP and local/remote stdio.
+
+## Accounts, administration and analytics
+
+GitHub sign-in and synced liked projects use Supabase, with database-enforced owner/admin permissions. Administration includes draft/published category ribbons, manual or automatic project selection, ordering, and private activity/catalog-growth analytics. Existing guest likes and browser fork tracking keep working while services are unconfigured.
+
+Follow [the activation guide](docs/ACCOUNTS_AND_ADMIN.md) to connect Supabase, apply the migration, enable GitHub OAuth, configure Vercel environment variables and grant your verified administrator role. The administration workspace is `/admin.html`. No real provider credentials are embedded in this repository.
