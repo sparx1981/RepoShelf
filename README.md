@@ -32,7 +32,7 @@ GitHub uses its unauthenticated public API and applies rate limits. Star/fork co
 
 GitHub does not sort repository search by creation date. Newest discovery searches projects created in the last 30 days, retrieves popular results, and sorts loaded results by creation date. Popularity can be sorted by forks or stars.
 
-Likes and GitHub fork actions require GitHub sign-in. Forking opens GitHub's fork screen; RepoShelf does not create forks itself. Public fork verification uses the signed-in provider identity and saves verified results per account in Supabase. Checks resume in bounded batches without a total-repository ceiling. Private forks are unavailable to this feature. Browsing and demos remain public.
+Likes and GitHub fork actions require GitHub sign-in. Forking opens GitHub's fork screen; RepoShelf does not create forks itself. Public fork verification uses the signed-in provider identity and saves verified results per account in Supabase. Checks resume in bounded batches without a total-repository ceiling. Private forks are unavailable to this feature. Browsing remains public; opening demos and repository links through RepoShelf requires GitHub sign-in.
 
 Covers use saved demo screenshots where available, with typographic project artwork as a fallback. Repository licenses govern code reuse.
 
@@ -128,3 +128,5 @@ Scheduled indexing saves full README snapshots and progressively adds licence fi
 GitHub sign-in and synced liked projects use Supabase, with database-enforced owner/admin permissions. Administration includes draft/published category ribbons, manual or automatic project selection, ordering, and private activity/catalog-growth analytics. Legacy guest likes can be imported after sign-in. GitHub forks use the same signed-in identity; manual Space tracking remains local. Apply migration 4 to activate account fork storage.
 
 Follow [the activation guide](docs/ACCOUNTS_AND_ADMIN.md) to connect Supabase, apply the migration, enable GitHub OAuth, configure Vercel environment variables and grant your verified administrator role. The administration workspace is `/admin.html`. No real provider credentials are embedded in this repository.
+
+Administrators can view catalog sync history from their profile or the Sync log tab. New refreshes record exact ID additions, metadata updates, totals, stage outcomes and reported temporary failures; older runs display their GitHub Actions status without fabricated counts.

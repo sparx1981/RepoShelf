@@ -14,6 +14,7 @@ on:
       - 'scripts/agent-snapshots.mjs'
       - 'scripts/enrich-agent-context.mjs'
       - 'scripts/record-growth.mjs'
+      - 'scripts/sync-history.mjs'
       - 'scripts/capture-previews.mjs'
       - 'scripts/demo-health.mjs'
       - 'scripts/check-demo-health.mjs'
@@ -47,6 +48,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
+      - name: Record starting catalog
+        id: baseline
+        run: node scripts/sync-history.mjs start
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -59,66 +63,120 @@ jobs:
           key: demo-catalog-${{ github.run_id }}
           restore-keys: demo-catalog-
       - name: Install agent server dependencies
+        id: dependencies
         run: npm install --package-lock=false
       - name: Validate catalog logic
+        id: validate
         run: npm test && npm run test:mcp && npm run build
       - name: Import Hugging Face Spaces and curated lists
+        id: sources
         env:
           GITHUB_TOKEN: ${{ github.token }}
           SPACE_IMPORT_BATCH: '60'
           SPACE_REVALIDATE_BATCH: '100'
           CURATED_IMPORT_BATCH: '60'
-        run: node scripts/import-sources.mjs
+        run: |
+          mkdir -p .sync-logs
+          set -o pipefail
+          node scripts/import-sources.mjs 2>&1 | tee .sync-logs/sources.log
       - name: Discover repositories discussed on Hacker News and Bluesky
+        id: community
         env:
           GITHUB_TOKEN: ${{ github.token }}
           COMMUNITY_IMPORT_BATCH: '60'
-        run: node scripts/import-community.mjs
+        run: |
+          mkdir -p .sync-logs
+          set -o pipefail
+          node scripts/import-community.mjs 2>&1 | tee .sync-logs/community.log
       - name: Find public repository demos
+        id: catalog
         env:
           GITHUB_TOKEN: ${{ github.token }}
           CATALOG_BATCH_SIZE: '1500'
           CATALOG_REVALIDATE_BATCH: '250'
-        run: node scripts/index-catalog.mjs
+        run: |
+          mkdir -p .sync-logs
+          set -o pipefail
+          node scripts/index-catalog.mjs 2>&1 | tee .sync-logs/catalog.log
       - name: Enrich releases, technologies, and historical counts
+        id: enrich
         env:
           GITHUB_TOKEN: ${{ github.token }}
           CATALOG_ENRICH_BATCH: '80'
-        run: node scripts/enrich-catalog.mjs
+        run: |
+          mkdir -p .sync-logs
+          set -o pipefail
+          node scripts/enrich-catalog.mjs 2>&1 | tee .sync-logs/enrich.log
       - name: Extract author-written project overviews
+        id: overviews
         env:
           OVERVIEW_GITHUB_BATCH: '100'
           OVERVIEW_SPACE_BATCH: '40'
-        run: node scripts/enrich-overviews.mjs
+        run: |
+          mkdir -p .sync-logs
+          set -o pipefail
+          node scripts/enrich-overviews.mjs 2>&1 | tee .sync-logs/overviews.log
       - name: Save supporting agent documents
+        id: context
         env:
           AGENT_CONTEXT_BATCH: '40'
-        run: node scripts/enrich-agent-context.mjs
+        run: |
+          mkdir -p .sync-logs
+          set -o pipefail
+          node scripts/enrich-agent-context.mjs 2>&1 | tee .sync-logs/context.log
       - name: Generate optional AI overviews
+        id: ai
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
           AI_OVERVIEW_BATCH: '10'
           AI_OVERVIEW_DAILY_LIMIT: '20'
-        run: node scripts/generate-ai-overviews.mjs
+        run: |
+          mkdir -p .sync-logs
+          set -o pipefail
+          node scripts/generate-ai-overviews.mjs 2>&1 | tee .sync-logs/ai.log
       - name: Install screenshot browser
+        id: browser
         run: |
           npm install --no-save --package-lock=false playwright@1.56.1
           npx playwright install --with-deps chromium
       - name: Verify storefront in a browser
-        run: node scripts/verify-ui.mjs
+        id: verify
+        run: |
+          mkdir -p .sync-logs
+          set -o pipefail
+          node scripts/verify-ui.mjs 2>&1 | tee .sync-logs/verify.log
       - name: Check public demo pages and review broken-demo reports
+        id: health
         env:
           GITHUB_TOKEN: ${{ github.token }}
           DEMO_CHECK_BATCH: '100'
-        run: node scripts/check-demo-health.mjs
+        run: |
+          mkdir -p .sync-logs
+          set -o pipefail
+          node scripts/check-demo-health.mjs 2>&1 | tee .sync-logs/health.log
       - name: Capture demo previews
+        id: previews
         env:
           CATALOG_PREVIEW_BATCH: '20'
-        run: node scripts/capture-previews.mjs
+        run: |
+          mkdir -p .sync-logs
+          set -o pipefail
+          node scripts/capture-previews.mjs 2>&1 | tee .sync-logs/previews.log
       - name: Record catalog growth
-        run: node scripts/record-growth.mjs
+        id: growth
+        run: |
+          mkdir -p .sync-logs
+          set -o pipefail
+          node scripts/record-growth.mjs 2>&1 | tee .sync-logs/growth.log
+      - name: Save sync report
+        if: always() && steps.baseline.outcome == 'success'
+        id: report
+        env:
+          SYNC_STEP_RESULTS: ${{ toJSON(steps) }}
+        run: node scripts/sync-history.mjs finish
       - name: Publish refreshed catalog
+        if: always() && steps.report.outcome == 'success'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
