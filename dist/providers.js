@@ -4,7 +4,7 @@ const validId=id=>typeof id==='string'&&/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.tes
 const isSpace=r=>r.source==='huggingface';
 function githubFull(r){return isSpace(r)?(validId(r.githubFull)?r.githubFull:null):(validId(r.full)?r.full:null)}
 function repositoryUrl(r){return isSpace(r)?`https://huggingface.co/spaces/${r.spaceId}`:`https://github.com/${r.full}`}
-function action(r){const full=githubFull(r);return full?{url:`https://github.com/${full}/fork`,label:'Fork on GitHub',short:'⑂ Fork'}:{url:`${repositoryUrl(r)}?duplicate=true`,label:'Duplicate on Hugging Face',short:'Duplicate ↗'}}
+function action(r){const full=isSpace(r)?null:githubFull(r);return full?{url:`https://github.com/${full}/fork`,label:'Fork on GitHub',short:'⑂ Fork'}:{url:`${repositoryUrl(r)}?duplicate=true`,label:'Duplicate on Hugging Face',short:'Duplicate ↗'}}
 function matchesSource(r,source){return source==='all'||(source==='huggingface'?(isSpace(r)||Boolean(r.spaces?.length)):!isSpace(r))}
 function normalizeSpace(data,prior={},now=Date.now()){
 const id=data.id||data.name;if(!validId(id)||typeof data.private!=='boolean')throw Error('Invalid Space response');const at=new Date(now).toISOString(),card=data.cardData||data.carddata||{},runtime=data.runtime?.stage;
