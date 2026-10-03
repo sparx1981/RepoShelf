@@ -1,6 +1,6 @@
 # Accounts, editorial rows and analytics
 
-The code is deployed with safe fallbacks. GitHub sign-in, cross-device likes and administration activate after a Supabase project is connected. Existing browser fork/Space tracking continues independently. The agent API key does not grant user or administrator access.
+The code is deployed with safe fallbacks. GitHub sign-in, cross-device likes and administration activate after a Supabase project is connected. GitHub fork tracking uses the signed-in account; Hugging Face Space tracking remains browser-local. The agent API key does not grant user or administrator access.
 
 ## Activate Supabase
 
@@ -39,9 +39,9 @@ delete from public.reposhelf_admins where user_id='USER-UUID';
 
 GitHub OAuth uses PKCE with a short-lived verifier cookie, and server-verified Supabase sessions. Access/refresh tokens are in Secure, HttpOnly, SameSite=Lax cookies. Mutations require the configured same-origin Origin header. Expired sessions refresh through Supabase; invalid sessions are cleared. Sign-out revokes the current Supabase session and clears cookies.
 
-Likes use authenticated database requests and owner-only row-level security. Each `(user_id, project_id)` is unique, so repeated saves are idempotent. There is pagination, with no fixed liked-collection total limit. Like controls work in cards and details. The collection has All saved, Liked, and Forks & Spaces views.
+Likes use authenticated database requests and owner-only row-level security. Each `(user_id, project_id)` is unique, so repeated saves are idempotent. There is pagination, with no fixed liked-collection total limit. Like controls work in cards and details and require GitHub sign-in. The collection has All saved, Liked, and Forks & Spaces views.
 
-Guests can like projects in this browser. On signing in, account likes replace the guest view; **Import browser likes** explicitly migrates guest likes to that account. Account likes are never written to localStorage. Signing out clears them from memory and restores the guest collection. Fork verification and manual Space tracking remain browser-local in this release; they do not claim cross-device persistence.
+Guests can browse and try demos; new likes require sign-in. Existing browser likes from earlier versions remain available for explicit import. On signing in, account likes replace the guest view; **Import browser likes** explicitly migrates guest likes to that account. Account likes are never written to localStorage. Signing out clears them from memory and hides account likes and forks. Verified public GitHub forks are saved per account in Supabase. Manual Hugging Face Space tracking remains browser-local.
 
 ## Category-row CMS
 
@@ -82,3 +82,11 @@ The admin profile **Help** link opens `/admin.html?tab=help`, and **Manage users
 ## Unique visitors
 
 Apply [migration 3](../supabase/migrations/202610030003_unique_visitors.sql) once to activate the Unique visitors metric. Each browser counts once across the selected UTC dates, regardless of sessions or repeated visits on different days. Anonymous browser IDs are HMAC-hashed server-side; no IP addresses are stored. Signed-in users are also counted by browser, not as verified people across devices. Cleared storage, different devices and service-key rotation can increase the count. Admin visits and browser privacy opt-outs are excluded. Detailed hashed activity remains for 90 days. Existing daily visitor counts are retained, but their daily rotating hashes cannot reconstruct unique visitors for earlier dates: the dashboard displays the tracking start date and excludes historical unmeasured visits. Until the migration is applied, this metric displays a dash and activation instructions.
+
+## Account-bound public forks
+
+Apply [migration 4](../supabase/migrations/202610030004_account_forks.sql) once in Supabase. It creates per-user fork storage, resumable scan state and service-only verification functions. The already configured Supabase secret/service-role key enables server writes; no new GitHub scope or repository-write permission is requested. New sign-ins retain the existing GitHub OAuth provider token in a Secure HttpOnly cookie for authenticated public API reads, avoiding the much smaller anonymous quota. It is never exposed to frontend JavaScript, persisted in the database, or used for writes. Existing or expired provider tokens fall back to public reads; signing in again restores authenticated reads. GitHub usernames come from established provider identity data, never the old browser username field or user-editable profile metadata. The server resolves the current GitHub login using its immutable provider ID, verifies fork ownership and the parent repository, then saves public evidence. SQL binds the GitHub provider ID to the authenticated Supabase user and refuses client writes claiming verified status. Per-user RLS isolates saved forks, and concurrent checks use a lease.
+
+The profile has one signed-in account and a Check my public forks button. A stale account visit starts a bounded check after six hours; this is activity-triggered, not a background job while the user is away. Each batch checks one saved fork and discovers up to three forks from the user's repository pages. Continue checking resumes its saved page/offset without a total-repository ceiling. Temporary errors and rate limits preserve saved records and scan progress. A confirmed missing, private or differently owned fork is labelled unavailable and may be restored on a later check. Only GitHub evidence marks a fork verified; a Fork click does not. Fork creation opens GitHub's own fork page after RepoShelf sign-in. Github can offer personal or organisation destinations: only a public fork actually owned by the signed-in individual is included here.
+
+Browser-local GitHub tracking claims are no longer displayed or imported as verified records. Legacy likes can be imported explicitly. Hugging Face duplication still opens Hugging Face and requires its own identity; Space tracking remains local and is never labelled a verified GitHub fork. Account likes and forks are cleared from memory on sign-out and are not stored in localStorage. Migration 4 is additive and does not require rerunning earlier migrations.

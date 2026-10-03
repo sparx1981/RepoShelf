@@ -32,7 +32,7 @@ GitHub uses its unauthenticated public API and applies rate limits. Star/fork co
 
 GitHub does not sort repository search by creation date. Newest discovery searches projects created in the last 30 days, retrieves popular results, and sorts loaded results by creation date. Popularity can be sorted by forks or stars.
 
-Forking opens GitHub's fork screen; the app does not fork automatically. Public username sync checks up to 1,000 recently updated repositories and verifies their fork parents. Private forks need manual tracking. Your collection and username are saved in this browser, not across devices. No OAuth credentials are collected.
+Likes and GitHub fork actions require GitHub sign-in. Forking opens GitHub's fork screen; RepoShelf does not create forks itself. Public fork verification uses the signed-in provider identity and saves verified results per account in Supabase. Checks resume in bounded batches without a total-repository ceiling. Private forks are unavailable to this feature. Browsing and demos remain public.
 
 Covers use saved demo screenshots where available, with typographic project artwork as a fallback. Repository licenses govern code reuse.
 
@@ -54,7 +54,7 @@ Each record can contain `availability`, `lastCheckedAt`, `lastAttemptAt`, and `l
 
 Timeouts, server errors, authentication errors, and rate limits preserve the previous status and demo link. A retry date and error kind are recorded; throttling or rejected authentication stops the revalidation pass promptly. A successful repository check clears stale errors and refreshes metadata, including renamed repositories and changed default branches. `lastDemoCheckedAt` separately records README demo-link checks. Removing a demo link does not delete its saved record, but it no longer appears under “Live demos only.” This checks repository access and published demo references, not demo uptime.
 
-Tracked personal forks remain in the local collection even if an upstream repository becomes unavailable. No user setup or new secrets are required: the existing six-hour GitHub Actions workflow uses its built-in token.
+Saved personal fork evidence remains in the account collection even if an upstream repository becomes unavailable. No user setup or new secrets are required: the existing six-hour GitHub Actions workflow uses its built-in token.
 
 ## Storefront discovery and previews
 
@@ -64,7 +64,7 @@ Popularity uses `0.7 * log(1 + stars) + 0.3 * log(1 + forks)`. These are tunable
 
 Each refresh enriches up to 80 projects with release dates and dependency evidence. A separate Playwright step captures up to 20 real live-demo screenshots per run and saves them in `dist/previews/`. Screenshots are refreshed after seven days; temporary capture failures preserve old previews. Only public network destinations are allowed during capture. Visitors load saved images, not a screenshot service. README screenshots can supplement the gallery and are labeled as project images. If a preview fails to load, the typographic cover remains available.
 
-Detail views show the gallery, technologies, license, latest release, code freshness, and availability-check dates. Try demo and Fork on GitHub are separate from Track this fork. Manual tracking does not claim that a fork has been verified.
+Detail views show the gallery, technologies, license, latest release, code freshness, and availability-check dates. Try demo and Fork on GitHub are separate from Check my public forks. Only server-verified ownership and parent evidence marks a GitHub fork as verified.
 
 The workflow installs a pinned Playwright version and runs browser interaction checks at desktop/mobile widths before publishing preview assets. Measured trends will be empty until enough history exists. Releases and screenshots fill in progressively as background batches process the catalog; missing data is never invented.
 
@@ -74,7 +74,7 @@ The catalog refresh now imports public Hugging Face Spaces and candidates from t
 
 Spaces live in `dist/spaces.json`, with separate namespaced identities, likes, runtime, and availability check dates. Public RUNNING or SLEEPING Spaces qualify for the live-demo filter; gated, disabled, or broken builds do not. Oldest due entries are rechecked daily in bounded batches; inaccessible entries are hidden and temporary errors retain existing data for a later retry. The paginated Spaces import accumulates entries across refreshes. Public browsing requires no Hugging Face token.
 
-Explicit source-code links are verified against GitHub before they enable GitHub forking. A Space linked to an already indexed GitHub repository merges into that listing and can supply a missing demo. Standalone Spaces offer duplication on Hugging Face, which requires a Hugging Face account. Collection saves are local browser records; only public GitHub forks can be verified through account sync. Neither provider’s licenses automatically grant unrestricted reuse.
+Explicit source-code links are verified against GitHub before they enable GitHub forking. A Space linked to an already indexed GitHub repository merges into that listing and can supply a missing demo. Standalone Spaces offer duplication on Hugging Face, which requires a Hugging Face account. Liked projects and verified public GitHub forks sync across devices; manual Space tracking remains browser-local. Neither provider’s licenses automatically grant unrestricted reuse.
 
 Source selection in More filters includes All sources, GitHub, and Hugging Face Spaces. GitHub popularity uses weighted logarithmic stars and forks; Spaces use likes. Mixed-source Popular ordering uses within-source percentiles to avoid equating a like with a GitHub star. Trending and recent releases retain GitHub-specific evidence.
 
@@ -125,6 +125,6 @@ Scheduled indexing saves full README snapshots and progressively adds licence fi
 
 ## Accounts, administration and analytics
 
-GitHub sign-in and synced liked projects use Supabase, with database-enforced owner/admin permissions. Administration includes draft/published category ribbons, manual or automatic project selection, ordering, and private activity/catalog-growth analytics. Existing guest likes and browser fork tracking keep working while services are unconfigured.
+GitHub sign-in and synced liked projects use Supabase, with database-enforced owner/admin permissions. Administration includes draft/published category ribbons, manual or automatic project selection, ordering, and private activity/catalog-growth analytics. Legacy guest likes can be imported after sign-in. GitHub forks use the same signed-in identity; manual Space tracking remains local. Apply migration 4 to activate account fork storage.
 
 Follow [the activation guide](docs/ACCOUNTS_AND_ADMIN.md) to connect Supabase, apply the migration, enable GitHub OAuth, configure Vercel environment variables and grant your verified administrator role. The administration workspace is `/admin.html`. No real provider credentials are embedded in this repository.
