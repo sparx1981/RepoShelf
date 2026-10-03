@@ -106,7 +106,9 @@ Likes now accept valid repository/Space identifiers even when a project comes fr
 
 The drafted documents are `/terms.html` and `/privacy.html`. The review form is `/legal.html`. They remain explicitly marked as drafts, and account acceptance is inactive, until the operator name, country of operation and private contact email are configured. Obtain appropriate legal review for the actual operator and intended markets before public launch.
 
-After applying migration 5, set these public operator settings in Vercel and redeploy:
+RepoShelf is configured as the public service name, with United Kingdom as the country of operation. This does not identify a company or resolve the actual legal operator. The legal operator name and contact email remain empty, so acceptance stays inactive. **Reminder: set up a dedicated, monitored RepoShelf email** for privacy, account deletion and legal requests. This reminder also appears in Administration → Help.
+
+After confirming the actual legal identity and applying migration 5, set these public operator settings in Vercel and redeploy:
 
 - `REPOSHELF_OPERATOR_NAME`: the actual person or legal entity operating the service.
 - `REPOSHELF_OPERATOR_COUNTRY`: the actual country of operation.
