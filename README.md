@@ -14,7 +14,7 @@ An app-store-style catalog for public GitHub repositories. Browse real open-sour
 
 ## Run locally
 
-Requires Node.js 20 or newer. No dependency installation is needed.
+Requires Node.js 20 or newer. Run `npm install` to install the API/MCP server dependencies.
 
 ```sh
 npm start
@@ -24,7 +24,7 @@ Open http://localhost:3000. Validate static output with `npm run build`.
 
 ## Deploy to Vercel
 
-Import `sparx1981/RepoShelf` in Vercel. `vercel.json` configures framework Other, build command `npm run build`, and output directory `dist`. No environment variables are required. Once linked, pushes to the production branch trigger deployment automatically.
+Import `sparx1981/RepoShelf` in Vercel. `vercel.json` configures framework Other, build command `npm run build`, and output directory `dist`. The storefront requires no environment variables. The private agent API/MCP endpoints require `REPOSHELF_API_KEY` as documented below. Once linked, pushes to the production branch trigger deployment automatically.
 
 ## Data and limitations
 
@@ -115,3 +115,10 @@ Every six-hour catalog refresh calls Hacker News's Algolia story search and Blue
 `scripts/import-community.mjs` validates up to 60 candidate repositories per refresh using the existing GitHub metadata and README pipeline. Repository identities are deduplicated case-insensitively, including renamed repositories; existing catalog records and demo-health evidence are retained on temporary failures. New repositories without demo links are retained so they can be browsed when demo-only filtering is disabled. A social post is discovery evidence, not proof of a working demo. The built-in workflow GitHub token is sent only to GitHub requests.
 
 `dist/community.json` stores at most 2,000 recent repository mentions, source refresh status, and import counts; browser visits load this saved file. The community ranking uses age-decayed engagement ranked within each source, with capped credit for independent authors. Repeated posts by one author do not add independent-author credit. Hacker News points are not equated directly with Bluesky likes, and GitHub popularity/trending calculations stay separate. `.community-cache.json` records bounded import retry dates and is cached by Actions.
+
+
+## Agent API and MCP
+
+A read-only agent API is available under `/api/v1/` and an official-SDK MCP server under `/api/mcp`, both disabled until a private `REPOSHELF_API_KEY` is configured in Vercel and the app is redeployed. The same tools run locally over stdio without a hosted key, or bridge to the deployed API with the key in the client environment. See [the connection guide](docs/AGENT_API.md), the hosted `/agent-guide.html`, and `/openapi.json` for exact Codex/Claude setup, endpoints, safeguards, and context limits.
+
+Scheduled indexing saves full README snapshots and progressively adds licence files and available dependency manifests, with original source links, content hashes and dates. API search is keyword-based and returns compact results; document endpoints allow complete reading in chunks. Missing or unusually large documents are explicitly identified. The server never fetches live repositories on a client request, executes project code, modifies a repository, or manages the user's browser collection. `npm test` covers the catalog/API/security service; `npm run test:mcp` verifies the official MCP client over HTTP and local/remote stdio.

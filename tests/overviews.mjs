@@ -18,7 +18,7 @@ const requests=[];const result=await readOverviewReadme({full:'org/app',branch:'
 const root=await mkdtemp(path.join(tmpdir(),'reposhelf-overviews-'));const originalFetch=globalThis.fetch;const env={OVERVIEW_GITHUB_BATCH:process.env.OVERVIEW_GITHUB_BATCH,OVERVIEW_SPACE_BATCH:process.env.OVERVIEW_SPACE_BATCH};
 try{
   await mkdir(path.join(root,'dist'));await mkdir(path.join(root,'scripts'));
-  for(const file of ['dist/providers.js','scripts/enrich-overviews.mjs','scripts/readme-overviews.mjs','scripts/project-insights.mjs'])await copyFile(new URL('../'+file,import.meta.url),path.join(root,file));
+  for(const file of ['dist/providers.js','scripts/enrich-overviews.mjs','scripts/readme-overviews.mjs','scripts/agent-snapshots.mjs','scripts/project-insights.mjs'])await copyFile(new URL('../'+file,import.meta.url),path.join(root,file));
   const saved={full:'org/temporary',name:'Temporary',updated:'2026-01-01',...first};
   await writeFile(path.join(root,'dist/catalog.json'),JSON.stringify({repositories:[saved,{full:'org/new',name:'New',stars:10,updated:'2026-02-01'},{full:'org/gone',availability:'unavailable'}]}));
   await writeFile(path.join(root,'dist/spaces.json'),JSON.stringify({repositories:[{full:'hf:org/demo',spaceId:'org/demo',source:'huggingface',name:'Demo',likes:2,updated:'2026-02-01'}]}));

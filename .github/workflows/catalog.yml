@@ -11,6 +11,8 @@ on:
       - 'scripts/enrich-catalog.mjs'
       - 'scripts/readme-overviews.mjs'
       - 'scripts/enrich-overviews.mjs'
+      - 'scripts/agent-snapshots.mjs'
+      - 'scripts/enrich-agent-context.mjs'
       - 'scripts/capture-previews.mjs'
       - 'scripts/demo-health.mjs'
       - 'scripts/check-demo-health.mjs'
@@ -53,8 +55,10 @@ jobs:
             .community-cache.json
           key: demo-catalog-${{ github.run_id }}
           restore-keys: demo-catalog-
+      - name: Install agent server dependencies
+        run: npm install --package-lock=false
       - name: Validate catalog logic
-        run: npm test && npm run build
+        run: npm test && npm run test:mcp && npm run build
       - name: Import Hugging Face Spaces and curated lists
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -83,6 +87,10 @@ jobs:
           OVERVIEW_GITHUB_BATCH: '100'
           OVERVIEW_SPACE_BATCH: '40'
         run: node scripts/enrich-overviews.mjs
+      - name: Save supporting agent documents
+        env:
+          AGENT_CONTEXT_BATCH: '40'
+        run: node scripts/enrich-agent-context.mjs
       - name: Generate optional AI overviews
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
@@ -110,6 +118,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add dist/catalog.json dist/spaces.json dist/community.json
+          if [ -d data ]; then git add data; fi
           if [ -d dist/previews ]; then git add dist/previews; fi
           if git diff --cached --quiet; then exit 0; fi
           git commit -m "Refresh public demo catalog"
