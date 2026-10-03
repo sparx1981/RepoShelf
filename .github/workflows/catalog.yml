@@ -25,6 +25,9 @@ on:
       - 'scripts/source-imports.mjs'
       - 'scripts/verify-ui.mjs'
       - 'sources.config.json'
+      - 'scripts/community-sources.mjs'
+      - 'scripts/import-community.mjs'
+      - 'dist/community.js'
       - '.github/workflows/catalog.yml'
 permissions:
   contents: write
@@ -46,6 +49,7 @@ jobs:
           path: |
             .catalog-cache.json
             .sources-cache.json
+            .community-cache.json
           key: demo-catalog-${{ github.run_id }}
           restore-keys: demo-catalog-
       - name: Validate catalog logic
@@ -57,6 +61,11 @@ jobs:
           SPACE_REVALIDATE_BATCH: '100'
           CURATED_IMPORT_BATCH: '60'
         run: node scripts/import-sources.mjs
+      - name: Discover repositories discussed on Hacker News and Bluesky
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          COMMUNITY_IMPORT_BATCH: '60'
+        run: node scripts/import-community.mjs
       - name: Find public repository demos
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -99,7 +108,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add dist/catalog.json dist/spaces.json
+          git add dist/catalog.json dist/spaces.json dist/community.json
           if [ -d dist/previews ]; then git add dist/previews; fi
           if git diff --cached --quiet; then exit 0; fi
           git commit -m "Refresh public demo catalog"
