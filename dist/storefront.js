@@ -9,7 +9,7 @@ function trend(r,now=Date.now()){const measured=Date.parse(r.lastCheckedAt);if(N
 function recentRelease(r,now=Date.now()){const date=Date.parse(r.latestRelease?.publishedAt);return Number.isFinite(date)&&date<=now&&now-date<=30*86400000}
 function sorted(repos,sort='popular',now=Date.now()){const list=[...repos];const score=(r)=>sort==='trending'?(trend(r,now)?.score??-1):popularity(r);if(sort==='trending')return list.filter(r=>(trend(r,now)?.score||0)>0).sort((a,b)=>score(b)-score(a));return list.sort((a,b)=>score(b)-score(a))}
 function previewUrl(value){if(typeof value!=='string')return null;if(/^previews\/[a-f0-9]{24}\.jpg$/.test(value))return value;try{const u=new URL(value);return u.protocol==='https:'?u.href:null}catch{return null}}
-function images(r){const out=[];for(const item of r.screenshots||[]){const src=previewUrl(item.src);if(src&&!out.some(i=>i.src===src))out.push({...item,src})}return out.slice(0,6)}
+function images(r){const out=[];for(const item of r.screenshots||[]){if(item.kind==='demo'&&item.url&&item.url!==r.demo)continue;const src=previewUrl(item.src);if(src&&!out.some(i=>i.src===src))out.push({...item,src})}return out.slice(0,6)}
 function readmeImages(markdown,repo){const images=[];for(const m of String(markdown||'').matchAll(/!\[([^\]]*)\]\(([^\s)]+)(?:\s+[^)]*)?\)/g)){if(!/screenshot|preview|screen shot|application|app interface/i.test(m[1]))continue;let src=m[2];try{if(!/^https?:/.test(src))src=new URL(src,`https://raw.githubusercontent.com/${repo.full}/${encodeURIComponent(repo.branch||'main')}/`).href;src=previewUrl(src);if(src)images.push({src,kind:'readme',alt:m[1]})}catch{}}return images.slice(0,4)}
 return {channels,technologies,popularity,recordMetrics,trend,recentRelease,sorted,previewUrl,images,readmeImages};
 });

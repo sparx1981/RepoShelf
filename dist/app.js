@@ -20,7 +20,7 @@ let discovered=[], catalog=[], searchToken=0, timer, toastTimer;
 let session=null, visibleLimit=48, checkedCandidates=0, discoveryWarning='';
 const D=RepoDiscovery;const S=RepoStore;
 let ribbonModes={},detailImage=0;
-const demoCache=readStore('reposhelf.demos.v2',{});
+const demoCache=readStore('reposhelf.demos.v3',{});
 function readStore(key,fallback){try{return JSON.parse(localStorage.getItem(key))??fallback}catch{return fallback}}
 let collection=readStore('reposhelf.collection.v1',{});if(!collection||typeof collection!=='object'||Array.isArray(collection))collection={};
 let username=readStore('reposhelf.username.v1','');
@@ -67,7 +67,7 @@ function classify(r){return D.classify(r)}
 async function findDemo(repo){const key=repo.full.toLowerCase(),cached=demoCache[key];if(cached&&cached.updated===repo.updated&&Date.now()-cached.checked<7*86400000)return cached.demo;
 let content=null;for(const path of ['README.md','readme.md','README.MD']){try{const res=await fetch(`https://raw.githubusercontent.com/${repo.full}/${encodeURIComponent(repo.branch||'main')}/${path}`,{signal:AbortSignal.timeout(7000)});if(res.status===404)continue;if(!res.ok)throw new Error('README temporarily unavailable');content=await res.text();break}catch{return undefined}}
 const demo=D.extractDemo(content,repo.homepage);demoCache[key]={updated:repo.updated,checked:Date.now(),demo};return demo;}
-function saveDemoCache(){try{const recent=Object.entries(demoCache).sort((a,b)=>b[1].checked-a[1].checked).slice(0,3000);localStorage.setItem('reposhelf.demos.v2',JSON.stringify(Object.fromEntries(recent)))}catch{}}
+function saveDemoCache(){try{const recent=Object.entries(demoCache).sort((a,b)=>b[1].checked-a[1].checked).slice(0,3000);localStorage.setItem('reposhelf.demos.v3',JSON.stringify(Object.fromEntries(recent)))}catch{}}
 function hasMore(){return Boolean(session?.queries.some(q=>!q.done))}
 function mergeRepos(items){const repos=new Map(discovered.map(r=>[r.full.toLowerCase(),r]));for(const r of items)repos.set(r.full.toLowerCase(),r);discovered=[...repos.values()]}
 function useCatalog(){searchToken++;state.loading=false;state.remote=false;session=null;visibleLimit=48;checkedCandidates=0;discovered=[...catalog];$('#status').textContent='';render()}
