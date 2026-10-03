@@ -1,0 +1,15 @@
+(function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory();else root.RepoQuality=factory()})(globalThis,function(){
+'use strict';
+function demoState(r){return r.demoHealth?.url===r.demo?r.demoHealth:null}
+function hasLiveDemo(r){return Boolean(r.demo)&&demoState(r)?.status!=='unavailable'}
+function demoLabel(r){const health=demoState(r);return !r.demo?'No demo link':health?.status==='unavailable'?'Demo unavailable':health?.status==='working'?'Demo checked':health?.status==='review'?'Demo needs review':health?.error?'Check inconclusive':'Demo not checked yet'}
+function licenseInfo(r){const raw=typeof r.license==='string'?r.license.trim():'';const canonical={'mit':'MIT','isc':'ISC','apache-2.0':'Apache-2.0','bsd-2-clause':'BSD-2-Clause','bsd-3-clause':'BSD-3-Clause','bsd-4-clause':'BSD-4-Clause','zlib':'Zlib','unlicense':'Unlicense','mpl-2.0':'MPL-2.0','cc0-1.0':'CC0-1.0'};const id=canonical[raw.toLowerCase()]||raw.replace(/^(a?gpl|lgpl|cc-by)/i,s=>s.toUpperCase());if(!id||id==='NOASSERTION')return {id:null,title:'Licence not specified',text:'The author has not declared a recognised licence in the catalog. Review the repository terms before reusing its code.'};const official=/^(?:MIT|ISC|Apache-2\.0|BSD-[234]-Clause|Zlib|Unlicense|MPL-2\.0|(?:A?GPL|LGPL)-[23](?:\.[01])?(?:-only|-or-later)?|CC(?:0|-[A-Z-]+)-[134]\.0)$/.test(id)?`https://spdx.org/licenses/${encodeURIComponent(id)}.html`:null;
+if(/^(MIT|ISC|Apache-2\.0|BSD-[234]-Clause|Zlib|Unlicense|CC0-1\.0)$/.test(id))return {id,url:official,title:'Permissive licence',text:'Generally permits modification and commercial use, subject to the licence’s notices and conditions.'};
+if(/^AGPL-/.test(id))return {id,url:official,title:'Network copyleft licence',text:'Source-sharing conditions can apply when modified software is used over a network. Review the exact licence terms.'};
+if(/^GPL-/.test(id))return {id,url:official,title:'Copyleft licence',text:'Distributing the software or derivatives can require sharing source under the same licence.'};
+if(/^LGPL-/.test(id))return {id,url:official,title:'Library copyleft licence',text:'Changes and distribution carry source-sharing and notice conditions; linking rules depend on the licence version.'};
+if(id==='MPL-2.0')return {id,url:official,title:'File-level copyleft licence',text:'Distributed changes to covered files must stay under this licence. Other files can use different licences.'};
+if(/(?:^|-)NC(?:-|$)|non.?commercial/i.test(id))return {id,url:official,title:'Non-commercial terms',text:'Commercial use is restricted. Check the full licence and which parts of the project it covers.'};
+return {id,url:official,title:'Review licence terms',text:'Review the declared licence and what it covers before modifying, hosting, or distributing this project.'}}
+return {demoState,hasLiveDemo,demoLabel,licenseInfo};
+});

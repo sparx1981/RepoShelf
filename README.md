@@ -28,19 +28,19 @@ Import `sparx1981/RepoShelf` in Vercel. `vercel.json` configures framework Other
 
 ## Data and limitations
 
-GitHub uses its unauthenticated public API and applies rate limits. Star/fork counts and dates are fetched from GitHub. Demo discovery recognizes explicit demo or playground links in README files, but does not verify destination uptime. Curated browsing and local tracking work even if the API is unavailable.
+GitHub uses its unauthenticated public API and applies rate limits. Star/fork counts and dates are fetched from GitHub. Demo discovery recognizes explicit demo or playground links in README files, and scheduled browser checks separately check whether demo pages load. Curated browsing and local tracking work even if the API is unavailable.
 
 GitHub does not sort repository search by creation date. Newest discovery searches projects created in the last 30 days, retrieves popular results, and sorts loaded results by creation date. Popularity can be sorted by forks or stars.
 
 Forking opens GitHub's fork screen; the app does not fork automatically. Public username sync checks up to 1,000 recently updated repositories and verifies their fork parents. Private forks need manual tracking. Your collection and username are saved in this browser, not across devices. No OAuth credentials are collected.
 
-Covers use typographic project artwork rather than screenshots. Repository licenses govern code reuse.
+Covers use saved demo screenshots where available, with typographic project artwork as a fallback. Repository licenses govern code reuse.
 
 ## Larger demo catalog
 
 The default view loads `dist/catalog.json`, an indexed catalog, rather than limiting visitors to 12 curated projects. Search and category filters work locally on that catalog. “Search beyond the catalog” runs live GitHub searches in 100-repository batches, using demo, playground, live-preview, and other README signals without requiring a `webapp` topic. Sparse batches automatically advance; failed README fetches are not cached as missing demos. Clicking the demo toggle off searches public repositories without demo-specific qualifiers.
 
-READMEs load from raw.githubusercontent.com using the repository's default branch. This avoids a GitHub API call per project. Demo detection supports Markdown, reference-style links, HTML anchors, linked badges, and URLs under demo headings. Detection results are cached for seven days and invalidated by repository update dates. URLs indicate published demo links, not independently verified uptime.
+READMEs load from raw.githubusercontent.com using the repository's default branch. This avoids a GitHub API call per project. Demo detection supports Markdown, reference-style links, HTML anchors, linked badges, and URLs under demo headings. Detection results are cached for seven days and invalidated by repository update dates. A discovered URL initially indicates a published demo link. Saved demo-health checks provide separate dated page-load evidence.
 
 The `Refresh demo catalog` GitHub Actions workflow runs on its initial push, manually, and every six hours. It checks up to 1,500 candidates per run, partitions search by star ranges to work around GitHub's 1,000-result query limit, retains prior successful entries through temporary failures, and commits catalog updates to `main`. Vercel's Git integration deploys those updates. It uses GitHub's built-in workflow token; no personal token is required. The collection accumulates across runs; the per-run limit is not a catalog-size limit. Enable Actions and workflow write permissions if your repository policy disables them.
 
@@ -76,7 +76,7 @@ Spaces live in `dist/spaces.json`, with separate namespaced identities, likes, r
 
 Explicit source-code links are verified against GitHub before they enable GitHub forking. A Space linked to an already indexed GitHub repository merges into that listing and can supply a missing demo. Standalone Spaces offer duplication on Hugging Face, which requires a Hugging Face account. Collection saves are local browser records; only public GitHub forks can be verified through account sync. Neither provider’s licenses automatically grant unrestricted reuse.
 
-Source filters include All sources, GitHub, Hugging Face Spaces, and GitHub fork available. GitHub popularity uses weighted logarithmic stars and forks; Spaces use likes. Mixed-source Popular ordering uses within-source percentiles to avoid equating a like with a GitHub star. Trending and recent releases retain GitHub-specific evidence.
+Source selection in More filters includes All sources, GitHub, and Hugging Face Spaces. GitHub popularity uses weighted logarithmic stars and forks; Spaces use likes. Mixed-source Popular ordering uses within-source percentiles to avoid equating a like with a GitHub star. Trending and recent releases retain GitHub-specific evidence.
 
 Search, filters, sorting, and Show more operate on saved catalogs and never automatically call GitHub. The separate “Search beyond the catalog on GitHub” button opts into live discovery. Existing matches remain visible throughout a request and after a rate limit or network error. Changing the query invalidates any pending response.
 
@@ -87,3 +87,20 @@ Source selection is inside the native, keyboard-accessible “More filters” di
 Project cards retain their original short description. Details can additionally show “About this project”: up to three introductory paragraphs and five features extracted from the author's README, clearly labelled as an author-written excerpt and linked to the full source. This is deterministic extraction, not AI generation or a claim that RepoShelf tested the advertised features. Plain text is escaped when rendered; scripts, badges, code blocks, setup sections, and contribution instructions are excluded where possible. If suitable author text is absent, the additional section is omitted.
 
 `scripts/readme-overviews.mjs` provides the shared extractor. Discovery reuses READMEs already fetched for demo checks and source verification; `scripts/enrich-overviews.mjs` backfills older GitHub and Space entries in bounded batches. Saved records include the extraction version, source URL, content fingerprint, extraction date, and check date. Unchanged content keeps its original extraction date. Older entries are revisited after seven days or a repository update, subject to a six-hour retry interval. Temporary failures keep the saved text. The scheduled refresh publishes all extracted text with the static catalogs, so visitors never trigger README or model requests. No AI API key is required.
+
+
+### Demo reliability and broken-demo reports
+
+Every scheduled refresh checks up to 100 public demo pages in four browser workers. New popular listings, older due checks, and reported demos share the batch. Successful checks are eligible for another check after seven days; processing the whole catalog can take longer. Cards and details distinguish untested links, checked pages, inconclusive attempts, and unavailable demos, and display the recorded check date.
+
+A 404/410 or explicit missing-page response needs two checks at least six hours apart before the demo is excluded from the default demo-only results. Timeouts, rate limits, server errors, bot challenges, empty pages, and unavailable Space app frames preserve the previous result and retry later. A recovery restores the demo. Unavailable demos can still be browsed by disabling the demo-only filter; repository availability is handled separately. These are page-load checks, not tests of every interactive feature. Browser requests and redirects are restricted to public network addresses. Screenshots share the same health logic and never count a second failure within the same refresh.
+
+Details include **Report a broken demo**, opening a prefilled issue in this repository. A GitHub account is needed to submit it. Refreshes review open reports whose project and URL match a saved listing and prioritize an independent check; a report cannot directly hide a listing. No extra secret or manual action is needed for scheduled demo checks.
+
+### Reuse information and optional AI overviews
+
+Details show what the project does, who the author says it is for, and explicitly documented API-key, account, paid-service, and self-hosting requirements. `scripts/project-insights.mjs` extracts and quotes author statements, with README provenance, check dates, and fingerprints. Missing information is presented as unknown, never as a promise that no accounts or costs are required. Declared licences include a short reuse guide and full terms where a recognised SPDX identifier exists. These guides do not infer a licence for unlicensed projects.
+
+An optional Gemini step can add one or two clearly labelled plain-language paragraphs for popular projects, keeping the original short description and author-written excerpt. It uses already saved author information, not a claim to have operated the demo. Exact supporting quotes are checked against that information and shown alongside the summary; this provides traceability, not a guarantee against every model error. Failed generations preserve saved text. Unchanged sources/model skip regeneration.
+
+To enable it, add **GEMINI_API_KEY** as a GitHub Actions repository secret and **GEMINI_MODEL** as a repository variable naming a model available to that key. Neither belongs in frontend code or Vercel variables. Without both, the step safely skips and all author-based details remain available. The workflow caps generation at 10 attempts per refresh and 20 per UTC day, with usage persisted in the catalog and a six-hour failure retry interval. Model calls are never made by visitors. A provider quota or spend limit is recommended for an additional external cap. X discovery is not implemented.

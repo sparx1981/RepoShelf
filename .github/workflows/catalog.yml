@@ -12,6 +12,12 @@ on:
       - 'scripts/readme-overviews.mjs'
       - 'scripts/enrich-overviews.mjs'
       - 'scripts/capture-previews.mjs'
+      - 'scripts/demo-health.mjs'
+      - 'scripts/check-demo-health.mjs'
+      - 'scripts/project-insights.mjs'
+      - 'scripts/ai-overviews.mjs'
+      - 'scripts/generate-ai-overviews.mjs'
+      - 'dist/quality.js'
       - 'dist/storefront.js'
       - 'dist/discovery.js'
       - 'dist/providers.js'
@@ -22,6 +28,7 @@ on:
       - '.github/workflows/catalog.yml'
 permissions:
   contents: write
+  issues: read
 concurrency:
   group: reposhelf-catalog
   cancel-in-progress: false
@@ -66,12 +73,24 @@ jobs:
           OVERVIEW_GITHUB_BATCH: '100'
           OVERVIEW_SPACE_BATCH: '40'
         run: node scripts/enrich-overviews.mjs
+      - name: Generate optional AI overviews
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: ${{ vars.GEMINI_MODEL }}
+          AI_OVERVIEW_BATCH: '10'
+          AI_OVERVIEW_DAILY_LIMIT: '20'
+        run: node scripts/generate-ai-overviews.mjs
       - name: Install screenshot browser
         run: |
           npm install --no-save --package-lock=false playwright@1.56.1
           npx playwright install --with-deps chromium
       - name: Verify storefront in a browser
         run: node scripts/verify-ui.mjs
+      - name: Check public demo pages and review broken-demo reports
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          DEMO_CHECK_BATCH: '100'
+        run: node scripts/check-demo-health.mjs
       - name: Capture demo previews
         env:
           CATALOG_PREVIEW_BATCH: '20'

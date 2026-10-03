@@ -123,3 +123,5 @@ export async function readOverviewReadme(repo,{fetcher=fetch}={}) {
   }
   return {markdown:'',sourceUrl:source+'README.md'};
 }
+
+export {plain as plainReadmeText};
