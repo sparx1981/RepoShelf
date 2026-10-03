@@ -46,7 +46,7 @@ grant execute on function public.reposhelf_set_editorial(boolean),public.reposhe
 
 create table if not exists public.analytics_events(event_id uuid primary key,kind text not null check(kind in('page_view','listing_view','demo_click','fork_click','search')),session_hash text not null,visitor_hash text not null,project_id text,created_at timestamptz not null default now());
 create index if not exists analytics_time on public.analytics_events(created_at);
-create table if not exists public.analytics_limits(session_hash text not null,window timestamptz not null,count integer not null default 0,primary key(session_hash,window));
+create table if not exists public.analytics_limits(session_hash text not null,bucket_at timestamptz not null,count integer not null default 0,primary key(session_hash,bucket_at));
 create table if not exists public.analytics_daily(day date primary key,visits bigint not null default 0,visitors bigint not null default 0,page_views bigint not null default 0,listing_views bigint not null default 0,demo_clicks bigint not null default 0,fork_clicks bigint not null default 0,searches bigint not null default 0);
 create table if not exists public.analytics_sessions(day date not null,session_hash text not null,primary key(day,session_hash));
 create table if not exists public.analytics_visitors(day date not null,visitor_hash text not null,primary key(day,visitor_hash));
@@ -60,7 +60,7 @@ create or replace function public.reposhelf_ingest_events(events jsonb) returns 
 if jsonb_typeof(events)<>'array' or jsonb_array_length(events)>10 then raise check_violation;end if;
 for e in select * from jsonb_array_elements(events) loop
 if e->>'session_hash'!~'^[a-f0-9]{64}$' or e->>'visitor_hash'!~'^[a-f0-9]{64}$' then raise check_violation;end if;
-insert into public.analytics_limits(session_hash,window,count) values(e->>'session_hash',win,1) on conflict(session_hash,window) do update set count=analytics_limits.count+1 returning count into n;
+insert into public.analytics_limits(session_hash,bucket_at,count) values(e->>'session_hash',win,1) on conflict(session_hash,bucket_at) do update set count=analytics_limits.count+1 returning count into n;
 if n>120 then continue;end if;
 insert into public.analytics_events(event_id,kind,session_hash,visitor_hash,project_id) values((e->>'event_id')::uuid,e->>'kind',e->>'session_hash',e->>'visitor_hash',e->>'project_id') on conflict do nothing;
 if not found then continue;end if;saved:=saved+1;
@@ -71,8 +71,8 @@ insert into public.analytics_visitors values(utcday,e->>'visitor_hash') on confl
 if found then update public.analytics_daily set visitors=visitors+1 where day=utcday;end if;
 update public.analytics_daily set page_views=page_views+(case when e->>'kind'='page_view' then 1 else 0 end),listing_views=listing_views+(case when e->>'kind'='listing_view' then 1 else 0 end),demo_clicks=demo_clicks+(case when e->>'kind'='demo_click' then 1 else 0 end),fork_clicks=fork_clicks+(case when e->>'kind'='fork_click' then 1 else 0 end),searches=searches+(case when e->>'kind'='search' then 1 else 0 end) where day=utcday;
 end loop;
--- Deduplicated daily totals remain; detailed events have a 90-day retention window.
-if pg_try_advisory_xact_lock(71883002) then delete from public.analytics_limits where window<now()-interval '1 hour';delete from public.analytics_events where created_at<now()-interval '90 days';delete from public.analytics_sessions where day<utcday-90;delete from public.analytics_visitors where day<utcday-90;end if;
+-- Deduplicated daily totals remain; detailed events have a 90-day retention bucket_at.
+if pg_try_advisory_xact_lock(71883002) then delete from public.analytics_limits where bucket_at<now()-interval '1 hour';delete from public.analytics_events where created_at<now()-interval '90 days';delete from public.analytics_sessions where day<utcday-90;delete from public.analytics_visitors where day<utcday-90;end if;
 return saved;end$$;
 revoke all on function public.reposhelf_ingest_events(jsonb) from public,anon,authenticated;
 grant execute on function public.reposhelf_ingest_events(jsonb) to service_role;
