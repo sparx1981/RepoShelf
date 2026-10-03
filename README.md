@@ -45,3 +45,13 @@ READMEs load from raw.githubusercontent.com using the repository's default branc
 The `Refresh demo catalog` GitHub Actions workflow runs on its initial push, manually, and every six hours. It checks up to 1,500 candidates per run, partitions search by star ranges to work around GitHub's 1,000-result query limit, retains prior successful entries through temporary failures, and commits catalog updates to `main`. Vercel's Git integration deploys those updates. It uses GitHub's built-in workflow token; no personal token is required. The collection accumulates across runs; the per-run limit is not a catalog-size limit. Enable Actions and workflow write permissions if your repository policy disables them.
 
 Run `npm test` for demo-parser and query-planning checks. Run `node scripts/index-catalog.mjs` to refresh the catalog locally, optionally supplying `GITHUB_TOKEN` for a higher search quota. `.catalog-cache.json` is an ignored incremental crawler cache, not a credential file.
+
+## Repository revalidation
+
+Before discovering new demos, each refresh checks up to 250 saved repositories, prioritizing entries that have waited longest. Entries become eligible after 24 hours; larger catalogs may take longer to complete a cycle. Checks use GitHub's repository API, so a missing README or a failed demo site is not treated as a deleted repository.
+
+Each record can contain `availability`, `lastCheckedAt`, `lastAttemptAt`, and `lastAvailableAt`. `lastCheckedAt` records a definitive repository availability result; temporary failures only advance `lastAttemptAt`. Unavailable entries are retained with `unavailableSince` and a reason, but hidden from storefront browsing. A 404/410 is labeled unavailable, because GitHub does not distinguish a deleted repository from an inaccessible private one. A confirmed private repository is also hidden. Future checks can restore public entries.
+
+Timeouts, server errors, authentication errors, and rate limits preserve the previous status and demo link. A retry date and error kind are recorded; throttling or rejected authentication stops the revalidation pass promptly. A successful repository check clears stale errors and refreshes metadata, including renamed repositories and changed default branches. `lastDemoCheckedAt` separately records README demo-link checks. Removing a demo link does not delete its saved record, but it no longer appears under “Live demos only.” This checks repository access and published demo references, not demo uptime.
+
+Tracked personal forks remain in the local collection even if an upstream repository becomes unavailable. No user setup or new secrets are required: the existing six-hour GitHub Actions workflow uses its built-in token.

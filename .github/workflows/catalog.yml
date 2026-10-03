@@ -7,6 +7,7 @@ on:
     branches: [main]
     paths:
       - 'scripts/index-catalog.mjs'
+      - 'scripts/catalog-health.mjs'
       - 'dist/discovery.js'
       - '.github/workflows/catalog.yml'
 permissions:
@@ -28,10 +29,13 @@ jobs:
           path: .catalog-cache.json
           key: demo-catalog-${{ github.run_id }}
           restore-keys: demo-catalog-
+      - name: Validate catalog logic
+        run: npm test && npm run build
       - name: Find public repository demos
         env:
           GITHUB_TOKEN: ${{ github.token }}
           CATALOG_BATCH_SIZE: '1500'
+          CATALOG_REVALIDATE_BATCH: '250'
         run: node scripts/index-catalog.mjs
       - name: Publish refreshed catalog
         run: |
