@@ -35,3 +35,13 @@ GitHub does not sort repository search by creation date. Newest discovery search
 Forking opens GitHub's fork screen; the app does not fork automatically. Public username sync checks up to 1,000 recently updated repositories and verifies their fork parents. Private forks need manual tracking. Your collection and username are saved in this browser, not across devices. No OAuth credentials are collected.
 
 Covers use typographic project artwork rather than screenshots. Repository licenses govern code reuse.
+
+## Larger demo catalog
+
+The default view loads `dist/catalog.json`, an indexed catalog, rather than limiting visitors to 12 curated projects. Search and category filters work locally on that catalog. “Search beyond the catalog” runs live GitHub searches in 100-repository batches, using demo, playground, live-preview, and other README signals without requiring a `webapp` topic. Sparse batches automatically advance; failed README fetches are not cached as missing demos. Clicking the demo toggle off searches public repositories without demo-specific qualifiers.
+
+READMEs load from raw.githubusercontent.com using the repository's default branch. This avoids a GitHub API call per project. Demo detection supports Markdown, reference-style links, HTML anchors, linked badges, and URLs under demo headings. Detection results are cached for seven days and invalidated by repository update dates. URLs indicate published demo links, not independently verified uptime.
+
+The `Refresh demo catalog` GitHub Actions workflow runs on its initial push, manually, and every six hours. It checks up to 1,500 candidates per run, partitions search by star ranges to work around GitHub's 1,000-result query limit, retains prior successful entries through temporary failures, and commits catalog updates to `main`. Vercel's Git integration deploys those updates. It uses GitHub's built-in workflow token; no personal token is required. The collection accumulates across runs; the per-run limit is not a catalog-size limit. Enable Actions and workflow write permissions if your repository policy disables them.
+
+Run `npm test` for demo-parser and query-planning checks. Run `node scripts/index-catalog.mjs` to refresh the catalog locally, optionally supplying `GITHUB_TOKEN` for a higher search quota. `.catalog-cache.json` is an ignored incremental crawler cache, not a credential file.
