@@ -15,3 +15,26 @@
 .community-card-links{display:flex;gap:7px;flex-wrap:wrap;padding:0 17px 14px;margin-top:3px}.community-card-links a{font-size:11px;color:var(--lime);border:1px solid #3b4931;padding:6px 8px;border-radius:5px;line-height:1.4}.community-card-links a:hover{background:#303a28}.community-details{border-top:1px solid var(--line);margin-top:22px;padding-top:20px}.community-details h3{font-size:20px;margin:0 0 8px}.community-details ul{list-style:none;padding:0;margin:15px 0 0}.community-details li{padding:13px 0;border-bottom:1px solid var(--line)}.community-details li a{display:block;font-size:14px;line-height:1.6;overflow-wrap:anywhere}.community-details li a span{font-size:11px;color:var(--lime);display:block;margin-bottom:3px}.community-details li p{font-size:11px!important;color:var(--muted)!important;margin:5px 0 0!important}
 /* Account collections */
 .card-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.card-heading h3{min-width:0}.like-button{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;flex-shrink:0;border:1px solid #3a4039;border-radius:50%;background:transparent;color:#a9b3a4;cursor:pointer}.like-button:hover,.like-button.liked{color:#d2f58a;border-color:#8ca663;background:#243020}.like-button:focus-visible{outline:2px solid #d2f58a;outline-offset:3px}.like-button:disabled{opacity:.5;cursor:wait}.detail-title{display:flex;gap:16px;align-items:center;justify-content:space-between}.collection-tabs{display:flex;gap:8px;margin:14px 0}.collection-tabs[hidden]{display:none}.collection-tabs button{padding:9px 15px;background:#1d201b;border:1px solid #343b2e;border-radius:999px;color:#b7bdb1;cursor:pointer}.collection-tabs button.active{background:#d2f58a;color:#15200c;border-color:#d2f58a}.account-auth{border-bottom:1px solid #343b2e;padding-bottom:24px;margin-bottom:24px}.account-actions{display:flex;flex-wrap:wrap;gap:10px}.account-auth .button{font-size:13px}
+
+/* Account sign-in */
+#account{width:490px;padding:32px;border-radius:20px;background:radial-gradient(ellipse at 100% 0,#c0ee7010,transparent 52%),#181c17;border-color:#3d4736;max-height:calc(100dvh - 32px);overflow-y:auto;box-shadow:0 28px 100px #000a}
+#account .close{width:36px;height:36px;right:16px;top:16px;display:grid;place-items:center;border-radius:50%;font-size:23px;color:#aab2a5}
+#account .close:hover{background:#ffffff0b;color:#fff}
+.account-brand{display:flex;align-items:center;gap:11px;margin:0 40px 26px 0;font:600 13px Manrope,sans-serif;color:#c3ccb9;letter-spacing:.3px}
+.account-brand .brand-icon{width:34px;height:34px;line-height:29px;font-size:29px;border-radius:9px;flex:none}
+#account h2{font-size:29px;line-height:1.22;letter-spacing:-.9px;margin:0 0 12px;max-width:350px}
+#account .account-auth{border:0;margin:0;padding:0}
+#account .signin-intro{font-size:14px;line-height:1.55;color:#a5af9c;margin:0 0 25px}
+.signin-benefits{list-style:none;padding:0;margin:0 0 28px;display:grid;gap:22px}
+.signin-benefits li{display:flex;align-items:flex-start;gap:14px}
+.signin-benefit-icon{width:40px;height:40px;flex:none;display:grid;place-items:center;background:#c6ed7810;color:#c8eaa0;border:1px solid #c6ed781b;border-radius:11px}
+.signin-benefits strong{display:block;font-size:14px;font-weight:600;color:#edf1e7;line-height:1.4;margin:0 0 4px}
+#account .signin-benefits p{font-size:13px;color:#a4af9b;line-height:1.55;margin:0}
+#account .github-signin{width:100%;min-height:53px;border-radius:9px;gap:11px;font-size:14px;box-shadow:0 4px 18px #d6fb790b}
+.github-signin .github-mark{flex:none;width:23px;height:23px}
+.github-signin .signin-arrow{margin-left:auto}
+.github-signin span{flex:1;text-align:left}
+#account .signin-security{font-size:11px;color:#8f9d85;line-height:1.65;text-align:center;margin:16px 0 0}
+#account[data-mode="account"] .account-auth>p:first-child{font-size:14px;margin:0 0 20px}
+#account[data-mode="account"] h3{font-size:16px;margin:25px 0 0}
+@media(max-width:480px){#account{padding:27px 23px;max-width:calc(100vw - 28px);border-radius:17px}#account h2{font-size:27px;max-width:300px}.account-brand{margin-bottom:23px}.signin-benefits{gap:19px;margin-bottom:25px}.signin-benefits li{gap:12px}}
