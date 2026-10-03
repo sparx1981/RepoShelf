@@ -29,7 +29,7 @@ values ('YOUR-VERIFIED-USER-UUID')
 on conflict do nothing;
 ```
 
-Reload RepoShelf. The account dialog now offers **Administration**, at `/admin.html`. Other signed-in users can save likes but cannot manage roles, edit rows, or read analytics. Administrator status comes from this protected table; GitHub usernames and user-editable metadata do not grant authority. To revoke access, delete the corresponding row from `reposhelf_admins`; every private request rechecks permissions.
+Reload RepoShelf. The account dialog now offers **Administration**, at `/admin.html`. Other signed-in users can save likes but cannot manage roles, edit rows, or read analytics. The profile menu also offers **Help** and **Manage users** only to administrators. Help contains MCP client configuration, Supabase/OAuth instructions, migration links and configuration-presence checks without exposing secret keys. Administrator status comes from this protected table; GitHub usernames and user-editable metadata do not grant authority. After the first administrator is bootstrapped, use **Administration → Users & roles** to search established GitHub users and grant or revoke admin access. Users must have completed GitHub sign-in once. Their provider identity and immutable account UUID identify the selected account; user-editable profile metadata grants no authority. Every private request rechecks permissions. The interface and database role-management function prevent removing your own or the last administrator role, detect stale changes, and record actual changes in `admin_role_changes`. Privileged Supabase SQL remains a recovery option.
 
 ```sql
 delete from public.reposhelf_admins where user_id='USER-UUID';
@@ -72,3 +72,9 @@ npm run test:mcp
 CI also runs the migration and permissions against PostgreSQL 16, plus browser flows for guest/account likes, an independent browser context, draft/published storefront rows, ordering, analytics, mobile layout and the existing storefront. Those tests use simulated provider responses; the real GitHub OAuth round trip requires the configured provider.
 
 For local sign-in use your own Supabase development project, set `REPOSHELF_PUBLIC_URL=http://localhost:3000`, add `http://localhost:3000/api/auth?action=callback` to its redirect allowlist, and provide server environment variables before `npm start`. Local HTTP uses HttpOnly SameSite=Lax cookies without Secure. Never reuse production admin/service secrets in shared fixtures. The migration can also be applied by your usual Supabase CLI migration process.
+
+## Apply the user-management update
+
+For an existing configured database, apply only [migration 2](../supabase/migrations/202610030002_admin_user_management.sql) in the Supabase SQL editor. New projects apply both migrations in order. This adds protected user search, role changes and role auditing; the first migration does not need to be rerun. No new server secret is required: role management uses authenticated RPCs and database-enforced authorization. User lists do not expose emails or tokens.
+
+The admin profile **Help** link opens `/admin.html?tab=help`, and **Manage users** opens `/admin.html?tab=users`. Setup information comes from the admin-only `/api/admin-users?action=setup` route and contains configuration flags/project URL, never key values. The flags indicate settings are present; they do not assert OAuth or migration health. Direct unauthenticated or member requests cannot list users, update roles, or read setup status.
