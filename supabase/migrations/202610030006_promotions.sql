@@ -41,7 +41,7 @@ begin
    if not exists(select 1 from public.reposhelf_admins where user_id=(payload->>'reviewer')::uuid) then raise insufficient_privilege;end if;
   end if;
   if operation='review' then
-   if p.status<>'pending' then raise exception 'Request already reviewed' using errcode='40001';end if;
+   if p.status not in ('pending','approved') then raise exception 'Request is already in checkout or paid' using errcode='40001';end if;
    if payload->>'decision' not in ('approved','rejected') or length(coalesce(payload->>'note',''))>500 then raise check_violation;end if;
    p.status:=payload->>'decision';p.reviewed_by:=(payload->>'reviewer')::uuid;p.reviewed_at:=now();p.review_note:=coalesce(payload->>'note','');
   elsif operation='reserve' then
