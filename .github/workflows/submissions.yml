@@ -1,0 +1,45 @@
+name: Scan submitted repositories
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/15 * * * *'
+  push:
+    branches: [main]
+    paths: ['scripts/import-submissions.mjs', '.github/workflows/submissions.yml']
+permissions:
+  contents: write
+concurrency:
+  group: reposhelf-catalog
+  cancel-in-progress: false
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      REPOSHELF_SUBMISSION_SYNC_KEY: ${{ secrets.REPOSHELF_SUBMISSION_SYNC_KEY }}
+      GITHUB_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Import submissions and save README context
+        run: node scripts/import-submissions.mjs
+      - name: Publish catalogue before confirming imports
+        run: |
+          if [ ! -f .submission-results.json ]; then exit 0; fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dist/catalog.json
+          if [ -d data/readmes ]; then git add data/readmes; fi
+          if ! git diff --cached --quiet; then
+            git commit -m "Import submitted public repositories"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          fi
+          echo "SUBMISSION_COMMIT=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+      - name: Save private submission results
+        run: |
+          if [ -f .submission-results.json ]; then node scripts/import-submissions.mjs finish; fi

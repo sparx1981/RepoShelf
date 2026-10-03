@@ -1,0 +1,35 @@
+begin;
+set role service_role;
+do $$declare saved jsonb; idem jsonb; row public.repository_submissions; second public.repository_submissions; i integer;begin
+ saved:=public.reposhelf_submit_repository('00000000-0000-0000-0000-000000000001','maker/project','repo42');
+ idem:=public.reposhelf_submit_repository('00000000-0000-0000-0000-000000000001','maker/project','repo42');
+ if not (saved->>'queued')::boolean or (idem->>'queued')::boolean or saved->'item'->>'id'<>idem->'item'->>'id' then raise exception 'Submission not idempotent';end if;
+ select * into row from public.reposhelf_claim_submissions();if row.status<>'processing' or row.attempts<>1 then raise exception 'Claim failed';end if;
+ if exists(select 1 from public.reposhelf_claim_submissions()) then raise exception 'Active lease reclaimed';end if;
+ if public.reposhelf_finish_submission(row.id,gen_random_uuid(),'retry',null,false,null) then raise exception 'Wrong lease accepted';end if;
+ if not public.reposhelf_finish_submission(row.id,row.lease,'retry',null,false,null) then raise exception 'Retry update failed';end if;
+ if exists(select 1 from public.reposhelf_claim_submissions()) then raise exception 'Retry not delayed';end if;
+ update public.repository_submissions set next_attempt_at=now()-interval '1 minute' where id=row.id;
+ select * into second from public.reposhelf_claim_submissions();if second.lease=row.lease then raise exception 'Lease not rotated';end if;
+ begin perform public.reposhelf_finish_submission(second.id,second.lease,'imported','maker/project',true,null);raise exception 'Import accepted without publication';exception when raise_exception then if sqlerrm='Import accepted without publication' then raise;end if;end;
+ if not public.reposhelf_finish_submission(second.id,second.lease,'imported','maker/project',true,repeat('a',40)) then raise exception 'Import not confirmed';end if;
+ for i in 2..10 loop perform public.reposhelf_submit_repository('00000000-0000-0000-0000-000000000001','maker/project-'||i,'repo'||i);end loop;
+ begin perform public.reposhelf_submit_repository('00000000-0000-0000-0000-000000000001','maker/over-limit','over-limit');raise exception 'Daily limit bypassed';exception when sqlstate 'PT420' then null;end;
+end $$;
+reset role;
+set role authenticated;
+set request.jwt.claim.sub='00000000-0000-0000-0000-000000000002';
+do $$begin
+ if (select count(*) from public.repository_submissions)<>0 then raise exception 'Another member submissions leaked';end if;
+ begin perform public.reposhelf_claim_submissions();raise exception 'Member claimed queue';exception when insufficient_privilege then null;end;
+ begin perform public.reposhelf_submit_repository('00000000-0000-0000-0000-000000000002','maker/spoof','spoof');raise exception 'Member directly inserted';exception when insufficient_privilege then null;end;
+end $$;
+reset role;
+set role authenticated;
+set request.jwt.claim.sub='00000000-0000-0000-0000-000000000001';
+do $$begin if (select count(*) from public.repository_submissions)<>10 then raise exception 'Owner cannot read submissions';end if;end $$;
+reset role;
+set role anon;
+do $$begin begin perform * from public.repository_submissions;raise exception 'Anonymous submissions leaked';exception when insufficient_privilege then null;end;end $$;
+reset role;
+rollback;

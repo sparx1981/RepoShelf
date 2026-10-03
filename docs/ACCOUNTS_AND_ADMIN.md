@@ -126,3 +126,5 @@ See [promotion setup](PROMOTIONS.md) for migration 6, Stripe test checkout/webho
 Sync reports now include **With demo page**. This excludes unavailable repositories and demos confirmed unavailable, deduplicates linked GitHub/Space listings consistently with the store, and includes available standalone Spaces. Earlier reports display a dash because their historical demo count was not recorded. It measures saved demo links, not a guarantee of complete demo functionality.
 
 All outgoing web links require verified GitHub sign-in, including README, licence, demo, repository, fork, Hugging Face, community discussion and documentation links. Links use the authenticated `/api/open` redirect, including new tabs and copied links. Signing in resumes the selected destination; internal browsing and legal pages stay accessible.
+
+Free repository submissions are available from the signed-in account menu. See [SUBMISSIONS.md](SUBMISSIONS.md) for migration 7 and worker activation. Paid promotion is a separate feature.

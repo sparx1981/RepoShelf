@@ -20,3 +20,5 @@ r=await run(auth,'/api/auth?action=signout',{method:'POST',body:{},token:'owner'
 console.log('PASS: PKCE sign-in binding, HttpOnly cookies, verified/renewed sessions, role checks, same-origin writes, per-user likes, public published rows, admin-only editing/analytics, hashed first-party activity, bot exclusion and disabled-service fallback.');
 
 const outgoing="/api/open?url="+encodeURIComponent("https://github.com/team/app/blob/main/README.md?raw=1#usage");assert.equal(authReturn(outgoing),outgoing);assert.equal(authReturn("/admin.html"),"/admin.html");for(const unsafe of ["https://evil.test/api/open?url=https://github.com","//evil.test/api/open?url=https://github.com","/api/open?url=javascript:alert(1)","/api/open?url=https://user:password@example.com","/api/auth?action=start","/api/open?url="+"x".repeat(7000)])assert.equal(authReturn(unsafe),"/");
+
+assert.equal(authReturn('/submissions.html'),'/submissions.html');

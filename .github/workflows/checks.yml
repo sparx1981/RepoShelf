@@ -53,18 +53,20 @@ jobs:
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610030004_account_forks.sql
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610030005_bookmarks_and_legal.sql
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610030006_promotions.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610030007_repository_submissions.sql
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-legal.sql
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-forks.sql
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-permissions.sql
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-visitors.sql
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-roles.sql
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-promotions.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-submissions.sql
       - name: Install browser
         run: |
           npm install --no-save --package-lock=false playwright@1.56.1
           npx playwright install --with-deps chromium
       - name: Verify catalog search, sources, tracking, and responsive layout
-        run: node scripts/verify-ui.mjs && node scripts/verify-accounts-ui.mjs && node scripts/verify-legal-ui.mjs && node scripts/verify-promotions-ui.mjs
+        run: node scripts/verify-ui.mjs && node scripts/verify-accounts-ui.mjs && node scripts/verify-legal-ui.mjs && node scripts/verify-promotions-ui.mjs && node scripts/verify-submissions-ui.mjs
       - name: Verify deployed agent routes
         if: github.event_name == 'push'
         run: node scripts/verify-deployed-api.mjs
@@ -87,4 +89,5 @@ jobs:
             promotions-admin-mobile.png
             promotions-owner-mobile.png
             sponsored-admin-mobile.png
+            submissions-mobile.png
           retention-days: 3
