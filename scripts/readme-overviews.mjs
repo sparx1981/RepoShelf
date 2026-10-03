@@ -115,7 +115,7 @@ export async function readOverviewReadme(repo,{fetcher=fetch}={}) {
   const branch = space ? 'main' : encodeURIComponent(repo.branch || 'main');
   const raw = space ? `https://huggingface.co/spaces/${repo.spaceId}/raw/main/` : `https://raw.githubusercontent.com/${repo.full}/${branch}/`;
   const source = space ? `https://huggingface.co/spaces/${repo.spaceId}/blob/main/` : `https://github.com/${repo.full}/blob/${branch}/`;
-  for (const filename of ['README.md','readme.md','README.MD']) {
+  for (const filename of ['README.md','readme.md','README.MD','README.rst','readme.rst','README','README.txt','README.markdown']) {
     const response = await fetcher(raw+filename,{signal:AbortSignal.timeout(10000)});
     if (response.status === 404) continue;
     if (!response.ok) throw Error(`README HTTP ${response.status}`);
