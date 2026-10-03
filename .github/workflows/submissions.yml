@@ -8,11 +8,41 @@ on:
     paths: ['scripts/import-submissions.mjs', '.github/workflows/submissions.yml']
 permissions:
   contents: write
-concurrency:
-  group: reposhelf-catalog
-  cancel-in-progress: false
+  actions: read
 jobs:
+  readiness:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    outputs:
+      ready: ${{ steps.check.outputs.ready }}
+    steps:
+      - name: Check configuration and catalogue availability
+        id: check
+        env:
+          REPOSHELF_SUBMISSION_SYNC_KEY: ${{ secrets.REPOSHELF_SUBMISSION_SYNC_KEY }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          node --input-type=module <<'JS'
+          import {appendFileSync} from 'node:fs';
+          let ready=false;
+          if((process.env.REPOSHELF_SUBMISSION_SYNC_KEY||'').length>=32){
+            try{
+              const response=await fetch('https://api.github.com/repos/sparx1981/RepoShelf/actions/workflows/catalog.yml/runs?per_page=30',{headers:{Accept:'application/vnd.github+json',Authorization:'Bearer '+process.env.GITHUB_TOKEN},signal:AbortSignal.timeout(10000)});
+              if(!response.ok)throw Error('History unavailable');
+              const runs=(await response.json()).workflow_runs;
+              if(!Array.isArray(runs))throw Error('Invalid history');
+              ready=!runs.some(run=>run.status!=='completed');
+              console.log(ready?'Submission scanner ready.':'Catalogue refresh active or queued; submissions remain queued for a later scan.');
+            }catch{console.log('Catalogue availability could not be checked; submissions retained for retry.')}
+          }else console.log('Submission scan awaits configuration; catalogue queue left untouched.');
+          appendFileSync(process.env.GITHUB_OUTPUT,'ready='+ready+'\n');
+          JS
   scan:
+    needs: readiness
+    if: needs.readiness.outputs.ready == 'true'
+    concurrency:
+      group: reposhelf-catalog
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     timeout-minutes: 25
     env:
