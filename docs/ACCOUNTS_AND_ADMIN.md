@@ -128,3 +128,5 @@ Sync reports now include **With demo page**. This excludes unavailable repositor
 All outgoing web links require verified GitHub sign-in, including README, licence, demo, repository, fork, Hugging Face, community discussion and documentation links. Links use the authenticated `/api/open` redirect, including new tabs and copied links. Signing in resumes the selected destination; internal browsing and legal pages stay accessible.
 
 Free repository submissions are available from the signed-in account menu. See [SUBMISSIONS.md](SUBMISSIONS.md) for migration 7 and worker activation. Paid promotion is a separate feature.
+
+The profile menu groups My collection and My submissions under Your projects, and Privacy preferences and Sign out under Account. Administrators also see a role badge, My promotions (test), and one Admin dashboard link. Storefront editing, analytics, users/roles, sync logs, promotion reviews and setup Help are accessed from that dashboard. Fork checks, last scan status and legacy browser-like imports are in My collection; fork checks appear in its Forks tab.
