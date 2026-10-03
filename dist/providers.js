@@ -1,0 +1,19 @@
+(function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory();else root.RepoProviders=factory()})(globalThis,function(){
+'use strict';
+const validId=id=>typeof id==='string'&&/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(id);
+const isSpace=r=>r.source==='huggingface';
+function githubFull(r){return isSpace(r)?(validId(r.githubFull)?r.githubFull:null):(validId(r.full)?r.full:null)}
+function repositoryUrl(r){return isSpace(r)?`https://huggingface.co/spaces/${r.spaceId}`:`https://github.com/${r.full}`}
+function action(r){const full=githubFull(r);return full?{url:`https://github.com/${full}/fork`,label:'Fork on GitHub',short:'⑂ Fork'}:{url:`${repositoryUrl(r)}?duplicate=true`,label:'Duplicate on Hugging Face',short:'Duplicate ↗'}}
+function matchesSource(r,source){return source==='all'||(source==='huggingface'?(isSpace(r)||Boolean(r.spaces?.length)):!isSpace(r))}
+function normalizeSpace(data,prior={},now=Date.now()){
+const id=data.id||data.name;if(!validId(id)||typeof data.private!=='boolean')throw Error('Invalid Space response');const at=new Date(now).toISOString(),card=data.cardData||data.carddata||{},runtime=data.runtime?.stage;
+// Only an explicitly runnable public Space is offered as a demo. Sleeping Spaces can wake on visit.
+const demo=!data.private&&!data.gated&&!data.disabled&&['RUNNING','SLEEPING'].includes(runtime)?`https://huggingface.co/spaces/${id}`:null;
+const clean={...prior};for(const key of ['checkError','nextCheckAt','unavailableSince','unavailableReason'])delete clean[key];
+return {...clean,source:'huggingface',full:`hf:${id}`,spaceId:id,name:String(card.title||id.split('/')[1]),description:String(card.short_description||card.description||prior.description||'An interactive AI application on Hugging Face Spaces.'),category:'AI & machine learning',language:card.sdk==='gradio'||card.sdk==='streamlit'?'Python':card.sdk==='static'?'HTML':null,topics:Array.isArray(data.tags)?data.tags:[],technologies:['gradio','streamlit'].includes(card.sdk)?['Python']:[],likes:Math.max(0,Number(data.likes)||0),created:data.createdAt||prior.created,updated:data.lastModified||prior.updated,license:card.license||prior.license||null,runtime:runtime||'UNKNOWN',demo,availability:data.private?'unavailable':'available',...(data.private?{unavailableReason:'not_public',unavailableSince:prior.unavailableSince||at}:{}),lastCheckedAt:at,lastAttemptAt:at,...(!data.private?{lastAvailableAt:at}:{}),color:'#3c3250',ink:'#e4d4ff',symbol:card.emoji||'✦'}
+}
+function mergeCatalog(github,spaces){const map=new Map(github.map(r=>[r.full.toLowerCase(),{...r,spaces:[]}]));const standalone=[];for(const space of spaces){if(space.availability==='unavailable') {standalone.push(space);continue}const repo=space.githubFull&&map.get(space.githubFull.toLowerCase());if(repo){repo.spaces.push({id:space.spaceId,url:repositoryUrl(space),demo:space.demo});if(!repo.demo&&space.demo&&repo.availability!=='unavailable'){repo.demo=space.demo;repo.demoSource='huggingface'}}else standalone.push(space)}return [...map.values(),...standalone]}
+function popular(repos){const groups=new Map();for(const r of repos){const key=isSpace(r)?'huggingface':'github';if(!groups.has(key))groups.set(key,[]);groups.get(key).push(r)}const raw=r=>isSpace(r)?Math.log1p(r.likes||0):.7*Math.log1p(r.stars||0)+.3*Math.log1p(r.forks||0);if(groups.size<2)return [...repos].sort((a,b)=>raw(b)-raw(a));const ranks=new Map();for(const group of groups.values()){const scores=group.map(raw).sort((a,b)=>a-b);for(const r of group){const lo=scores.indexOf(raw(r)),hi=scores.lastIndexOf(raw(r));ranks.set(r,(lo+hi+1)/(2*scores.length))}}return [...repos].sort((a,b)=>ranks.get(b)-ranks.get(a)||a.full.localeCompare(b.full))}
+return {validId,isSpace,githubFull,repositoryUrl,action,matchesSource,normalizeSpace,mergeCatalog,popular};
+});

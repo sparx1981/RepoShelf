@@ -12,6 +12,11 @@ on:
       - 'scripts/capture-previews.mjs'
       - 'dist/storefront.js'
       - 'dist/discovery.js'
+      - 'dist/providers.js'
+      - 'scripts/import-sources.mjs'
+      - 'scripts/source-imports.mjs'
+      - 'scripts/verify-ui.mjs'
+      - 'sources.config.json'
       - '.github/workflows/catalog.yml'
 permissions:
   contents: write
@@ -29,11 +34,20 @@ jobs:
           node-version: '22'
       - uses: actions/cache@v4
         with:
-          path: .catalog-cache.json
+          path: |
+            .catalog-cache.json
+            .sources-cache.json
           key: demo-catalog-${{ github.run_id }}
           restore-keys: demo-catalog-
       - name: Validate catalog logic
         run: npm test && npm run build
+      - name: Import Hugging Face Spaces and curated lists
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          SPACE_IMPORT_BATCH: '60'
+          SPACE_REVALIDATE_BATCH: '100'
+          CURATED_IMPORT_BATCH: '60'
+        run: node scripts/import-sources.mjs
       - name: Find public repository demos
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -59,7 +73,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add dist/catalog.json
+          git add dist/catalog.json dist/spaces.json
           if [ -d dist/previews ]; then git add dist/previews; fi
           if git diff --cached --quiet; then exit 0; fi
           git commit -m "Refresh public demo catalog"

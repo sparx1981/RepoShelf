@@ -67,3 +67,15 @@ Each refresh enriches up to 80 projects with release dates and dependency eviden
 Detail views show the gallery, technologies, license, latest release, code freshness, and availability-check dates. Try demo and Fork on GitHub are separate from Track this fork. Manual tracking does not claim that a fork has been verified.
 
 The workflow installs a pinned Playwright version and runs browser interaction checks at desktop/mobile widths before publishing preview assets. Measured trends will be empty until enough history exists. Releases and screenshots fill in progressively as background batches process the catalog; missing data is never invented.
+
+### Multiple discovery sources
+
+The catalog refresh now imports public Hugging Face Spaces and candidates from the allowlisted repositories in `sources.config.json`. Curated list links are discovery evidence, not demo evidence: each candidate’s GitHub metadata and README are checked independently. List provenance appears in project details. Import cursors are cached so scheduled batches progress through the lists instead of repeating their first entries.
+
+Spaces live in `dist/spaces.json`, with separate namespaced identities, likes, runtime, and availability check dates. Public RUNNING or SLEEPING Spaces qualify for the live-demo filter; gated, disabled, or broken builds do not. Oldest due entries are rechecked daily in bounded batches; inaccessible entries are hidden and temporary errors retain existing data for a later retry. The paginated Spaces import accumulates entries across refreshes. Public browsing requires no Hugging Face token.
+
+Explicit source-code links are verified against GitHub before they enable GitHub forking. A Space linked to an already indexed GitHub repository merges into that listing and can supply a missing demo. Standalone Spaces offer duplication on Hugging Face, which requires a Hugging Face account. Collection saves are local browser records; only public GitHub forks can be verified through account sync. Neither provider’s licenses automatically grant unrestricted reuse.
+
+Source filters include All sources, GitHub, Hugging Face Spaces, and GitHub fork available. GitHub popularity uses weighted logarithmic stars and forks; Spaces use likes. Mixed-source Popular ordering uses within-source percentiles to avoid equating a like with a GitHub star. Trending and recent releases retain GitHub-specific evidence.
+
+Search, filters, sorting, and Show more operate on saved catalogs and never automatically call GitHub. The separate “Search beyond the catalog on GitHub” button opts into live discovery. Existing matches remain visible throughout a request and after a rate limit or network error. Changing the query invalidates any pending response.
