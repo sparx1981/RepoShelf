@@ -117,3 +117,8 @@ After confirming the actual legal identity and applying migration 5, set these p
 Do not enter GitHub/Supabase credentials as contact details. These settings are public. With all three valid values, the documents become active and signed-in users review the current version before account actions or opening demos/repositories. Terms agreement and Privacy acknowledgment are explicit; optional analytics are unchecked and separate. Supabase records the user ID, Terms/Privacy versions and server timestamp privately and idempotently. The server checks acceptance on protected actions; existing users must also review the active documents. A material version change requires updating `LEGAL_VERSION`, the SQL accepted-version constraint/function and document dates together, then applying a new migration before deployment. Acceptance alone does not create analytics consent.
 
 Withdrawal of optional analytics applies to the current browser immediately, clears its analytics identifiers and stops queued/scheduled events. DNT/GPC and administrators remain excluded. Earlier events retain the documented retention policy. Account deletion and privacy requests are currently handled manually through the configured contact address, including Supabase account data and the documented provider retention process.
+
+
+## Sponsored promotion test programme
+
+See [promotion setup](PROMOTIONS.md) for migration 6, Stripe test checkout/webhooks, hourly availability checks, owner requests and administrator approval. This uses a separate Sponsored ribbon and does not sell editorial placement. Real payments are disabled; test placements appear only to administrators.

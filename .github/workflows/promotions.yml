@@ -1,0 +1,24 @@
+name: Check promotion availability
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '43 * * * *'
+permissions:
+  contents: read
+concurrency:
+  group: reposhelf-promotions
+  cancel-in-progress: false
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Reconcile test payments and promotion availability
+        env:
+          REPOSHELF_PROMOTION_SYNC_KEY: ${{ secrets.REPOSHELF_PROMOTION_SYNC_KEY }}
+          REPOSHELF_PUBLIC_URL: https://reposhelf.vercel.app
+        run: node scripts/sync-promotions.mjs

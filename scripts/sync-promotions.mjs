@@ -1,0 +1,3 @@
+const key=process.env.REPOSHELF_PROMOTION_SYNC_KEY,origin=process.env.REPOSHELF_PUBLIC_URL||'https://reposhelf.vercel.app';
+if(!key||key.length<32){console.log('Promotion availability sync is awaiting configuration. No promotion data changed.');process.exit(0)}
+const res=await fetch(origin+'/api/promotions?action=sync',{method:'POST',headers:{Authorization:'Bearer '+key},signal:AbortSignal.timeout(29000)}),data=await res.json();if(!res.ok)throw Error(data.error?.message||'Promotion sync unavailable');console.log(`Promotion checks: ${data.checked} completed, ${data.failed} need retry, ${data.total} considered.`);if(data.failed)process.exitCode=1;
