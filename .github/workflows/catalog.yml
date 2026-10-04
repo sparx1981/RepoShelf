@@ -1,9 +1,14 @@
 name: Refresh demo catalog
+run-name: ${{ inputs.watchdog_recovery && 'Automatic catch-up sync' || 'Refresh demo catalog' }}
 on:
   workflow_dispatch:
     inputs:
       refresh_previews:
         description: Refresh demo health and screenshots now
+        type: boolean
+        default: false
+      watchdog_recovery:
+        description: Automatic catch-up requested by the sync watchdog
         type: boolean
         default: false
   schedule:
@@ -61,6 +66,8 @@ concurrency:
   cancel-in-progress: false
 jobs:
   refresh:
+    env:
+      WATCHDOG_RECOVERY: ${{ inputs.watchdog_recovery }}
     runs-on: ubuntu-latest
     timeout-minutes: 55
     steps:

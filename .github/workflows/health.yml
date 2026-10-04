@@ -1,7 +1,7 @@
 name: Monitor operational health
 on:
   schedule:
-    - cron: '43 * * * *'
+    - cron: '13,43 * * * *'
   workflow_dispatch:
   workflow_run:
     workflows: ['Refresh demo catalog']
@@ -9,10 +9,10 @@ on:
     branches: [main]
   push:
     branches: [main]
-    paths: ['scripts/monitor-health.mjs', '.github/workflows/health.yml']
+    paths: ['scripts/monitor-health.mjs', 'scripts/sync-watchdog.mjs', '.github/workflows/health.yml']
 permissions:
   contents: read
-  actions: read
+  actions: write
   issues: write
 concurrency:
   group: reposhelf-operational-health
@@ -29,7 +29,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Recover overdue catalogue maintenance
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/sync-watchdog.mjs
       - name: Check production and catalogue maintenance
+        if: always()
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/monitor-health.mjs
