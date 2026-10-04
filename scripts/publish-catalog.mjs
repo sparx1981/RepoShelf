@@ -1,5 +1,8 @@
+import {pathToFileURL} from 'node:url';
+import {generateBrowseIndex} from '../lib/browse-index.mjs';
 import {execFileSync} from 'node:child_process';import {existsSync} from 'node:fs';
 const git=(...args)=>execFileSync('git',args,{encoding:'utf8',stdio:['ignore','pipe','pipe']});
+await generateBrowseIndex(pathToFileURL(process.cwd()+'/'));
 git('config','user.name','github-actions[bot]');git('config','user.email','41898282+github-actions[bot]@users.noreply.github.com');
 const paths=['dist/catalog.json','dist/spaces.json','dist/community.json','dist/growth.json','data','dist/previews'].filter(existsSync);git('add','--',...paths);
 if(!git('diff','--cached','--name-only').trim()){console.log('Catalog publication: no generated changes.');process.exit(0)}

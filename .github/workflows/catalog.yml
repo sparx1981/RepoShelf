@@ -11,6 +11,9 @@ on:
   push:
     branches: [main]
     paths:
+      - 'scripts/build-browse-index.mjs'
+      - 'lib/browse-index.mjs'
+      - 'dist/picks.js'
       - 'scripts/index-catalog.mjs'
       - 'scripts/catalog-health.mjs'
       - 'scripts/enrich-catalog.mjs'
