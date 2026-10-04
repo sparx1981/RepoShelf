@@ -3,6 +3,7 @@ let last='Deployment not ready';
 for(let attempt=0;attempt<24;attempt++){
 try{
 const editorialModule=await fetch(base+'/editorial.js',{signal:AbortSignal.timeout(10000)});if(!editorialModule.ok||!(await editorialModule.text()).includes('Daily shuffle (UTC)'))throw Error('Storefront update is not deployed yet');
+const editorialResponse=await fetch(base+'/api/editorial',{signal:AbortSignal.timeout(10000)}),editorial=await editorialResponse.json();if(!editorialResponse.ok||editorial.builtinSetupRequired!==false)throw Error('Production migration 8 is not visible');console.log('Production migration 8 is visible; '+editorial.rows.filter(r=>r.builtin_key).length+' built-in rows are published.');
 const guide=await fetch(base+'/agent-guide.html',{signal:AbortSignal.timeout(10000)});
 const response=await fetch(base+'/api/v1/catalog',{signal:AbortSignal.timeout(10000)});
 const body=await response.json();

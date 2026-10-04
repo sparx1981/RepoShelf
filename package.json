@@ -7,7 +7,7 @@
     "build": "node scripts/check.mjs",
     "start": "node scripts/serve.mjs",
     "check": "node scripts/check.mjs",
-    "test": "node tests/editorial-qa.mjs && node tests/analytics-client.mjs && node tests/discovery.cjs && node tests/catalog-health.mjs && node tests/catalog-pipeline.mjs && node tests/storefront.cjs && node tests/sources.mjs && node tests/overviews.mjs && node tests/quality.mjs && node tests/community.mjs && node tests/api.mjs && node tests/accounts.mjs && node tests/admin-users.mjs && node tests/forks.mjs && node tests/sync-log.mjs && node tests/browser-cycle.mjs && node tests/sync-reliability.mjs && node tests/legal.mjs && node tests/promotions.mjs && node tests/submissions.mjs",
+    "test": "node tests/journey-client.mjs && node tests/discovery-preferences.mjs && node tests/sync-health.mjs && node tests/editorial-qa.mjs && node tests/analytics-client.mjs && node tests/discovery.cjs && node tests/catalog-health.mjs && node tests/catalog-pipeline.mjs && node tests/storefront.cjs && node tests/sources.mjs && node tests/overviews.mjs && node tests/quality.mjs && node tests/community.mjs && node tests/api.mjs && node tests/accounts.mjs && node tests/admin-users.mjs && node tests/forks.mjs && node tests/sync-log.mjs && node tests/browser-cycle.mjs && node tests/sync-reliability.mjs && node tests/legal.mjs && node tests/promotions.mjs && node tests/submissions.mjs",
     "test:mcp": "node tests/mcp.mjs",
     "mcp": "node scripts/mcp-server.mjs"
   },

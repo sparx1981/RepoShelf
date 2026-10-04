@@ -135,3 +135,12 @@ The profile menu groups My collection and My submissions under Your projects, an
 ## Built-in storefront rows and random ordering
 
 Apply [migration 8](../supabase/migrations/202610040008_editorial_discovery_qa.sql) after migrations 1–7. Existing projects do not need to rerun earlier migrations. Refresh Administration to edit the spotlight, editorial selections, community/release/trending rows and default category shelves. Saving a built-in row preserves the category layout; custom shelves can still replace categories using the existing setting. Random each page load provides a stable order while browsing, while Daily shuffle shares an order for the current UTC date. Migration 8 also aligns all selected-date analytics with UTC calendar days.
+
+
+## Private discovery history
+
+Apply [migration 9](../supabase/migrations/202610040009_discovery_history.sql) once after migration 8. My collection → Recently viewed contains an optional **Remember viewed projects** setting. Recording is off by default, independent of analytics consent. Project IDs, small listing snapshots and server-owned timestamps are private to the signed-in account and sync across devices. The recently viewed list shows the last 90 days; old records are pruned when a new view is recorded. Clearing history affects all devices and preserves likes and forks. Turning history off stops future recording and disables hide-seen.
+
+**Hide already seen** lives in More filters and affects discovery only. Seen identity is case-insensitive. There is paginated loading, with no fixed collection size cap. Before migration 9, existing likes/forks work and the history feature explains that account setup is pending. Sign-out/account switches clear private history immediately and reject late responses.
+
+The admin Sync log now provides in-app failure/overdue warnings and guided recovery links. It refreshes once per minute while the first log page is visible. Alerts distinguish pipeline/publication failures from recoverable source errors, and avoid claiming saved reports prove current live workflow status. Email/push delivery is not configured.
