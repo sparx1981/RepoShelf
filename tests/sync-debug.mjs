@@ -1,0 +1,42 @@
+import assert from 'node:assert/strict';
+import {mkdtemp,mkdir,writeFile,readFile,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {pathToFileURL} from 'node:url';
+import {probeMetrics,recordStageMetrics,readStageMetrics} from '../scripts/sync-metrics.mjs';
+import {qualityPlan} from '../scripts/catalog-priority.mjs';
+import {run} from '../scripts/sync-history.mjs';
+import {diagnoseSync} from '../lib/sync-diagnostics.mjs';
+
+const telemetry=probeMetrics({due:10,selected:4,limit:4});
+telemetry.record('team/one',{kind:'working'},true);
+telemetry.record('team/two',{kind:'temporary',reason:'probe_timeout'},false);
+telemetry.record('team/three',{kind:'unavailable',reason:'http_404'},false);
+telemetry.record('team/four',{kind:'working'},false);
+const summary=telemetry.summary(1000,13000);
+assert.equal(summary.attempted,4);assert.equal(summary.captured,1);
+assert.equal(summary.temporaryFailures,1);assert.equal(summary.unavailable,1);
+assert.equal(summary.remainingDue,6);assert.equal(summary.durationMs,12000);
+assert.deepEqual(summary.reasons,{probe_timeout:1,http_404:1,no_screenshot:1});
+const health=probeMetrics();health.record('team/good',{kind:'working'});assert.deepEqual(health.metrics.reasons,{});
+for(let i=0;i<20;i++)health.record('team/'+i,{kind:'temporary',reason:'https://unsafe.example/?secret=x'});
+assert.equal(health.metrics.examples.length,12);assert(!JSON.stringify(health.metrics).includes('secret'));
+const project={full:'team/app',demo:'https://demo.org',availability:'available'};
+const plan=qualityPlan([project]);assert.equal(plan.ready,false);assert.equal(plan.pending.screenshots,1);assert.equal(plan.targets.demoChecks,1);assert(plan.reasons.includes('Demo validation is below 95%.'));
+const dir=await mkdtemp(tmpdir()+'/reposhelf-debug-'),root=pathToFileURL(dir+'/');
+try{
+ await mkdir(new URL('dist/',root));await writeFile(new URL('dist/catalog.json',root),JSON.stringify({repositories:[project]}));await writeFile(new URL('dist/spaces.json',root),'{"repositories":[]}');
+ await run('start',root);await recordStageMetrics('priority',plan,root);await recordStageMetrics('browser_cycle',{due:false,reason:'Window already completed',nextDueAt:'2026-10-05T00:00:00Z'},root);
+ await recordStageMetrics('previews',{...summary,complete:false},root);
+ assert.equal((await readStageMetrics('previews',root)).captured,1);
+ await run('finish',root,{GITHUB_RUN_ID:'456',SYNC_STEP_RESULTS:JSON.stringify({priority:{outcome:'success'},previews:{outcome:'failure'}})});
+ const report=JSON.parse(await readFile(new URL('data/sync-runs/456.json',root),'utf8'));
+ assert.equal(report.schema,4);assert.equal(report.work.discovery.ready,false);assert.equal(report.work.coverageAfter.pending.screenshots,1);
+ const preview=report.stages.find(s=>s.id==='previews');assert.equal(preview.checked,4);assert.equal(preview.details.captured,1);assert.equal(preview.temporaryFailures,1);assert.equal(preview.details.complete,false);
+ const success={status:'completed',conclusion:'success'};
+ let diagnosis=diagnoseSync(success,undefined,{...report,stages:[]});
+ assert.equal(diagnosis.kind,'no_changes');assert(diagnosis.message.includes('New discovery was paused'));assert(diagnosis.message.includes('browser window already completed'));
+ diagnosis=diagnoseSync(success,undefined,{...report,phase:'cleanup',stages:[]});assert.equal(diagnosis.kind,'checkpoint');
+ diagnosis=diagnoseSync({status:'in_progress'},undefined,{...report,phase:'cleanup'});assert(diagnosis.message.includes('not the finished run'));
+ assert.equal(await readStageMetrics('health',root),null);
+}finally{await rm(dir,{recursive:true,force:true})}
+console.log('PASS: durable sync work metrics, coverage gates, partial screenshot outcomes, bounded failure samples and honest zero-change/checkpoint explanations.');

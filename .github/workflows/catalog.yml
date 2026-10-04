@@ -19,6 +19,7 @@ on:
       - 'lib/listing-policy.mjs'
       - 'scripts/sync-listing-controls.mjs'
       - 'scripts/catalog-priority.mjs'
+      - 'scripts/sync-metrics.mjs'
       - 'scripts/demo-only-policy.mjs'
       - 'scripts/prune-no-demo.mjs'
       - 'scripts/compress-previews.mjs'
@@ -287,6 +288,7 @@ jobs:
           include-hidden-files: true
           path: |
             .sync-logs/
+            .sync-metrics/
             .sync-before.json
             dist/catalog.json
             dist/spaces.json
