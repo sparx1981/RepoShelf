@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
-import {recordDemoResult,demoCandidates,applyDemoReports,publicIP,publicUrlGuard,inspectDemo,DEMO_RETRY_INTERVAL} from '../scripts/demo-health.mjs';
+import {recordDemoResult,demoCandidates,applyDemoReports,publicIP,publicUrlGuard,inspectDemo,DEMO_RETRY_INTERVAL,DEMO_CONFIRM_INTERVAL} from '../scripts/demo-health.mjs';
 import {extractProjectInsights} from '../scripts/project-insights.mjs';
 import {generateAIOverview,validateAIOverview,aiFingerprint} from '../scripts/ai-overviews.mjs';
 const Q=createRequire(import.meta.url)('../dist/quality.js');
@@ -14,10 +14,10 @@ r=recordDemoResult(r,{kind:'unavailable',reason:'http_404'},now+DEMO_RETRY_INTER
 assert.equal(r.demoHealth.status,'review');assert(Q.hasLiveDemo(r));
 r=recordDemoResult(r,{kind:'unavailable',reason:'http_404'},now+DEMO_RETRY_INTERVAL+1000);
 assert.equal(r.demoHealth.failureCount,1,'Same-run screenshot failures cannot count twice');
-r=recordDemoResult(r,{kind:'unavailable',reason:'http_410'},now+2*DEMO_RETRY_INTERVAL+1000);
+r=recordDemoResult(r,{kind:'unavailable',reason:'http_410'},now+DEMO_RETRY_INTERVAL+DEMO_CONFIRM_INTERVAL+1000);
 assert.equal(r.demoHealth.status,'unavailable');assert(!Q.hasLiveDemo(r));
 const unavailable=r.demoHealth.checkedAt;
-r=recordDemoResult(r,{kind:'temporary'},now+3*DEMO_RETRY_INTERVAL);
+r=recordDemoResult(r,{kind:'temporary'},now+DEMO_CONFIRM_INTERVAL+3*DEMO_RETRY_INTERVAL);
 assert.equal(r.demoHealth.checkedAt,unavailable);assert(!Q.hasLiveDemo(r));
 assert(Q.hasLiveDemo({...r,demo:'https://new.example.org'}),'Changed demo URL ignores old health');
 r=recordDemoResult(r,{kind:'working'},now+4*DEMO_RETRY_INTERVAL);

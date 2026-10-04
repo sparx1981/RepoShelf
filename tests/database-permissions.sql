@@ -15,7 +15,7 @@ select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000002'
 do $$begin
 if public.reposhelf_is_admin() then raise exception 'Member became admin';end if;
 if (select count(*) from public.user_likes)<>0 then raise exception 'Another user likes leaked';end if;
-if (select count(*) from public.editorial_ribbons)<>1 then raise exception 'Draft leaked to member';end if;
+if (select count(*) from public.editorial_ribbons where builtin_key is null)<>1 then raise exception 'Draft leaked to member';end if;
 begin insert into public.user_likes(user_id,project_id) values('00000000-0000-0000-0000-000000000001','team/other');raise exception 'Cross-user insert was allowed';exception when insufficient_privilege then null;end;
 begin insert into public.reposhelf_admins(user_id) values(auth.uid());raise exception 'Self-promotion was allowed';exception when insufficient_privilege then null;end;
 begin perform public.reposhelf_set_editorial(false);raise exception 'Member changed editorial settings';exception when insufficient_privilege then null;end;
@@ -29,7 +29,7 @@ do $$begin if (select count(*) from public.user_likes)<>0 then raise exception '
 set role anon;
 select set_config('request.jwt.claim.sub','',false);
 do $$begin
-if (select count(*) from public.editorial_ribbons)<>1 then raise exception 'Anonymous draft visibility incorrect';end if;
+if (select count(*) from public.editorial_ribbons where builtin_key is null)<>1 then raise exception 'Anonymous draft visibility incorrect';end if;
 begin perform count(*) from public.user_likes;raise exception 'Anonymous likes read allowed';exception when insufficient_privilege then null;end;
 begin perform count(*) from public.analytics_daily;raise exception 'Anonymous analytics allowed';exception when insufficient_privilege then null;end;
 end$$;

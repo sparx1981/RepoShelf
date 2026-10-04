@@ -22,6 +22,7 @@ on:
       - 'scripts/sync-history.mjs'
       - 'scripts/browser-cycle.mjs'
       - 'scripts/capture-previews.mjs'
+      - 'scripts/preview-schedule.mjs'
       - 'scripts/demo-health.mjs'
       - 'scripts/check-demo-health.mjs'
       - 'scripts/demo-probe.mjs'
@@ -158,7 +159,7 @@ jobs:
         if: always() && steps.checkpoint_report.outcome == 'success'
         id: checkpoint_publish
         run: node scripts/publish-catalog.mjs
-      - name: Check six-hour browser refresh cycle
+      - name: Check two-hour browser refresh cycle
         id: browser_cycle
         if: always() && steps.baseline.outcome == 'success'
         env:

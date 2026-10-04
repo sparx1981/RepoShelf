@@ -22,3 +22,5 @@ console.log('PASS: PKCE sign-in binding, HttpOnly cookies, verified/renewed sess
 const outgoing="/api/open?url="+encodeURIComponent("https://github.com/team/app/blob/main/README.md?raw=1#usage");assert.equal(authReturn(outgoing),outgoing);assert.equal(authReturn("/admin.html"),"/admin.html");for(const unsafe of ["https://evil.test/api/open?url=https://github.com","//evil.test/api/open?url=https://github.com","/api/open?url=javascript:alert(1)","/api/open?url=https://user:password@example.com","/api/auth?action=start","/api/open?url="+"x".repeat(7000)])assert.equal(authReturn(unsafe),"/");
 
 assert.equal(authReturn('/submissions.html'),'/submissions.html');
+
+for(const headers of [{dnt:'1'},{'sec-gpc':'1'}]){const prior=calls.filter(c=>c.url.includes('reposhelf_ingest_events')).length;r=await run(analytics,'/api/analytics',{method:'POST',body,headers});assert.equal(r.data.accepted,false);assert.equal(calls.filter(c=>c.url.includes('reposhelf_ingest_events')).length,prior)}r=await run(analytics,'/api/analytics',{method:'POST',body,token:'owner',headers:{'user-agent':'Mozilla/5.0'}});assert.equal(r.data.accepted,false,'Admin activity excluded by server');
