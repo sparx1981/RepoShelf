@@ -16,7 +16,7 @@ if exists(select 1 from public.listing_reports) then raise exception 'Private re
 begin perform public.reposhelf_moderate_listing('team/app',0,'{"visibility":"excluded"}','Member attempt');raise exception 'Member moderation allowed';exception when insufficient_privilege then null;end;
 begin perform public.reposhelf_launch_analytics(30);raise exception 'Member funnel access allowed';exception when insufficient_privilege then null;end;
 end$$;
-select set_config('request.jwt.claim.sub','00000000-0000-0000-000000000001',false);
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
 do $$declare receipt public.listing_reports;c public.listing_controls;begin
 select * into receipt from public.listing_reports where project_id='team/app';if receipt.explanation<>'Private explanation' then raise exception 'Report changed';end if;
 c:=public.reposhelf_moderate_listing('team/app',0,'{"visibility":"excluded","description":"Editorial description","refresh":true}','Private admin note');if c.revision<>1 or c.refresh_requested_at is null then raise exception 'Control not saved';end if;
