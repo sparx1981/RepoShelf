@@ -100,3 +100,14 @@ main:focus{outline:none}
 .more-filters summary[data-active="true"]{outline:2px solid Highlight}
 #toast{border:1px solid CanvasText}
 }
+
+/* Reserve space while the first catalogue response is pending so nothing below jumps when it arrives. */
+.hero-track:empty{min-height:417px;border:1px solid var(--line-strong);border-radius:14px;background:var(--surface)}
+.loading-panel{min-height:70vh}
+@media(max-width:1050px){.hero-track:empty{min-height:310px}}
+@media(max-width:760px){.hero-track:empty{min-height:448px;border-radius:10px}}
+
+/* Ribbons below the first two render only when they approach the viewport. Padding keeps focus rings from being clipped by paint containment. */
+#ribbons>.ribbon:nth-child(n+3){content-visibility:auto;contain-intrinsic-size:auto 440px}
+.ribbon{padding:8px 8px 0;margin:22px -8px 40px}
+@media(max-width:760px){.ribbon{margin:18px -8px 32px}}
