@@ -1,11 +1,11 @@
 {
   "schema": 3,
-  "phase": "cleanup",
+  "phase": "discovery",
   "publication": "pending",
   "id": "37199150563",
   "attempt": 1,
   "startedAt": "2026-10-04T11:33:48.585Z",
-  "recordedAt": "2026-10-04T11:34:11.540Z",
+  "recordedAt": "2026-10-04T11:35:19.374Z",
   "trigger": "push",
   "status": "success",
   "counts": {
@@ -19,6 +19,16 @@
   "temporaryFailures": 0,
   "stages": [
     {
+      "id": "cleanup_publish",
+      "name": "Demo-only cleanup publication",
+      "status": "success",
+      "temporaryFailures": 0,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
       "id": "cleanup",
       "name": "Demo-only library cleanup",
       "status": "success",
@@ -31,6 +41,76 @@
     {
       "id": "compression",
       "name": "Existing screenshot compression",
+      "status": "success",
+      "temporaryFailures": 0,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "sources",
+      "name": "Spaces and curated lists",
+      "status": "success",
+      "temporaryFailures": 0,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "community",
+      "name": "Community discoveries",
+      "status": "success",
+      "temporaryFailures": 0,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "catalog",
+      "name": "GitHub discovery and revalidation",
+      "status": "success",
+      "temporaryFailures": 0,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "enrich",
+      "name": "Releases and technologies",
+      "status": "success",
+      "temporaryFailures": 0,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "overviews",
+      "name": "README overviews",
+      "status": "success",
+      "temporaryFailures": 0,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "context",
+      "name": "Supporting documents",
+      "status": "success",
+      "temporaryFailures": 0,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "ai",
+      "name": "Optional AI overviews",
       "status": "success",
       "temporaryFailures": 0,
       "checked": 0,
