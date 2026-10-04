@@ -1,7 +1,8 @@
 import {spawn} from 'node:child_process';
 import assert from 'node:assert/strict';
 import {chromium} from 'playwright';
-const port=4397,base=`http://127.0.0.1:${port}`,server=spawn(process.execPath,['scripts/serve.mjs'],{env:{...process.env,PORT:String(port)},stdio:['ignore','pipe','inherit']});let browser;
+const port=4397,base=`http://127.0.0.1:${port}`;
+const launchServer=()=>spawn(process.execPath,['scripts/serve.mjs'],{env:{...process.env,PORT:String(port)},stdio:['ignore','pipe','inherit']});let server=launchServer(),browser;
 try{
  await new Promise((resolve,reject)=>{server.stdout.once('data',resolve);server.once('error',reject)});
  browser=await chromium.launch();const context=await browser.newContext({viewport:{width:390,height:844}}),page=await context.newPage();
@@ -14,7 +15,9 @@ try{
  assert.equal(await page.evaluate(()=>navigator.serviceWorker.controller.scriptURL),base+'/sw.js');
  await page.evaluate(()=>fetch('/api/auth').then(r=>r.text()));
  const paths=await page.evaluate(async()=>{const cache=await caches.open('reposhelf-install-v1');return (await cache.keys()).map(r=>new URL(r.url).pathname)});assert.deepEqual(paths.sort(),['/offline.html','/icons/icon-192.png','/icons/icon-512.png','/icons/maskable-512.png','/icons/apple-touch-icon.png'].sort());
- await context.setOffline(true);await page.goto(base+'/?project=team%2Fexample');assert.match(await page.locator('h1').textContent(),/Your library/);assert.equal(await page.locator('a').getAttribute('href'),'');await context.setOffline(false);await page.goto(base+'/offline.html');
+ // Chromium's emulated offline mode does not reliably affect a worker's network target.
+ // Stop the real origin to prove the fallback works on an actual failed fetch.
+ await new Promise(resolve=>{server.once('exit',resolve);server.kill('SIGTERM')});await page.goto(base+'/?project=team%2Fexample');assert.match(await page.locator('h1').textContent(),/Your library/);assert.equal(await page.locator('a').getAttribute('href'),'');server=launchServer();await new Promise((resolve,reject)=>{server.stdout.once('data',resolve);server.once('error',reject)});await page.goto(base+'/offline.html');
  // Use the real storefront markup and install script in isolation for platform UI checks.
  const html=await (await page.request.get(base+'/')).text();assert.match(html,/apple-touch-icon/);assert.match(html,/rel="manifest"/);
  await page.setContent(html.replace(/<script\b[^>]*>[\s\S]*?<\/script>/g,''));await page.addScriptTag({url:base+'/pwa.js'});
