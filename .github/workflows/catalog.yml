@@ -11,6 +11,9 @@ on:
   push:
     branches: [main]
     paths:
+      - 'scripts/demo-only-policy.mjs'
+      - 'scripts/prune-no-demo.mjs'
+      - 'scripts/compress-previews.mjs'
       - 'scripts/build-browse-index.mjs'
       - 'lib/browse-index.mjs'
       - 'dist/picks.js'
@@ -80,6 +83,27 @@ jobs:
       - name: Validate catalog logic
         id: validate
         run: npm test && npm run test:mcp && npm run build
+      - name: Remove saved projects without demo links
+        id: cleanup
+        run: |
+          mkdir -p .sync-logs
+          set -o pipefail
+          node scripts/prune-no-demo.mjs 2>&1 | tee .sync-logs/cleanup.log
+      - name: Compress existing preview images
+        id: compression
+        run: |
+          mkdir -p .sync-logs
+          set -o pipefail
+          node scripts/compress-previews.mjs 2>&1 | tee .sync-logs/compression.log
+      - name: Record demo-only cleanup
+        id: cleanup_report
+        env:
+          SYNC_STEP_RESULTS: ${{ toJSON(steps) }}
+          SYNC_REPORT_PHASE: cleanup
+        run: node scripts/sync-history.mjs finish
+      - name: Publish demo-only library and compressed previews
+        id: cleanup_publish
+        run: node scripts/publish-catalog.mjs
       - name: Import Hugging Face Spaces and curated lists
         id: sources
         env:
@@ -207,6 +231,10 @@ jobs:
           mkdir -p .sync-logs
           set -o pipefail
           node scripts/capture-previews.mjs 2>&1 | tee .sync-logs/previews.log
+      - name: Compress new and remaining previews
+        id: compression_final
+        if: always() && steps.previews.outcome == 'success'
+        run: node scripts/compress-previews.mjs
       - name: Record completed browser refresh cycle
         id: browser_complete
         if: always() && steps.health.outcome == 'success' && steps.previews.outcome == 'success'

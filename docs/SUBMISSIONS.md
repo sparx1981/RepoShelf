@@ -1,6 +1,6 @@
 # Free repository submissions
 
-Signed-in members open **Submit repository** from the account menu. Paste a public GitHub repository URL or `owner/repository`. This is free, supports repositories without demo links, and is separate from promotion. It neither verifies ownership nor guarantees placement. Existing submissions are reused rather than duplicated; private/deleted repositories are labelled unavailable, and temporary errors automatically retry.
+Signed-in members open **Submit repository** from the account menu. Paste a public GitHub repository URL or `owner/repository`. This is free, requires a public demo link in the README or repository homepage, and is separate from promotion. It neither verifies ownership nor guarantees placement. Existing submissions are reused rather than duplicated; private/deleted repositories are labelled unavailable, and temporary errors automatically retry.
 
 Requests and scan results live in Supabase and follow users across devices. Only public repository metadata, README snapshots and a generic source label are committed to the catalogue. Account IDs, queue records and lease tokens are never committed. New README data enters the existing agent API/MCP; scheduled enrichment and preview capture follow normally.
 

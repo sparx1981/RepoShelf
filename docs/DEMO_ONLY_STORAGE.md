@@ -1,0 +1,11 @@
+# Demo-only catalogue and screenshot storage
+
+All catalogue imports now require a usable public demo URL discovered from the README or repository homepage. Community posts alone do not qualify, and submissions without a demo are not published. Linked runnable Hugging Face Spaces qualify as demos for their GitHub source. Standalone Spaces remain supported when public and runnable.
+
+Existing records without demo URLs are removed from the published library. A broken or rate-limited demo remains saved for future checks; demo availability and repository availability determine whether it appears in browsing. Previously runnable Spaces retain their demo URLs while a runtime is unavailable, and can recover on revalidation. A README successfully checked with no remaining demo link removes that GitHub discovery entry; temporary fetch errors preserve its previous demo.
+
+Cleanup removes only orphaned SHA-keyed README/context files and generated JPEG previews, then rebuilding the browsing index removes obsolete project detail files. User likes, forks, private history, submission history, sync reports and Git commit history are retained. Historical growth can show a deliberate fall in records after cleanup.
+
+Screenshot compression uses JPEG at quality 60 with a maximum output width of 960px, strips metadata and retains the original if recompression would increase bytes. Each sync processes up to 100 existing screenshots, plus another batch after new captures. This is a work batch, not a total-library ceiling. A content-hash ledger prevents repeated compression of unchanged JPEGs. New browser captures also use quality 60. Decode/codec errors preserve original screenshots for a later retry.
+
+The workflow publishes cleanup and compressed previews before running longer discovery stages. `data/demo-only-cleanup.json` records deleted counts/bytes; `data/preview-storage.json` tracks optimized files. Admin sync logs include the cleanup, compression and publication stages. No Supabase migration is needed. Deleted current files reduce deployment storage; past copies remain in Git history.
