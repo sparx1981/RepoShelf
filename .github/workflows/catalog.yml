@@ -1,8 +1,13 @@
 name: Refresh demo catalog
 on:
   workflow_dispatch:
+    inputs:
+      refresh_previews:
+        description: Refresh demo health and screenshots now
+        type: boolean
+        default: false
   schedule:
-    - cron: '17 */6 * * *'
+    - cron: '17 */2 * * *'
   push:
     branches: [main]
     paths:
@@ -15,6 +20,7 @@ on:
       - 'scripts/enrich-agent-context.mjs'
       - 'scripts/record-growth.mjs'
       - 'scripts/sync-history.mjs'
+      - 'scripts/browser-cycle.mjs'
       - 'scripts/capture-previews.mjs'
       - 'scripts/demo-health.mjs'
       - 'scripts/check-demo-health.mjs'
@@ -152,7 +158,14 @@ jobs:
         if: always() && steps.checkpoint_report.outcome == 'success'
         id: checkpoint_publish
         run: node scripts/publish-catalog.mjs
+      - name: Check six-hour browser refresh cycle
+        id: browser_cycle
+        if: always() && steps.baseline.outcome == 'success'
+        env:
+          FORCE_BROWSER_REFRESH: ${{ github.event_name == 'workflow_dispatch' && inputs.refresh_previews }}
+        run: node scripts/browser-cycle.mjs decide
       - name: Install screenshot browser
+        if: always() && steps.browser_cycle.outputs.due == 'true'
         id: browser
         timeout-minutes: 5
         continue-on-error: true
@@ -190,6 +203,10 @@ jobs:
           mkdir -p .sync-logs
           set -o pipefail
           node scripts/capture-previews.mjs 2>&1 | tee .sync-logs/previews.log
+      - name: Record completed browser refresh cycle
+        id: browser_complete
+        if: always() && steps.health.outcome == 'success' && steps.previews.outcome == 'success'
+        run: node scripts/browser-cycle.mjs complete
       - name: Record catalog growth
         id: growth
         if: always() && steps.baseline.outcome == 'success'
