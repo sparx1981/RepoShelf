@@ -2,6 +2,7 @@ const base='https://reposhelf.vercel.app';
 let last='Deployment not ready';
 for(let attempt=0;attempt<24;attempt++){
 try{
+const editorialModule=await fetch(base+'/editorial.js',{signal:AbortSignal.timeout(10000)});if(!editorialModule.ok||!(await editorialModule.text()).includes('Daily shuffle (UTC)'))throw Error('Storefront update is not deployed yet');
 const guide=await fetch(base+'/agent-guide.html',{signal:AbortSignal.timeout(10000)});
 const response=await fetch(base+'/api/v1/catalog',{signal:AbortSignal.timeout(10000)});
 const body=await response.json();
