@@ -130,3 +130,8 @@ All outgoing web links require verified GitHub sign-in, including README, licenc
 Free repository submissions are available from the signed-in account menu. See [SUBMISSIONS.md](SUBMISSIONS.md) for migration 7 and worker activation. Paid promotion is a separate feature.
 
 The profile menu groups My collection and My submissions under Your projects, and Privacy preferences and Sign out under Account. Administrators also see a role badge, My promotions (test), and one Admin dashboard link. Storefront editing, analytics, users/roles, sync logs, promotion reviews and setup Help are accessed from that dashboard. Fork checks, last scan status and legacy browser-like imports are in My collection; fork checks appear in its Forks tab.
+
+
+## Built-in storefront rows and random ordering
+
+Apply [migration 8](../supabase/migrations/202610040008_editorial_discovery_qa.sql) after migrations 1–7. Existing projects do not need to rerun earlier migrations. Refresh Administration to edit the spotlight, editorial selections, community/release/trending rows and default category shelves. Saving a built-in row preserves the category layout; custom shelves can still replace categories using the existing setting. Random each page load provides a stable order while browsing, while Daily shuffle shares an order for the current UTC date. Migration 8 also aligns all selected-date analytics with UTC calendar days.
