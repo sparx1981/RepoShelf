@@ -55,6 +55,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Refresh listing exclusions
+        run: node scripts/sync-listing-controls.mjs
       - name: Import submissions and save README context
         run: node scripts/import-submissions.mjs
       - name: Publish catalogue before confirming imports

@@ -11,6 +11,8 @@ on:
   push:
     branches: [main]
     paths:
+      - 'lib/listing-policy.mjs'
+      - 'scripts/sync-listing-controls.mjs'
       - 'scripts/catalog-priority.mjs'
       - 'scripts/demo-only-policy.mjs'
       - 'scripts/prune-no-demo.mjs'
@@ -85,6 +87,10 @@ jobs:
       - name: Validate catalog logic
         id: validate
         run: npm test && npm run test:mcp && npm run build
+      - name: Refresh public moderation controls and quality requests
+        id: listing_controls
+        continue-on-error: true
+        run: node scripts/sync-listing-controls.mjs
       - name: Remove saved projects without demo links
         id: cleanup
         run: |
