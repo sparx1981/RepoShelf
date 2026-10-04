@@ -151,7 +151,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           CATALOG_BATCH_SIZE: ${{ steps.priority.outputs.githubBatch }}
-          CATALOG_REVALIDATE_BATCH: '500'
+          CATALOG_REVALIDATE_BATCH: 'auto'
         run: |
           mkdir -p .sync-logs
           set -o pipefail
