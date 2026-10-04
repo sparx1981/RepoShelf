@@ -1,20 +1,20 @@
 {
   "schema": 3,
-  "phase": "discovery",
-  "publication": "pending",
+  "phase": "complete",
+  "publication": "discovery_saved",
   "id": "37182038284",
   "attempt": 1,
   "startedAt": "2026-10-04T06:10:45.486Z",
-  "recordedAt": "2026-10-04T06:13:24.581Z",
+  "recordedAt": "2026-10-04T06:16:54.758Z",
   "trigger": "push",
   "status": "success",
   "counts": {
     "before": 4453,
     "after": 4727,
     "added": 274,
-    "updated": 399,
+    "updated": 460,
     "removed": 0,
-    "withDemo": 3486
+    "withDemo": 3483
   },
   "temporaryFailures": 0,
   "stages": [
@@ -89,6 +89,76 @@
       "warnings": 0
     },
     {
+      "id": "browser_cycle",
+      "name": "Two-hour browser cycle",
+      "status": "success",
+      "temporaryFailures": 0,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "browser_complete",
+      "name": "Browser cycle saved",
+      "status": "success",
+      "temporaryFailures": 0,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "browser",
+      "name": "Screenshot browser installation",
+      "status": "success",
+      "temporaryFailures": 0,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "verify",
+      "name": "Storefront verification",
+      "status": "success",
+      "temporaryFailures": 0,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "health",
+      "name": "Demo health",
+      "status": "success",
+      "temporaryFailures": 0,
+      "checked": 100,
+      "unavailableResponses": 5,
+      "inconclusiveChecks": 36,
+      "warnings": 0
+    },
+    {
+      "id": "previews",
+      "name": "Preview screenshots",
+      "status": "success",
+      "temporaryFailures": 0,
+      "checked": 20,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 4
+    },
+    {
+      "id": "growth",
+      "name": "Growth history",
+      "status": "success",
+      "temporaryFailures": 0,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
       "id": "validate",
       "name": "Application checks",
       "status": "success",
@@ -101,6 +171,16 @@
     {
       "id": "dependencies",
       "name": "Dependencies",
+      "status": "success",
+      "temporaryFailures": 0,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "checkpoint_publish",
+      "name": "Discovery publication",
       "status": "success",
       "temporaryFailures": 0,
       "checked": 0,
