@@ -10,7 +10,5 @@ return [
 {full:'AmruthPillai/Reactive-Resume',name:'Reactive Resume',description:'Create a beautiful resume and keep your personal information your own.',category:'Productivity',language:'TypeScript',demo:'https://rxresu.me',color:'#63362a',ink:'#f8c7a8',symbol:'r.'},
 {full:'monkeytypegame/monkeytype',name:'Monkeytype',description:'A minimal, customizable typing test. Find your flow and improve your speed.',category:'Education',language:'TypeScript',demo:'https://monkeytype.com',color:'#323329',ink:'#e8d77b',symbol:'mt'},
 {full:'benweet/stackedit',name:'StackEdit',description:'A full-featured Markdown editor in your browser. Write, preview, and publish.',category:'Productivity',language:'JavaScript',demo:'https://stackedit.io/app',color:'#294451',ink:'#b6d9e7',symbol:'#'},
-{full:'AppFlowy-IO/AppFlowy',name:'AppFlowy',description:'An open-source workspace for notes, projects, and knowledge.',category:'Productivity',language:'Dart',demo:null,color:'#35443d',ink:'#c7e7d6',symbol:'A'},
-{full:'calcom/cal.com',name:'Cal.com',description:'Scheduling infrastructure that makes it easier for people to meet.',category:'Business',language:'TypeScript',demo:null,color:'#e5e2da',ink:'#292b27',symbol:'Cal'}
 ];
 });
