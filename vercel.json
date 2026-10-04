@@ -73,5 +73,10 @@
       "destination": "/api/agent?path=:path*"
     }
   ],
-  "ignoreCommand": "node scripts/deployment-policy.mjs"
+  "ignoreCommand": "node scripts/deployment-policy.mjs",
+  "git": {
+    "deploymentEnabled": {
+      "reposhelf-checkpoints": false
+    }
+  }
 }

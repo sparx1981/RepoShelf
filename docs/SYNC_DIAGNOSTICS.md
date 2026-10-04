@@ -30,7 +30,7 @@ If screenshot work is due but makes no progress, expand its debugging details an
 
 ## Storage and access
 
-The admin sync log shows structured reports saved under `data/sync-runs/`. Older reports cannot acquire measurements they never recorded; missing values are shown as unavailable rather than invented.
+The admin sync log reads the latest `data/sync-runs/` reports directly from the non-deploying `reposhelf-checkpoints` branch, with deployed reports as a fallback. Logs can update without a site deployment. Older reports cannot acquire measurements they never recorded; missing values are shown as unavailable rather than invented.
 
 GitHub Actions recovery artifacts retain raw logs and structured stage metrics for seven days. Diagnostic samples contain public listing IDs and bounded reason codes; they do not include access tokens or private account data. No database migration is required.
 
@@ -38,4 +38,10 @@ GitHub Actions recovery artifacts retain raw logs and structured stage metrics f
 
 A successful catalogue sync saves its generated files to GitHub. Vercel must then deploy that commit before the public site sees them. The admin log separately shows the latest Vercel commit status, including blocked, pending or unknown states. A successful GitHub run must not be taken as proof that the live site has the new catalogue.
 
-Recovery checkpoints remain saved in GitHub, but their builds are skipped by the Vercel ignored build command. Final publication and application source changes continue to build. This reduces unnecessary builds; it does not bypass plan limits. When Vercel reports a deployment rate limit, wait for the allowance to reset and redeploy the latest main commit, or change the hosting plan if desired.
+Recovery checkpoints are saved on the **reposhelf-checkpoints** branch, not main. `vercel.json` disables automatic deployments for that branch using `git.deploymentEnabled`; this also prevents checkpoint preview deployments. The ignored build command is retained as a fallback for older checkpoint commits, but is not the mechanism used to reduce deployment requests.
+
+The workflow restores unpublished generated files from its checkpoint before scanning. It only restores a file if main has not independently changed that file since the checkpoint baseline. Newer source and catalogue changes are preserved; conflicting files remain available in checkpoint history and the recovery artifact. Checkpoints never move the working main branch.
+
+A finished catalogue sync pushes to **main at most once**, then saves its final publication receipt to the checkpoint branch. If only logs, the browser-cycle marker, derived indexes, library-growth snapshots or internal attempt timestamps changed, main is not pushed and no production deployment is requested. Repository/demo freshness, stars/forks/history, demo status, moderation, descriptions, saved documents and preview changes still count as public updates. Administrator library-growth history can also read the checkpoint snapshots without deploying.
+
+A main push still requires Vercel to deploy successfully. This change reduces future requests but cannot reset an allowance already exhausted. After Vercel's allowance resets, redeploy the latest main commit if it remains blocked. Normal source changes and repository-submission publications continue to deploy as before. No new secrets, Supabase migrations or manual branch setup are required.

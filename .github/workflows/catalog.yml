@@ -44,6 +44,7 @@ on:
       - 'scripts/demo-probe.mjs'
       - 'scripts/demo-probe-runner.mjs'
       - 'scripts/publish-catalog.mjs'
+      - 'scripts/catalog-publication.mjs'
       - 'scripts/deployment-policy.mjs'
       - 'scripts/project-insights.mjs'
       - 'scripts/ai-overviews.mjs'
@@ -76,6 +77,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
+      - name: Restore unpublished generated checkpoint data
+        run: node scripts/publish-catalog.mjs restore
       - name: Record starting catalog
         id: baseline
         run: node scripts/sync-history.mjs start
@@ -118,7 +121,7 @@ jobs:
           SYNC_STEP_RESULTS: ${{ toJSON(steps) }}
           SYNC_REPORT_PHASE: cleanup
         run: node scripts/sync-history.mjs finish
-      - name: Publish demo-only library and compressed previews
+      - name: Save cleanup recovery checkpoint
         id: cleanup_publish
         env:
           SYNC_PUBLICATION_PHASE: checkpoint
@@ -204,7 +207,7 @@ jobs:
           SYNC_STEP_RESULTS: ${{ toJSON(steps) }}
           SYNC_REPORT_PHASE: discovery
         run: node scripts/sync-history.mjs finish
-      - name: Publish discoveries before browser checks
+      - name: Save discovery recovery checkpoint
         if: always() && steps.checkpoint_report.outcome == 'success'
         id: checkpoint_publish
         env:
