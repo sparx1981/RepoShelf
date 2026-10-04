@@ -13,3 +13,11 @@ Publication rebases generated changes over newer source commits and retries push
 An overall cancelled run can still have saved catalogue changes if its final publication succeeded. An older run without a saved report cannot reliably reconstruct exact record or demo counts; the UI leaves those values unknown.
 
 Browser batches run every two hours; this does not promise that every listing is checked each time. Up to 100 due demo checks and 20 eligible screenshots are processed. Failed captures retry after two hours, healthy previews refresh weekly or after a code update, and missing previews are prioritised fairly by oldest attempt. Two confirmed unavailable demo responses remain separated by six hours before hiding a demo.
+
+## Quality before discovery
+
+The two-hour schedule remains. `scripts/catalog-priority.mjs` pauses automatic new imports while available entries have less than 95% repository-check coverage, 95% conclusive demo-check coverage, or visible entries have less than 90% current-demo screenshot coverage. Temporary attempts do not count as a conclusive demo check. Unavailable repositories are excluded from the gate and preserved for retries. User-requested submissions continue. Once ready, discovery resumes at 150 GitHub, 10 Spaces, 10 curated and 10 community candidates per run; no total catalogue ceiling is imposed.
+
+Each run revalidates up to 500 GitHub repositories and 150 Spaces, checks up to 200 demo pages, and captures up to 120 previews with three isolated browser probes at a time and a 12-minute batch budget. Missing screenshots remain first in the queue. Existing image compression and saved-progress publication continue. These are maximum batch sizes, not guaranteed completions: rate limits, unavailable pages and time budgets retain entries for retry.
+
+Admin run history retries the public GitHub endpoint without the account token if GitHub rejects that token with 401/403. Other failures still show saved reports and an honest unavailable notice.

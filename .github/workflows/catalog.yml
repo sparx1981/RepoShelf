@@ -11,6 +11,7 @@ on:
   push:
     branches: [main]
     paths:
+      - 'scripts/catalog-priority.mjs'
       - 'scripts/demo-only-policy.mjs'
       - 'scripts/prune-no-demo.mjs'
       - 'scripts/compress-previews.mjs'
@@ -28,6 +29,7 @@ on:
       - 'scripts/sync-history.mjs'
       - 'scripts/browser-cycle.mjs'
       - 'scripts/capture-previews.mjs'
+      - 'scripts/preview-workers.mjs'
       - 'scripts/preview-schedule.mjs'
       - 'scripts/demo-health.mjs'
       - 'scripts/check-demo-health.mjs'
@@ -104,13 +106,16 @@ jobs:
       - name: Publish demo-only library and compressed previews
         id: cleanup_publish
         run: node scripts/publish-catalog.mjs
+      - name: Prioritise existing catalogue quality
+        id: priority
+        run: node scripts/catalog-priority.mjs
       - name: Import Hugging Face Spaces and curated lists
         id: sources
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          SPACE_IMPORT_BATCH: '60'
-          SPACE_REVALIDATE_BATCH: '100'
-          CURATED_IMPORT_BATCH: '60'
+          SPACE_IMPORT_BATCH: ${{ steps.priority.outputs.spacesBatch }}
+          SPACE_REVALIDATE_BATCH: '150'
+          CURATED_IMPORT_BATCH: ${{ steps.priority.outputs.curatedBatch }}
         run: |
           mkdir -p .sync-logs
           set -o pipefail
@@ -119,7 +124,7 @@ jobs:
         id: community
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          COMMUNITY_IMPORT_BATCH: '60'
+          COMMUNITY_IMPORT_BATCH: ${{ steps.priority.outputs.communityBatch }}
         run: |
           mkdir -p .sync-logs
           set -o pipefail
@@ -128,8 +133,8 @@ jobs:
         id: catalog
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          CATALOG_BATCH_SIZE: '1500'
-          CATALOG_REVALIDATE_BATCH: '250'
+          CATALOG_BATCH_SIZE: ${{ steps.priority.outputs.githubBatch }}
+          CATALOG_REVALIDATE_BATCH: '500'
         run: |
           mkdir -p .sync-logs
           set -o pipefail
@@ -215,7 +220,7 @@ jobs:
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          DEMO_CHECK_BATCH: '100'
+          DEMO_CHECK_BATCH: '200'
         run: |
           mkdir -p .sync-logs
           set -o pipefail
@@ -223,10 +228,12 @@ jobs:
       - name: Capture demo previews
         id: previews
         if: always() && steps.verify.outcome == 'success'
-        timeout-minutes: 8
+        timeout-minutes: 15
         continue-on-error: true
         env:
-          CATALOG_PREVIEW_BATCH: '20'
+          PREVIEW_BUDGET_MS: '720000'
+          CATALOG_PREVIEW_CONCURRENCY: '3'
+          CATALOG_PREVIEW_BATCH: '120'
         run: |
           mkdir -p .sync-logs
           set -o pipefail

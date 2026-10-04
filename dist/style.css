@@ -61,3 +61,6 @@
 
 /* A consistent profile control across screen sizes. */
 #account-button{width:44px;height:44px;min-width:44px;padding:0;align-items:center;justify-content:center;border-radius:50%;color:var(--text-secondary)}#account-button.signed-in{color:var(--lime);border-color:var(--lime)}#account-button:hover{background:var(--subtle-hover)}#account-button:focus-visible{outline:2px solid var(--lime);outline-offset:4px}.profile-icon{display:block;flex:none}
+
+/* Optional first-visit install invitation; never blocks browsing. */
+.install-welcome{position:fixed;z-index:8;bottom:calc(16px + env(safe-area-inset-bottom));left:12px;right:12px;width:auto;max-width:420px;margin:auto;padding:20px;background:var(--surface-raised);border:1px solid var(--line-strong);border-radius:16px;box-shadow:0 20px 60px var(--overlay)}.install-welcome[hidden]{display:none}.install-welcome h2{font-size:22px;letter-spacing:-.7px;margin:16px 0 8px}.install-welcome p{font-size:13px;line-height:1.6;color:var(--text-secondary);margin:0 0 18px}.install-welcome-actions{display:grid;grid-template-columns:1fr 1.7fr;gap:10px}.install-welcome-actions button{min-height:44px;min-width:0;font-size:12px;padding:10px}.install-welcome .account-brand{font-size:12px}
