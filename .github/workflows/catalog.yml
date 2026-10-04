@@ -44,6 +44,7 @@ on:
       - 'scripts/demo-probe.mjs'
       - 'scripts/demo-probe-runner.mjs'
       - 'scripts/publish-catalog.mjs'
+      - 'scripts/deployment-policy.mjs'
       - 'scripts/project-insights.mjs'
       - 'scripts/ai-overviews.mjs'
       - 'scripts/generate-ai-overviews.mjs'
@@ -119,6 +120,8 @@ jobs:
         run: node scripts/sync-history.mjs finish
       - name: Publish demo-only library and compressed previews
         id: cleanup_publish
+        env:
+          SYNC_PUBLICATION_PHASE: checkpoint
         run: node scripts/publish-catalog.mjs
       - name: Prioritise existing catalogue quality
         id: priority
@@ -204,6 +207,8 @@ jobs:
       - name: Publish discoveries before browser checks
         if: always() && steps.checkpoint_report.outcome == 'success'
         id: checkpoint_publish
+        env:
+          SYNC_PUBLICATION_PHASE: checkpoint
         run: node scripts/publish-catalog.mjs
       - name: Check two-hour browser refresh cycle
         id: browser_cycle

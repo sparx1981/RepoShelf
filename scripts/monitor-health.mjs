@@ -1,5 +1,6 @@
 import {appendFile,readFile,readdir} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
+import {deploymentStatus} from '../lib/sync-diagnostics.mjs';
 const repo='sparx1981/RepoShelf',base='https://reposhelf.vercel.app';
 export function syncAlerts(runs,now=Date.now()){
  const alerts=[],completed=runs.filter(r=>r.status==='completed'&&r.conclusion!=='skipped'),success=completed.find(r=>r.conclusion==='success');
@@ -22,7 +23,8 @@ export function storefrontAlerts(session,browse,now=Date.now()){
 }
 export async function monitor({fetcher=fetch,token=process.env.GITHUB_TOKEN,now=Date.now()}={}){
  const gh=async(path,options={})=>{const response=await fetcher('https://api.github.com/repos/'+repo+path,{...options,headers:{Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28','User-Agent':'RepoShelf-health',...token?{Authorization:'Bearer '+token}:{},...options.body?{'Content-Type':'application/json'}:{}},signal:AbortSignal.timeout(15000)});if(!response.ok)throw Error('GitHub health monitor request failed ('+response.status+').');return response.status===204?null:response.json()};
- const history=await gh('/actions/workflows/catalog.yml/runs?per_page=50'),alerts=syncAlerts(history.workflow_runs||[],now);let production;
+ const history=await gh('/actions/workflows/catalog.yml/runs?per_page=50'),alerts=syncAlerts(history.workflow_runs||[],now);let production,deployment;
+ try{deployment=deploymentStatus(await gh('/commits/main/status'),now);if(deployment.state==='blocked')alerts.push({id:'deployment-blocked',message:'Vercel has blocked the latest main deployment: '+deployment.description+' Saved GitHub changes may not be live.',url:deployment.url})}catch{console.warn('Latest deployment status could not be checked.')}
  const directory=new URL('../data/sync-runs/',import.meta.url);let names=[];try{names=await readdir(directory)}catch(e){if(e.code!=='ENOENT')throw e}const saved=await Promise.all(names.filter(n=>/^\d+\.json$/.test(n)).map(async n=>JSON.parse(await readFile(new URL(n,directory),'utf8'))));alerts.push(...enrichmentAlerts(saved,now));
  for(let attempt=0;attempt<3;attempt++){
   try{const get=async(path,options={})=>{const response=await fetcher(base+path,{...options,signal:AbortSignal.timeout(20000),redirect:'error'});if(!response.ok)throw Error('Endpoint returned '+response.status);return response.json()};
@@ -39,6 +41,6 @@ export async function monitor({fetcher=fetch,token=process.env.GITHUB_TOKEN,now=
  else if(existing)await gh('/issues/'+existing.number,{method:'PATCH',body:JSON.stringify({body,state:'closed',state_reason:'completed'})});
  const summary='## RepoShelf operational health\n\n'+(alerts.length?alerts.map(a=>'- '+a.message).join('\n'):'All production and maintenance checks passed.')+'\n\n'+(production?'Published projects: '+production.browse.indexed+'\n':'')+'\n';
  if(process.env.GITHUB_STEP_SUMMARY)await appendFile(process.env.GITHUB_STEP_SUMMARY,summary);
- console.log(summary);return {alerts,indexed:production?.browse.indexed||null};
+ console.log(summary);return {alerts,indexed:production?.browse.indexed||null,deployment};
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){try{await monitor()}catch{console.error('Operational monitoring could not complete. Check workflow permissions, GitHub availability and whether repository Issues are enabled.');process.exitCode=1}}

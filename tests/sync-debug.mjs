@@ -5,8 +5,17 @@ import {pathToFileURL} from 'node:url';
 import {probeMetrics,recordStageMetrics,readStageMetrics} from '../scripts/sync-metrics.mjs';
 import {qualityPlan} from '../scripts/catalog-priority.mjs';
 import {run} from '../scripts/sync-history.mjs';
-import {diagnoseSync} from '../lib/sync-diagnostics.mjs';
+import {shouldBuild} from '../scripts/deployment-policy.mjs';
+import {diagnoseSync,deploymentStatus} from '../lib/sync-diagnostics.mjs';
 
+assert.equal(shouldBuild('Save catalogue recovery checkpoint',['data/sync-runs/1.json','dist/catalog.json']),false);
+assert.equal(shouldBuild('Refresh public demo catalog',['dist/catalog.json']),true);
+assert.equal(shouldBuild('Save catalogue recovery checkpoint',['data/browse/index.json','dist/admin.js']),true);
+assert.equal(shouldBuild('Save catalogue recovery checkpoint',[]),true);
+const blocked=deploymentStatus({statuses:[{context:'Vercel',state:'failure',description:'Deployment rate limited — retry in 24 hours.',target_url:'https://vercel.com/sparx1981?upgradeToPro=build-rate-limit'}]});
+assert.equal(blocked.state,'blocked');assert(blocked.description.includes('rate limited'));
+assert.equal(deploymentStatus({statuses:[{context:'Vercel',state:'success',target_url:'javascript:alert(1)'}]}).url,'https://vercel.com/sparx1981/reposhelf');
+assert.equal(deploymentStatus({statuses:[]}).state,'unknown');
 const telemetry=probeMetrics({due:10,selected:4,limit:4});
 telemetry.record('team/one',{kind:'working'},true);
 telemetry.record('team/two',{kind:'temporary',reason:'probe_timeout'},false);

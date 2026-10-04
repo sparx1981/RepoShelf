@@ -72,5 +72,6 @@
       "source": "/api/v1/:path*",
       "destination": "/api/agent?path=:path*"
     }
-  ]
+  ],
+  "ignoreCommand": "node scripts/deployment-policy.mjs"
 }

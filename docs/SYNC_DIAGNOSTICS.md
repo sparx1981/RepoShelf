@@ -33,3 +33,9 @@ If screenshot work is due but makes no progress, expand its debugging details an
 The admin sync log shows structured reports saved under `data/sync-runs/`. Older reports cannot acquire measurements they never recorded; missing values are shown as unavailable rather than invented.
 
 GitHub Actions recovery artifacts retain raw logs and structured stage metrics for seven days. Diagnostic samples contain public listing IDs and bounded reason codes; they do not include access tokens or private account data. No database migration is required.
+
+## Saved to GitHub versus live deployment
+
+A successful catalogue sync saves its generated files to GitHub. Vercel must then deploy that commit before the public site sees them. The admin log separately shows the latest Vercel commit status, including blocked, pending or unknown states. A successful GitHub run must not be taken as proof that the live site has the new catalogue.
+
+Recovery checkpoints remain saved in GitHub, but their builds are skipped by the Vercel ignored build command. Final publication and application source changes continue to build. This reduces unnecessary builds; it does not bypass plan limits. When Vercel reports a deployment rate limit, wait for the allowance to reset and redeploy the latest main commit, or change the hosting plan if desired.
