@@ -27,7 +27,13 @@
       "curatedBatch": 0,
       "communityBatch": 0
     },
-    "browser": null,
+    "browser": {
+      "due": true,
+      "lastCompletedAt": "2026-10-04T16:20:34.681Z",
+      "nextDueAt": "2026-10-04T18:00:00.000Z",
+      "forced": false,
+      "reason": "A browser batch is due."
+    },
     "coverageBefore": {
       "targets": {
         "repositoryChecks": 4012,
@@ -58,7 +64,7 @@
       "targets": {
         "repositoryChecks": 4012,
         "demoChecks": 4012,
-        "screenshots": 3771
+        "screenshots": 3770
       },
       "reasons": [
         "Demo validation is below 95%.",
@@ -66,14 +72,14 @@
       ],
       "pending": {
         "repositoryChecks": 0,
-        "demoChecks": 3060,
-        "screenshots": 3655
+        "demoChecks": 2949,
+        "screenshots": 3556
       },
       "available": 4223,
-      "visible": 4190,
+      "visible": 4188,
       "repositoryChecks": 4223,
-      "demoChecks": 1163,
-      "screenshots": 535,
+      "demoChecks": 1274,
+      "screenshots": 632,
       "ready": false,
       "githubBatch": 0,
       "spacesBatch": 0,
@@ -81,23 +87,23 @@
       "communityBatch": 0
     }
   },
-  "phase": "discovery",
-  "publication": "pending",
+  "phase": "complete",
+  "publication": "discovery_saved",
   "id": "37223449736",
   "attempt": 1,
   "startedAt": "2026-10-04T18:11:41.577Z",
-  "recordedAt": "2026-10-04T18:13:03.633Z",
+  "recordedAt": "2026-10-04T18:19:50.682Z",
   "trigger": "schedule",
   "status": "success",
   "counts": {
     "before": 4226,
     "after": 4226,
     "added": 0,
-    "updated": 120,
+    "updated": 400,
     "removed": 0,
-    "withDemo": 4190
+    "withDemo": 4188
   },
-  "temporaryFailures": 0,
+  "temporaryFailures": 108,
   "stages": [
     {
       "id": "cleanup_publish",
@@ -128,6 +134,17 @@
       "temporaryFailures": 0,
       "details": null,
       "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "compression_final",
+      "name": "New screenshot compression",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 97,
       "unavailableResponses": 0,
       "inconclusiveChecks": 0,
       "warnings": 0
@@ -221,6 +238,239 @@
       "warnings": 0
     },
     {
+      "id": "browser_cycle",
+      "name": "Two-hour browser cycle",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "due": true,
+        "lastCompletedAt": "2026-10-04T16:20:34.681Z",
+        "nextDueAt": "2026-10-04T18:00:00.000Z",
+        "forced": false,
+        "reason": "A browser batch is due."
+      },
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "browser_complete",
+      "name": "Browser cycle saved",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "browser",
+      "name": "Screenshot browser installation",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "verify",
+      "name": "Storefront verification",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "health",
+      "name": "Demo health",
+      "status": "success",
+      "temporaryFailures": 86,
+      "details": {
+        "due": 2982,
+        "selected": 200,
+        "limit": 200,
+        "attempted": 200,
+        "working": 112,
+        "captured": 0,
+        "unavailable": 2,
+        "temporaryFailures": 86,
+        "reasons": {
+          "network_or_timeout": 16,
+          "empty_page": 18,
+          "unsafe_target": 10,
+          "access_restricted": 30,
+          "http_503": 2,
+          "rate_limit": 4,
+          "http_502": 1,
+          "http_500": 1,
+          "http_404": 2,
+          "http_401": 2,
+          "http_400": 1,
+          "http_412": 1
+        },
+        "examples": [
+          {
+            "project": "ahmadrosid/nakama",
+            "reason": "network_or_timeout"
+          },
+          {
+            "project": "hf:deddytoyota/Free-Unlimited-Google-Veo-3",
+            "reason": "empty_page"
+          },
+          {
+            "project": "hf:NeuralFalcon/Remove-Silence-From-Audio",
+            "reason": "network_or_timeout"
+          },
+          {
+            "project": "zladovan/gorched",
+            "reason": "unsafe_target"
+          },
+          {
+            "project": "alibaba/schema-plugin-flow",
+            "reason": "access_restricted"
+          },
+          {
+            "project": "hf:Onise/Qwen-Image-Edit-2509-LoRAs-Fast2",
+            "reason": "http_503"
+          },
+          {
+            "project": "MRPT/mvsim",
+            "reason": "rate_limit"
+          },
+          {
+            "project": "b-coimbra/dawn",
+            "reason": "network_or_timeout"
+          },
+          {
+            "project": "mdbootstrap/perfect-scrollbar",
+            "reason": "http_502"
+          },
+          {
+            "project": "AceDataCloud/Nexior",
+            "reason": "empty_page"
+          },
+          {
+            "project": "emsesp/EMS-ESP32",
+            "reason": "access_restricted"
+          },
+          {
+            "project": "deco-cx/deco",
+            "reason": "access_restricted"
+          }
+        ],
+        "deferred": 0,
+        "remainingDue": 2782,
+        "durationMs": 180323,
+        "complete": true
+      },
+      "checked": 200,
+      "unavailableResponses": 2,
+      "inconclusiveChecks": 86,
+      "warnings": 0
+    },
+    {
+      "id": "previews",
+      "name": "Preview screenshots",
+      "status": "success",
+      "temporaryFailures": 22,
+      "details": {
+        "due": 3682,
+        "selected": 120,
+        "limit": 120,
+        "attempted": 120,
+        "working": 97,
+        "captured": 97,
+        "unavailable": 1,
+        "temporaryFailures": 22,
+        "reasons": {
+          "rate_limit": 4,
+          "unsafe_target": 4,
+          "http_451": 1,
+          "empty_page": 3,
+          "access_restricted": 5,
+          "http_500": 1,
+          "network_or_timeout": 4,
+          "http_404": 1
+        },
+        "examples": [
+          {
+            "project": "themesberg/volt-react-dashboard",
+            "reason": "rate_limit"
+          },
+          {
+            "project": "pyrra-dev/pyrra",
+            "reason": "unsafe_target"
+          },
+          {
+            "project": "dhairyagothi/100_days_100_web_project",
+            "reason": "http_451"
+          },
+          {
+            "project": "opsdroid/opsdroid",
+            "reason": "unsafe_target"
+          },
+          {
+            "project": "Automattic/WP-Job-Manager",
+            "reason": "unsafe_target"
+          },
+          {
+            "project": "trueai-org/module-shop",
+            "reason": "empty_page"
+          },
+          {
+            "project": "icons8/line-awesome",
+            "reason": "access_restricted"
+          },
+          {
+            "project": "AlchemyCMS/alchemy_cms",
+            "reason": "access_restricted"
+          },
+          {
+            "project": "codrops/BookBlock",
+            "reason": "access_restricted"
+          },
+          {
+            "project": "LibreBooking/librebooking",
+            "reason": "rate_limit"
+          },
+          {
+            "project": "themesberg/landwind",
+            "reason": "rate_limit"
+          },
+          {
+            "project": "OpenSilver/OpenSilver",
+            "reason": "empty_page"
+          }
+        ],
+        "deferred": 0,
+        "remainingDue": 3562,
+        "durationMs": 176404,
+        "complete": true
+      },
+      "checked": 120,
+      "unavailableResponses": 1,
+      "inconclusiveChecks": 22,
+      "warnings": 23
+    },
+    {
+      "id": "growth",
+      "name": "Growth history",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
       "id": "validate",
       "name": "Application checks",
       "status": "success",
@@ -273,6 +523,17 @@
         "curatedBatch": 0,
         "communityBatch": 0
       },
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "checkpoint_publish",
+      "name": "Discovery publication",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
       "checked": 0,
       "unavailableResponses": 0,
       "inconclusiveChecks": 0,
