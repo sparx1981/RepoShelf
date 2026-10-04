@@ -19,6 +19,6 @@ function privacyChanged(){try{if(localStorage.getItem('reposhelf.analytics.conse
 document.addEventListener('click',e=>{const link=e.target.closest?.('a[href]');if(!link||!link.getAttribute('href')?.startsWith('/api/auth?action=start'))return;if(track('sign_in_start')){try{sessionStorage.setItem('reposhelf.analytics.signin',JSON.stringify({at:Date.now()}))}catch{}}});
 window.addEventListener('pagehide',()=>void flush());
 document.addEventListener('visibilitychange',()=>{if(document.hidden)void flush()});
-refresh().then(()=>{if(legal.required&&location.pathname!=='/legal.html'&&location.pathname!=='/terms.html'&&location.pathname!=='/privacy.html')location.href='/legal.html'});
+refresh().then(()=>{if(legal.required&&location.pathname!=='/legal.html'&&location.pathname!=='/terms.html'&&location.pathname!=='/privacy.html'&&location.pathname!=='/account.html')location.href='/legal.html'});
 return {get legal(){return {...legal}},get user(){return user},get forks(){return new Map(forks)},get forkSync(){return {...forkSync}},get forkError(){return forkError},get syncing(){return syncing},syncForks,get enabled(){return enabled},get ready(){return ready},get likedRepos(){return new Map(likedRepos)},get liked(){return new Set(liked)},get guestCount(){return guest.size},has:id=>[...liked].some(saved=>saved.toLowerCase()===id.toLowerCase()),busy:id=>[...pending].some(saved=>saved.toLowerCase()===id.toLowerCase()),toggle,refresh,signout,importGuest,request,track};
 })();
