@@ -6,6 +6,7 @@ on:
       - 'dist/*.js'
       - 'dist/*.html'
       - 'dist/*.css'
+      - 'dist/*.webmanifest'
       - 'scripts/**'
       - 'lib/**'
       - 'api/**'
@@ -70,7 +71,7 @@ jobs:
           npm install --no-save --package-lock=false playwright@1.56.1
           npx playwright install --with-deps chromium
       - name: Verify catalog search, sources, tracking, and responsive layout
-        run: node scripts/verify-browsing-ui.mjs && node scripts/verify-ui.mjs && node scripts/verify-accounts-ui.mjs && node scripts/verify-legal-ui.mjs && node scripts/verify-promotions-ui.mjs && node scripts/verify-submissions-ui.mjs && node scripts/verify-qa-ui.mjs && node scripts/verify-journey-ui.mjs
+        run: node scripts/verify-pwa-ui.mjs && node scripts/verify-browsing-ui.mjs && node scripts/verify-ui.mjs && node scripts/verify-accounts-ui.mjs && node scripts/verify-legal-ui.mjs && node scripts/verify-promotions-ui.mjs && node scripts/verify-submissions-ui.mjs && node scripts/verify-qa-ui.mjs && node scripts/verify-journey-ui.mjs
       - name: Verify deployed agent routes
         if: github.event_name == 'push'
         run: node scripts/verify-deployed-api.mjs
