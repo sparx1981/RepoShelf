@@ -234,7 +234,10 @@ jobs:
       - name: Compress new and remaining previews
         id: compression_final
         if: always() && steps.previews.outcome == 'success'
-        run: node scripts/compress-previews.mjs
+        run: |
+          mkdir -p .sync-logs
+          set -o pipefail
+          node scripts/compress-previews.mjs 2>&1 | tee .sync-logs/compression_final.log
       - name: Record completed browser refresh cycle
         id: browser_complete
         if: always() && steps.health.outcome == 'success' && steps.previews.outcome == 'success'
