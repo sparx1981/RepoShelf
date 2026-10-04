@@ -1,33 +1,23 @@
 {
   "schema": 3,
-  "phase": "complete",
-  "publication": "discovery_saved",
+  "phase": "cleanup",
+  "publication": "pending",
   "id": "37202151196",
-  "attempt": 1,
-  "startedAt": "2026-10-04T12:27:21.745Z",
-  "recordedAt": "2026-10-04T12:36:30.680Z",
+  "attempt": 2,
+  "startedAt": "2026-10-04T16:10:30.020Z",
+  "recordedAt": "2026-10-04T16:10:54.329Z",
   "trigger": "schedule",
   "status": "success",
   "counts": {
     "before": 4226,
     "after": 4226,
     "added": 0,
-    "updated": 421,
+    "updated": 4,
     "removed": 0,
     "withDemo": 4194
   },
   "temporaryFailures": 0,
   "stages": [
-    {
-      "id": "cleanup_publish",
-      "name": "Demo-only cleanup publication",
-      "status": "success",
-      "temporaryFailures": 0,
-      "checked": 0,
-      "unavailableResponses": 0,
-      "inconclusiveChecks": 0,
-      "warnings": 0
-    },
     {
       "id": "cleanup",
       "name": "Demo-only library cleanup",
@@ -43,157 +33,7 @@
       "name": "Existing screenshot compression",
       "status": "success",
       "temporaryFailures": 0,
-      "checked": 0,
-      "unavailableResponses": 0,
-      "inconclusiveChecks": 0,
-      "warnings": 0
-    },
-    {
-      "id": "compression_final",
-      "name": "New screenshot compression",
-      "status": "success",
-      "temporaryFailures": 0,
-      "checked": 100,
-      "unavailableResponses": 0,
-      "inconclusiveChecks": 0,
-      "warnings": 0
-    },
-    {
-      "id": "sources",
-      "name": "Spaces and curated lists",
-      "status": "success",
-      "temporaryFailures": 0,
-      "checked": 0,
-      "unavailableResponses": 0,
-      "inconclusiveChecks": 0,
-      "warnings": 0
-    },
-    {
-      "id": "community",
-      "name": "Community discoveries",
-      "status": "success",
-      "temporaryFailures": 0,
-      "checked": 0,
-      "unavailableResponses": 0,
-      "inconclusiveChecks": 0,
-      "warnings": 0
-    },
-    {
-      "id": "catalog",
-      "name": "GitHub discovery and revalidation",
-      "status": "success",
-      "temporaryFailures": 0,
-      "checked": 0,
-      "unavailableResponses": 0,
-      "inconclusiveChecks": 0,
-      "warnings": 0
-    },
-    {
-      "id": "enrich",
-      "name": "Releases and technologies",
-      "status": "success",
-      "temporaryFailures": 0,
-      "checked": 0,
-      "unavailableResponses": 0,
-      "inconclusiveChecks": 0,
-      "warnings": 0
-    },
-    {
-      "id": "overviews",
-      "name": "README overviews",
-      "status": "success",
-      "temporaryFailures": 0,
-      "checked": 0,
-      "unavailableResponses": 0,
-      "inconclusiveChecks": 0,
-      "warnings": 0
-    },
-    {
-      "id": "context",
-      "name": "Supporting documents",
-      "status": "success",
-      "temporaryFailures": 0,
-      "checked": 0,
-      "unavailableResponses": 0,
-      "inconclusiveChecks": 0,
-      "warnings": 0
-    },
-    {
-      "id": "ai",
-      "name": "Optional AI overviews",
-      "status": "success",
-      "temporaryFailures": 0,
-      "checked": 0,
-      "unavailableResponses": 0,
-      "inconclusiveChecks": 0,
-      "warnings": 0
-    },
-    {
-      "id": "browser_cycle",
-      "name": "Two-hour browser cycle",
-      "status": "success",
-      "temporaryFailures": 0,
-      "checked": 0,
-      "unavailableResponses": 0,
-      "inconclusiveChecks": 0,
-      "warnings": 0
-    },
-    {
-      "id": "browser_complete",
-      "name": "Browser cycle saved",
-      "status": "success",
-      "temporaryFailures": 0,
-      "checked": 0,
-      "unavailableResponses": 0,
-      "inconclusiveChecks": 0,
-      "warnings": 0
-    },
-    {
-      "id": "browser",
-      "name": "Screenshot browser installation",
-      "status": "success",
-      "temporaryFailures": 0,
-      "checked": 0,
-      "unavailableResponses": 0,
-      "inconclusiveChecks": 0,
-      "warnings": 0
-    },
-    {
-      "id": "verify",
-      "name": "Storefront verification",
-      "status": "success",
-      "temporaryFailures": 0,
-      "checked": 0,
-      "unavailableResponses": 0,
-      "inconclusiveChecks": 0,
-      "warnings": 0
-    },
-    {
-      "id": "health",
-      "name": "Demo health",
-      "status": "success",
-      "temporaryFailures": 0,
-      "checked": 200,
-      "unavailableResponses": 7,
-      "inconclusiveChecks": 59,
-      "warnings": 0
-    },
-    {
-      "id": "previews",
-      "name": "Preview screenshots",
-      "status": "success",
-      "temporaryFailures": 0,
-      "checked": 120,
-      "unavailableResponses": 0,
-      "inconclusiveChecks": 0,
-      "warnings": 16
-    },
-    {
-      "id": "growth",
-      "name": "Growth history",
-      "status": "success",
-      "temporaryFailures": 0,
-      "checked": 0,
+      "checked": 4,
       "unavailableResponses": 0,
       "inconclusiveChecks": 0,
       "warnings": 0
@@ -211,16 +51,6 @@
     {
       "id": "dependencies",
       "name": "Dependencies",
-      "status": "success",
-      "temporaryFailures": 0,
-      "checked": 0,
-      "unavailableResponses": 0,
-      "inconclusiveChecks": 0,
-      "warnings": 0
-    },
-    {
-      "id": "checkpoint_publish",
-      "name": "Discovery publication",
       "status": "success",
       "temporaryFailures": 0,
       "checked": 0,
