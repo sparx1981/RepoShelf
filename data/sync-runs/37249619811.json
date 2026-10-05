@@ -27,7 +27,13 @@
       "curatedBatch": 0,
       "communityBatch": 0
     },
-    "browser": null,
+    "browser": {
+      "due": true,
+      "lastCompletedAt": "2026-10-04T21:43:17.603Z",
+      "nextDueAt": "2026-10-04T22:00:00.000Z",
+      "forced": false,
+      "reason": "A browser batch is due."
+    },
     "coverageBefore": {
       "targets": {
         "repositoryChecks": 4012,
@@ -66,14 +72,14 @@
       ],
       "pending": {
         "repositoryChecks": 0,
-        "demoChecks": 2841,
-        "screenshots": 3460
+        "demoChecks": 2732,
+        "screenshots": 3362
       },
       "available": 4223,
       "visible": 4186,
       "repositoryChecks": 4223,
-      "demoChecks": 1382,
-      "screenshots": 726,
+      "demoChecks": 1491,
+      "screenshots": 824,
       "ready": false,
       "githubBatch": 0,
       "spacesBatch": 0,
@@ -81,23 +87,23 @@
       "communityBatch": 0
     }
   },
-  "phase": "discovery",
-  "publication": "checkpoint_saved",
+  "phase": "complete",
+  "publication": "pending",
   "id": "37249619811",
   "attempt": 1,
   "startedAt": "2026-10-05T01:00:00.169Z",
-  "recordedAt": "2026-10-05T01:02:01.722Z",
+  "recordedAt": "2026-10-05T01:09:03.808Z",
   "trigger": "schedule",
   "status": "success",
   "counts": {
     "before": 4226,
     "after": 4226,
     "added": 0,
-    "updated": 120,
+    "updated": 428,
     "removed": 0,
     "withDemo": 4186
   },
-  "temporaryFailures": 0,
+  "temporaryFailures": 110,
   "stages": [
     {
       "id": "cleanup_publish",
@@ -128,6 +134,17 @@
       "temporaryFailures": 0,
       "details": null,
       "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "compression_final",
+      "name": "New screenshot compression",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 98,
       "unavailableResponses": 0,
       "inconclusiveChecks": 0,
       "warnings": 0
@@ -236,6 +253,238 @@
       "warnings": 0
     },
     {
+      "id": "browser_cycle",
+      "name": "Two-hour browser cycle",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "due": true,
+        "lastCompletedAt": "2026-10-04T21:43:17.603Z",
+        "nextDueAt": "2026-10-04T22:00:00.000Z",
+        "forced": false,
+        "reason": "A browser batch is due."
+      },
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "browser_complete",
+      "name": "Browser cycle saved",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "browser",
+      "name": "Screenshot browser installation",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "verify",
+      "name": "Storefront verification",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "health",
+      "name": "Demo health",
+      "status": "success",
+      "temporaryFailures": 88,
+      "details": {
+        "due": 2847,
+        "selected": 200,
+        "limit": 200,
+        "attempted": 200,
+        "working": 106,
+        "captured": 0,
+        "unavailable": 6,
+        "temporaryFailures": 88,
+        "reasons": {
+          "empty_page": 27,
+          "http_404": 6,
+          "http_412": 2,
+          "network_or_timeout": 10,
+          "unsafe_target": 10,
+          "access_restricted": 30,
+          "rate_limit": 4,
+          "http_502": 2,
+          "http_526": 1,
+          "http_503": 1,
+          "http_401": 1
+        },
+        "examples": [
+          {
+            "project": "DeHor-Labs/mcp-fiscal-brasil",
+            "reason": "empty_page"
+          },
+          {
+            "project": "hf:lora-library/LoRA-DreamBooth-Training-UI",
+            "reason": "empty_page"
+          },
+          {
+            "project": "hf:llamameta/Grok-4-heavy-free",
+            "reason": "empty_page"
+          },
+          {
+            "project": "rzk-lang/rzk",
+            "reason": "http_404"
+          },
+          {
+            "project": "Code-Amadeus/Amadeus",
+            "reason": "http_412"
+          },
+          {
+            "project": "FootprintAI/Containarium",
+            "reason": "network_or_timeout"
+          },
+          {
+            "project": "WordPress/openstation",
+            "reason": "unsafe_target"
+          },
+          {
+            "project": "yuchiu/Netflix-Clone",
+            "reason": "http_404"
+          },
+          {
+            "project": "hf:lmarena-ai/chatbot-arena",
+            "reason": "empty_page"
+          },
+          {
+            "project": "hf:fffiloni/stable-diffusion-img2img",
+            "reason": "empty_page"
+          },
+          {
+            "project": "piomin/sample-spring-microservices-advanced",
+            "reason": "access_restricted"
+          },
+          {
+            "project": "CodesWhat/drydock",
+            "reason": "empty_page"
+          }
+        ],
+        "deferred": 0,
+        "remainingDue": 2647,
+        "durationMs": 167078,
+        "complete": true
+      },
+      "checked": 200,
+      "unavailableResponses": 6,
+      "inconclusiveChecks": 88,
+      "warnings": 0
+    },
+    {
+      "id": "previews",
+      "name": "Preview screenshots",
+      "status": "success",
+      "temporaryFailures": 22,
+      "details": {
+        "due": 3527,
+        "selected": 120,
+        "limit": 120,
+        "attempted": 120,
+        "working": 98,
+        "captured": 98,
+        "unavailable": 0,
+        "temporaryFailures": 22,
+        "reasons": {
+          "unsafe_target": 2,
+          "access_restricted": 10,
+          "empty_page": 4,
+          "network_or_timeout": 2,
+          "http_400": 1,
+          "probe_timeout": 1,
+          "rate_limit": 1,
+          "http_500": 1
+        },
+        "examples": [
+          {
+            "project": "myshell-ai/JetMoE",
+            "reason": "unsafe_target"
+          },
+          {
+            "project": "Jungwoo-An/react-editor-js",
+            "reason": "access_restricted"
+          },
+          {
+            "project": "PaddlePaddle/RocketQA",
+            "reason": "empty_page"
+          },
+          {
+            "project": "StanfordSNR/gg",
+            "reason": "network_or_timeout"
+          },
+          {
+            "project": "wjcrowcroft/MotionCAPTCHA",
+            "reason": "network_or_timeout"
+          },
+          {
+            "project": "AceDataCloud/Nexior",
+            "reason": "empty_page"
+          },
+          {
+            "project": "catalinmiron/react-typical",
+            "reason": "empty_page"
+          },
+          {
+            "project": "boogu-project/Boogu-Image",
+            "reason": "access_restricted"
+          },
+          {
+            "project": "scragg0x/realms-wiki",
+            "reason": "access_restricted"
+          },
+          {
+            "project": "Raathigesh/retoggle",
+            "reason": "access_restricted"
+          },
+          {
+            "project": "mbzuai-oryx/groundingLMM",
+            "reason": "http_400"
+          },
+          {
+            "project": "babashka/nbb",
+            "reason": "access_restricted"
+          }
+        ],
+        "deferred": 0,
+        "remainingDue": 3407,
+        "durationMs": 203962,
+        "complete": true
+      },
+      "checked": 120,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 22,
+      "warnings": 22
+    },
+    {
+      "id": "growth",
+      "name": "Growth history",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
       "id": "validate",
       "name": "Application checks",
       "status": "success",
@@ -288,6 +537,17 @@
         "curatedBatch": 0,
         "communityBatch": 0
       },
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "checkpoint_publish",
+      "name": "Discovery publication",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
       "checked": 0,
       "unavailableResponses": 0,
       "inconclusiveChecks": 0,
