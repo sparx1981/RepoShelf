@@ -1,3 +1,4 @@
+import {hostGate} from './demo-preflight.mjs';
 import {balancedBrowserWork,retryDelay} from './browser-work-policy.mjs';
 import {readFile,writeFile,mkdir,mkdtemp,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';import {join} from 'node:path';import {createHash} from 'node:crypto';import {pathToFileURL} from 'node:url';
@@ -16,8 +17,10 @@ export async function runQueues(root=new URL('../',import.meta.url),env=process.
  const previewBudget=Number(env.PREVIEW_BUDGET_MS||900000),healthBudget=Number(env.DEMO_CHECK_BUDGET_MS||600000),budget=previewBudget+healthBudget;
  if(!Number.isFinite(budget)||previewBudget<=0||healthBudget<=0)throw Error('Invalid browser time budget');
  const recovery=candidateSelector?.(entries,started),previewQueue=recovery?.previews||previewCandidates(entries,started,entries.length),previewIds=new Set(previewQueue.map(r=>r.full.toLowerCase())),healthQueue=(recovery?.health||demoCandidates(entries,started,entries.length)).filter(r=>!previewIds.has(r.full.toLowerCase()));
+ const shardCount=Number(env.BROWSER_SHARD_COUNT||1),shardIndex=Number(env.BROWSER_SHARD_INDEX||0);const belongs=r=>shardCount===1||createHash('sha256').update(r.full.toLowerCase()).digest().readUInt32BE(0)%shardCount===shardIndex;previewQueue.splice(0,previewQueue.length,...previewQueue.filter(belongs));healthQueue.splice(0,healthQueue.length,...healthQueue.filter(belongs));
  const queues={previews:previewQueue,health:healthQueue},telemetry=Object.fromEntries(Object.entries(queues).map(([name,items])=>[name,probeMetrics({selected:items.length,due:items.length,limit:entries.length})]));
  const requested=Number(env.CATALOG_PREVIEW_CONCURRENCY||4);if(!Number.isInteger(requested)||requested<1)throw Error('Invalid browser concurrency');const max=Math.min(4,requested),adaptive=adaptiveBrowsers({max}),pool=poolFactory({max}),publisher=publisherFactory({token:env.GITHUB_TOKEN}),persist=checkpointWriter(files,snapshots);
+ const gated=hostGate();const probe=(input,options)=>gated(input.target,()=>Date.now()>=started+budget?Promise.resolve({kind:'temporary',reason:'budget_expired'}):pool.probe(input,{...options,timeout:Math.min(options.timeout,started+budget-Date.now())}));
  const repair=repairFactory({token:env.GITHUB_TOKEN});let repaired=0;const balanced=balancedBrowserWork(previewQueue,healthQueue),laneSpent={admission:0,maintenance:0,repair:0};
  const scratch=await mkdtemp(join(tmpdir(),'reposhelf-browser-'));await mkdir(new URL('dist/previews/',root),{recursive:true});let complete=false,active=0,lastSave=0,resources={},lastResource=0,spent={previews:0,health:0};
  function progress(){return {schema:1,runId:env.GITHUB_RUN_ID,attempt:Number(env.GITHUB_RUN_ATTEMPT||1),startedAt:new Date(started).toISOString(),updatedAt:new Date().toISOString(),status:complete?'complete':'running',previews:telemetry.previews.summary(started),health:telemetry.health.summary(started),activeWorkers:active,concurrency:adaptive.limit,budgetMs:budget,elapsedMs:Date.now()-started,workerRestarts:pool.stats().workerRestarts}}
@@ -29,11 +32,11 @@ export async function runQueues(root=new URL('../',import.meta.url),env=process.
    const name=candidateSelector?lane:balanced.original.get(r.full.toLowerCase()),workStarted=Date.now();
    active++;const filename=createHash('sha256').update(r.full).digest('hex').slice(0,24)+'.jpg',capture=name==='previews',patient=r.source==='huggingface'||r.previewCheck?.reason==='empty_page'||r.demoHealth?.error?.reason==='empty_page';
    try{
-    let result=await pool.probe({target:r.source==='huggingface'?(r.appUrl||r.demo):r.demo,space:r.source==='huggingface',patient,...capture?{screenshot:join(scratch,filename)}:{}},{timeout:Math.min(capture?(patient?60000:45000):(patient?45000:35000),Math.max(1,deadline-Date.now()))});
+    let result=await probe({target:r.source==='huggingface'?(r.appUrl||r.demo):r.demo,space:r.source==='huggingface',patient,...capture?{screenshot:join(scratch,filename)}:{}},{timeout:Math.min(capture?(patient?60000:45000):(patient?45000:35000),Math.max(1,deadline-Date.now()))});
     if(!candidateSelector&&result.kind!=='working'&&Date.now()+30000<deadline){
      for(const target of await repair(r,result)){
       if(Date.now()+15000>=deadline)break;
-      const alternative=await pool.probe({target,screenshot:join(scratch,filename)},{timeout:Math.min(45000,deadline-Date.now())});
+      const alternative=await probe({target,screenshot:join(scratch,filename)},{timeout:Math.min(45000,deadline-Date.now())});
       if(alternative.kind==='working'&&alternative.screenshot){const previous=r.demo;r.demo=target;r.demoLinkRepair={previous,url:target,checkedAt:new Date().toISOString(),source:'Repository README'};result=alternative;repaired++;break;}
      }
     }

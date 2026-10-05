@@ -7,6 +7,11 @@ on:
         description: Refresh demo health and screenshots now
         type: boolean
         default: false
+      recovery_passes:
+        description: Bounded browser passes (two for a catch-up burst)
+        type: choice
+        options: ['1', '2']
+        default: '1'
       watchdog_recovery:
         description: Automatic catch-up requested by the sync watchdog
         type: boolean
@@ -46,6 +51,11 @@ on:
       - 'scripts/demo-probe.mjs'
       - 'scripts/demo-probe-runner.mjs'
       - 'scripts/demo-session.mjs'
+      - 'scripts/demo-preflight.mjs'
+      - 'scripts/preview-quality.mjs'
+      - 'scripts/browser-shards.mjs'
+      - 'scripts/capture-provider-fallback.mjs'
+      - 'scripts/finish-sharded-sync.mjs'
       - 'scripts/verify-browser-pool.mjs'
       - 'scripts/demo-worker.mjs'
       - 'scripts/demo-pool.mjs'
@@ -79,7 +89,10 @@ concurrency:
   group: reposhelf-catalog
   cancel-in-progress: false
 jobs:
-  refresh:
+  prepare:
+    outputs:
+      due: ${{ steps.browser_cycle.outputs.due }}
+      sha: ${{ steps.handoff.outputs.sha }}
     env:
       WATCHDOG_RECOVERY: ${{ inputs.watchdog_recovery }}
     runs-on: ubuntu-latest
@@ -231,30 +244,73 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           FORCE_BROWSER_REFRESH: ${{ github.event_name == 'workflow_dispatch' && inputs.refresh_previews }}
         run: node scripts/browser-cycle.mjs decide
+      - name: Prepare parallel browser handoff
+        id: handoff
+        if: always() && steps.baseline.outcome == 'success'
+        env:
+          SYNC_STEP_RESULTS: ${{ toJSON(steps) }}
+        run: |
+          printf 'sha=%s\n' "$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          node --input-type=module -e "import {writeFileSync} from 'node:fs';writeFileSync('.sync-prepare-steps.json',process.env.SYNC_STEP_RESULTS)"
+      - name: Save prepared catalogue for browser runners
+        if: always() && steps.handoff.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-input-${{ github.run_id }}-${{ github.run_attempt }}
+          include-hidden-files: true
+          path: |
+            .sync-logs/
+            .sync-metrics/
+            .sync-before.json
+            .sync-prepare-steps.json
+            dist/catalog.json
+            dist/spaces.json
+            dist/community.json
+            dist/growth.json
+            data/
+          retention-days: 3
+  browser:
+    needs: prepare
+    if: always() && needs.prepare.outputs.due == 'true' && needs.prepare.outputs.sha != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 65
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [0, 1]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: actions/download-artifact@v4
+        with:
+          name: browser-input-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Install dependencies
+        run: npm install --package-lock=false
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: chromium-${{ runner.os }}-1.56.1
       - name: Install screenshot browser
-        if: always() && steps.browser_cycle.outputs.due == 'true'
         id: browser
-        timeout-minutes: 5
-        continue-on-error: true
         run: |
           npm install --no-save --package-lock=false playwright@1.56.1
           npx playwright install --with-deps chromium
-      - name: Verify storefront in a browser
+      - name: Verify isolated browser workers
         id: verify
-        if: always() && steps.browser.outcome == 'success'
-        timeout-minutes: 3
-        run: |
-          mkdir -p .sync-logs
-          set -o pipefail
-          node scripts/verify-ui.mjs 2>&1 | tee .sync-logs/verify.log
-          node scripts/verify-browser-pool.mjs 2>&1 | tee .sync-logs/verify-pool.log
+        run: node scripts/verify-browser-pool.mjs
       - name: Validate demos and capture previews with shared browser workers
         id: previews
-        if: always() && steps.verify.outcome == 'success'
-        timeout-minutes: 28
         continue-on-error: true
+        timeout-minutes: 55
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          BROWSER_SHARD_INDEX: ${{ matrix.shard }}
+          BROWSER_SHARD_COUNT: '2'
+          BROWSER_RECOVERY_PASSES: ${{ inputs.recovery_passes || '1' }}
           PREVIEW_BUDGET_MS: '900000'
           DEMO_CHECK_BUDGET_MS: '600000'
           CATALOG_PREVIEW_CONCURRENCY: '4'
@@ -263,40 +319,84 @@ jobs:
         run: |
           mkdir -p .sync-logs
           set -o pipefail
-          node scripts/run-browser-queues.mjs 2>&1 | tee .sync-logs/previews.log
+          node scripts/browser-shards.mjs worker 2>&1 | tee .sync-logs/previews.log
+      - name: Retain complete and partial browser patches
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-result-${{ matrix.shard }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: browser-results/
+          retention-days: 3
+      - name: Fail visibly if a worker was interrupted
+        if: steps.previews.outcome == 'failure'
+        run: exit 1
+  refresh:
+    needs: [prepare, browser]
+    if: always() && needs.prepare.outputs.sha != ''
+    env:
+      WATCHDOG_RECOVERY: ${{ inputs.watchdog_recovery }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install merge dependencies
+        run: npm install --package-lock=false
+      - name: Restore existing preview files from the saved checkpoint
+        run: node scripts/publish-catalog.mjs restore
+      - uses: actions/download-artifact@v4
+        with:
+          name: browser-input-${{ github.run_id }}-${{ github.run_attempt }}
+      - name: Download all completed browser results
+        if: needs.prepare.outputs.due == 'true'
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          pattern: browser-result-*-${{ github.run_id }}-${{ github.run_attempt }}
+          path: browser-results/
+          merge-multiple: true
+      - name: Merge parallel browser patches without replacing other fields
+        id: browser_merge
+        if: needs.prepare.outputs.due == 'true'
+        continue-on-error: true
+        env:
+          BROWSER_SHARD_COUNT: '2'
+        run: node scripts/browser-shards.mjs merge
+      - name: Optional free screenshot provider fallback
+        id: capture_providers
+        continue-on-error: true
+        env:
+          REPOSHELF_SUBMISSION_SYNC_KEY: ${{ secrets.REPOSHELF_SUBMISSION_SYNC_KEY }}
+          SCREENSHOTONE_ACCESS_KEY: ${{ secrets.SCREENSHOTONE_ACCESS_KEY }}
+          CLOUDFLARE_BROWSER_TOKEN: ${{ secrets.CLOUDFLARE_BROWSER_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: node scripts/capture-provider-fallback.mjs
       - name: Record remaining public demo checks from shared workers
         id: health
-        if: always() && steps.verify.outcome == 'success'
-        timeout-minutes: 1
+        if: needs.prepare.outputs.due == 'true'
         continue-on-error: true
-        run: |
-          mkdir -p .sync-logs
-          set -o pipefail
-          node scripts/run-browser-queues.mjs summary 2>&1 | tee .sync-logs/health.log
+        run: node scripts/run-browser-queues.mjs summary
       - name: Compress new and remaining previews
         id: compression_final
-        if: always() && steps.previews.outcome == 'success'
-        run: |
-          mkdir -p .sync-logs
-          set -o pipefail
-          node scripts/compress-previews.mjs 2>&1 | tee .sync-logs/compression_final.log
+        run: node scripts/compress-previews.mjs
       - name: Record completed browser refresh cycle
         id: browser_complete
-        if: always() && steps.health.outcome == 'success' && steps.previews.outcome == 'success'
+        if: steps.health.outcome == 'success' && steps.browser_merge.outcome == 'success'
         run: node scripts/browser-cycle.mjs complete
       - name: Record catalog growth
         id: growth
-        if: always() && steps.baseline.outcome == 'success'
-        run: |
-          mkdir -p .sync-logs
-          set -o pipefail
-          node scripts/record-growth.mjs 2>&1 | tee .sync-logs/growth.log
+        run: node scripts/record-growth.mjs
       - name: Save sync report
-        if: always() && steps.baseline.outcome == 'success'
         id: report
         env:
           SYNC_STEP_RESULTS: ${{ toJSON(steps) }}
-        run: node scripts/sync-history.mjs finish
+          BROWSER_JOB_RESULT: ${{ needs.browser.result }}
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/finish-sharded-sync.mjs
       - name: Save completed sync for daily publication
         if: always() && steps.report.outcome == 'success'
         id: publish
@@ -304,7 +404,7 @@ jobs:
           SYNC_PUBLICATION_PHASE: deferred
         run: node scripts/publish-catalog.mjs
       - name: Retain sync diagnostics and generated files
-        if: always() && steps.baseline.outcome == 'success'
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: catalog-recovery-${{ github.run_id }}-${{ github.run_attempt }}
@@ -320,3 +420,6 @@ jobs:
             dist/previews/
             data/
           retention-days: 7
+      - name: Report incomplete browser or preparation stages
+        if: always() && (needs.prepare.result == 'failure' || needs.browser.result == 'failure' || steps.browser_merge.outcome == 'failure')
+        run: exit 1
