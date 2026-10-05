@@ -38,6 +38,8 @@ on:
       - 'scripts/browser-cycle.mjs'
       - 'scripts/capture-previews.mjs'
       - 'scripts/preview-workers.mjs'
+      - 'scripts/browser-checkpoint.mjs'
+      - 'lib/browser-backlog.mjs'
       - 'scripts/preview-schedule.mjs'
       - 'scripts/demo-health.mjs'
       - 'scripts/check-demo-health.mjs'
@@ -235,19 +237,7 @@ jobs:
           mkdir -p .sync-logs
           set -o pipefail
           node scripts/verify-ui.mjs 2>&1 | tee .sync-logs/verify.log
-      - name: Check public demo pages and review broken-demo reports
-        id: health
-        if: always() && steps.verify.outcome == 'success'
-        timeout-minutes: 10
-        continue-on-error: true
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          DEMO_CHECK_BATCH: '400'
-        run: |
-          mkdir -p .sync-logs
-          set -o pipefail
-          node scripts/check-demo-health.mjs 2>&1 | tee .sync-logs/health.log
-      - name: Capture demo previews
+      - name: Validate demos and capture previews
         id: previews
         if: always() && steps.verify.outcome == 'success'
         timeout-minutes: 15
@@ -255,11 +245,23 @@ jobs:
         env:
           PREVIEW_BUDGET_MS: '720000'
           CATALOG_PREVIEW_CONCURRENCY: '3'
-          CATALOG_PREVIEW_BATCH: '240'
+          CATALOG_PREVIEW_BATCH: 'auto'
         run: |
           mkdir -p .sync-logs
           set -o pipefail
           node scripts/capture-previews.mjs 2>&1 | tee .sync-logs/previews.log
+      - name: Check remaining public demo pages and review reports
+        id: health
+        if: always() && steps.verify.outcome == 'success'
+        timeout-minutes: 10
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          DEMO_CHECK_BATCH: 'auto'
+        run: |
+          mkdir -p .sync-logs
+          set -o pipefail
+          node scripts/check-demo-health.mjs 2>&1 | tee .sync-logs/health.log
       - name: Compress new and remaining previews
         id: compression_final
         if: always() && steps.previews.outcome == 'success'
