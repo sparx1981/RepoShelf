@@ -40,3 +40,22 @@ const clickRow={id:'click-row',builtin_key:'reposhelf',mode:'reposhelf',category
 const clickShelf=B.select(counted,{storefront:true,demos:true},{rows:[clickRow],builtinSetupRequired:false});assert.deepEqual(clickShelf.shelves['click-row'],['team/clicked','team/other']);
 const {createRepoShelfPopularity}=await import('../lib/reposhelf-popularity.mjs');let aggregateReads=0,time=0;const countSource=createRepoShelfPopularity({config:{serviceKey:'fixture'},request:async(path,options)=>{aggregateReads++;assert(options.service);return [{project_id:'TEAM/Clicked',clicks:5}]}},{now:()=>time});assert.equal((await countSource())['team/clicked'],5);await countSource();assert.equal(aggregateReads,1);time=61000;await countSource();assert.equal(aggregateReads,2);
 console.log('PASS: RepoShelf detail-click ranking, zero-click exclusion, source-independent ordering and cached server-only aggregate reads.');
+
+// Relevance must beat raw popularity without weakening filters or pagination.
+const searchRepos=[
+ {full:'team/photo',name:'Photo',description:'A gallery',stars:0,searchReadme:''},
+ {full:'team/gallery',name:'Gallery',description:'Organise photos',stars:5,searchReadme:''},
+ {full:'team/engine',name:'Engine',description:'Rendering engine',stars:10000,topics:['photo'],searchReadme:''},
+ {full:'team/manual',name:'Manual',description:'A developer tool',stars:999999,searchReadme:'photo'},
+ {full:'team/pictures',name:'Pictures',description:'Manage images',stars:40,searchReadme:''},
+ {full:'team/private',name:'Photo',availability:'unavailable',stars:999999},
+].map(r=>({category:'Design',availability:'available',demo:'https://demo.example.org',...r}));
+const ranked=B.select(searchRepos,{q:'photo',sort:'relevance',demos:false,limit:2});assert.equal(ranked.items[0].full,'team/photo');assert.deepEqual(ranked.searchGroups,{best:3,other:2});assert.equal(ranked.total,5);assert.equal(ranked.items[0].searchMatch.group,'best');
+let paged=[],offset=0;while(true){const page=B.select(searchRepos,{q:'photo',sort:'relevance',demos:false,limit:2,offset});paged.push(...page.items);if(page.nextOffset===null)break;offset=page.nextOffset}assert.equal(new Set(paged.map(r=>r.full)).size,5);assert.deepEqual(paged.map(r=>r.searchMatch.group),['best','best','best','other','other']);assert.equal(paged.find(r=>r.full==='team/manual').searchMatch.reason,'Mentioned in README');assert(!JSON.stringify(paged).includes('searchReadme'));
+assert.equal(B.select(searchRepos,{q:'photo',sort:'stars',demos:false}).items[0].full,'team/manual','Explicit popularity ordering is honoured');
+assert.equal(B.select(searchRepos,{q:'photo',category:'Finance',demos:false}).total,0);assert.equal(B.select(searchRepos,{q:'photo',exclude:['team/photo'],demos:false}).total,4);
+const technology={full:'team/viewer',name:'Viewer',description:'A renderer',technologies:['Three.js'],searchReadme:''};assert.equal(B.searchMatch(technology,'threejs').group,'best');assert.equal(B.searchMatch(technology,'three.js').group,'best');assert.equal(B.searchMatch({...technology,language:'JavaScript'},'js').reason,'Matches related terms');
+assert.equal(B.searchMatch({name:'Nebula'},'neubla').reason,'Similar spelling');assert.equal(B.searchMatch({name:'Nebula'},'nebula missing'),null);assert.equal(B.searchMatch({name:'Cat'},'bat'),null,'Short words do not receive fuzzy expansion');assert.equal(B.searchMatch({name:'X',searchReadme:'nebula'},'neubla'),null,'Typos never expand README vocabulary');assert.equal(B.searchMatch({name:'Café'},'cafe').group,'best');
+assert(B.searchMatch({name:'A',description:'Manage photos'},'photo'));assert(B.searchMatch({name:'Family photo gallery'},'photo gallery').score>B.searchMatch({name:'Family gallery photo'},'photo gallery').score);
+assert.equal(B.searchMatch({name:'照片管理'},'照片管理').group,'best');assert.equal(B.searchMatch({name:'Photo'},'照片管理'),null,'Non-Latin queries must not become an empty match-all search');
+console.log('PASS: name/phrase relevance, metadata and README groups, aliases, plural and accent normalization, bounded spelling, filter preservation, explicit sorting and duplicate-free grouped pagination.');
