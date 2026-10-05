@@ -66,3 +66,10 @@ assert.equal((await call(syncHandler,{origin:'https://evil.test',body:{action:'s
 assert.equal((await call(syncHandler,{body:{action:'sync'}})).status,409);syncBusy=false;
 assert.equal((await call(syncHandler,{body:{action:'sync'}})).status,202);assert.equal(syncDispatches,2);
 console.log('PASS: UTC schedule boundaries and guarded, administrator-only manual sync dispatch.');
+
+const {createSyncRouter}=await import('../api/sync-log.mjs');
+let routedSyncs=0;
+const router=createSyncRouter({sync:async()=>{throw Error('Must route POST to control')},publication:createPublicationHandler({accounts,control:{sync:async()=>{routedSyncs++;return {requested:true}}}})});
+const routedReq={method:'POST',url:'/api/sync-log?action=publish',headers:{origin:'https://reposhelf.test'},body:{action:'sync'}},routedRes={writeHead(status){this.status=status},end(body){this.data=JSON.parse(body)}};
+await router(routedReq,routedRes);assert.equal(routedRes.status,202);assert.equal(routedSyncs,1);
+console.log('PASS: canonical API router forwards administrator sync requests to workflow dispatch.');

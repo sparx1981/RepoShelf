@@ -15,3 +15,7 @@ const branchReport={...saved[0],id:'999',attempt:1,recordedAt:'2026-10-04T00:00:
 const branchLog=createSyncLogHandler({accounts,saved:async()=>[],checkpoint:{reports:async()=>[branchReport]},fetcher:async()=>Response.json({workflow_runs:[{id:999,run_attempt:1,status:'completed',conclusion:'success',created_at:'2026-10-04T00:00:00Z'}],total_count:1})});
 const branchResult=await call(branchLog,'/api/sync-log');assert.equal(branchResult.data.runs[0].counts.withDemo,12);assert.equal(branchResult.data.runs[0].diagnostics.publication,'unchanged');
 console.log('PASS: checkpoint reports appear in admin logs without deployment and distinguish unchanged publication.');
+
+const configuredLog=createSyncLogHandler({accounts,saved:async()=>[],checkpoint:{reports:async()=>[],json:async()=>null},control:{configured:false},fetcher:async()=>Response.json({workflow_runs:[],total_count:0})});
+assert.equal((await call(configuredLog,'/api/sync-log')).data.publication.controlConfigured,false);
+console.log('PASS: admin sync logs expose configuration readiness without credentials.');
