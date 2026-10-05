@@ -9,8 +9,8 @@ export async function demoPreflight(target,{resolver=lookup,requester=(url,opts,
   let dnsTimer,addresses;try{addresses=await Promise.race([resolver(u.hostname.replace(/^\[|\]$/g,''),{all:true}),new Promise((_,reject)=>{dnsTimer=setTimeout(()=>reject(Error('dns_timeout')),Math.max(1,deadline-Date.now()));})])}finally{clearTimeout(dnsTimer)};
   if(!addresses.length||addresses.some(a=>!publicIP(a.address)))return {kind:'temporary',reason:addresses.length?'unsafe_target':'dns_unresolved',skip:true};
   const address=addresses[0],response=await new Promise((resolve,reject)=>{
-   const req=requester(u,{method:'GET',headers:{'User-Agent':'RepoShelf demo validator','Accept':'text/html'},lookup:(_host,options,cb)=>options?.all?cb(null,[address]):cb(null,address.address,address.family||4)},res=>{const result={status:res.statusCode,location:res.headers.location};res.destroy();resolve(result)});
-   req.setTimeout(Math.max(1,deadline-Date.now()),()=>req.destroy(Error('preflight_timeout')));req.on('error',reject);req.end();
+   let requestTimer;const req=requester(u,{method:'GET',headers:{'User-Agent':'RepoShelf demo validator','Accept':'text/html'},lookup:(_host,options,cb)=>options?.all?cb(null,[address]):cb(null,address.address,address.family||4)},res=>{clearTimeout(requestTimer);const result={status:res.statusCode,location:res.headers.location};res.destroy();resolve(result)});
+   requestTimer=setTimeout(()=>req.destroy(Error('preflight_timeout')),Math.max(1,deadline-Date.now()));req.on('error',error=>{clearTimeout(requestTimer);reject(error)});req.end();
   });
   if([301,302,303,307,308].includes(response.status)&&response.location){target=new URL(response.location,u).href;continue}
   if([404,410].includes(response.status))return {kind:'unavailable',reason:'http_'+response.status,skip:true};
