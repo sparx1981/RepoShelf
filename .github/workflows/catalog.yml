@@ -12,6 +12,10 @@ on:
         type: choice
         options: ['1', '2']
         default: '1'
+      launch_extra:
+        description: Bounded launch acceleration pass
+        type: boolean
+        default: false
       watchdog_recovery:
         description: Automatic catch-up requested by the sync watchdog
         type: boolean
@@ -54,6 +58,12 @@ on:
       - 'scripts/demo-preflight.mjs'
       - 'scripts/preview-quality.mjs'
       - 'scripts/browser-shards.mjs'
+      - 'scripts/browser-shard-policy.mjs'
+      - 'scripts/launch-cadence.mjs'
+      - 'lib/launch-cadence.mjs'
+      - 'scripts/discovery-search.mjs'
+      - 'scripts/space-intake.mjs'
+      - 'scripts/browser-work-policy.mjs'
       - 'scripts/capture-provider-fallback.mjs'
       - 'scripts/finish-sharded-sync.mjs'
       - 'scripts/verify-browser-pool.mjs'
@@ -82,6 +92,8 @@ on:
       - 'scripts/import-community.mjs'
       - 'dist/community.js'
       - '.github/workflows/catalog.yml'
+env:
+  BROWSER_SHARD_COUNT: '4'
 permissions:
   contents: write
   issues: read
@@ -93,8 +105,10 @@ jobs:
     outputs:
       due: ${{ steps.browser_cycle.outputs.due }}
       sha: ${{ steps.handoff.outputs.sha }}
+      shards: ${{ steps.handoff.outputs.shards }}
     env:
       WATCHDOG_RECOVERY: ${{ inputs.watchdog_recovery }}
+      LAUNCH_EXTRA: ${{ inputs.launch_extra }}
     runs-on: ubuntu-latest
     timeout-minutes: 55
     steps:
@@ -103,6 +117,8 @@ jobs:
           ref: main
       - name: Restore unpublished generated checkpoint data
         run: node scripts/publish-catalog.mjs restore
+      - name: Reserve bounded launch pass
+        run: node scripts/launch-cadence.mjs start
       - name: Record starting catalog
         id: baseline
         run: node scripts/sync-history.mjs start
@@ -159,6 +175,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           SPACE_IMPORT_BATCH: ${{ steps.priority.outputs.spacesBatch }}
           SPACE_REVALIDATE_BATCH: '150'
+          SPACE_MIN_LIKES: '2'
           CURATED_IMPORT_BATCH: ${{ steps.priority.outputs.curatedBatch }}
         run: |
           mkdir -p .sync-logs
@@ -178,6 +195,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           CATALOG_BATCH_SIZE: ${{ steps.priority.outputs.githubBatch }}
+          CATALOG_SEARCH_QUERIES: '40'
           CATALOG_REVALIDATE_BATCH: 'auto'
         run: |
           mkdir -p .sync-logs
@@ -251,6 +269,7 @@ jobs:
           SYNC_STEP_RESULTS: ${{ toJSON(steps) }}
         run: |
           printf 'sha=%s\n' "$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          node --input-type=module -e "import {appendFileSync} from 'node:fs';const n=Number(process.env.BROWSER_SHARD_COUNT);if(!Number.isInteger(n)||n<1||n>4)throw Error('Invalid shard count');appendFileSync(process.env.GITHUB_OUTPUT,'shards='+JSON.stringify(Array.from({length:n},(_,i)=>i))+'\n')"
           node --input-type=module -e "import {writeFileSync} from 'node:fs';writeFileSync('.sync-prepare-steps.json',process.env.SYNC_STEP_RESULTS)"
       - name: Save prepared catalogue for browser runners
         if: always() && steps.handoff.outcome == 'success'
@@ -277,7 +296,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard: [0, 1]
+        shard: ${{ fromJSON(needs.prepare.outputs.shards || '[0]') }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -309,7 +328,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           BROWSER_SHARD_INDEX: ${{ matrix.shard }}
-          BROWSER_SHARD_COUNT: '2'
           BROWSER_RECOVERY_PASSES: ${{ inputs.recovery_passes || '1' }}
           PREVIEW_BUDGET_MS: '900000'
           DEMO_CHECK_BUDGET_MS: '600000'
@@ -363,8 +381,6 @@ jobs:
         id: browser_merge
         if: needs.prepare.outputs.due == 'true'
         continue-on-error: true
-        env:
-          BROWSER_SHARD_COUNT: '2'
         run: node scripts/browser-shards.mjs merge
       - name: Optional free screenshot provider fallback
         id: capture_providers
@@ -397,12 +413,23 @@ jobs:
           BROWSER_JOB_RESULT: ${{ needs.browser.result }}
           GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/finish-sharded-sync.mjs
+      - name: Record launch progress and burst limits
+        id: launch_progress
+        if: steps.report.outcome == 'success'
+        run: node scripts/launch-cadence.mjs finish
       - name: Save completed sync for daily publication
         if: always() && steps.report.outcome == 'success'
         id: publish
         env:
           SYNC_PUBLICATION_PHASE: deferred
         run: node scripts/publish-catalog.mjs
+      - name: Publish the initial launch milestone once
+        if: steps.launch_progress.outputs.milestonePublication == 'true' && steps.publish.outcome == 'success'
+        run: |
+          node scripts/launch-review-sample.mjs
+          node scripts/publish-catalog.mjs
+          node scripts/launch-cadence.mjs published
+          SYNC_PUBLICATION_PHASE=checkpoint node scripts/publish-catalog.mjs
       - name: Retain sync diagnostics and generated files
         if: always()
         uses: actions/upload-artifact@v4

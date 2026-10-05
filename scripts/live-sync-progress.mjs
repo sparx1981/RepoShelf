@@ -3,7 +3,7 @@ import {cleanSyncProgress,progressBranch} from '../lib/sync-progress.mjs';
 
 // A small non-deploying branch carries public aggregate diagnostics only.
 export function liveSyncPublisher({token=process.env.GITHUB_TOKEN,fetcher=fetch,now=Date.now,interval=60000,configFile=new URL('../vercel.json',import.meta.url),progressPath='data/sync-progress.json'}={}){
- if(!/^data\/sync-progress(?:-shard-[01])?\.json$/.test(progressPath))throw Error('Invalid progress path');
+ if(!/^data\/sync-progress(?:-shard-[0-3])?\.json$/.test(progressPath))throw Error('Invalid progress path');
  let sha=null,last=-Infinity,pending=null,warnings=0;
  async function request(path,method='GET',body){const response=await fetcher('https://api.github.com/repos/sparx1981/RepoShelf/'+path,{method,headers:{Accept:'application/vnd.github+json','User-Agent':'RepoShelf',Authorization:'Bearer '+token,...body?{'Content-Type':'application/json'}:{}},body:body?JSON.stringify(body):undefined,redirect:'error',signal:AbortSignal.timeout(5000)});if(response.status===404&&method==='GET')return null;if(!response.ok)throw Error('Progress write unavailable');return response.json()}
  async function write(value){try{

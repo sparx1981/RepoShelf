@@ -1,3 +1,4 @@
+import {listingShard} from './browser-shard-policy.mjs';
 import {hostGate} from './demo-preflight.mjs';
 import {balancedBrowserWork,retryDelay} from './browser-work-policy.mjs';
 import {readFile,writeFile,mkdir,mkdtemp,rm} from 'node:fs/promises';
@@ -17,7 +18,7 @@ export async function runQueues(root=new URL('../',import.meta.url),env=process.
  const previewBudget=Number(env.PREVIEW_BUDGET_MS||900000),healthBudget=Number(env.DEMO_CHECK_BUDGET_MS||600000),budget=previewBudget+healthBudget;
  if(!Number.isFinite(budget)||previewBudget<=0||healthBudget<=0)throw Error('Invalid browser time budget');
  const recovery=candidateSelector?.(entries,started),previewQueue=recovery?.previews||previewCandidates(entries,started,entries.length),previewIds=new Set(previewQueue.map(r=>r.full.toLowerCase())),healthQueue=(recovery?.health||demoCandidates(entries,started,entries.length)).filter(r=>!previewIds.has(r.full.toLowerCase()));
- const shardCount=Number(env.BROWSER_SHARD_COUNT||1),shardIndex=Number(env.BROWSER_SHARD_INDEX||0);const belongs=r=>shardCount===1||createHash('sha256').update(r.full.toLowerCase()).digest().readUInt32BE(0)%shardCount===shardIndex;previewQueue.splice(0,previewQueue.length,...previewQueue.filter(belongs));healthQueue.splice(0,healthQueue.length,...healthQueue.filter(belongs));
+ const shardCount=Number(env.BROWSER_SHARD_COUNT||1),shardIndex=Number(env.BROWSER_SHARD_INDEX||0);const belongs=r=>shardCount===1||listingShard(r,shardCount)===shardIndex;previewQueue.splice(0,previewQueue.length,...previewQueue.filter(belongs));healthQueue.splice(0,healthQueue.length,...healthQueue.filter(belongs));
  const queues={previews:previewQueue,health:healthQueue},telemetry=Object.fromEntries(Object.entries(queues).map(([name,items])=>[name,probeMetrics({selected:items.length,due:items.length,limit:entries.length})]));
  const requested=Number(env.CATALOG_PREVIEW_CONCURRENCY||4);if(!Number.isInteger(requested)||requested<1)throw Error('Invalid browser concurrency');const max=Math.min(4,requested),adaptive=adaptiveBrowsers({max}),pool=poolFactory({max}),publisher=publisherFactory({token:env.GITHUB_TOKEN}),persist=checkpointWriter(files,snapshots);
  const gated=hostGate();const probe=(input,options)=>gated(input.target,()=>Date.now()>=started+budget?Promise.resolve({kind:'temporary',reason:'budget_expired'}):pool.probe(input,{...options,timeout:Math.min(options.timeout,started+budget-Date.now())}));

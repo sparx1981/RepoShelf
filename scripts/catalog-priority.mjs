@@ -14,7 +14,7 @@ export function qualityPlan(entries,now=Date.now()){
  const workingDemos=available.filter(r=>Q.demoState(r)?.status==='working'&&!Q.demoState(r)?.error&&now-Date.parse(Q.demoState(r)?.checkedAt)<=7*86400000).length;
  const targets={repositoryChecks:Math.ceil(available.length*.95),demoChecks:Math.ceil(available.length*.95),screenshots:Math.ceil(visible.length*.9)};
  const reasons=[];if(checked<targets.repositoryChecks)reasons.push('Repository validation is below 95%.');if(validated<targets.demoChecks)reasons.push('Demo validation is below 95%.');if(screenshots<targets.screenshots)reasons.push('Screenshot coverage is below 90%.');
- return {admissionPolicy:'validated-demo-v1',publication,workingDemos,browserBacklog:browserBacklog(entries),targets,reasons,pending:{repositoryChecks:available.length-checked,demoChecks:available.length-validated,screenshots:visible.length-screenshots},available:available.length,visible:visible.length,repositoryChecks:checked,demoChecks:validated,screenshots,ready,githubBatch:250,spacesBatch:25,curatedBatch:40,communityBatch:20};
+ return {admissionPolicy:'validated-demo-v1',publication,workingDemos,browserBacklog:browserBacklog(entries),targets,reasons,pending:{repositoryChecks:available.length-checked,demoChecks:available.length-validated,screenshots:visible.length-screenshots},available:available.length,visible:visible.length,repositoryChecks:checked,demoChecks:validated,screenshots,ready,githubBatch:1500,spacesBatch:350,curatedBatch:40,communityBatch:20};
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href){
  const entries=[];for(const file of ['catalog','spaces'])entries.push(...JSON.parse(await readFile(new URL('../dist/'+file+'.json',import.meta.url),'utf8')).repositories);
