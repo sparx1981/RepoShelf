@@ -32,3 +32,11 @@ try{
  handler=createEditorialHandler({accounts:{ready:true,config:{origin:'https://reposhelf.test'},origin(){},request:async()=>{throw Error('Temporary settings failure')}},browse:independent});const degraded=await call('/api/editorial?action=browse',{storefront:true,demos:false});assert.equal(degraded.status,200);assert(degraded.data.items.length>0);assert(degraded.data.editorialNotice.includes('Catalogue search is still available'));
  console.log('PASS: compact independent index, on-demand rich details, full-library facets, cross-provider deduplication, stable pagination/cursors, unavailable hiding, private exclusion, shelf ordering and origin/admin guards.');
 }finally{await rm(dir,{recursive:true,force:true})}
+
+const B=require('../dist/browse.js');
+const counted=[{...repos[1],full:'team/clicked',repoShelfClicks:5,stars:0},{...repos[2],full:'team/other',repoShelfClicks:2,stars:99999},{...repos[4],full:'team/zero',repoShelfClicks:0}];
+assert.deepEqual(B.order(counted,'reposhelf').map(r=>r.full),['team/clicked','team/other']);
+const clickRow={id:'click-row',builtin_key:'reposhelf',mode:'reposhelf',category:'',enabled:true,items:[]};
+const clickShelf=B.select(counted,{storefront:true,demos:true},{rows:[clickRow],builtinSetupRequired:false});assert.deepEqual(clickShelf.shelves['click-row'],['team/clicked','team/other']);
+const {createRepoShelfPopularity}=await import('../lib/reposhelf-popularity.mjs');let aggregateReads=0,time=0;const countSource=createRepoShelfPopularity({config:{serviceKey:'fixture'},request:async(path,options)=>{aggregateReads++;assert(options.service);return [{project_id:'TEAM/Clicked',clicks:5}]}},{now:()=>time});assert.equal((await countSource())['team/clicked'],5);await countSource();assert.equal(aggregateReads,1);time=61000;await countSource();assert.equal(aggregateReads,2);
+console.log('PASS: RepoShelf detail-click ranking, zero-click exclusion, source-independent ordering and cached server-only aggregate reads.');

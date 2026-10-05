@@ -3,7 +3,7 @@ insert into public.reposhelf_admins(user_id) values('00000000-0000-0000-0000-000
 set role authenticated;
 select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-000000000001',false);
 do $$declare r public.editorial_ribbons;begin
-if (select count(*) from public.editorial_ribbons where builtin_key is not null)<>13 then raise exception 'Built-in rows missing';end if;
+if (select count(*) from public.editorial_ribbons where builtin_key is not null)<>14 then raise exception 'Built-in rows missing';end if;
 select * into r from public.editorial_ribbons where builtin_key='hero';
 perform public.reposhelf_save_ribbon(r.id,r.revision,'Our spotlight','','','daily',true,'[]');
 if (select custom_rows from public.editorial_settings where id=true) then raise exception 'Built-in edit replaced category rows';end if;

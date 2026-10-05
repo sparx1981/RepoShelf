@@ -50,3 +50,13 @@ const first=persist();snapshots[0].repositories=[good];await persist(true);await
 assert.equal(JSON.parse(await readFile(file,'utf8')).repositories[0].demoHealth.status,'working','Newer queued progress wins');
 }finally{await rm(folder,{recursive:true,force:true})}
 console.log('Browser backfill, retry isolation, time budgets and durable progress passed.');
+
+const {qualitySnapshot}=await import('../lib/quality-snapshot.mjs');
+const snap=qualitySnapshot([{...base,previewCheck:{url:base.demo,attemptedAt:new Date(now).toISOString(),consecutiveFailures:1,status:'retry'},adminNote:'private',screenshots:[]}],{at:new Date(now).toISOString(),runId:'123'});assert.equal(browserBacklog(snap.entries).screenshot.retry,1);assert.equal(browserBacklog(snap.entries).screenshot.never,0);assert(!JSON.stringify(snap).includes('private'));
+console.log('PASS: saved quality snapshots retain screenshot attempt evidence and exclude private notes.');
+
+const {editorialLaunch}=await import('../lib/editorial-launch.mjs');
+const qualityResponse={writeHead(status){this.status=status},end(body){this.data=JSON.parse(body)}};
+await editorialLaunch({method:'GET'},qualityResponse,{action:'quality',params:new URLSearchParams(),accounts:{admin:async()=>({token:'admin'}),request:async path=>path.endsWith('reposhelf_analytics')?{topListings:[]}:[]},browse:{dataset:async()=>({index:{repositories:[base],snapshots:{catalog:'2026-10-01T00:00:00Z'}}})},checkpoint:{json:async()=>snap}});
+assert.equal(qualityResponse.data.qualitySource,'Latest saved sync');assert.equal(qualityResponse.data.coverage.browserBacklog.screenshot.never,0);assert.equal(qualityResponse.data.coverage.browserBacklog.screenshot.retry,1);
+console.log('PASS: admin quality reads latest saved sync evidence instead of older deployed records.');
