@@ -1,6 +1,6 @@
 const DAY=86400000;
 export function discoveryQueries(now=Date.now()){
- const seeds=['demo in:readme','playground in:readme','"live preview" in:readme','"try online" in:readme','topic:live-demo','topic:demo','"demo" topic:react','"demo" topic:threejs','"demo" topic:nextjs','"demo" topic:svelte','"demo" topic:vue','"demo" topic:python'];
+ const seeds=['demo in:readme','playground in:readme','"live preview" in:readme','"try online" in:readme','topic:live-demo','topic:demo','topic:webapp','topic:pwa','"live demo" in:readme','"demo" topic:react','"demo" topic:threejs','"demo" topic:nextjs','"demo" topic:svelte','"demo" topic:vue','"demo" topic:python'];
  const ranges=['stars:>=1000','stars:100..999','stars:10..99','stars:1..9','stars:0'];
  const year=new Date(now).getUTCFullYear(),queries=seeds.flatMap(seed=>ranges.map(range=>`${seed} ${range}`));
  // Low-star and recent projects get independent partitions instead of always
