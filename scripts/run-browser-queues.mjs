@@ -7,27 +7,36 @@ import {previewCandidates} from './preview-schedule.mjs';
 import {createDemoPool} from './demo-pool.mjs';
 import {runBrowserQueues} from './browser-queues.mjs';
 import {adaptiveBrowsers,browserResources} from './adaptive-browser.mjs';
+import {createDemoLinkRepair} from './repair-demo-links.mjs';
 import {liveSyncPublisher} from './live-sync-progress.mjs';
 
-export async function runQueues(root=new URL('../',import.meta.url),env=process.env,{poolFactory=createDemoPool,publisherFactory=liveSyncPublisher,resourceSampler=browserResources,candidateSelector}={}){
+export async function runQueues(root=new URL('../',import.meta.url),env=process.env,{poolFactory=createDemoPool,publisherFactory=liveSyncPublisher,resourceSampler=browserResources,candidateSelector,repairFactory=createDemoLinkRepair}={}){
  const files=['catalog','spaces'].map(name=>new URL('dist/'+name+'.json',root)),snapshots=await Promise.all(files.map(async file=>JSON.parse(await readFile(file,'utf8')))),entries=snapshots.flatMap(s=>s.repositories),started=Date.now();
  const previewBudget=Number(env.PREVIEW_BUDGET_MS||900000),healthBudget=Number(env.DEMO_CHECK_BUDGET_MS||600000),budget=previewBudget+healthBudget;
  if(!Number.isFinite(budget)||previewBudget<=0||healthBudget<=0)throw Error('Invalid browser time budget');
  const recovery=candidateSelector?.(entries,started),previewQueue=recovery?.previews||previewCandidates(entries,started,entries.length),previewIds=new Set(previewQueue.map(r=>r.full.toLowerCase())),healthQueue=(recovery?.health||demoCandidates(entries,started,entries.length)).filter(r=>!previewIds.has(r.full.toLowerCase()));
  const queues={previews:previewQueue,health:healthQueue},telemetry=Object.fromEntries(Object.entries(queues).map(([name,items])=>[name,probeMetrics({selected:items.length,due:items.length,limit:entries.length})]));
  const requested=Number(env.CATALOG_PREVIEW_CONCURRENCY||4);if(!Number.isInteger(requested)||requested<1)throw Error('Invalid browser concurrency');const max=Math.min(4,requested),adaptive=adaptiveBrowsers({max}),pool=poolFactory({max}),publisher=publisherFactory({token:env.GITHUB_TOKEN}),persist=checkpointWriter(files,snapshots);
+ const repair=repairFactory({token:env.GITHUB_TOKEN});let repaired=0;
  const scratch=await mkdtemp(join(tmpdir(),'reposhelf-browser-'));await mkdir(new URL('dist/previews/',root),{recursive:true});let complete=false,active=0,lastSave=0,resources={},lastResource=0,spent={previews:0,health:0};
  function progress(){return {schema:1,runId:env.GITHUB_RUN_ID,attempt:Number(env.GITHUB_RUN_ATTEMPT||1),startedAt:new Date(started).toISOString(),updatedAt:new Date().toISOString(),status:complete?'complete':'running',previews:telemetry.previews.summary(started),health:telemetry.health.summary(started),activeWorkers:active,concurrency:adaptive.limit,budgetMs:budget,elapsedMs:Date.now()-started,workerRestarts:pool.stats().workerRestarts}}
- async function save(force=false){if(!force&&Date.now()-lastSave<5000)return;lastSave=Date.now();for(const name of ['previews','health'])await recordStageMetrics(name,{...telemetry[name].summary(started),complete,mode:'shared_time_budget',budgetMs:budget,allocatedWeight:name==='previews'?previewBudget:healthBudget,workerTimeMs:spent[name],adaptive:adaptive.summary(),resources,pool:pool.stats(),progressWarnings:publisher.warnings},root)}
+ async function save(force=false){if(!force&&Date.now()-lastSave<5000)return;lastSave=Date.now();for(const name of ['previews','health'])await recordStageMetrics(name,{...telemetry[name].summary(started),complete,mode:'shared_time_budget',budgetMs:budget,allocatedWeight:name==='previews'?previewBudget:healthBudget,workerTimeMs:spent[name],adaptive:adaptive.summary(),resources,pool:pool.stats(),progressWarnings:publisher.warnings,linksRepaired:repaired},root)}
  async function sample(){if(Date.now()-lastResource>=5000){resources=await resourceSampler();lastResource=Date.now()}}
  try{
   await sample();await save(true);await publisher.publish(progress());
   await runBrowserQueues(queues,async(r,name,deadline)=>{
    active++;const filename=createHash('sha256').update(r.full).digest('hex').slice(0,24)+'.jpg',capture=name==='previews';
    try{
-    const result=await pool.probe({target:r.source==='huggingface'?(r.appUrl||r.demo):r.demo,space:r.source==='huggingface',...capture?{screenshot:join(scratch,filename)}:{}},{timeout:Math.min(capture?45000:35000,Math.max(1,deadline-Date.now()))});
+    let result=await pool.probe({target:r.source==='huggingface'?(r.appUrl||r.demo):r.demo,space:r.source==='huggingface',...capture?{screenshot:join(scratch,filename)}:{}},{timeout:Math.min(capture?45000:35000,Math.max(1,deadline-Date.now()))});
+    if(!candidateSelector&&result.kind!=='working'&&Date.now()+30000<deadline){
+     for(const target of await repair(r,result)){
+      if(Date.now()+15000>=deadline)break;
+      const alternative=await pool.probe({target,screenshot:join(scratch,filename)},{timeout:Math.min(45000,deadline-Date.now())});
+      if(alternative.kind==='working'&&alternative.screenshot){const previous=r.demo;r.demo=target;r.demoLinkRepair={previous,url:target,checkedAt:new Date().toISOString(),source:'Repository README'};result=alternative;repaired++;break;}
+     }
+    }
     Object.assign(r,recordDemoResult(r,result));const success=result.kind==='working'&&Boolean(result.screenshot);
-    if(capture){const prior=r.previewCheck?.url===r.demo?r.previewCheck:null,failures=success?0:(prior?.consecutiveFailures||0)+1;r.previewAttemptAt=new Date().toISOString();r.previewCheck={url:r.demo,attemptedAt:r.previewAttemptAt,consecutiveFailures:failures,status:success?'captured':'retry',reason:success?null:result.reason||'no_screenshot',nextCheckAt:new Date(Date.now()+(success?7*86400000:failures>=3?86400000:2*3600000)).toISOString()};
+    if(capture||result.screenshot){const prior=r.previewCheck?.url===r.demo?r.previewCheck:null,failures=success?0:(prior?.consecutiveFailures||0)+1;r.previewAttemptAt=new Date().toISOString();r.previewCheck={url:r.demo,attemptedAt:r.previewAttemptAt,consecutiveFailures:failures,status:success?'captured':'retry',reason:success?null:result.reason||'no_screenshot',nextCheckAt:new Date(Date.now()+(success?7*86400000:failures>=3?86400000:2*3600000)).toISOString()};
      if(success){await writeFile(new URL('dist/previews/'+filename,root),await readFile(join(scratch,filename)));r.screenshots=[{src:'previews/'+filename,kind:'demo',capturedAt:r.previewAttemptAt,url:r.demo},...(r.screenshots||[]).filter(i=>i.kind!=='demo')].slice(0,6)}
     }
     telemetry[name].record(r.full,result,capture?success:null);await sample();adaptive.observe(result,resources);pool.trim(adaptive.limit);await persist();await save();
