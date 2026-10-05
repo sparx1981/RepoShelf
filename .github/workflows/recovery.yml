@@ -1,0 +1,81 @@
+name: Recover incomplete catalogue listings
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['scripts/recover-catalogue.mjs', '.github/workflows/recovery.yml']
+permissions:
+  contents: write
+concurrency:
+  group: reposhelf-catalog
+  cancel-in-progress: false
+jobs:
+  recovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Restore latest saved catalogue
+        run: node scripts/publish-catalog.mjs restore
+      - name: Record starting catalogue
+        id: baseline
+        run: node scripts/sync-history.mjs start
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies and browser
+        id: browser
+        run: |
+          npm install --package-lock=false
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Verify isolated browser workers
+        id: verify
+        run: node tests/recovery-queues.mjs && node scripts/verify-browser-pool.mjs
+      - name: Two targeted recovery passes
+        id: previews
+        timeout-minutes: 55
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PREVIEW_BUDGET_MS: '900000'
+          DEMO_CHECK_BUDGET_MS: '600000'
+          CATALOG_PREVIEW_CONCURRENCY: '4'
+        run: |
+          mkdir -p .sync-logs
+          set -o pipefail
+          node scripts/recover-catalogue.mjs 2>&1 | tee .sync-logs/previews.log
+      - name: Record demo check results
+        id: health
+        if: always() && steps.previews.outcome == 'success'
+        run: node scripts/run-browser-queues.mjs summary
+      - name: Compress recovered screenshots
+        id: compression_final
+        if: always() && steps.baseline.outcome == 'success'
+        run: node scripts/compress-previews.mjs
+      - name: Record catalogue growth
+        id: growth
+        if: always() && steps.baseline.outcome == 'success'
+        run: node scripts/record-growth.mjs
+      - name: Save recovery report
+        id: report
+        if: always() && steps.baseline.outcome == 'success'
+        env:
+          SYNC_STEP_RESULTS: ${{ toJSON(steps) }}
+        run: node scripts/sync-history.mjs finish
+      - name: Save recovered records for publication
+        if: always() && steps.report.outcome == 'success'
+        env:
+          SYNC_PUBLICATION_PHASE: deferred
+        run: node scripts/publish-catalog.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: recovery-diagnostics-${{ github.run_id }}
+          include-hidden-files: true
+          path: |
+            .sync-logs/
+            .sync-metrics/
+            data/recovery-results.json
+          retention-days: 7

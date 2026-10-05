@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {recoveryQueues} from '../scripts/recovery-queues.mjs';
+const now=Date.parse('2026-10-05T16:00:00Z'),demo='https://example.com',base={full:'team/project',demo,availability:'available'},good={...base,demoHealth:{url:demo,status:'working',checkedAt:new Date(now).toISOString()},screenshots:[{src:'previews/test.jpg',kind:'demo',url:demo}]};
+assert.equal(recoveryQueues([good],now).previews.length,0);
+const failed={...base,demoHealth:{url:demo,status:'unknown',error:{reason:'empty_page'},nextCheckAt:new Date(now+86400000).toISOString()}};
+assert.equal(recoveryQueues([failed],now).previews.length,1,'Recovery retries missing screenshots despite ordinary cooldown');
+assert.equal(recoveryQueues([{...failed,screenshots:good.screenshots}],now).health.length,1);
+assert.equal(recoveryQueues([{...failed,demoHealth:{...failed.demoHealth,error:{reason:'rate_limit'}}}],now).previews.length,0,'Explicit rate limits keep backoff');
+assert.equal(recoveryQueues([{...failed,demoHealth:{...failed.demoHealth,error:{reason:'unsafe_target'}}}],now).previews.length,0);
+assert.equal(recoveryQueues([{...failed,demoHealth:{...failed.demoHealth,status:'unavailable'}}],now).previews.length,0);
+assert.equal(recoveryQueues([{...good,screenshots:[]}],now).previews.length,1,'Missing capture and demo validation share one visit');
+console.log('PASS: targeted recovery leaves good records, confirmed broken demos, private targets and rate limits alone.');
