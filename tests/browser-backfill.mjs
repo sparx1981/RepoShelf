@@ -60,3 +60,10 @@ const qualityResponse={writeHead(status){this.status=status},end(body){this.data
 await editorialLaunch({method:'GET'},qualityResponse,{action:'quality',params:new URLSearchParams(),accounts:{admin:async()=>({token:'admin'}),request:async path=>path.endsWith('reposhelf_analytics')?{topListings:[]}:[]},browse:{dataset:async()=>({index:{repositories:[base],snapshots:{catalog:'2026-10-01T00:00:00Z'}}})},checkpoint:{json:async()=>snap}});
 assert.equal(qualityResponse.data.qualitySource,'Latest saved sync');assert.equal(qualityResponse.data.coverage.browserBacklog.screenshot.never,0);assert.equal(qualityResponse.data.coverage.browserBacklog.screenshot.retry,1);
 console.log('PASS: admin quality reads latest saved sync evidence instead of older deployed records.');
+
+// Changed rendering logic gives previous empty-page failures one fresh attempt.
+const empty={...base,demoHealth:{url:base.demo,status:'unknown',attemptedAt:new Date(now).toISOString(),nextCheckAt:new Date(now+86400000).toISOString(),error:{reason:'empty_page'},consecutiveTemporaryFailures:3},previewCheck:{url:base.demo,status:'retry',attemptedAt:new Date(now).toISOString(),nextCheckAt:new Date(now+86400000).toISOString()}};
+assert.equal(demoCandidates([empty],now+1000).length,1);assert.equal(previewCandidates([empty],now+1000,1).length,1);
+const tried=recordDemoResult(empty,{kind:'temporary',reason:'empty_page'},now+1000);assert.equal(demoCandidates([tried],now+2000).length,0);assert.equal(previewCandidates([tried],now+2000,1).length,0);
+assert.equal(demoCandidates([{...empty,demoHealth:{...empty.demoHealth,error:{reason:'rate_limit'}}}],now+1000).length,0,'Rate limits retain their backoff');
+console.log('PASS: renderer upgrade retries old empty pages once while preserving subsequent and rate-limit backoff.');

@@ -14,8 +14,8 @@ export function createDemoSession({launch,guardFactory=publicUrlGuard,inspect=in
    context=await browser.newContext({viewport:{width:1280,height:800},deviceScaleFactor:1,serviceWorkers:'block',acceptDownloads:false});
    contexts++;
    await context.route('**/*',async route=>{try{if(await allowed(route.request().url()))await route.continue();else await route.abort()}catch{await route.abort().catch(()=>{})}});
-   // WebSocket traffic must not bypass HTTP request interception.
-   if(context.routeWebSocket)await context.routeWebSocket('**/*',async socket=>{try{await socket.close()}catch{}});
+   // WebSockets need the same public-address guard as HTTP requests.
+   if(context.routeWebSocket)await context.routeWebSocket('**/*',async socket=>{try{const target=new URL(socket.url());if(['ws:','wss:'].includes(target.protocol)){target.protocol=target.protocol==='wss:'?'https:':'http:';if(await allowed(target.href)){socket.connectToServer();return}}await socket.close()}catch{try{await socket.close()}catch{}}});
    const page=await context.newPage();result=await inspect(page,input.target,{space:input.space===true,delay:input.screenshot?2500:1800});
    if(result.kind==='working'&&input.screenshot){try{await page.screenshot({path:input.screenshot,type:'jpeg',quality:60,timeout:10000});result.screenshot=true}catch{result.screenshot=false;result.reason='screenshot_error'}}
   }catch{result={kind:'temporary',reason:'probe_error'};try{await close()}catch{}}
