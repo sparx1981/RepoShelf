@@ -45,3 +45,11 @@ The workflow restores unpublished generated files from its checkpoint before sca
 A finished catalogue sync pushes to **main at most once**, then saves its final publication receipt to the checkpoint branch. If only logs, the browser-cycle marker, derived indexes, library-growth snapshots or internal attempt timestamps changed, main is not pushed and no production deployment is requested. Repository/demo freshness, stars/forks/history, demo status, moderation, descriptions, saved documents and preview changes still count as public updates. Administrator library-growth history can also read the checkpoint snapshots without deploying.
 
 A main push still requires Vercel to deploy successfully. This change reduces future requests but cannot reset an allowance already exhausted. After Vercel's allowance resets, redeploy the latest main commit if it remains blocked. Normal source changes and repository-submission publications continue to deploy as before. No new secrets, Supabase migrations or manual branch setup are required.
+
+## Failed-run recovery
+
+The watchdog requests the first retry of a failed or timed-out workflow after 30 minutes, even if an earlier successful run is still recent. Consecutive failures back off to 60, 120, then 180 minutes; successful runs reset this sequence. Active or queued catalogue jobs prevent another request, and history is checked again immediately before dispatch. Cancelled runs retain the three-hour cooldown.
+
+Missed schedules still use the three-hour allowance. The watchdog itself runs on GitHub Actions, so a delayed GitHub scheduler can delay both maintenance and recovery. This is not an independent availability guarantee.
+
+“Checks awaiting retry” counts individual inconclusive demo, screenshot or source checks. It does not represent a failed workflow or failed publication. Consult the run status and stage results for those failures.
