@@ -42,9 +42,13 @@ Recovery checkpoints are saved on the **reposhelf-checkpoints** branch, not main
 
 The workflow restores unpublished generated files from its checkpoint before scanning. It only restores a file if main has not independently changed that file since the checkpoint baseline. Newer source and catalogue changes are preserved; conflicting files remain available in checkpoint history and the recovery artifact. Checkpoints never move the working main branch.
 
-A finished catalogue sync pushes to **main at most once**, then saves its final publication receipt to the checkpoint branch. If only logs, the browser-cycle marker, derived indexes, library-growth snapshots or internal attempt timestamps changed, main is not pushed and no production deployment is requested. Repository/demo freshness, stars/forks/history, demo status, moderation, descriptions, saved documents and preview changes still count as public updates. Administrator library-growth history can also read the checkpoint snapshots without deploying.
+A finished catalogue sync saves to the checkpoint branch with status **awaiting_publication**. The daily or manual publisher pushes to **main at most once**, then saves its final publication receipt to the checkpoint branch. If only logs, the browser-cycle marker, derived indexes, library-growth snapshots or internal attempt timestamps changed, main is not pushed and no production deployment is requested. Repository/demo freshness, stars/forks/history, demo status, moderation, descriptions, saved documents and preview changes still count as public updates. Administrator library-growth history can also read the checkpoint snapshots without deploying.
 
-A main push still requires Vercel to deploy successfully. This change reduces future requests but cannot reset an allowance already exhausted. After Vercel's allowance resets, redeploy the latest main commit if it remains blocked. Normal source changes and repository-submission publications continue to deploy as before. No new secrets, Supabase migrations or manual branch setup are required.
+A main push still requires Vercel to deploy successfully. This change reduces future requests but cannot reset an allowance already exhausted. After Vercel's allowance resets, redeploy the latest main commit if it remains blocked. Normal source changes continue to deploy immediately. Repository submissions accumulate on the checkpoint branch for daily or manual publication. No Supabase migration or manual branch setup is required; the in-app publication button and independent timer require the credentials described in SCHEDULING.md.
+
+## Daily publication
+
+Maintenance and submission scans now save generated changes to the checkpoint branch. The final sync state is `awaiting_publication`; no production deployment is requested by the scan. A separate daily workflow at 06:35 UTC, or administrator Publish now, restores accumulated changes and publishes them once. Completed publication reconciles waiting sync reports to `main_saved`. See [SCHEDULING.md](SCHEDULING.md) for setup, independent timer integration and limits.
 
 ## Failed-run recovery
 

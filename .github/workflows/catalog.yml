@@ -242,7 +242,7 @@ jobs:
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          DEMO_CHECK_BATCH: '200'
+          DEMO_CHECK_BATCH: '400'
         run: |
           mkdir -p .sync-logs
           set -o pipefail
@@ -255,7 +255,7 @@ jobs:
         env:
           PREVIEW_BUDGET_MS: '720000'
           CATALOG_PREVIEW_CONCURRENCY: '3'
-          CATALOG_PREVIEW_BATCH: '120'
+          CATALOG_PREVIEW_BATCH: '240'
         run: |
           mkdir -p .sync-logs
           set -o pipefail
@@ -284,9 +284,11 @@ jobs:
         env:
           SYNC_STEP_RESULTS: ${{ toJSON(steps) }}
         run: node scripts/sync-history.mjs finish
-      - name: Publish refreshed catalog
+      - name: Save completed sync for daily publication
         if: always() && steps.report.outcome == 'success'
         id: publish
+        env:
+          SYNC_PUBLICATION_PHASE: deferred
         run: node scripts/publish-catalog.mjs
       - name: Retain sync diagnostics and generated files
         if: always() && steps.baseline.outcome == 'success'

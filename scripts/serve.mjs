@@ -1,7 +1,9 @@
 import http from 'node:http';
+import publication from '../lib/publication-handler.mjs';
+import maintenance from '../lib/maintenance-handler.mjs';
 import submissions from '../api/submissions.mjs';
 import promotions from '../api/promotions.mjs';import open from '../api/open.mjs';import syncLog from '../api/sync-log.mjs';import forks from '../api/forks.mjs';import userAdmin from '../api/admin-users.mjs';import auth from '../api/auth.mjs';import collection from '../api/collection.mjs';import editorial from '../api/editorial.mjs';import analytics from '../api/analytics.mjs';
-const accountRoutes={'/api/submissions':submissions,'/api/promotions':promotions,'/api/open':open,'/api/sync-log':syncLog,'/api/forks':forks,'/api/admin-users':userAdmin,'/api/auth':auth,'/api/collection':collection,'/api/editorial':editorial,'/api/analytics':analytics};
+const accountRoutes={'/api/publication':publication,'/api/maintenance':maintenance,'/api/submissions':submissions,'/api/promotions':promotions,'/api/open':open,'/api/sync-log':syncLog,'/api/forks':forks,'/api/admin-users':userAdmin,'/api/auth':auth,'/api/collection':collection,'/api/editorial':editorial,'/api/analytics':analytics};
 import {createAgentHandler} from '../api/agent.mjs';
 const agent=createAgentHandler({auth:{local:true}});let mcp;
 import {readFile} from 'node:fs/promises';
