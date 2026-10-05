@@ -12,7 +12,7 @@ export function withBrowseFixtures(legacy){return async route=>{
  const generated=createBrowseIndex(catalog,spaces,community);
  // Generic storefront fixtures represent validated listings, including fallback picks.
  // Dedicated launch tests separately exercise missing/expired evidence.
- for(const r of [...generated.projects,...generated.index.repositories])if(r.demo){r.availability??='available';r.demoHealth??={url:r.demo,status:'working',checkedAt:new Date().toISOString()};if(!r.screenshots?.length)r.screenshots=[{src:'https://fixture.example/preview.jpg',kind:'demo',url:r.demo,capturedAt:new Date().toISOString()}]}
+ for(const r of [...generated.projects,...generated.index.repositories])if(r.demo){r.availability??='available';r.lastCheckedAt??=new Date().toISOString();r.demoHealth??={url:r.demo,status:'working',checkedAt:new Date().toISOString()};if(!r.screenshots?.length)r.screenshots=[{src:'https://fixture.example/preview.jpg',kind:'demo',url:r.demo,capturedAt:new Date().toISOString()}]}
  if(url.searchParams.get('action')==='detail'){const r=generated.projects.find(r=>r.full.toLowerCase()===String(url.searchParams.get('id')).toLowerCase());return route.fulfill(r?{json:{repo:C.attach([r],community.mentions)[0],catalogVersion:generated.index.version}}:{status:404,json:{error:{message:'Project unavailable'}}})}
  const input=route.request().postDataJSON();if(input.cursor)input.offset=Number(input.cursor);
  const result=B.select(generated.index.repositories,input,editorial,community.mentions);

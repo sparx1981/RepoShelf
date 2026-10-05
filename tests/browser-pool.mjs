@@ -42,3 +42,13 @@ const result=await runQueues(root,{GITHUB_RUN_ID:'123',GITHUB_RUN_ATTEMPT:'1',PR
 assert(poolClosed);assert.equal(calls.length,2);assert.equal(calls.filter(c=>c.screenshot).length,1,'Missing preview is validated and captured together');assert.equal(result.previews.captured,1);assert.equal(result.health.attempted,1);assert.equal(progress.at(-1).status,'complete');const saved=JSON.parse(await readFile(new URL('dist/catalog.json',root),'utf8')).repositories;assert.equal(saved[0].demoHealth.status,'working');assert.equal(saved[0].screenshots[0].kind,'demo');assert.equal(saved[1].screenshots[0].src,'previews/old.jpg','Demo-only checks retain old screenshots');
 }finally{await rm(folder,{recursive:true,force:true})}
 console.log('PASS: reusable browsers, fresh contexts, intercepted private requests, worker recycling/deadlines, credential isolation, adaptive pressure control, shared budgets and queue deduplication.');
+
+// A replacement URL is committed only after the browser captures that demo.
+const repairDir=await mkdtemp(tmpdir()+'/reposhelf-repair-'),repairRoot=pathToFileURL(repairDir+'/');
+try{
+ await mkdir(new URL('dist/',repairRoot));const originals=[{full:'test/repair',demo:'https://old.demo.org/'},{full:'test/retain',demo:'https://retained.demo.org/'}];await writeFile(new URL('dist/catalog.json',repairRoot),JSON.stringify({repositories:originals}));await writeFile(new URL('dist/spaces.json',repairRoot),'{"repositories":[]}');
+ await runQueues(repairRoot,{GITHUB_RUN_ID:'123',PREVIEW_BUDGET_MS:'30000',DEMO_CHECK_BUDGET_MS:'30000'},{resourceSampler:async()=>healthy,publisherFactory:()=>({publish:async()=>{},warnings:0}),repairFactory:()=>async r=>[r.full==='test/repair'?'https://replacement.demo.org/':'https://failed.demo.org/'],poolFactory:()=>({probe:async input=>{if(input.target==='https://replacement.demo.org/'){await writeFile(input.screenshot,Buffer.from([255,216,255]));return {kind:'working',screenshot:true}}return {kind:'temporary',reason:'dns_unresolved'}},trim(){},close(){},stats:()=>({})})});
+ const saved=JSON.parse(await readFile(new URL('dist/catalog.json',repairRoot),'utf8')).repositories;
+ assert.equal(saved[0].demo,'https://replacement.demo.org/');assert.equal(saved[0].screenshots[0].url,saved[0].demo);assert.equal(saved[0].demoLinkRepair.previous,originals[0].demo);assert.equal(saved[1].demo,originals[1].demo,'An unverified replacement must not overwrite the saved URL');
+}finally{await rm(repairDir,{recursive:true,force:true})}
+console.log('PASS: repaired demo URLs need successful capture; failed alternatives preserve the saved listing.');
