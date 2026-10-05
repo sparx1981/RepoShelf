@@ -215,10 +215,11 @@ jobs:
         env:
           SYNC_PUBLICATION_PHASE: checkpoint
         run: node scripts/publish-catalog.mjs
-      - name: Check two-hour browser refresh cycle
+      - name: Check eligible demo and screenshot queues
         id: browser_cycle
         if: always() && steps.baseline.outcome == 'success'
         env:
+          GITHUB_TOKEN: ${{ github.token }}
           FORCE_BROWSER_REFRESH: ${{ github.event_name == 'workflow_dispatch' && inputs.refresh_previews }}
         run: node scripts/browser-cycle.mjs decide
       - name: Install screenshot browser
@@ -244,7 +245,7 @@ jobs:
         continue-on-error: true
         env:
           PREVIEW_BUDGET_MS: '900000'
-          CATALOG_PREVIEW_CONCURRENCY: '3'
+          CATALOG_PREVIEW_CONCURRENCY: '4'
           CATALOG_PREVIEW_BATCH: 'auto'
         run: |
           mkdir -p .sync-logs
