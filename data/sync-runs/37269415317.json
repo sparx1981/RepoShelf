@@ -27,7 +27,13 @@
       "curatedBatch": 0,
       "communityBatch": 0
     },
-    "browser": null,
+    "browser": {
+      "due": false,
+      "lastCompletedAt": "2026-10-05T05:18:57.298Z",
+      "nextDueAt": "2026-10-05T06:00:00.000Z",
+      "forced": false,
+      "reason": "Demo and screenshot work was skipped because this two-hour UTC window already completed."
+    },
     "coverageBefore": {
       "targets": {
         "repositoryChecks": 4010,
@@ -81,12 +87,12 @@
       "communityBatch": 0
     }
   },
-  "phase": "discovery",
-  "publication": "checkpoint_saved",
+  "phase": "complete",
+  "publication": "awaiting_publication",
   "id": "37269415317",
   "attempt": 1,
   "startedAt": "2026-10-05T05:49:09.133Z",
-  "recordedAt": "2026-10-05T05:51:49.178Z",
+  "recordedAt": "2026-10-05T05:52:03.939Z",
   "trigger": "push",
   "status": "success",
   "counts": {
@@ -125,6 +131,17 @@
       "id": "compression",
       "name": "Existing screenshot compression",
       "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "compression_final",
+      "name": "New screenshot compression",
+      "status": "skipped",
       "temporaryFailures": 0,
       "details": null,
       "checked": 0,
@@ -236,6 +253,89 @@
       "warnings": 0
     },
     {
+      "id": "browser_cycle",
+      "name": "Two-hour browser cycle",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "due": false,
+        "lastCompletedAt": "2026-10-05T05:18:57.298Z",
+        "nextDueAt": "2026-10-05T06:00:00.000Z",
+        "forced": false,
+        "reason": "Demo and screenshot work was skipped because this two-hour UTC window already completed."
+      },
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "browser_complete",
+      "name": "Browser cycle saved",
+      "status": "skipped",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "browser",
+      "name": "Screenshot browser installation",
+      "status": "skipped",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "verify",
+      "name": "Storefront verification",
+      "status": "skipped",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "health",
+      "name": "Demo health",
+      "status": "skipped",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "previews",
+      "name": "Preview screenshots",
+      "status": "skipped",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "growth",
+      "name": "Growth history",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
       "id": "validate",
       "name": "Application checks",
       "status": "success",
@@ -288,6 +388,17 @@
         "curatedBatch": 0,
         "communityBatch": 0
       },
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "checkpoint_publish",
+      "name": "Discovery checkpoint",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
       "checked": 0,
       "unavailableResponses": 0,
       "inconclusiveChecks": 0,
