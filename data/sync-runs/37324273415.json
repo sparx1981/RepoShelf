@@ -63,7 +63,16 @@
       "curatedBatch": 0,
       "communityBatch": 0
     },
-    "browser": null,
+    "browser": {
+      "due": true,
+      "eligibilityBased": true,
+      "demoDue": 1,
+      "previewDue": 1,
+      "lastCompletedAt": "2026-10-05T14:06:56.410Z",
+      "nextDueAt": null,
+      "forced": false,
+      "reason": "1 screenshots and 1 demo checks eligible; untouched backlog can run after a recent batch."
+    },
     "coverageBefore": {
       "browserBacklog": {
         "demo": {
@@ -136,7 +145,7 @@
         },
         "screenshot": {
           "never": 0,
-          "retry": 473,
+          "retry": 472,
           "repeated": 176,
           "complete": 3357
         },
@@ -166,7 +175,7 @@
       "targets": {
         "repositoryChecks": 4009,
         "demoChecks": 4009,
-        "screenshots": 3606
+        "screenshots": 3605
       },
       "reasons": [
         "Demo validation is below 95%.",
@@ -175,10 +184,10 @@
       "pending": {
         "repositoryChecks": 0,
         "demoChecks": 628,
-        "screenshots": 649
+        "screenshots": 648
       },
       "available": 4220,
-      "visible": 4006,
+      "visible": 4005,
       "repositoryChecks": 4220,
       "demoChecks": 3592,
       "screenshots": 3357,
@@ -189,21 +198,21 @@
       "communityBatch": 0
     }
   },
-  "phase": "discovery",
-  "publication": "checkpoint_saved",
+  "phase": "complete",
+  "publication": "awaiting_publication",
   "id": "37324273415",
   "attempt": 1,
   "startedAt": "2026-10-05T14:25:56.922Z",
-  "recordedAt": "2026-10-05T14:27:28.787Z",
+  "recordedAt": "2026-10-05T14:28:27.064Z",
   "trigger": "workflow_dispatch",
   "status": "success",
   "counts": {
     "before": 4226,
     "after": 4226,
     "added": 0,
-    "updated": 120,
+    "updated": 121,
     "removed": 0,
-    "withDemo": 4006
+    "withDemo": 4005
   },
   "temporaryFailures": 0,
   "stages": [
@@ -232,6 +241,17 @@
     {
       "id": "compression",
       "name": "Existing screenshot compression",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 100,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "compression_final",
+      "name": "New screenshot compression",
       "status": "success",
       "temporaryFailures": 0,
       "details": null,
@@ -345,6 +365,175 @@
       "warnings": 0
     },
     {
+      "id": "browser_cycle",
+      "name": "Two-hour browser cycle",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "due": true,
+        "eligibilityBased": true,
+        "demoDue": 1,
+        "previewDue": 1,
+        "lastCompletedAt": "2026-10-05T14:06:56.410Z",
+        "nextDueAt": null,
+        "forced": false,
+        "reason": "1 screenshots and 1 demo checks eligible; untouched backlog can run after a recent batch."
+      },
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "browser_complete",
+      "name": "Browser cycle saved",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "browser",
+      "name": "Screenshot browser installation",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "verify",
+      "name": "Storefront verification",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "health",
+      "name": "Demo health",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "due": 0,
+        "selected": 0,
+        "limit": 4226,
+        "attempted": 0,
+        "working": 0,
+        "captured": 0,
+        "unavailable": 0,
+        "temporaryFailures": 0,
+        "reasons": {},
+        "examples": [],
+        "deferred": 0,
+        "remainingDue": 0,
+        "durationMs": 5213,
+        "complete": true,
+        "mode": "shared_time_budget",
+        "budgetMs": 1500000,
+        "allocatedWeight": 600000,
+        "workerTimeMs": 0,
+        "adaptive": {
+          "limit": 2,
+          "max": 4,
+          "changes": []
+        },
+        "resources": {
+          "availableMB": 14444,
+          "memoryRatio": 0.0965871916464498,
+          "cpuRatio": 0.2,
+          "source": "host"
+        },
+        "pool": {
+          "workers": 0,
+          "workerStarts": 1,
+          "workerRestarts": 0,
+          "browserLaunches": 1,
+          "contexts": 1
+        },
+        "progressWarnings": 0
+      },
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "previews",
+      "name": "Preview screenshots",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "due": 1,
+        "selected": 1,
+        "limit": 4226,
+        "attempted": 1,
+        "working": 0,
+        "captured": 0,
+        "unavailable": 1,
+        "temporaryFailures": 0,
+        "reasons": {
+          "http_404": 1
+        },
+        "examples": [
+          {
+            "project": "Pixelkit/PixelKit-Bootstrap-UI-Kits",
+            "reason": "http_404"
+          }
+        ],
+        "deferred": 0,
+        "remainingDue": 0,
+        "durationMs": 5124,
+        "complete": true,
+        "mode": "shared_time_budget",
+        "budgetMs": 1500000,
+        "allocatedWeight": 900000,
+        "workerTimeMs": 2422,
+        "adaptive": {
+          "limit": 2,
+          "max": 4,
+          "changes": []
+        },
+        "resources": {
+          "availableMB": 14444,
+          "memoryRatio": 0.0965871916464498,
+          "cpuRatio": 0.2,
+          "source": "host"
+        },
+        "pool": {
+          "workers": 0,
+          "workerStarts": 1,
+          "workerRestarts": 0,
+          "browserLaunches": 1,
+          "contexts": 1
+        },
+        "progressWarnings": 0
+      },
+      "checked": 1,
+      "unavailableResponses": 1,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "growth",
+      "name": "Growth history",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
       "id": "validate",
       "name": "Application checks",
       "status": "success",
@@ -433,6 +622,17 @@
         "curatedBatch": 0,
         "communityBatch": 0
       },
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "checkpoint_publish",
+      "name": "Discovery checkpoint",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
       "checked": 0,
       "unavailableResponses": 0,
       "inconclusiveChecks": 0,
