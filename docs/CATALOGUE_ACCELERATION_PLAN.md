@@ -1,84 +1,82 @@
-# Catalogue acceleration plan (for implementation)
+# Catalogue acceleration plan, revision 2 (for implementation)
 
-Goal: a full, valid, launch-ready catalogue of **5,000+ published listings** as fast as possible, using **free GitHub Actions only**. Stuck demos (bot-blocked, dead DNS, login walls) are **dropped from the public catalogue**, not shown with substitute images.
+Goal: **5,000+ published, validated listings** as fast as possible, on free GitHub Actions only. Stuck demos (bot-blocked, dead DNS, login walls) stay out of the public catalogue. Never bypass captchas or access controls.
 
-## What the data says (as of 2026-10-05 ~16:00 UTC)
+Revision 2 re-reads `main` at `c4dcc831` and the live checkpoint branch (`reposhelf-checkpoints`, 2026-10-05 18:45 UTC).
 
-| Fact | Evidence |
-|---|---|
-| Published listings: 3,429. Quarantined: 574. Unavailable: 223. Total records: 4,226. | `Q.catalogueState` over `dist/catalog.json` + `dist/spaces.json` |
-| **Total records have been flat at 4,226 since 2026-10-04 17:16.** Discovery has effectively been off. | `dist/growth.json` snapshots; `candidateLimit: 0`, `candidatesChecked: 0`, `searchQueries: 0` in the last six `data/sync-runs/*.json` |
-| Screenshot backlog is *not* the bottleneck any more. It went 674 → 3,507 in ~22 h. The remaining ~795 without a screenshot are almost entirely the 574 quarantined + 223 unavailable. | `growth.json`; counts above |
-| Recovery passes are ~99% waste. Pass 1: 567 attempted, 2 captured. Pass 2: 562 attempted, 15 captured. Each burned ~11 min of the 25 min budget. | `data/recovery-results.json` |
-| Failure mix of the stuck tail: access_restricted 178, dns_unresolved ~122, network_or_timeout ~95, empty_page ~80, http_5xx ~35, http_4xx ~25, unsafe_target 12, other ~25. | same file, `reviewReasons` |
-| 553 listings have 3+ consecutive failures yet are retried every 24 h forever. | `previewCheck.consecutiveFailures` distribution; `failures>=3?86400000` in `capture-previews.mjs` and `run-browser-queues.mjs` |
-| One runner, concurrency hard-capped at 4 (`Math.min(4,…)` in `preview-workers.mjs` and `run-browser-queues.mjs`); adaptive limiter repeatedly dropped 4→3→2→1 under pressure. Raising the per-runner cap will not help; add runners. | `adaptive.changes` in recovery results |
-| Per-run intake is tiny: Spaces/curated/community batches are **10 each**, GitHub batch 150. | `scripts/catalog-priority.mjs` |
-| Revalidation is sequential REST, one call per listing, ~415–500 per run. | `scripts/index-catalog.mjs` (`for (const prior of due)`), sync-run `repositoryChecks` |
+## Where we are now
 
-**Conclusion:** the pipeline is good at validating what it already has and has stopped finding new things. To reach 5k+ we need roughly +1,600 published. Assuming ~70% of new candidates validate (historical publish rate is ~81%, new long-tail candidates will be lower), that means ~2,300 new demo-bearing candidates.
+| | Before (16:00 UTC) | Now (18:45 UTC) |
+|---|---|---|
+| Records | 4,226 (flat for ~24 h) | **4,482** |
+| Published | 3,429 | **3,581** |
+| Pending / quarantined / unavailable | 0 / 574 / 223 | 115 / 565 / 221 |
+| Gap to 5,000 published | 1,571 | **1,419** |
 
-## Work items, in priority order
+Discovery works again: the last three runs inspected 246–250 candidates and found 19–88 demos each (8%–35% per run). One full sync now takes 6–12 minutes (`recordedAt − startedAt`).
 
-### 1. Turn discovery back on and widen it  (biggest gain)
-- Confirm the next scheduled run actually searches. Older run reports show `githubBatch: 0` (coverage gate); `catalog-priority.mjs` now returns 150 and `ready: true`. Verify with a run, and make coverage targets **never** gate discovery.
-- Add a launch/burst setting: `CATALOG_BATCH_SIZE` 1,500+ and raise `spacesBatch`, `curatedBatch`, `communityBatch` from 10 to a few hundred each.
-- Search recall in `index-catalog.mjs`: 6 seeds × 5 star bands, and the stars/updated sort alternates, so the same top results recur and are absorbed by `cacheHits`. Add **date-window partitioning** (`created:A..B` or `pushed:A..B`) to split any query into disjoint slices under the 1,000-result cap, and add seeds: `topic:webapp`, `topic:pwa`, `topic:playground`, `topic:demo`, `"live demo"`.
-- Prioritise candidates whose `homepage` is on a hosting domain (github.io, vercel.app, netlify.app, pages.dev, onrender.com, fly.dev, streamlit.app, hf.space). They are high-yield and can go straight to the browser queue.
-- Hugging Face Spaces: the HF API reports runtime stage, so RUNNING Spaces can be pre-qualified cheaply. Import hundreds per run, not 10.
-- More curated lists in `sources.config.json` (only 3 today), focused on web apps with live demos.
-- Acceptance: a burst run adds ≥500 new candidates; sync report shows non-zero `candidatesChecked`.
+**Caveat on the numbers:** most of these runs were *push-triggered* (the workflow listens to many script paths), roughly one every 10–30 minutes. The cron is still every 2 hours, so unattended throughput will be much lower than what you just saw.
 
-### 2. Stop re-trying hopeless listings  (frees the browser budget)
-Replace "3+ failures → retry daily forever" with class-based retirement:
-- **Permanent** (dns_unresolved, unsafe_target, http_404/410/451, 52x TLS/origin): retire after 2 failures ≥24 h apart.
-- **Blocked** (access_restricted, http_401/402/412): retire after 2 failures. **Do not add evasion** (no stealth plugins, proxies or challenge solving).
-- **Transient** (network_or_timeout, empty_page, 5xx, probe_timeout): back off 1 d → 3 d → 7 d, retire at 4 consecutive.
-- Retired = hidden, kept in the record, re-probed once after 30 days or when the README demo URL changes. Applies to quarantined entries too; the recovery workflow should skip retired ones.
-- Acceptance: the recovery/normal queue contains no entry in a retired class; per-run attempted count falls from ~565 to a few dozen; `workerTimeMs` per captured screenshot drops sharply.
+## Status of the first plan
 
-### 3. Cheap pre-flight before Chromium
-- A Node-only stage (DNS + TLS + GET, following redirects through `publicUrlGuard`, 50–100 concurrent) classifies every candidate in seconds. Only 2xx/3xx HTML responses enter the browser queue.
-- Dead DNS, 4xx/5xx and most hard timeouts (roughly 280 of the 574 stuck listings by the table above) never cost a 35–45 s browser slot.
-- Add per-host serialisation (one visit per hostname at a time) to avoid self-inflicted `rate_limit` failures.
-- Acceptance: pre-flight rejects are recorded with the same reason codes so retirement rules in item 2 apply unchanged.
+| Item from revision 1 | Status | Notes |
+|---|---|---|
+| Turn discovery on, widen it | **Mostly done** | Batches 250/25/40/20, persisted query rotation, 15 seeds, year slices, cooldown handling, 7 curated lists. Budgets are still small (see A1–A3). |
+| Retire hopeless listings | **Done differently** | Class-based backoff (7 d, then 30 d for DNS/TLS/blocked/401/402/451). Entries are stored and hidden, not deleted. Good. |
+| Cheap pre-flight | **Done** | `demo-preflight.mjs`: DNS/TLS/404/410/429 skip the browser, IP pinning, per-host serialisation. |
+| Shard browser stage | **Done, 2 shards** | See B1: count is hard-coded. |
+| Cheaper visits | **Partial** | Screenshot retry, animations off, patient mode for slow pages. Blanket shorter timeouts were deliberately rejected; agree. |
+| ETag revalidation | **Done, unproven** | `repositoryNotModified` is 0 in recent runs only because nothing was due. Verify when the 48 h cycle comes round. |
+| Screenshot validity | **Partial** | Uniform/tiny image rejection added. Error-text pages not covered. |
+| Burst cadence | **Not done** | See A4. |
+| Skip tests on scheduled runs | **Withdrawn** | `npm test` takes 13 s. Not worth the risk. |
 
-### 4. Shard the browser stage across free parallel runners
-Today: one job, 25 min budget (15 previews + 10 health), ≤4 concurrent browsers.
-- `plan` job: select queue (same selectors as now), write shard manifests.
-- `shard` matrix, N = 6 to start (public repos allow 20 concurrent free jobs; **confirm the repository is public**, otherwise limits are lower). Each shard takes `hash(full) % N`, runs `run-browser-queues.mjs` on its slice, uploads a **patch artifact**: per-listing `demo`, `demoHealth`, `previewCheck`, `screenshots`, plus the JPGs. Shards must not write `dist/catalog.json` directly.
-- `merge` job: same `reposhelf-catalog` concurrency group, applies patches to the restored checkpoint, runs compression, records metrics, saves the checkpoint.
-- Expected: ~6× throughput. 2,300 candidates takes roughly 15–20 min instead of 100+ min (estimate; measure with `workerTimeMs/attempted`).
-- Acceptance: merged result equals what a single runner would produce for the same inputs (add a test with fixtures); a failed shard loses only its slice.
+## Remaining recommendations, by expected impact
 
-### 5. Make each visit cheaper
-- Replace the fixed 2.5 s delay and 8 s blank-page retry with `load` + DOM/network-quiet (≈500 ms, cap ~4 s).
-- Block media and known tracker hosts during the probe. Keep fonts so screenshots look right.
-- First attempt timeout ~25 s; slow sites get one later retry instead of holding a worker for 45 s.
-- Profile first (`workerTimeMs` per success vs per failure) so the gain is measured, not assumed.
+### A. Intake is now the limiter
 
-### 6. Cut GitHub API cost of revalidation
-- Use conditional requests (`If-None-Match` ETag; a 304 does not count against the primary rate limit) or GraphQL aliasing (~50 repos per query) in place of one sequential REST call per listing.
-- Keep the 48 h repository-check freshness required for publication; the savings go to discovery headroom instead.
+**A1. Raise the GitHub candidate budget.** 250 README inspections finished in 14–16 s (`catalog.durationMs`). `raw.githubusercontent.com` has no API quota. Raise `githubBatch` to 1,000–2,000 per run. Acceptance: `candidatesChecked` ≥ 1,000 with `catalog.durationMs` still well under 5 minutes.
 
-### 7. Launch cadence and CI overhead
-- Burst mode: at the end of `catalog.yml`, if backlog or pending candidates remain and a `burst` input is set, re-dispatch the workflow (`workflow_dispatch` via `GITHUB_TOKEN` is permitted; needs `actions: write`). The existing concurrency group serialises runs. Switch cron to hourly while launching.
-- Cache the Playwright download and skip `npm test` / `test:mcp` on scheduled data runs (`checks.yml` already covers pushes). Estimated saving 3–6 min of every 55 min job.
-- Publish once at the end of the burst with **Publish now** (`publication.yml`), instead of waiting for 06:35 UTC.
+**A2. Raise search pages per run.** There are ~115 queries × up to 10 pages. At 12 pages per run a full rotation takes ~96 runs (about 8 days at the 2-hour cron). Go to 30–60 pages per run. At 4.5 s spacing that is 2–4.5 minutes. Keep the saved cooldown logic: earlier runs hit 403 secondary limits at 2.2 s spacing. Acceptance: no new `searchPaused` entries over 5 consecutive runs.
 
-### 8. "Valid" means the screenshot is actually valid
-- Reject near-uniform images (use `sharp` stats; it is already a dependency), and pages whose title/body match error or challenge text ("404", "Application error", "Just a moment", "Access denied", cookie/login walls). Check `inspectDemo` in `demo-health.mjs` first; add only what is missing.
-- Before launch: sample 100 random published listings and review them by eye; record the pass rate in `docs/`.
-- Later, non-blocking: at 5k+ the 140 MB `dist/` is redeployed on each publish. Serve small WebP card thumbnails and keep full images for the detail view.
+**A3. Import many more Hugging Face Spaces.** This is the best conversion in the catalogue: 515 of 551 Spaces have a working demo (93%) and 514 have a screenshot. They need no README parsing, and the HF API already gives runtime state. The batch is 25 per run. Raise `SPACE_IMPORT_BATCH` (`spacesBatch`) to 300–500, and filter by a minimum likes floor and `sdk` (gradio / streamlit / static / docker) so low-value test Spaces stay out. Keep the mixed-source ranking and source filter so GitHub remains the primary identity. Acceptance: ≥250 new Spaces per run; validated share stays above 85%.
 
-## Launch definition
-- ≥5,000 published; no published entry with expired evidence (repo ≤48 h, demo ≤7 d, screenshot matching current demo URL).
-- Retired/quarantined entries invisible publicly.
-- Visual sample of 100 passes (target ≥97% good).
-- Sync report shows **net new published per run**, success rate by failure class, and queue depth, so progress is visible.
+**A4. Add launch cadence.** A sync takes 6–12 min but cron fires every 2 h. Either set cron to `*/30`, or add burst chaining: at the end of `refresh`, if the run found new candidates and published < 5,000, `workflow_dispatch` itself (allowed with `GITHUB_TOKEN`, needs `actions: write`), capped at ~24 chained runs. The `reposhelf-catalog` concurrency group already serialises. Stop automatically once the 5,000 milestone is reached.
 
-## Risks / things not to do
-- Search API is ~30 requests/min; keep the existing 2.2 s spacing. Secondary rate limits can still trip on bursts.
-- Be polite to demo hosts (per-host serialisation, no retry storms).
-- Do not raise per-runner concurrency above 4; the adaptive limiter shows the runner is already memory/CPU constrained.
-- Yield (~70%) and speedups (~6×) are estimates; the first burst run should be used to measure real numbers before committing to the 5k target date.
+**A5. Learn which searches pay.** Yield per run varied 8%–35%. Record `inspected` and `found` per query in `data/discovery-search.json`; give high-yield queries more pages and retire queries that return nothing new. Seeds worth testing: `topic:github-pages`, `topic:netlify`, `topic:vercel`, `topic:streamlit`, `topic:gradio`, and `in:readme` with hosted-app domains (`vercel.app`, `netlify.app`, `github.io`, `streamlit.app`, `pages.dev`). Also test GraphQL search, which can return metadata and README text in one request on a separate rate budget (verify the limits before relying on it).
+
+### B. Browser stage
+
+**B1. Make shard count a setting.** `BROWSER_SHARD_COUNT: '2'`, `matrix.shard: [0, 1]`, `shardCount: 2` in `browser-shards.mjs` and `concurrency: 8` in `finish-sharded-sync.mjs` are all hard-coded, and the worker rejects `count > 4`. Derive them from one value. Today the browser stage is not the bottleneck (45–121 attempts per run, ~100 pending); move to 4 shards once A1–A3 land and intake reaches several hundred per run. Acceptance: changing one number changes the matrix, partition and reported concurrency consistently.
+
+**B2. Skip definitive failures earlier.** New dead candidates still cost three browser visits (2 h apart) before the 7-day backoff. Add:
+- `ECONNREFUSED` and persistent 5xx on preflight to the skip list.
+- Cloudflare challenge detection from the `cf-mitigated: challenge` response header (a definitive signal, not a bypass; just classify as `access_restricted`).
+- Jump straight to the long backoff on the second failure for NXDOMAIN (`ENOTFOUND`), certificate errors and challenge responses. Keep `EAI_AGAIN`/timeouts transient.
+
+### C. Valid, launch-ready quality
+
+**C1.** Add text/title checks for error or wall pages that pass the pixel test ("Application error", "404", "Just a moment", "Access denied", login or cookie walls). Check `inspectDemo` first and add only what is missing.
+
+**C2.** Before declaring launch, sample 100 random *published* listings and review them by eye. Record the result in `docs/`. Newly admitted Spaces and low-star GitHub entries deserve the biggest share of that sample.
+
+**C3. Free screenshot providers: leave off for launch.** They only cover listings whose demo already passed a fresh check but have no screenshot (tens, not hundreds), each image needs manual administrator approval, and they require migration 13 plus secrets. `capture-providers.json` shows `worker_key_missing` anyway. Revisit after launch.
+
+### D. Housekeeping
+
+**D1.** Publication is still daily at 06:35 UTC. At the end of the burst, run **Publish now** once, then re-check the site.
+
+**D2.** `dist/catalog.json` is ~46 MB and is rewritten at least every 10 s by each shard and committed per run. Move retired/quarantined records to a separate file so the hot file shrinks, if run time or checkpoint size becomes an issue.
+
+**D3.** Keep `published` in growth snapshots (now present) and add per-source and per-query yield to the sync report, so the next round of tuning uses measured numbers.
+
+## Estimate (unverified)
+
+From 3,581 published, 1,419 more are needed. With A1–A4 in place, rough per-run yield could be ~250 new Spaces × ~90% plus ~1,000 GitHub candidates × ~25% demo × ~65% publish ≈ **350–400 published per run**. At 30-minute cadence that is **roughly 4–6 hours**, then a manual publish. Treat as an order-of-magnitude figure: search yield decays as the top results saturate, which is why A5 matters. Measure after the first burst run and adjust.
+
+## Risks
+
+- GitHub search secondary limits; keep spacing and saved cooldowns.
+- Hugging Face API limits and low-quality Spaces; use the likes floor and watch the validated share.
+- Be polite to demo hosts (per-host serialisation is already in place).
+- Do not raise per-runner browser concurrency above 4; add shards instead.
