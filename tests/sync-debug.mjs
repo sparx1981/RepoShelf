@@ -9,6 +9,7 @@ import {shouldBuild} from '../scripts/deployment-policy.mjs';
 import {diagnoseSync,deploymentStatus} from '../lib/sync-diagnostics.mjs';
 
 assert.equal(shouldBuild('Save catalogue recovery checkpoint',['data/sync-runs/1.json','dist/catalog.json']),false);
+assert.equal(shouldBuild('Sync progress [skip ci]',['data/sync-progress.json'],'reposhelf-progress'),false);
 assert.equal(shouldBuild('Refresh public demo catalog',['dist/catalog.json']),true);
 assert.equal(shouldBuild('Save catalogue recovery checkpoint',['data/browse/index.json','dist/admin.js']),true);
 assert.equal(shouldBuild('Save catalogue recovery checkpoint',[]),true);

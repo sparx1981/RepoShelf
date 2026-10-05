@@ -4,6 +4,7 @@ import {tmpdir} from 'node:os';
 import {join} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {execFileSync} from 'node:child_process';
+import {createDemoPool} from '../scripts/demo-pool.mjs';
 import {runDemoProbe} from '../scripts/demo-probe-runner.mjs';
 import {publicUrlGuard,recordDemoResult} from '../scripts/demo-health.mjs';
 import {diagnoseSync} from '../lib/sync-diagnostics.mjs';
@@ -12,6 +13,9 @@ let subprocesses=true;try{execFileSync(process.execPath,['-e','process.stdout.wr
 try{
 if(subprocesses){const fixture=join(temp,'probe.mjs');await writeFile(fixture,"process.stdin.resume();setInterval(()=>{},1000)");const started=Date.now();const result=await runDemoProbe({target:'https://example.org'},{script:pathToFileURL(fixture),timeout:150});assert.equal(result.reason,'probe_timeout');assert(Date.now()-started<1500);const previous={demo:'https://demo.org',demoHealth:{url:'https://demo.org',status:'working'},screenshots:[{src:'previews/existing.jpg',kind:'demo'}]};assert.equal(recordDemoResult(previous,result).demoHealth.status,'working');
 await writeFile(fixture,"process.stdin.resume();process.stdout.write(JSON.stringify({kind:'working'}))");assert.equal((await runDemoProbe({},{script:pathToFileURL(fixture),timeout:1500})).kind,'working');
+const stream=join(temp,'stream.mjs');await writeFile(stream,`import {createInterface} from 'node:readline';for await(const line of createInterface({input:process.stdin})){const q=JSON.parse(line);if(q.input.hang)await new Promise(()=>{});process.stdout.write(JSON.stringify({id:q.id,result:{kind:'working',pid:process.pid,leak:process.env.REPOSHELF_POOL_TEST_SECRET||null}})+'\\n')}`);
+const oldSecret=process.env.REPOSHELF_POOL_TEST_SECRET;process.env.REPOSHELF_POOL_TEST_SECRET='fixture-secret';const pool=createDemoPool({script:pathToFileURL(stream)});
+try{const first=await pool.probe({},{timeout:3000}),second=await pool.probe({},{timeout:3000});assert.equal(first.pid,second.pid,'One child worker serves multiple requests');assert.equal(first.leak,null);assert.equal((await pool.probe({hang:true},{timeout:150})).reason,'probe_timeout');assert.notEqual((await pool.probe({},{timeout:3000})).pid,first.pid,'Timed-out child is replaced');assert.equal(pool.stats().workerRestarts,1)}finally{pool.close();if(oldSecret===undefined)delete process.env.REPOSHELF_POOL_TEST_SECRET;else process.env.REPOSHELF_POOL_TEST_SECRET=oldSecret}
 }
 const guard=publicUrlGuard({resolver:()=>new Promise(()=>{}),timeout:30});assert.equal(await guard('https://example.org'),false);
 let info=diagnoseSync({conclusion:'cancelled',status:'completed'},[],null);assert.equal(info.kind,'cancelled_before_start');assert.equal(info.published,null);
