@@ -1,0 +1,24 @@
+name: Bounded launch acceleration
+on:
+  schedule:
+    - cron: '47 * * * *'
+    - cron: '17 1-23/2 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: write
+concurrency:
+  group: reposhelf-launch-dispatch
+  cancel-in-progress: false
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Request one extra sync only while quality-ready growth needs acceleration
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/launch-cadence.mjs dispatch
