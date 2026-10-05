@@ -5,6 +5,7 @@ const repository = 'sparx1981/RepoShelf';
 const workflow = 'catalog.yml';
 const graceMs = 3 * 3600000;
 const cooldownMs = 3 * 3600000;
+const failedRetryMs = 30 * 60000;
 
 export function recoveryDecision(runs, now = Date.now()) {
   if (!Array.isArray(runs)) throw Error('Invalid maintenance run history.');
@@ -21,6 +22,21 @@ export function recoveryDecision(runs, now = Date.now()) {
     lastAttemptAt: lastAttempt === null ? null : new Date(lastAttempt).toISOString()
   };
   if (active) return {...details, action: 'wait', reason: 'A catalogue run is running or queued.', activeRunId: active.id};
+  const completed = runs.filter(run => run.status === 'completed' && Number.isFinite(Date.parse(run.updated_at)))
+    .sort((a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at));
+  let consecutiveFailures = 0;
+  for (const run of completed) {
+    if (!['failure', 'timed_out'].includes(run.conclusion)) break;
+    consecutiveFailures++;
+  }
+  if (consecutiveFailures) {
+    const retryMs = Math.min(cooldownMs, failedRetryMs * 2 ** Math.min(consecutiveFailures - 1, 3));
+    if (now - lastAttempt < retryMs) return {...details, action: 'wait',
+      reason: 'A failed sync is within its retry backoff.', consecutiveFailures,
+      retryAfter: new Date(lastAttempt + retryMs).toISOString()};
+    return {...details, action: 'dispatch', consecutiveFailures,
+      reason: 'The latest sync failed, its retry backoff elapsed, and no catalogue run is active.'};
+  }
   if (lastSuccess !== null && now - lastSuccess <= graceMs)
     return {...details, action: 'wait', reason: 'A successful sync is within the three-hour allowance.'};
   if (lastAttempt !== null && now - lastAttempt < cooldownMs)
@@ -61,7 +77,7 @@ export async function recoverSync({fetcher = fetch, token = process.env.GITHUB_T
   const summary = '## Catalogue sync watchdog\n\n' + decision.reason + '\n\n'
     + 'Last success: ' + (decision.lastSuccessAt || 'none recorded') + '\n'
     + (decision.retryAfter ? '\nRetry permitted after: ' + decision.retryAfter + '\n' : '')
-    + '\nChecks request recovery after three hours, with a three-hour cooldown and no overlapping catalogue runs.\n';
+    + '\nMissed schedules recover after three hours. Failed runs retry after 30 minutes, then back off to at most three hours. Active or queued catalogue runs prevent recovery.\n';
   if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
   console.log(JSON.stringify(decision));
   return decision;
