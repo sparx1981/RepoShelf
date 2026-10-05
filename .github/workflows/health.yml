@@ -4,7 +4,7 @@ on:
     - cron: '13,43 * * * *'
   workflow_dispatch:
   workflow_run:
-    workflows: ['Refresh demo catalog']
+    workflows: ['Refresh demo catalog', 'Publish saved catalogue']
     types: [completed]
     branches: [main]
   push:

@@ -6,5 +6,7 @@ const root=process.cwd();
 if(process.argv[2]==='restore'){await restoreCheckpoint(root)}else{
  await enforceDemoOnly(pathToFileURL(root+'/'));
  await generateBrowseIndex(pathToFileURL(root+'/'));
- await publishCatalog(root,{checkpoint:process.env.SYNC_PUBLICATION_PHASE==='checkpoint'});
+ const phase=process.env.SYNC_PUBLICATION_PHASE;
+ const result=await publishCatalog(root,{checkpoint:['checkpoint','deferred'].includes(phase),completed:phase==='deferred',scheduled:process.argv.includes('--scheduled')});
+ if(process.env.GITHUB_ENV&&typeof result==='string'){const {appendFile}=await import('node:fs/promises');await appendFile(process.env.GITHUB_ENV,'SUBMISSION_COMMIT='+result+'\n')} 
 }

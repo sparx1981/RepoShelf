@@ -1,0 +1,53 @@
+name: Publish saved catalogue
+on:
+  push:
+    branches: [main]
+    paths: ['.github/workflows/publication.yml', 'lib/publication-policy.mjs']
+  schedule:
+    - cron: '35 6 * * *'
+  workflow_dispatch:
+    inputs:
+      scheduled:
+        description: Daily publication (skip if already handled today)
+        type: boolean
+        default: false
+permissions:
+  contents: write
+concurrency:
+  group: reposhelf-catalog
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Restore accumulated generated changes
+        run: node scripts/publish-catalog.mjs restore
+      - name: Publish the latest saved catalogue
+        env:
+          DAILY_PUBLICATION: ${{ github.event_name == 'schedule' || inputs.scheduled }}
+        run: |
+          if [ "$DAILY_PUBLICATION" = "true" ]; then
+            node scripts/publish-catalog.mjs --scheduled
+          else
+            node scripts/publish-catalog.mjs
+          fi
+      - name: Retain publication recovery data
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: publication-recovery-${{ github.run_id }}
+          path: |
+            dist/catalog.json
+            dist/spaces.json
+            dist/community.json
+            dist/growth.json
+            dist/previews/
+            data/
+          retention-days: 7

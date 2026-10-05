@@ -27,11 +27,11 @@ jobs:
           let ready=false;
           if((process.env.REPOSHELF_SUBMISSION_SYNC_KEY||'').length>=32){
             try{
-              const response=await fetch('https://api.github.com/repos/sparx1981/RepoShelf/actions/workflows/catalog.yml/runs?per_page=30',{headers:{Accept:'application/vnd.github+json',Authorization:'Bearer '+process.env.GITHUB_TOKEN},signal:AbortSignal.timeout(10000)});
+              const response=await fetch('https://api.github.com/repos/sparx1981/RepoShelf/actions/runs?per_page=50',{headers:{Accept:'application/vnd.github+json',Authorization:'Bearer '+process.env.GITHUB_TOKEN},signal:AbortSignal.timeout(10000)});
               if(!response.ok)throw Error('History unavailable');
               const runs=(await response.json()).workflow_runs;
               if(!Array.isArray(runs))throw Error('Invalid history');
-              ready=!runs.some(run=>run.status!=='completed');
+              ready=!runs.some(run=>run.status!=='completed'&&['.github/workflows/catalog.yml','.github/workflows/publication.yml'].includes(run.path));
               console.log(ready?'Submission scanner ready.':'Catalogue refresh active or queued; submissions remain queued for a later scan.');
             }catch{console.log('Catalogue availability could not be checked; submissions retained for retry.')}
           }else console.log('Submission scan awaits configuration; catalogue queue left untouched.');
@@ -55,25 +55,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Restore accumulated catalogue changes
+        run: node scripts/publish-catalog.mjs restore
       - name: Refresh listing exclusions
         run: node scripts/sync-listing-controls.mjs
       - name: Import submissions and save README context
         run: node scripts/import-submissions.mjs
-      - name: Publish catalogue before confirming imports
+      - name: Save imported repositories for daily publication
+        env:
+          SYNC_PUBLICATION_PHASE: deferred
         run: |
           if [ ! -f .submission-results.json ]; then exit 0; fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          node scripts/prune-no-demo.mjs
-          node scripts/build-browse-index.mjs
-          git add dist/catalog.json dist/spaces.json data dist/previews
-          if [ -d data/readmes ]; then git add data/readmes; fi
-          if ! git diff --cached --quiet; then
-            git commit -m "Import submitted public repositories"
-            git pull --rebase origin main
-            git push origin HEAD:main
-          fi
-          echo "SUBMISSION_COMMIT=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          if ! node -e "process.exit(JSON.parse(require('fs').readFileSync('.submission-results.json')).length ? 0 : 1)"; then exit 0; fi
+          node scripts/publish-catalog.mjs
       - name: Save private submission results
         run: |
           if [ -f .submission-results.json ]; then node scripts/import-submissions.mjs finish; fi

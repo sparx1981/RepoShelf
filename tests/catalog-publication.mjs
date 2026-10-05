@@ -27,6 +27,15 @@ try{
  // A later interrupted run retains both JSON and binary assets, without advancing main.
  const publishedMain=git(work,'rev-parse','HEAD').trim();await writeFile(join(work,'dist/catalog.json'),json({...before,repositories:[{...before.repositories[0],stars:30}]}));await mkdir(join(work,'dist/previews'));const binary=Buffer.from([0,255,128,13,10]);await writeFile(join(work,'dist/previews/test.jpg'),binary);await publishCatalog(work,{checkpoint:true});assert.equal(git(work,'ls-remote','origin','main').split('\t')[0],publishedMain);
  git(root,'clone','--branch','main',remote,recover);const restored=await restoreCheckpoint(recover);assert(restored.restored>=2);assert.equal(JSON.parse(await readFile(join(recover,'dist/catalog.json'))).repositories[0].stars,30);assert.deepEqual(await readFile(join(recover,'dist/previews/test.jpg')),binary);
+ // Accumulation survives fresh runners; scheduled publication is once per UTC day.
+ await mkdir(join(recover,'data/sync-runs'),{recursive:true});await writeFile(join(recover,'data/sync-runs/456.json'),json({...checkpointReport,id:'456',publication:'awaiting_publication'}));
+ const oldMain=git(recover,'rev-parse','HEAD').trim();
+ await publishCatalog(recover,{checkpoint:true,completed:true});assert.equal(git(recover,'ls-remote','origin','main').split('\t')[0],oldMain);
+ const daily=await publishCatalog(recover,{scheduled:true,now:Date.parse('2026-10-06T06:35:00Z')});assert(daily.published);assert.deepEqual(await readFile(join(recover,'dist/previews/test.jpg')),binary);
+ const reportAfter=JSON.parse(await readFile(join(recover,'data/sync-runs/456.json')));assert.equal(reportAfter.publication,'main_saved');assert.equal(reportAfter.publishedCommit,daily.commit);
+ await writeFile(join(recover,'dist/catalog.json'),json({...before,repositories:[{...before.repositories[0],stars:40}]}));await publishCatalog(recover,{checkpoint:true,completed:true});
+ assert.equal((await publishCatalog(recover,{scheduled:true,now:Date.parse('2026-10-06T08:00:00Z')})).alreadyHandled,true);
+ assert.equal((await publishCatalog(recover,{now:Date.parse('2026-10-06T08:00:00Z')})).published,true,'Manual publishing is allowed after daily publishing');
  // Newer generated main updates must survive recovery and reject conflicting publication.
  git(other,'pull','--rebase');await writeFile(join(other,'dist/catalog.json'),json({...before,repositories:[{...before.repositories[0],stars:99}]}));git(other,'add','.');git(other,'commit','-m','Concurrent catalogue');git(other,'push');git(recover,'reset','--hard','HEAD');git(recover,'pull','--rebase');const guarded=await restoreCheckpoint(recover);assert(guarded.conflicts>=1);assert.equal(JSON.parse(await readFile(join(recover,'dist/catalog.json'))).repositories[0].stars,99);
  await assert.rejects(()=>publishCatalog(work),/conflicts/);assert.equal(JSON.parse(git(other,'show','origin/main:dist/catalog.json')).repositories[0].stars,99);

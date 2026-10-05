@@ -71,6 +71,14 @@
     {
       "source": "/api/v1/:path*",
       "destination": "/api/agent?path=:path*"
+    },
+    {
+      "source": "/api/publication",
+      "destination": "/api/sync-log?action=publication-status"
+    },
+    {
+      "source": "/api/maintenance",
+      "destination": "/api/sync-log?action=maintenance"
     }
   ],
   "ignoreCommand": "node scripts/deployment-policy.mjs",
