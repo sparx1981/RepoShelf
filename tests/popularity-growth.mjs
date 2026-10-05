@@ -20,7 +20,7 @@ assert.equal(popularityGrowth([{...base,checkError:{kind:'rate_limit'},trendSumm
 assert.equal(popularityGrowth([{...base,metrics:[...base.metrics,{at:at(5),stars:null,forks:0}]}],{now}).items[0].history.length,2,'Invalid points are not plotted');
 assert.throws(()=>popularityGrowth(rows,{sort:'watchers'}));
 const html=UI.render(data);assert(html.includes('Stars over time'));assert(html.includes('Forks over time'));assert(html.includes('Daily observation coverage'));assert(!UI.render(popularityGrowth([{...base,name:'<script>alert(1)</script>'}],{now})).includes('<script>'));assert(UI.render(popularityGrowth([],{now})).includes('No measured positive growth'));assert(UI.chart(base.metrics,'stars','Stars').includes('aria-label="Stars: 100 to 170"'));
-assert.equal(CHECK_INTERVAL_MS,22*3600000);assert.equal(dueEntries([{...base,lastCheckedAt:at(23/24)}],now).length,1);
+assert.equal(CHECK_INTERVAL_MS,48*3600000);assert.equal(dueEntries([{...base,lastCheckedAt:at(47/24)}],now).length,0);assert.equal(dueEntries([{...base,lastCheckedAt:at(2)}],now).length,1);
 assert.equal(repositoryCheckPlan(Array(4200),{remaining:950,authenticated:true}).limit,500);
 assert.equal(repositoryCheckPlan(Array(6500),{remaining:1000,authenticated:true}).limit,650);
 assert.equal(repositoryCheckPlan(Array(10000),{remaining:5000,authenticated:true}).limit,750);
