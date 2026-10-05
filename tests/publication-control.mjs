@@ -36,7 +36,7 @@ let recoveryPosts=0;
 const recovery=createMaintenanceHandler({key,token:'fixture',now:()=>now,checkpoint:{json:async()=>({lastScheduledDay:'2026-10-06'})},control:{active:async()=>[]},fetcher:async(url,options)=>{if(options.method==='POST'){recoveryPosts++;return new Response(null,{status:204})}return Response.json({workflow_runs:[{status:'completed',conclusion:'success',updated_at:'2026-10-06T02:00:00Z'}]})}});
 assert.equal((await call(recovery,{authorization:'Bearer '+key})).status,202);assert.equal(recoveryPosts,1);
 const catalog=await readFile(new URL('../.github/workflows/catalog.yml',import.meta.url),'utf8'),submission=await readFile(new URL('../.github/workflows/submissions.yml',import.meta.url),'utf8'),daily=await readFile(new URL('../.github/workflows/publication.yml',import.meta.url),'utf8');
-assert(catalog.includes('SYNC_PUBLICATION_PHASE: deferred'));assert(catalog.includes("DEMO_CHECK_BATCH: 'auto'"));assert(catalog.includes("CATALOG_PREVIEW_BATCH: 'auto'"));
+assert(catalog.includes('SYNC_PUBLICATION_PHASE: deferred'));assert(catalog.includes("DEMO_CHECK_BATCH: 'auto'"));assert(catalog.includes("CATALOG_PREVIEW_BATCH: 'auto'"));assert(catalog.includes("PREVIEW_BUDGET_MS: '900000'"));assert(catalog.includes("DEMO_CHECK_BUDGET_MS: '600000'"));
 assert(submission.includes('SYNC_PUBLICATION_PHASE: deferred'));assert(!submission.includes('git push origin HEAD:main'));assert(daily.includes("cron: '35 6 * * *'"));assert(daily.includes('group: reposhelf-catalog'));
 console.log('PASS: daily idempotence, deferred diagnostics, admin/origin authorization, guarded dispatch, scheduler authentication, independent catch-up and deployment-free maintenance configuration.');
 

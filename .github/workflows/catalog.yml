@@ -240,10 +240,10 @@ jobs:
       - name: Validate demos and capture previews
         id: previews
         if: always() && steps.verify.outcome == 'success'
-        timeout-minutes: 15
+        timeout-minutes: 18
         continue-on-error: true
         env:
-          PREVIEW_BUDGET_MS: '720000'
+          PREVIEW_BUDGET_MS: '900000'
           CATALOG_PREVIEW_CONCURRENCY: '3'
           CATALOG_PREVIEW_BATCH: 'auto'
         run: |
@@ -253,10 +253,11 @@ jobs:
       - name: Check remaining public demo pages and review reports
         id: health
         if: always() && steps.verify.outcome == 'success'
-        timeout-minutes: 10
+        timeout-minutes: 13
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          DEMO_CHECK_BUDGET_MS: '600000'
           DEMO_CHECK_BATCH: 'auto'
         run: |
           mkdir -p .sync-logs
