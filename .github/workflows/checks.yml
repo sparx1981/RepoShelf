@@ -62,6 +62,8 @@ jobs:
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-account-data.sql
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610050012_reposhelf_popularity.sql
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-reposhelf-popularity.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610050013_capture_providers.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-capture-providers.sql
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-launch.sql
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-discovery-history.sql
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-editorial-qa.sql

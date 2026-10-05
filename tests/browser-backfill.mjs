@@ -15,7 +15,7 @@ assert.equal(browserBacklogState(r).demo,'repeated');
 assert.equal(browserBacklogState(r).screenshot,'repeated');
 assert.equal(browserBacklogState(r).reviewRecommended,true);
 assert.match(browserBacklogState(r).reviewAdvice,/Open the demo manually/);
-assert.equal(Date.parse(r.demoHealth.nextCheckAt)-Date.parse(r.demoHealth.attemptedAt),86400000);
+assert.equal(Date.parse(r.demoHealth.nextCheckAt)-Date.parse(r.demoHealth.attemptedAt),7*86400000);
 assert.equal(previewCandidates([r],now+5*3600000,1).length,0);
 assert.equal(demoCandidates([r],now+5*3600000,1).length,0);
 const good=recordDemoResult(r,{kind:'working'},now+29*3600000);

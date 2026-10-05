@@ -14,7 +14,9 @@ export function repositoryCheckPlan(entries,{remaining=null,authenticated=false,
 export async function checkRepository(entry,{fetcher=fetch,headers={},now=Date.now()}={}){
 const at=new Date(now).toISOString();
 const retry=(kind,delay=6*60*60*1000)=>({entry:{...entry,lastAttemptAt:at,checkError:{kind,at},nextCheckAt:new Date(now+Math.max(delay,6*60*60*1000)).toISOString()},stop:kind==='rate_limit'||kind==='authentication'});
-try{const res=await fetcher(`https://api.github.com/repos/${entry.full}`,{headers,signal:AbortSignal.timeout(12000)});
+try{const conditional=entry.availability==='available'&&entry.lastAvailableAt&&entry.repositoryEtag&&entry.repositoryEtagFor===entry.full;
+const res=await fetcher(`https://api.github.com/repos/${entry.full}`,{headers:{...headers,...conditional?{'If-None-Match':entry.repositoryEtag}:{}},signal:AbortSignal.timeout(12000)});
+if(res.status===304){if(!conditional)return retry('invalid_response');const {checkError,nextCheckAt,...kept}=entry;return {entry:{...kept,lastCheckedAt:at,lastAttemptAt:at,lastAvailableAt:at},notModified:true,stop:false}}
 if(res.status===404||res.status===410){const {checkError,nextCheckAt,...kept}=entry;return {entry:{...kept,availability:'unavailable',unavailableReason:'not_found',unavailableSince:entry.unavailableSince||at,lastCheckedAt:at,lastAttemptAt:at},stop:false}}
 let limited=res.status===429;if(res.status===403){let message='';try{message=(await res.json()).message||''}catch{}limited=res.headers.get('x-ratelimit-remaining')==='0'||Boolean(res.headers.get('retry-after'))||/rate limit|abuse/i.test(message)}
 if(limited){const delay=Math.max(Number(res.headers.get('retry-after')||0)*1000,Number(res.headers.get('x-ratelimit-reset')||0)*1000-now,0);return retry('rate_limit',delay)}
@@ -23,6 +25,6 @@ if(!res.ok)return retry(res.status===403?'access_denied':'temporary');
 const data=await res.json();if(typeof data.full_name!=='string'||typeof data.private!=='boolean')return retry('invalid_response');
 const {checkError,nextCheckAt,unavailableSince,unavailableReason,...kept}=entry;
 if(data.private||data.visibility&&data.visibility!=='public')return {entry:{...kept,availability:'unavailable',unavailableReason:'not_public',unavailableSince:entry.unavailableSince||at,lastCheckedAt:at,lastAttemptAt:at},data,stop:false};
-return {entry:{...kept,availability:'available',lastCheckedAt:at,lastAttemptAt:at,lastAvailableAt:at},data,stop:false};
+return {entry:{...kept,availability:'available',lastCheckedAt:at,lastAttemptAt:at,lastAvailableAt:at,...res.headers.get('etag')?{repositoryEtag:res.headers.get('etag'),repositoryEtagFor:entry.full}:{}},data,stop:false};
 }catch{return retry('temporary')}
 }

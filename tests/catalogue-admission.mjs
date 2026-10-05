@@ -14,7 +14,7 @@ const temporary={...good,demoHealth:{...good.demoHealth,error:{reason:'rate_limi
 assert(Q.publishedEligible(temporary,now),'Temporary errors preserve recent successful evidence');
 const pending={...good,full:'team/pending',screenshots:[]},quarantine={...pending,full:'team/repair',previewCheck:{url:demo,status:'retry',consecutiveFailures:3}};
 assert.equal(Q.catalogueState(pending,now),'pending');assert.equal(Q.catalogueState(quarantine,now),'quarantined');assert.equal(Q.catalogueState({...good,availability:'unavailable'},now),'unavailable');
-const plan=qualityPlan([good,pending,quarantine],now);assert.equal(plan.ready,true);assert.equal(plan.githubBatch,150);assert.equal(plan.publication.published,1);assert.equal(plan.publication.quarantined,1);assert.equal(plan.workingDemos,3);
+const plan=qualityPlan([good,pending,quarantine],now);assert.equal(plan.ready,true);assert.equal(plan.githubBatch,250);assert.equal(plan.publication.published,1);assert.equal(plan.publication.quarantined,1);assert.equal(plan.workingDemos,3);
 const generated=createBrowseIndex({repositories:[good,pending,quarantine]},{repositories:[]},{},now);assert(generated.projects.some(r=>r.full===pending.full),'Pending records remain stored');assert.equal(generated.index.repositories.find(r=>r.full===quarantine.full).catalogueState,'quarantined');
 console.log('PASS: strict publication admission, preserved temporary evidence, repair quarantine and independent discovery.');
 

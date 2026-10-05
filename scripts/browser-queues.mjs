@@ -1,12 +1,12 @@
 // Worker time is shared proportionally while both queues have work. An empty
 // queue lends all its capacity to the other. Every project is visited once.
 export async function runBrowserQueues(queues,work,{deadline,now=Date.now,concurrency=()=>4,weights={previews:3,health:2},onTick=()=>{}}={}){
- const cursors={previews:0,health:0},spent={previews:0,health:0},reserved={previews:0,health:0},visited=new Set(),active=new Set();let failure=null;
+ const names=Object.keys(queues),zeros=()=>Object.fromEntries(names.map(n=>[n,0])),cursors=zeros(),spent=zeros(),reserved=zeros(),visited=new Set(),active=new Set();let failure=null;
  function take(){
   const due=[];
-  for(const name of ['previews','health']){while(cursors[name]<queues[name].length&&visited.has(queues[name][cursors[name]].full.toLowerCase()))cursors[name]++;if(cursors[name]<queues[name].length)due.push(name)}
+  for(const name of names){while(cursors[name]<queues[name].length&&visited.has(queues[name][cursors[name]].full.toLowerCase()))cursors[name]++;if(cursors[name]<queues[name].length)due.push(name)}
   if(!due.length)return null;
-  due.sort((a,b)=>(spent[a]+reserved[a]*1000)/weights[a]-(spent[b]+reserved[b]*1000)/weights[b]);
+  due.sort((a,b)=>(spent[a]+reserved[a]*1000)/(weights[a]||1)-(spent[b]+reserved[b]*1000)/(weights[b]||1));
   const name=due[0],project=queues[name][cursors[name]++];visited.add(project.full.toLowerCase());reserved[name]++;return {name,project};
  }
  try{while(!failure&&now()<deadline){
