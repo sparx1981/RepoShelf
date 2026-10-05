@@ -45,6 +45,15 @@ on:
       - 'scripts/check-demo-health.mjs'
       - 'scripts/demo-probe.mjs'
       - 'scripts/demo-probe-runner.mjs'
+      - 'scripts/demo-session.mjs'
+      - 'scripts/verify-browser-pool.mjs'
+      - 'scripts/demo-worker.mjs'
+      - 'scripts/demo-pool.mjs'
+      - 'scripts/adaptive-browser.mjs'
+      - 'scripts/browser-queues.mjs'
+      - 'scripts/run-browser-queues.mjs'
+      - 'scripts/live-sync-progress.mjs'
+      - 'lib/sync-progress.mjs'
       - 'scripts/publish-catalog.mjs'
       - 'scripts/catalog-publication.mjs'
       - 'scripts/deployment-policy.mjs'
@@ -238,32 +247,32 @@ jobs:
           mkdir -p .sync-logs
           set -o pipefail
           node scripts/verify-ui.mjs 2>&1 | tee .sync-logs/verify.log
-      - name: Validate demos and capture previews
+          node scripts/verify-browser-pool.mjs 2>&1 | tee .sync-logs/verify-pool.log
+      - name: Validate demos and capture previews with shared browser workers
         id: previews
         if: always() && steps.verify.outcome == 'success'
-        timeout-minutes: 18
-        continue-on-error: true
-        env:
-          PREVIEW_BUDGET_MS: '900000'
-          CATALOG_PREVIEW_CONCURRENCY: '4'
-          CATALOG_PREVIEW_BATCH: 'auto'
-        run: |
-          mkdir -p .sync-logs
-          set -o pipefail
-          node scripts/capture-previews.mjs 2>&1 | tee .sync-logs/previews.log
-      - name: Check remaining public demo pages and review reports
-        id: health
-        if: always() && steps.verify.outcome == 'success'
-        timeout-minutes: 13
+        timeout-minutes: 28
         continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          PREVIEW_BUDGET_MS: '900000'
           DEMO_CHECK_BUDGET_MS: '600000'
+          CATALOG_PREVIEW_CONCURRENCY: '4'
+          CATALOG_PREVIEW_BATCH: 'auto'
           DEMO_CHECK_BATCH: 'auto'
         run: |
           mkdir -p .sync-logs
           set -o pipefail
-          node scripts/check-demo-health.mjs 2>&1 | tee .sync-logs/health.log
+          node scripts/run-browser-queues.mjs 2>&1 | tee .sync-logs/previews.log
+      - name: Record remaining public demo checks from shared workers
+        id: health
+        if: always() && steps.verify.outcome == 'success'
+        timeout-minutes: 1
+        continue-on-error: true
+        run: |
+          mkdir -p .sync-logs
+          set -o pipefail
+          node scripts/run-browser-queues.mjs summary 2>&1 | tee .sync-logs/health.log
       - name: Compress new and remaining previews
         id: compression_final
         if: always() && steps.previews.outcome == 'success'

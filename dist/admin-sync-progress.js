@@ -1,0 +1,7 @@
+(function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory();else root.RepoSyncProgress=factory()})(typeof globalThis!=='undefined'?globalThis:this,function(){
+ 'use strict';
+ function render(p){if(!p)return '';const n=x=>Number.isSafeInteger(x)&&x>=0?x:0,metric=(value,label)=>'<div class="metric"><strong>'+n(value).toLocaleString()+'</strong><span>'+label+'</span></div>';
+  return '<section class="analytics-box"><h3>'+(p.stale?'Last reported browser progress':p.status==='complete'?'Browser batch finished':'Live browser progress')+'</h3><div class="metric-grid">'+metric(p.previews?.attempted,'Screenshot attempts')+metric(p.previews?.captured,'Screenshots captured')+metric(p.health?.attempted,'Other demo checks')+metric(n(p.previews?.working)+n(p.health?.working),'Pages loaded')+metric(n(p.previews?.temporaryFailures)+n(p.health?.temporaryFailures),'Awaiting retry')+metric(p.activeWorkers,'Active workers')+'</div><p class="small">'+(p.stale?'Updates are stale; these are the last saved counters.':'Aggregate counters update about once a minute; this page refreshes every 30 seconds while visible.')+' Last update '+n(p.ageSeconds)+' seconds ago. '+n(p.concurrency)+' worker limit · '+Math.round(n(p.elapsedMs)/60000)+' minutes elapsed of '+Math.round(n(p.budgetMs)/60000)+'. Browser completion does not mean catalogue publication has finished.</p></section>';
+ }
+ return {render};
+});
