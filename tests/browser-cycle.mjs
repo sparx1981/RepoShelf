@@ -1,5 +1,38 @@
-import assert from 'node:assert/strict';import {mkdtemp,mkdir,writeFile,readFile,rm} from 'node:fs/promises';import {tmpdir} from 'node:os';import {pathToFileURL} from 'node:url';import {browserDecision,lastBrowserCycle,runBrowserCycle,BROWSER_INTERVAL} from '../scripts/browser-cycle.mjs';
-const at=Date.parse('2026-10-04T00:00:00Z'),last=new Date(at).toISOString();assert.equal(browserDecision(last,at+3600000).due,false);assert.equal(browserDecision(last,at+BROWSER_INTERVAL-1).due,false);assert.equal(browserDecision(last,at+BROWSER_INTERVAL).due,true);assert.equal(browserDecision(last,at,true).due,true);assert.equal(browserDecision(null,at).due,true);assert.equal(browserDecision('invalid',at).due,true);assert.equal(browserDecision(new Date(at+1).toISOString(),at).due,true);
-const dir=await mkdtemp(tmpdir()+'/reposhelf-browser-cycle-'),root=pathToFileURL(dir+'/');try{await mkdir(new URL('data/sync-runs/',root),{recursive:true});await writeFile(new URL('data/sync-runs/1.json',root),JSON.stringify({recordedAt:last,stages:[{id:'health',status:'success'},{id:'previews',status:'success'}]}));await writeFile(new URL('data/sync-runs/2.json',root),JSON.stringify({recordedAt:new Date(at+3600000).toISOString(),stages:[{id:'health',status:'success'},{id:'previews',status:'failure'}]}));assert.equal(await lastBrowserCycle(root),last,'Partial browser runs must not delay retries');const output=new URL('output',root);assert.equal((await runBrowserCycle('decide',root,{GITHUB_OUTPUT:output},at+3600000)).due,false);assert.match(await readFile(output,'utf8'),/due=false/);await runBrowserCycle('complete',root,{GITHUB_RUN_ID:'3'},at+BROWSER_INTERVAL);assert.equal(await lastBrowserCycle(root),new Date(at+BROWSER_INTERVAL).toISOString());assert.equal((await runBrowserCycle('decide',root,{},at+BROWSER_INTERVAL+3600000)).due,false)}finally{await rm(dir,{recursive:true,force:true})}console.log('PASS: demo health and screenshots run on a durable two-hour cycle; failed cycles retry, history bootstraps existing installs, and explicit refresh overrides the interval.');
-
-assert.equal(browserDecision('2026-10-04T08:26:00Z',Date.parse('2026-10-04T10:17:00Z')).due,true,'Completion time must not make the next scheduled batch skip');assert.equal(browserDecision('2026-10-04T08:26:00Z',Date.parse('2026-10-04T09:55:00Z')).due,false,'Repeated pushes in a completed window must skip browser work');assert.equal(browserDecision('2026-10-04T08:26:00Z',Date.parse('2026-10-04T09:55:00Z')).nextDueAt,'2026-10-04T10:00:00.000Z');
+import assert from 'node:assert/strict';
+import {mkdtemp,mkdir,writeFile,readFile,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {pathToFileURL} from 'node:url';
+import {browserDecision,lastBrowserCycle,runBrowserCycle} from '../scripts/browser-cycle.mjs';
+import {recordDemoResult} from '../scripts/demo-health.mjs';
+const at=Date.parse('2026-10-04T00:00:00Z'),last=new Date(at).toISOString();
+const fresh={full:'test/new',name:'New',demo:'https://example.com'};
+assert.equal(browserDecision(last,at+3600000,false,[fresh]).due,true,'A recently completed batch must not block untouched backlog');
+assert.equal(browserDecision(last,at+3600000,false,[]).due,false,'An empty queue does not launch a browser');
+assert.equal(browserDecision(last,at,true,[]).due,true);
+const attempted=recordDemoResult(fresh,{kind:'temporary',reason:'access_restricted'},at);
+assert.equal(browserDecision(last,at+3600000,false,[attempted]).due,false,'Recently attempted entries wait for retry');
+assert.equal(browserDecision(last,at+2*3600000,false,[attempted]).due,true);
+const captured={...recordDemoResult(fresh,{kind:'working'},at),previewAttemptAt:last,screenshots:[{kind:'demo',src:'previews/one.jpg',url:fresh.demo,capturedAt:last}]};
+assert.equal(browserDecision(last,at+3600000,false,[captured]).due,false);
+assert.equal(browserDecision(last,at+3600000,false,[captured,fresh]).previewDue,1);
+const dir=await mkdtemp(tmpdir()+'/reposhelf-browser-cycle-'),root=pathToFileURL(dir+'/');
+try{
+ await mkdir(new URL('data/sync-runs/',root),{recursive:true});await mkdir(new URL('dist/',root));
+ const save=async entries=>{await writeFile(new URL('dist/catalog.json',root),JSON.stringify({repositories:entries}));await writeFile(new URL('dist/spaces.json',root),JSON.stringify({repositories:[]}))};
+ await writeFile(new URL('data/sync-runs/1.json',root),JSON.stringify({recordedAt:last,stages:[{id:'health',status:'success'},{id:'previews',status:'success'}]}));
+ await writeFile(new URL('data/sync-runs/2.json',root),JSON.stringify({recordedAt:new Date(at+3600000).toISOString(),stages:[{id:'health',status:'success'},{id:'previews',status:'failure'}]}));
+ assert.equal(await lastBrowserCycle(root),last);
+ const output=new URL('output',root);await save([fresh]);
+ const decision=await runBrowserCycle('decide',root,{GITHUB_OUTPUT:output},at+3600000);
+ assert.equal(decision.due,true);assert.equal(decision.eligibilityBased,true);assert.match(await readFile(output,'utf8'),/due=true/);
+ await runBrowserCycle('complete',root,{GITHUB_RUN_ID:'3'},at+3600000);
+ assert.equal(await lastBrowserCycle(root),new Date(at+3600000).toISOString());
+ assert.equal((await runBrowserCycle('decide',root,{},at+3600000+1)).due,true,'Completion history cannot suppress remaining queue');
+ await save([captured]);assert.equal((await runBrowserCycle('decide',root,{},at+3600000+1)).due,false);
+ const reportedAt=new Date(at+3*3600000).toISOString();
+ const reports=async()=>({ok:true,json:async()=>[{title:'[Broken demo] New',number:77,created_at:reportedAt,body:`Project: \`${fresh.full}\`\nDemo: ${fresh.demo}`} ]});
+ assert.equal((await runBrowserCycle('decide',root,{GITHUB_TOKEN:'fixture'},at+3*3600000,reports)).demoDue,1,'New reports are loaded before deciding an otherwise healthy queue is empty');
+ assert.equal(JSON.parse(await readFile(new URL('dist/catalog.json',root),'utf8')).repositories[0].demoReport.id,77,'New report evidence survives the next stage');
+ await writeFile(new URL('dist/catalog.json',root),'broken');await assert.rejects(runBrowserCycle('decide',root,{},at),SyntaxError,'Unreadable catalogue must not masquerade as no work');
+}finally{await rm(dir,{recursive:true,force:true})}
+console.log('PASS: eligible backlog runs within completed windows, per-listing cooldowns prevent duplication, empty queues skip browsers, and completion history remains durable.');
