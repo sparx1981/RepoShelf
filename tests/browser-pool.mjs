@@ -52,3 +52,9 @@ try{
  assert.equal(saved[0].demo,'https://replacement.demo.org/');assert.equal(saved[0].screenshots[0].url,saved[0].demo);assert.equal(saved[0].demoLinkRepair.previous,originals[0].demo);assert.equal(saved[1].demo,originals[1].demo,'An unverified replacement must not overwrite the saved URL');
 }finally{await rm(repairDir,{recursive:true,force:true})}
 console.log('PASS: repaired demo URLs need successful capture; failed alternatives preserve the saved listing.');
+
+// Retry a failed render capture without replacing its healthy navigation result.
+let captureCalls=0,patient=false;
+const captureSession=createDemoSession({guardFactory:()=>({assess:async()=>({allowed:true})}),launch:async()=>({close:async()=>{},newContext:async()=>({route:async()=>{},close:async()=>{},newPage:async()=>({screenshot:async opts=>{captureCalls++;assert.equal(opts.animations,'disabled');if(captureCalls===1)throw Error('Transient render race');assert.equal(opts.scale,'css')}})})}),inspect:async(page,target,opts)=>{patient=opts.patient;return {kind:'working',target}}});
+const retried=await captureSession.probe({target:'https://demo.org',screenshot:'/unused',patient:true});assert.equal(retried.screenshot,true);assert.equal(retried.captureRetry,true);assert.equal(captureCalls,2);assert.equal(patient,true);await captureSession.close();
+console.log('PASS: patient rendering flag and one bounded capture retry preserve working demo evidence.');
