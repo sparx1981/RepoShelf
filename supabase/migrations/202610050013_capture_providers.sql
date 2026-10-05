@@ -34,7 +34,7 @@ grant execute on function public.reposhelf_capture_reserve(text) to service_role
 alter table public.listing_controls add column approved_preview text check(length(approved_preview)<=2048);
 create function public.reposhelf_approve_preview(project text,expected_revision integer,preview text) returns boolean language plpgsql security definer set search_path='' as $$begin
 if not public.reposhelf_is_admin() then raise insufficient_privilege;end if;
-if project is null or project!~'^(hf:)?[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+$' or preview is null or preview!~'^previews/[a-f0-9]{24}-provider\.jpg$' then raise check_violation;end if;
+if expected_revision is null or expected_revision<0 or project is null or project!~'^(hf:)?[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+$' or preview is null or preview!~'^previews/[a-f0-9]{24}-provider\.jpg$' then raise check_violation;end if;
 perform pg_advisory_xact_lock(hashtextextended(lower(project),71883011));
 if coalesce((select revision from public.listing_controls where project_id=project),0)<>expected_revision then raise exception using errcode='40001',message='Listing changed';end if;
 insert into public.listing_controls(project_id,approved_preview) values(project,preview) on conflict(project_id) do update set approved_preview=excluded.approved_preview,revision=listing_controls.revision+1,updated_at=now();

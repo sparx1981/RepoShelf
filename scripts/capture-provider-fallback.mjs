@@ -12,7 +12,7 @@ export async function providerImage(id,target,{env=process.env,fetcher=fetch}={}
  else throw Error('invalid_provider');return boundedBytes(await fetcher(url,{...options,method,headers,body}));
 }
 export async function runProviderFallback(root=new URL('../',import.meta.url),env=process.env,{fetcher=fetch,guard=publicUrlGuard(),image=providerImage,inspect=inspectPreview,compress=compressedPreview}={}){
- const origin=env.REPOSHELF_PUBLIC_URL||'https://reposhelf.vercel.app',ready=providerReadiness(env),receipt={schema:1,at:new Date().toISOString(),ready,attempted:0,candidates:0,reasons:{},providers:{}};await mkdir(new URL('data/',root),{recursive:true});
+ const origin=env.REPOSHELF_PUBLIC_URL||'https://reposhelf.vercel.app',ready=providerReadiness(env),receipt={schema:1,at:new Date().toISOString(),workerKeyConfigured:Boolean(env.REPOSHELF_SUBMISSION_SYNC_KEY),ready,attempted:0,candidates:0,reasons:{},providers:{}};await mkdir(new URL('data/',root),{recursive:true});
  async function api(action,body={}){const res=await fetcher(origin+'/api/editorial?action='+action,{method:'POST',headers:{Authorization:'Bearer '+env.REPOSHELF_SUBMISSION_SYNC_KEY,'Content-Type':'application/json'},body:JSON.stringify(body),signal:AbortSignal.timeout(15000),redirect:'error'});if(!res.ok)throw Error('capture_configuration_unavailable');return res.json()}
  try{
   if(!env.REPOSHELF_SUBMISSION_SYNC_KEY){receipt.reason='worker_key_missing';return receipt}
