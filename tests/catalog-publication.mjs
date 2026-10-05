@@ -36,6 +36,7 @@ try{
  await writeFile(join(recover,'dist/catalog.json'),json({...before,repositories:[{...before.repositories[0],stars:40}]}));await publishCatalog(recover,{checkpoint:true,completed:true});
  assert.equal((await publishCatalog(recover,{scheduled:true,now:Date.parse('2026-10-06T08:00:00Z')})).alreadyHandled,true);
  assert.equal((await publishCatalog(recover,{now:Date.parse('2026-10-06T08:00:00Z')})).published,true,'Manual publishing is allowed after daily publishing');
+ await writeFile(join(recover,'dist/catalog.json'),json({...before,repositories:[{...before.repositories[0],stars:50}]}));await publishCatalog(recover,{checkpoint:true,completed:true});
  // Newer generated main updates must survive recovery and reject conflicting publication.
  git(other,'pull','--rebase');await writeFile(join(other,'dist/catalog.json'),json({...before,repositories:[{...before.repositories[0],stars:99}]}));git(other,'add','.');git(other,'commit','-m','Concurrent catalogue');git(other,'push');git(recover,'reset','--hard','HEAD');git(recover,'pull','--rebase');const guarded=await restoreCheckpoint(recover);assert(guarded.conflicts>=1);assert.equal(JSON.parse(await readFile(join(recover,'dist/catalog.json'))).repositories[0].stars,99);
  await assert.rejects(()=>publishCatalog(work),/conflicts/);assert.equal(JSON.parse(git(other,'show','origin/main:dist/catalog.json')).repositories[0].stars,99);
