@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {scheduledPublicationDue,publicationSummary} from '../lib/publication-policy.mjs';
-import {createWorkflowControl} from '../lib/workflow-control.mjs';
+import {catalogueSchedule,createWorkflowControl} from '../lib/workflow-control.mjs';
 import {createPublicationHandler} from '../lib/publication-handler.mjs';
 import {createMaintenanceHandler} from '../lib/maintenance-handler.mjs';
 import {storefrontAlerts,publicationAlerts} from '../scripts/monitor-health.mjs';
@@ -45,3 +45,31 @@ assert(!storefrontAlerts(session,browse,now).some(a=>a.id==='catalogue-stale'));
 assert(storefrontAlerts(session,{...browse,snapshots:{catalog:new Date(now-31*3600000).toISOString()}},now).some(a=>a.id==='catalogue-stale'));
 assert.equal(publicationAlerts([{status:'completed',conclusion:'failure',updated_at:new Date(now).toISOString()}],now)[0].id,'publication-failed');
 assert.equal(publicationAlerts([{status:'completed',conclusion:'success',updated_at:new Date(now-31*3600000).toISOString()}],now)[0].id,'publication-overdue');
+
+for(const [at,sync,publication] of [
+ ['2026-10-05T00:00:00Z','2026-10-05T00:17:00.000Z','2026-10-05T06:35:00.000Z'],
+ ['2026-10-05T00:17:00Z','2026-10-05T02:17:00.000Z','2026-10-05T06:35:00.000Z'],
+ ['2026-10-05T01:40:00Z','2026-10-05T02:17:00.000Z','2026-10-05T06:35:00.000Z'],
+ ['2026-10-05T06:35:00Z','2026-10-05T08:17:00.000Z','2026-10-06T06:35:00.000Z'],
+ ['2026-12-31T23:59:00Z','2027-01-01T00:17:00.000Z','2027-01-01T06:35:00.000Z']
+]){const next=catalogueSchedule(Date.parse(at));assert.equal(next.nextSyncAt,sync);assert.equal(next.nextPublicationAt,publication)}
+let syncBusy=false,syncDispatches=0;
+const syncControl=createWorkflowControl({token:'fixture',fetcher:async(url,options)=>{
+ if(options.method==='POST'){syncDispatches++;assert(url.endsWith('catalog.yml/dispatches'));assert.deepEqual(JSON.parse(options.body),{ref:'main',inputs:{refresh_previews:false,watchdog_recovery:false}});return new Response(null,{status:204})}
+ return Response.json({workflow_runs:syncBusy?[{id:7,status:'queued'}]:[]});
+}});
+assert((await syncControl.sync()).requested);syncBusy=true;assert(!(await syncControl.sync()).requested);assert.equal(syncDispatches,1);
+await assert.rejects(createWorkflowControl({token:''}).sync(),e=>e.code==='actions_token_required');
+const syncHandler=createPublicationHandler({accounts,control:syncControl});
+admin=false;assert.equal((await call(syncHandler,{body:{action:'sync'}})).status,403);admin=true;
+assert.equal((await call(syncHandler,{origin:'https://evil.test',body:{action:'sync'}})).status,403);
+assert.equal((await call(syncHandler,{body:{action:'sync'}})).status,409);syncBusy=false;
+assert.equal((await call(syncHandler,{body:{action:'sync'}})).status,202);assert.equal(syncDispatches,2);
+console.log('PASS: UTC schedule boundaries and guarded, administrator-only manual sync dispatch.');
+
+const {createSyncRouter}=await import('../api/sync-log.mjs');
+let routedSyncs=0;
+const router=createSyncRouter({sync:async()=>{throw Error('Must route POST to control')},publication:createPublicationHandler({accounts,control:{sync:async()=>{routedSyncs++;return {requested:true}}}})});
+const routedReq={method:'POST',url:'/api/sync-log?action=publish',headers:{origin:'https://reposhelf.test'},body:{action:'sync'}},routedRes={writeHead(status){this.status=status},end(body){this.data=JSON.parse(body)}};
+await router(routedReq,routedRes);assert.equal(routedRes.status,202);assert.equal(routedSyncs,1);
+console.log('PASS: canonical API router forwards administrator sync requests to workflow dispatch.');
