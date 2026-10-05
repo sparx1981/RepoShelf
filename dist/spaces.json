@@ -1833,7 +1833,7 @@
       "overview": null,
       "overviewCheckedAt": "2026-10-05T05:09:39.372Z",
       "overviewRepoUpdated": "2026-02-21T23:20:43.000Z",
-      "previewAttemptAt": "2026-10-03T06:17:40.068Z",
+      "previewAttemptAt": "2026-10-05T15:04:37.720Z",
       "screenshots": [
         {
           "src": "previews/7ca3de270beda2f1f4aa32ff.jpg",
@@ -1844,14 +1844,15 @@
       ],
       "demoHealth": {
         "url": "https://huggingface.co/spaces/lmarena-ai/arena-leaderboard",
-        "attemptedAt": "2026-10-05T12:29:38.664Z",
+        "attemptedAt": "2026-10-05T15:04:37.720Z",
         "status": "unknown",
         "error": {
           "reason": "empty_page",
-          "at": "2026-10-05T12:29:38.664Z"
+          "at": "2026-10-05T15:04:37.720Z"
         },
-        "nextCheckAt": "2026-10-05T14:29:38.664Z",
-        "consecutiveTemporaryFailures": 2
+        "nextCheckAt": "2026-10-06T15:04:37.720Z",
+        "consecutiveTemporaryFailures": 3,
+        "probeVersion": 2
       },
       "projectInsights": {
         "version": 1,
@@ -1910,7 +1911,15 @@
       },
       "agentContextRepoUpdated": "2026-02-21T23:20:43.000Z",
       "appUrl": "https://lmarena-ai-arena-leaderboard.static.hf.space/",
-      "qualityPriority": false
+      "qualityPriority": false,
+      "previewCheck": {
+        "url": "https://huggingface.co/spaces/lmarena-ai/arena-leaderboard",
+        "attemptedAt": "2026-10-05T15:04:37.720Z",
+        "consecutiveFailures": 1,
+        "status": "retry",
+        "reason": "empty_page",
+        "nextCheckAt": "2026-10-05T17:04:37.720Z"
+      }
     },
     {
       "full": "hf:nanotron/ultrascale-playbook",
@@ -4589,17 +4598,18 @@
       "overview": null,
       "overviewCheckedAt": "2026-10-05T05:09:40.783Z",
       "overviewRepoUpdated": "2024-09-16T13:51:17.000Z",
-      "previewAttemptAt": "2026-10-05T12:37:22.936Z",
+      "previewAttemptAt": "2026-10-05T14:56:41.485Z",
       "demoHealth": {
         "url": "https://huggingface.co/spaces/sanchit-gandhi/whisper-jax",
-        "attemptedAt": "2026-10-05T12:37:22.936Z",
+        "attemptedAt": "2026-10-05T14:56:41.485Z",
         "status": "unknown",
         "error": {
           "reason": "network_or_timeout",
-          "at": "2026-10-05T12:37:22.936Z"
+          "at": "2026-10-05T14:56:41.485Z"
         },
-        "nextCheckAt": "2026-10-05T14:37:22.936Z",
-        "consecutiveTemporaryFailures": 2
+        "nextCheckAt": "2026-10-06T14:56:41.485Z",
+        "consecutiveTemporaryFailures": 3,
+        "probeVersion": 2
       },
       "projectInsights": {
         "version": 1,
@@ -4649,11 +4659,11 @@
       "qualityPriority": false,
       "previewCheck": {
         "url": "https://huggingface.co/spaces/sanchit-gandhi/whisper-jax",
-        "attemptedAt": "2026-10-05T12:37:22.936Z",
-        "consecutiveFailures": 1,
+        "attemptedAt": "2026-10-05T14:56:41.485Z",
+        "consecutiveFailures": 2,
         "status": "retry",
         "reason": "network_or_timeout",
-        "nextCheckAt": "2026-10-05T14:37:22.936Z"
+        "nextCheckAt": "2026-10-05T16:56:41.485Z"
       }
     },
     {
@@ -7661,16 +7671,17 @@
       "overviewRepoUpdated": "2023-12-13T15:27:06.000Z",
       "demoHealth": {
         "url": "https://huggingface.co/spaces/Gustavosta/MagicPrompt-Stable-Diffusion",
-        "attemptedAt": "2026-10-05T12:37:30.478Z",
-        "status": "unknown",
-        "error": {
-          "reason": "empty_page",
-          "at": "2026-10-05T12:37:30.478Z"
-        },
-        "nextCheckAt": "2026-10-05T14:37:30.478Z",
-        "consecutiveTemporaryFailures": 2
+        "attemptedAt": "2026-10-05T14:56:51.854Z",
+        "status": "working",
+        "nextCheckAt": "2026-10-12T14:56:51.854Z",
+        "consecutiveTemporaryFailures": 0,
+        "probeVersion": 2,
+        "checkedAt": "2026-10-05T14:56:51.854Z",
+        "lastWorkingAt": "2026-10-05T14:56:51.854Z",
+        "target": "https://gustavosta-magicprompt-stable-diffusion.hf.space/",
+        "failureCount": 0
       },
-      "previewAttemptAt": "2026-10-05T12:37:30.478Z",
+      "previewAttemptAt": "2026-10-05T14:56:51.854Z",
       "projectInsights": {
         "version": 1,
         "whatItDoes": null,
@@ -7737,12 +7748,20 @@
       "qualityPriority": false,
       "previewCheck": {
         "url": "https://huggingface.co/spaces/Gustavosta/MagicPrompt-Stable-Diffusion",
-        "attemptedAt": "2026-10-05T12:37:30.478Z",
-        "consecutiveFailures": 1,
-        "status": "retry",
-        "reason": "empty_page",
-        "nextCheckAt": "2026-10-05T14:37:30.478Z"
-      }
+        "attemptedAt": "2026-10-05T14:56:51.854Z",
+        "consecutiveFailures": 0,
+        "status": "captured",
+        "reason": null,
+        "nextCheckAt": "2026-10-12T14:56:51.854Z"
+      },
+      "screenshots": [
+        {
+          "src": "previews/b498ece5772a8e57f07cf573.jpg",
+          "kind": "demo",
+          "capturedAt": "2026-10-05T14:56:51.854Z",
+          "url": "https://huggingface.co/spaces/Gustavosta/MagicPrompt-Stable-Diffusion"
+        }
+      ]
     },
     {
       "full": "hf:stabilityai/stable-diffusion-3.5-large",
@@ -15140,18 +15159,15 @@
       },
       "demoHealth": {
         "url": "https://huggingface.co/spaces/Vokturz/can-it-run-llm",
-        "attemptedAt": "2026-10-05T12:42:38.414Z",
+        "attemptedAt": "2026-10-05T15:01:52.726Z",
         "status": "working",
-        "nextCheckAt": "2026-10-05T14:42:38.414Z",
-        "checkedAt": "2026-10-04T10:36:15.690Z",
-        "lastWorkingAt": "2026-10-04T10:36:15.690Z",
+        "nextCheckAt": "2026-10-12T15:01:52.726Z",
+        "checkedAt": "2026-10-05T15:01:52.726Z",
+        "lastWorkingAt": "2026-10-05T15:01:52.726Z",
         "target": "https://vokturz-can-it-run-llm.hf.space/",
         "failureCount": 0,
-        "consecutiveTemporaryFailures": 2,
-        "error": {
-          "reason": "empty_page",
-          "at": "2026-10-05T12:42:38.414Z"
-        }
+        "consecutiveTemporaryFailures": 0,
+        "probeVersion": 2
       },
       "readmeSnapshot": {
         "version": 1,
@@ -15205,15 +15221,23 @@
       },
       "agentContextRepoUpdated": "2025-02-04T18:37:33.000Z",
       "qualityPriority": false,
-      "previewAttemptAt": "2026-10-05T12:42:38.414Z",
+      "previewAttemptAt": "2026-10-05T15:01:52.726Z",
       "previewCheck": {
         "url": "https://huggingface.co/spaces/Vokturz/can-it-run-llm",
-        "attemptedAt": "2026-10-05T12:42:38.414Z",
-        "consecutiveFailures": 2,
-        "status": "retry",
-        "reason": "empty_page",
-        "nextCheckAt": "2026-10-05T14:42:38.414Z"
-      }
+        "attemptedAt": "2026-10-05T15:01:52.726Z",
+        "consecutiveFailures": 0,
+        "status": "captured",
+        "reason": null,
+        "nextCheckAt": "2026-10-12T15:01:52.726Z"
+      },
+      "screenshots": [
+        {
+          "src": "previews/cad9d29a6fb68bebc2cbcd2e.jpg",
+          "kind": "demo",
+          "capturedAt": "2026-10-05T15:01:52.726Z",
+          "url": "https://huggingface.co/spaces/Vokturz/can-it-run-llm"
+        }
+      ]
     },
     {
       "full": "hf:zai-org/CogVideoX-5B-Space",
@@ -22945,14 +22969,15 @@
       "appUrl": "https://llamameta-llama3-1-405b.static.hf.space/",
       "demoHealth": {
         "url": "https://huggingface.co/spaces/llamameta/llama3.1-405B",
-        "attemptedAt": "2026-10-05T12:29:33.173Z",
+        "attemptedAt": "2026-10-05T14:54:42.011Z",
         "status": "unknown",
         "error": {
           "reason": "empty_page",
-          "at": "2026-10-05T12:29:33.173Z"
+          "at": "2026-10-05T14:54:42.011Z"
         },
-        "nextCheckAt": "2026-10-05T14:29:33.173Z",
-        "consecutiveTemporaryFailures": 2
+        "nextCheckAt": "2026-10-06T14:54:42.011Z",
+        "consecutiveTemporaryFailures": 3,
+        "probeVersion": 2
       },
       "qualityPriority": false,
       "agentContextAttemptAt": "2026-10-04T16:45:54.688Z",
@@ -22962,14 +22987,14 @@
         "documents": []
       },
       "agentContextRepoUpdated": "2024-09-15T11:11:16.000Z",
-      "previewAttemptAt": "2026-10-05T12:29:33.173Z",
+      "previewAttemptAt": "2026-10-05T14:54:42.011Z",
       "previewCheck": {
         "url": "https://huggingface.co/spaces/llamameta/llama3.1-405B",
-        "attemptedAt": "2026-10-05T12:29:33.173Z",
-        "consecutiveFailures": 1,
+        "attemptedAt": "2026-10-05T14:54:42.011Z",
+        "consecutiveFailures": 2,
         "status": "retry",
         "reason": "empty_page",
-        "nextCheckAt": "2026-10-05T14:29:33.173Z"
+        "nextCheckAt": "2026-10-05T16:54:42.011Z"
       }
     },
     {
@@ -30719,14 +30744,15 @@
       "qualityPriority": false,
       "demoHealth": {
         "url": "https://huggingface.co/spaces/ArtificialAnalysis/Text-to-Image-Leaderboard",
-        "attemptedAt": "2026-10-05T12:29:36.398Z",
+        "attemptedAt": "2026-10-05T14:54:53.271Z",
         "status": "unknown",
         "error": {
           "reason": "empty_page",
-          "at": "2026-10-05T12:29:36.398Z"
+          "at": "2026-10-05T14:54:53.271Z"
         },
-        "nextCheckAt": "2026-10-05T14:29:36.398Z",
-        "consecutiveTemporaryFailures": 2
+        "nextCheckAt": "2026-10-06T14:54:53.271Z",
+        "consecutiveTemporaryFailures": 3,
+        "probeVersion": 2
       },
       "agentContextAttemptAt": "2026-10-04T21:36:14.670Z",
       "agentContext": {
@@ -30735,14 +30761,14 @@
         "documents": []
       },
       "agentContextRepoUpdated": "2025-06-20T05:06:58.000Z",
-      "previewAttemptAt": "2026-10-05T12:29:36.398Z",
+      "previewAttemptAt": "2026-10-05T14:54:53.271Z",
       "previewCheck": {
         "url": "https://huggingface.co/spaces/ArtificialAnalysis/Text-to-Image-Leaderboard",
-        "attemptedAt": "2026-10-05T12:29:36.398Z",
-        "consecutiveFailures": 1,
+        "attemptedAt": "2026-10-05T14:54:53.271Z",
+        "consecutiveFailures": 2,
         "status": "retry",
         "reason": "empty_page",
-        "nextCheckAt": "2026-10-05T14:29:36.398Z"
+        "nextCheckAt": "2026-10-05T16:54:53.271Z"
       }
     },
     {
@@ -35351,14 +35377,15 @@
       "qualityPriority": false,
       "demoHealth": {
         "url": "https://huggingface.co/spaces/WildVision/vision-arena",
-        "attemptedAt": "2026-10-05T12:29:36.357Z",
+        "attemptedAt": "2026-10-05T14:54:42.262Z",
         "status": "unknown",
         "error": {
           "reason": "empty_page",
-          "at": "2026-10-05T12:29:36.357Z"
+          "at": "2026-10-05T14:54:42.262Z"
         },
-        "nextCheckAt": "2026-10-05T14:29:36.357Z",
-        "consecutiveTemporaryFailures": 2
+        "nextCheckAt": "2026-10-06T14:54:42.262Z",
+        "consecutiveTemporaryFailures": 3,
+        "probeVersion": 2
       },
       "agentContextAttemptAt": "2026-10-05T01:01:54.236Z",
       "agentContext": {
@@ -35367,14 +35394,14 @@
         "documents": []
       },
       "agentContextRepoUpdated": "2024-12-22T01:11:30.000Z",
-      "previewAttemptAt": "2026-10-05T12:29:36.357Z",
+      "previewAttemptAt": "2026-10-05T14:54:42.262Z",
       "previewCheck": {
         "url": "https://huggingface.co/spaces/WildVision/vision-arena",
-        "attemptedAt": "2026-10-05T12:29:36.357Z",
-        "consecutiveFailures": 1,
+        "attemptedAt": "2026-10-05T14:54:42.262Z",
+        "consecutiveFailures": 2,
         "status": "retry",
         "reason": "empty_page",
-        "nextCheckAt": "2026-10-05T14:29:36.357Z"
+        "nextCheckAt": "2026-10-05T16:54:42.262Z"
       }
     },
     {
@@ -35972,14 +35999,15 @@
       "qualityPriority": false,
       "demoHealth": {
         "url": "https://huggingface.co/spaces/huggingface/open-source-ai-year-in-review-2024",
-        "attemptedAt": "2026-10-05T12:42:48.576Z",
+        "attemptedAt": "2026-10-05T15:02:09.545Z",
         "status": "working",
-        "checkedAt": "2026-10-05T12:42:48.576Z",
-        "lastWorkingAt": "2026-10-05T12:42:48.576Z",
+        "checkedAt": "2026-10-05T15:02:09.545Z",
+        "lastWorkingAt": "2026-10-05T15:02:09.545Z",
         "target": "https://huggingface-open-source-ai-year-in-review-2024.static.hf.space/index.html",
         "failureCount": 0,
-        "nextCheckAt": "2026-10-12T12:42:48.576Z",
-        "consecutiveTemporaryFailures": 0
+        "nextCheckAt": "2026-10-12T15:02:09.545Z",
+        "consecutiveTemporaryFailures": 0,
+        "probeVersion": 2
       },
       "agentContextAttemptAt": "2026-10-05T05:12:22.500Z",
       "agentContext": {
@@ -35988,14 +36016,14 @@
         "documents": []
       },
       "agentContextRepoUpdated": "2025-01-08T14:53:17.000Z",
-      "previewAttemptAt": "2026-10-05T12:42:48.576Z",
+      "previewAttemptAt": "2026-10-05T15:02:09.545Z",
       "previewCheck": {
         "url": "https://huggingface.co/spaces/huggingface/open-source-ai-year-in-review-2024",
-        "attemptedAt": "2026-10-05T12:42:48.576Z",
-        "consecutiveFailures": 2,
+        "attemptedAt": "2026-10-05T15:02:09.545Z",
+        "consecutiveFailures": 3,
         "status": "retry",
         "reason": "screenshot_error",
-        "nextCheckAt": "2026-10-05T14:42:48.576Z"
+        "nextCheckAt": "2026-10-06T15:02:09.545Z"
       }
     },
     {
@@ -37447,14 +37475,15 @@
       "qualityPriority": false,
       "demoHealth": {
         "url": "https://huggingface.co/spaces/multimodalart/dreambooth-training",
-        "attemptedAt": "2026-10-05T12:29:41.391Z",
-        "status": "unknown",
-        "error": {
-          "reason": "empty_page",
-          "at": "2026-10-05T12:29:41.391Z"
-        },
-        "nextCheckAt": "2026-10-05T14:29:41.391Z",
-        "consecutiveTemporaryFailures": 2
+        "attemptedAt": "2026-10-05T14:54:45.103Z",
+        "status": "working",
+        "nextCheckAt": "2026-10-12T14:54:45.103Z",
+        "consecutiveTemporaryFailures": 0,
+        "probeVersion": 2,
+        "checkedAt": "2026-10-05T14:54:45.103Z",
+        "lastWorkingAt": "2026-10-05T14:54:45.103Z",
+        "target": "https://multimodalart-dreambooth-training.hf.space/",
+        "failureCount": 0
       },
       "agentContextAttemptAt": "2026-10-05T05:51:44.016Z",
       "agentContext": {
@@ -37471,15 +37500,23 @@
         ]
       },
       "agentContextRepoUpdated": "2024-01-03T10:04:22.000Z",
-      "previewAttemptAt": "2026-10-05T12:29:41.392Z",
+      "previewAttemptAt": "2026-10-05T14:54:45.103Z",
       "previewCheck": {
         "url": "https://huggingface.co/spaces/multimodalart/dreambooth-training",
-        "attemptedAt": "2026-10-05T12:29:41.392Z",
-        "consecutiveFailures": 1,
-        "status": "retry",
-        "reason": "empty_page",
-        "nextCheckAt": "2026-10-05T14:29:41.392Z"
-      }
+        "attemptedAt": "2026-10-05T14:54:45.103Z",
+        "consecutiveFailures": 0,
+        "status": "captured",
+        "reason": null,
+        "nextCheckAt": "2026-10-12T14:54:45.103Z"
+      },
+      "screenshots": [
+        {
+          "src": "previews/5debd337b1b282e181724b72.jpg",
+          "kind": "demo",
+          "capturedAt": "2026-10-05T14:54:45.103Z",
+          "url": "https://huggingface.co/spaces/multimodalart/dreambooth-training"
+        }
+      ]
     },
     {
       "full": "hf:r3gm/AICoverGen",
@@ -40992,14 +41029,15 @@
       "qualityPriority": false,
       "demoHealth": {
         "url": "https://huggingface.co/spaces/ArtificialAnalysis/LLM-Performance-Leaderboard",
-        "attemptedAt": "2026-10-05T12:36:51.933Z",
+        "attemptedAt": "2026-10-05T14:56:03.455Z",
         "status": "unknown",
         "error": {
           "reason": "empty_page",
-          "at": "2026-10-05T12:36:51.933Z"
+          "at": "2026-10-05T14:56:03.455Z"
         },
-        "nextCheckAt": "2026-10-05T14:36:51.933Z",
-        "consecutiveTemporaryFailures": 2
+        "nextCheckAt": "2026-10-06T14:56:03.455Z",
+        "consecutiveTemporaryFailures": 3,
+        "probeVersion": 2
       },
       "agentContextAttemptAt": "2026-10-05T07:33:15.111Z",
       "agentContext": {
@@ -41008,14 +41046,14 @@
         "documents": []
       },
       "agentContextRepoUpdated": "2026-06-18T12:46:39.000Z",
-      "previewAttemptAt": "2026-10-05T12:36:51.933Z",
+      "previewAttemptAt": "2026-10-05T14:56:03.455Z",
       "previewCheck": {
         "url": "https://huggingface.co/spaces/ArtificialAnalysis/LLM-Performance-Leaderboard",
-        "attemptedAt": "2026-10-05T12:36:51.933Z",
-        "consecutiveFailures": 1,
+        "attemptedAt": "2026-10-05T14:56:03.455Z",
+        "consecutiveFailures": 2,
         "status": "retry",
         "reason": "empty_page",
-        "nextCheckAt": "2026-10-05T14:36:51.933Z"
+        "nextCheckAt": "2026-10-05T16:56:03.455Z"
       }
     },
     {
@@ -42504,14 +42542,15 @@
       "qualityPriority": false,
       "demoHealth": {
         "url": "https://huggingface.co/spaces/facebook/vggt",
-        "attemptedAt": "2026-10-05T12:36:51.302Z",
+        "attemptedAt": "2026-10-05T14:55:52.601Z",
         "status": "unknown",
         "error": {
           "reason": "http_500",
-          "at": "2026-10-05T12:36:51.302Z"
+          "at": "2026-10-05T14:55:52.601Z"
         },
-        "nextCheckAt": "2026-10-05T14:36:51.302Z",
-        "consecutiveTemporaryFailures": 2
+        "nextCheckAt": "2026-10-06T14:55:52.601Z",
+        "consecutiveTemporaryFailures": 3,
+        "probeVersion": 2
       },
       "agentContextAttemptAt": "2026-10-05T08:11:27.813Z",
       "agentContext": {
@@ -42535,14 +42574,14 @@
         ]
       },
       "agentContextRepoUpdated": "2026-05-13T06:26:05.000Z",
-      "previewAttemptAt": "2026-10-05T12:36:51.302Z",
+      "previewAttemptAt": "2026-10-05T14:55:52.601Z",
       "previewCheck": {
         "url": "https://huggingface.co/spaces/facebook/vggt",
-        "attemptedAt": "2026-10-05T12:36:51.302Z",
-        "consecutiveFailures": 1,
+        "attemptedAt": "2026-10-05T14:55:52.601Z",
+        "consecutiveFailures": 2,
         "status": "retry",
         "reason": "http_500",
-        "nextCheckAt": "2026-10-05T14:36:51.302Z"
+        "nextCheckAt": "2026-10-05T16:55:52.601Z"
       }
     },
     {
@@ -45324,14 +45363,15 @@
       "qualityPriority": false,
       "demoHealth": {
         "url": "https://huggingface.co/spaces/deddytoyota/Free-Unlimited-Google-Veo-3",
-        "attemptedAt": "2026-10-05T12:36:54.172Z",
+        "attemptedAt": "2026-10-05T14:56:06.536Z",
         "status": "unknown",
         "error": {
           "reason": "empty_page",
-          "at": "2026-10-05T12:36:54.172Z"
+          "at": "2026-10-05T14:56:06.536Z"
         },
-        "nextCheckAt": "2026-10-05T14:36:54.172Z",
-        "consecutiveTemporaryFailures": 2
+        "nextCheckAt": "2026-10-06T14:56:06.536Z",
+        "consecutiveTemporaryFailures": 3,
+        "probeVersion": 2
       },
       "agentContextAttemptAt": "2026-10-05T12:28:34.676Z",
       "agentContext": {
@@ -45340,14 +45380,14 @@
         "documents": []
       },
       "agentContextRepoUpdated": "2025-10-07T14:46:52.000Z",
-      "previewAttemptAt": "2026-10-05T12:36:54.172Z",
+      "previewAttemptAt": "2026-10-05T14:56:06.536Z",
       "previewCheck": {
         "url": "https://huggingface.co/spaces/deddytoyota/Free-Unlimited-Google-Veo-3",
-        "attemptedAt": "2026-10-05T12:36:54.172Z",
-        "consecutiveFailures": 1,
+        "attemptedAt": "2026-10-05T14:56:06.536Z",
+        "consecutiveFailures": 2,
         "status": "retry",
         "reason": "empty_page",
-        "nextCheckAt": "2026-10-05T14:36:54.172Z"
+        "nextCheckAt": "2026-10-05T16:56:06.536Z"
       }
     },
     {
@@ -52697,24 +52737,33 @@
       "qualityPriority": false,
       "demoHealth": {
         "url": "https://huggingface.co/spaces/fffiloni/DimensionX",
-        "attemptedAt": "2026-10-05T12:42:41.266Z",
-        "status": "unknown",
-        "error": {
-          "reason": "empty_page",
-          "at": "2026-10-05T12:42:41.266Z"
-        },
-        "nextCheckAt": "2026-10-05T14:42:41.266Z",
-        "consecutiveTemporaryFailures": 2
+        "attemptedAt": "2026-10-05T15:01:53.303Z",
+        "status": "working",
+        "nextCheckAt": "2026-10-12T15:01:53.303Z",
+        "consecutiveTemporaryFailures": 0,
+        "probeVersion": 2,
+        "checkedAt": "2026-10-05T15:01:53.303Z",
+        "lastWorkingAt": "2026-10-05T15:01:53.303Z",
+        "target": "https://fffiloni-dimensionx.hf.space/",
+        "failureCount": 0
       },
-      "previewAttemptAt": "2026-10-05T12:42:41.266Z",
+      "previewAttemptAt": "2026-10-05T15:01:53.304Z",
       "previewCheck": {
         "url": "https://huggingface.co/spaces/fffiloni/DimensionX",
-        "attemptedAt": "2026-10-05T12:42:41.266Z",
-        "consecutiveFailures": 2,
-        "status": "retry",
-        "reason": "empty_page",
-        "nextCheckAt": "2026-10-05T14:42:41.266Z"
-      }
+        "attemptedAt": "2026-10-05T15:01:53.304Z",
+        "consecutiveFailures": 0,
+        "status": "captured",
+        "reason": null,
+        "nextCheckAt": "2026-10-12T15:01:53.304Z"
+      },
+      "screenshots": [
+        {
+          "src": "previews/caaa39893f5a8910fd23d576.jpg",
+          "kind": "demo",
+          "capturedAt": "2026-10-05T15:01:53.304Z",
+          "url": "https://huggingface.co/spaces/fffiloni/DimensionX"
+        }
+      ]
     },
     {
       "full": "hf:gimbx/Uncensored-HackerCoding-GPT",
@@ -52799,28 +52848,33 @@
       "qualityPriority": false,
       "demoHealth": {
         "url": "https://huggingface.co/spaces/gimbx/Uncensored-HackerCoding-GPT",
-        "attemptedAt": "2026-10-05T12:42:45.025Z",
+        "attemptedAt": "2026-10-05T15:01:56.609Z",
         "status": "working",
-        "checkedAt": "2026-10-04T21:37:13.330Z",
-        "lastWorkingAt": "2026-10-04T21:37:13.330Z",
+        "checkedAt": "2026-10-05T15:01:56.609Z",
+        "lastWorkingAt": "2026-10-05T15:01:56.609Z",
         "target": "https://gimbx-uncensored-hackercoding-gpt.hf.space/",
         "failureCount": 0,
-        "nextCheckAt": "2026-10-05T14:42:45.025Z",
-        "consecutiveTemporaryFailures": 2,
-        "error": {
-          "reason": "empty_page",
-          "at": "2026-10-05T12:42:45.025Z"
-        }
+        "nextCheckAt": "2026-10-12T15:01:56.609Z",
+        "consecutiveTemporaryFailures": 0,
+        "probeVersion": 2
       },
-      "previewAttemptAt": "2026-10-05T12:42:45.025Z",
+      "previewAttemptAt": "2026-10-05T15:01:56.609Z",
       "previewCheck": {
         "url": "https://huggingface.co/spaces/gimbx/Uncensored-HackerCoding-GPT",
-        "attemptedAt": "2026-10-05T12:42:45.025Z",
-        "consecutiveFailures": 2,
-        "status": "retry",
-        "reason": "empty_page",
-        "nextCheckAt": "2026-10-05T14:42:45.025Z"
-      }
+        "attemptedAt": "2026-10-05T15:01:56.609Z",
+        "consecutiveFailures": 0,
+        "status": "captured",
+        "reason": null,
+        "nextCheckAt": "2026-10-12T15:01:56.609Z"
+      },
+      "screenshots": [
+        {
+          "src": "previews/298148639941fe680db411b4.jpg",
+          "kind": "demo",
+          "capturedAt": "2026-10-05T15:01:56.609Z",
+          "url": "https://huggingface.co/spaces/gimbx/Uncensored-HackerCoding-GPT"
+        }
+      ]
     },
     {
       "full": "hf:Phips/Upscaler",
@@ -53102,24 +53156,33 @@
       "qualityPriority": false,
       "demoHealth": {
         "url": "https://huggingface.co/spaces/zomehwh/vits-uma-genshin-honkai",
-        "attemptedAt": "2026-10-05T12:42:45.209Z",
-        "status": "unknown",
-        "error": {
-          "reason": "empty_page",
-          "at": "2026-10-05T12:42:45.209Z"
-        },
-        "nextCheckAt": "2026-10-05T14:42:45.209Z",
-        "consecutiveTemporaryFailures": 2
+        "attemptedAt": "2026-10-05T15:01:56.088Z",
+        "status": "working",
+        "nextCheckAt": "2026-10-12T15:01:56.088Z",
+        "consecutiveTemporaryFailures": 0,
+        "probeVersion": 2,
+        "checkedAt": "2026-10-05T15:01:56.088Z",
+        "lastWorkingAt": "2026-10-05T15:01:56.088Z",
+        "target": "https://zomehwh-vits-uma-genshin-honkai.hf.space/",
+        "failureCount": 0
       },
-      "previewAttemptAt": "2026-10-05T12:42:45.209Z",
+      "previewAttemptAt": "2026-10-05T15:01:56.088Z",
       "previewCheck": {
         "url": "https://huggingface.co/spaces/zomehwh/vits-uma-genshin-honkai",
-        "attemptedAt": "2026-10-05T12:42:45.209Z",
-        "consecutiveFailures": 2,
-        "status": "retry",
-        "reason": "empty_page",
-        "nextCheckAt": "2026-10-05T14:42:45.209Z"
-      }
+        "attemptedAt": "2026-10-05T15:01:56.088Z",
+        "consecutiveFailures": 0,
+        "status": "captured",
+        "reason": null,
+        "nextCheckAt": "2026-10-12T15:01:56.088Z"
+      },
+      "screenshots": [
+        {
+          "src": "previews/fa13b51e23d6b15a576ed135.jpg",
+          "kind": "demo",
+          "capturedAt": "2026-10-05T15:01:56.088Z",
+          "url": "https://huggingface.co/spaces/zomehwh/vits-uma-genshin-honkai"
+        }
+      ]
     },
     {
       "full": "hf:Qwen/Qwen2.5-Omni-7B-Demo",
@@ -57400,23 +57463,24 @@
       "qualityPriority": false,
       "demoHealth": {
         "url": "https://huggingface.co/spaces/MiniMaxAI/MiniMax-M1",
-        "attemptedAt": "2026-10-05T12:42:42.947Z",
+        "attemptedAt": "2026-10-05T15:01:53.177Z",
         "status": "unknown",
         "error": {
           "reason": "http_502",
-          "at": "2026-10-05T12:42:42.947Z"
+          "at": "2026-10-05T15:01:53.177Z"
         },
-        "nextCheckAt": "2026-10-05T14:42:42.947Z",
-        "consecutiveTemporaryFailures": 2
+        "nextCheckAt": "2026-10-06T15:01:53.177Z",
+        "consecutiveTemporaryFailures": 3,
+        "probeVersion": 2
       },
-      "previewAttemptAt": "2026-10-05T12:42:42.947Z",
+      "previewAttemptAt": "2026-10-05T15:01:53.177Z",
       "previewCheck": {
         "url": "https://huggingface.co/spaces/MiniMaxAI/MiniMax-M1",
-        "attemptedAt": "2026-10-05T12:42:42.947Z",
-        "consecutiveFailures": 2,
+        "attemptedAt": "2026-10-05T15:01:53.177Z",
+        "consecutiveFailures": 3,
         "status": "retry",
         "reason": "http_502",
-        "nextCheckAt": "2026-10-05T14:42:42.947Z"
+        "nextCheckAt": "2026-10-06T15:01:53.177Z"
       }
     },
     {
@@ -58827,27 +58891,28 @@
       "qualityPriority": false,
       "demoHealth": {
         "url": "https://huggingface.co/spaces/webml-community/bonsai-image-webgpu",
-        "attemptedAt": "2026-10-05T12:42:52.728Z",
+        "attemptedAt": "2026-10-05T15:02:23.537Z",
         "status": "working",
         "checkedAt": "2026-10-04T21:37:54.346Z",
         "lastWorkingAt": "2026-10-04T21:37:54.346Z",
         "target": "https://webml-community-bonsai-image-webgpu.static.hf.space/index.html",
         "failureCount": 0,
-        "nextCheckAt": "2026-10-05T14:42:52.728Z",
-        "consecutiveTemporaryFailures": 2,
+        "nextCheckAt": "2026-10-06T15:02:23.537Z",
+        "consecutiveTemporaryFailures": 3,
         "error": {
           "reason": "network_or_timeout",
-          "at": "2026-10-05T12:42:52.728Z"
-        }
+          "at": "2026-10-05T15:02:23.537Z"
+        },
+        "probeVersion": 2
       },
-      "previewAttemptAt": "2026-10-05T12:42:52.728Z",
+      "previewAttemptAt": "2026-10-05T15:02:23.537Z",
       "previewCheck": {
         "url": "https://huggingface.co/spaces/webml-community/bonsai-image-webgpu",
-        "attemptedAt": "2026-10-05T12:42:52.728Z",
-        "consecutiveFailures": 2,
+        "attemptedAt": "2026-10-05T15:02:23.537Z",
+        "consecutiveFailures": 3,
         "status": "retry",
         "reason": "network_or_timeout",
-        "nextCheckAt": "2026-10-05T14:42:52.728Z"
+        "nextCheckAt": "2026-10-06T15:02:23.537Z"
       }
     },
     {
@@ -59704,23 +59769,24 @@
       "qualityPriority": false,
       "demoHealth": {
         "url": "https://huggingface.co/spaces/polaroidresearch/PolaroidVL-Installer",
-        "attemptedAt": "2026-10-05T12:42:48.039Z",
+        "attemptedAt": "2026-10-05T15:02:07.085Z",
         "status": "unknown",
         "error": {
           "reason": "empty_page",
-          "at": "2026-10-05T12:42:48.039Z"
+          "at": "2026-10-05T15:02:07.085Z"
         },
-        "nextCheckAt": "2026-10-05T14:42:48.039Z",
-        "consecutiveTemporaryFailures": 2
+        "nextCheckAt": "2026-10-06T15:02:07.085Z",
+        "consecutiveTemporaryFailures": 3,
+        "probeVersion": 2
       },
-      "previewAttemptAt": "2026-10-05T12:42:48.039Z",
+      "previewAttemptAt": "2026-10-05T15:02:07.085Z",
       "previewCheck": {
         "url": "https://huggingface.co/spaces/polaroidresearch/PolaroidVL-Installer",
-        "attemptedAt": "2026-10-05T12:42:48.039Z",
-        "consecutiveFailures": 2,
+        "attemptedAt": "2026-10-05T15:02:07.085Z",
+        "consecutiveFailures": 3,
         "status": "retry",
         "reason": "empty_page",
-        "nextCheckAt": "2026-10-05T14:42:48.039Z"
+        "nextCheckAt": "2026-10-06T15:02:07.085Z"
       }
     },
     {
@@ -64712,23 +64778,24 @@
       "qualityPriority": false,
       "demoHealth": {
         "url": "https://huggingface.co/spaces/nvidia/Kimodo",
-        "attemptedAt": "2026-10-05T12:36:54.755Z",
+        "attemptedAt": "2026-10-05T14:56:07.897Z",
         "status": "unknown",
         "error": {
           "reason": "empty_page",
-          "at": "2026-10-05T12:36:54.755Z"
+          "at": "2026-10-05T14:56:07.897Z"
         },
-        "nextCheckAt": "2026-10-05T14:36:54.755Z",
-        "consecutiveTemporaryFailures": 2
+        "nextCheckAt": "2026-10-06T14:56:07.897Z",
+        "consecutiveTemporaryFailures": 3,
+        "probeVersion": 2
       },
-      "previewAttemptAt": "2026-10-05T12:36:54.756Z",
+      "previewAttemptAt": "2026-10-05T14:56:07.897Z",
       "previewCheck": {
         "url": "https://huggingface.co/spaces/nvidia/Kimodo",
-        "attemptedAt": "2026-10-05T12:36:54.756Z",
-        "consecutiveFailures": 1,
+        "attemptedAt": "2026-10-05T14:56:07.897Z",
+        "consecutiveFailures": 2,
         "status": "retry",
         "reason": "empty_page",
-        "nextCheckAt": "2026-10-05T14:36:54.756Z"
+        "nextCheckAt": "2026-10-05T16:56:07.897Z"
       }
     },
     {
@@ -65128,24 +65195,33 @@
       "qualityPriority": false,
       "demoHealth": {
         "url": "https://huggingface.co/spaces/lora-library/LoRA-DreamBooth-Training-UI",
-        "attemptedAt": "2026-10-05T12:36:54.820Z",
-        "status": "unknown",
-        "error": {
-          "reason": "empty_page",
-          "at": "2026-10-05T12:36:54.820Z"
-        },
-        "nextCheckAt": "2026-10-05T14:36:54.820Z",
-        "consecutiveTemporaryFailures": 2
+        "attemptedAt": "2026-10-05T14:56:02.074Z",
+        "status": "working",
+        "nextCheckAt": "2026-10-12T14:56:02.074Z",
+        "consecutiveTemporaryFailures": 0,
+        "probeVersion": 2,
+        "checkedAt": "2026-10-05T14:56:02.074Z",
+        "lastWorkingAt": "2026-10-05T14:56:02.074Z",
+        "target": "https://lora-library-lora-dreambooth-training-ui.hf.space/",
+        "failureCount": 0
       },
-      "previewAttemptAt": "2026-10-05T12:36:54.820Z",
+      "previewAttemptAt": "2026-10-05T14:56:02.074Z",
       "previewCheck": {
         "url": "https://huggingface.co/spaces/lora-library/LoRA-DreamBooth-Training-UI",
-        "attemptedAt": "2026-10-05T12:36:54.820Z",
-        "consecutiveFailures": 1,
-        "status": "retry",
-        "reason": "empty_page",
-        "nextCheckAt": "2026-10-05T14:36:54.820Z"
-      }
+        "attemptedAt": "2026-10-05T14:56:02.074Z",
+        "consecutiveFailures": 0,
+        "status": "captured",
+        "reason": null,
+        "nextCheckAt": "2026-10-12T14:56:02.074Z"
+      },
+      "screenshots": [
+        {
+          "src": "previews/0b962521c19bfcccc8d6175d.jpg",
+          "kind": "demo",
+          "capturedAt": "2026-10-05T14:56:02.074Z",
+          "url": "https://huggingface.co/spaces/lora-library/LoRA-DreamBooth-Training-UI"
+        }
+      ]
     },
     {
       "full": "hf:remsky/Kokoro-TTS-Zero",
@@ -65599,23 +65675,24 @@
       "qualityPriority": false,
       "demoHealth": {
         "url": "https://huggingface.co/spaces/llamameta/Grok-4-heavy-free",
-        "attemptedAt": "2026-10-05T12:36:54.908Z",
+        "attemptedAt": "2026-10-05T14:56:13.210Z",
         "status": "unknown",
         "error": {
           "reason": "empty_page",
-          "at": "2026-10-05T12:36:54.908Z"
+          "at": "2026-10-05T14:56:13.210Z"
         },
-        "nextCheckAt": "2026-10-05T14:36:54.908Z",
-        "consecutiveTemporaryFailures": 2
+        "nextCheckAt": "2026-10-06T14:56:13.210Z",
+        "consecutiveTemporaryFailures": 3,
+        "probeVersion": 2
       },
-      "previewAttemptAt": "2026-10-05T12:36:54.908Z",
+      "previewAttemptAt": "2026-10-05T14:56:13.210Z",
       "previewCheck": {
         "url": "https://huggingface.co/spaces/llamameta/Grok-4-heavy-free",
-        "attemptedAt": "2026-10-05T12:36:54.908Z",
-        "consecutiveFailures": 1,
+        "attemptedAt": "2026-10-05T14:56:13.210Z",
+        "consecutiveFailures": 2,
         "status": "retry",
         "reason": "empty_page",
-        "nextCheckAt": "2026-10-05T14:36:54.908Z"
+        "nextCheckAt": "2026-10-05T16:56:13.210Z"
       }
     },
     {
@@ -67045,28 +67122,33 @@
       "qualityPriority": false,
       "demoHealth": {
         "url": "https://huggingface.co/spaces/aryadytm/remove-photo-object",
-        "attemptedAt": "2026-10-05T12:42:53.171Z",
+        "attemptedAt": "2026-10-05T15:02:13.510Z",
         "status": "working",
-        "checkedAt": "2026-10-05T01:03:21.970Z",
-        "lastWorkingAt": "2026-10-05T01:03:21.970Z",
+        "checkedAt": "2026-10-05T15:02:13.510Z",
+        "lastWorkingAt": "2026-10-05T15:02:13.510Z",
         "target": "https://aryadytm-remove-photo-object.hf.space/",
         "failureCount": 0,
-        "nextCheckAt": "2026-10-05T14:42:53.171Z",
-        "consecutiveTemporaryFailures": 2,
-        "error": {
-          "reason": "empty_page",
-          "at": "2026-10-05T12:42:53.171Z"
-        }
+        "nextCheckAt": "2026-10-12T15:02:13.510Z",
+        "consecutiveTemporaryFailures": 0,
+        "probeVersion": 2
       },
-      "previewAttemptAt": "2026-10-05T12:42:53.171Z",
+      "previewAttemptAt": "2026-10-05T15:02:13.510Z",
       "previewCheck": {
         "url": "https://huggingface.co/spaces/aryadytm/remove-photo-object",
-        "attemptedAt": "2026-10-05T12:42:53.171Z",
-        "consecutiveFailures": 2,
-        "status": "retry",
-        "reason": "empty_page",
-        "nextCheckAt": "2026-10-05T14:42:53.171Z"
-      }
+        "attemptedAt": "2026-10-05T15:02:13.510Z",
+        "consecutiveFailures": 0,
+        "status": "captured",
+        "reason": null,
+        "nextCheckAt": "2026-10-12T15:02:13.510Z"
+      },
+      "screenshots": [
+        {
+          "src": "previews/361f616094f66637cc48a52b.jpg",
+          "kind": "demo",
+          "capturedAt": "2026-10-05T15:02:13.510Z",
+          "url": "https://huggingface.co/spaces/aryadytm/remove-photo-object"
+        }
+      ]
     },
     {
       "full": "hf:ZhengGeng/OnePoseviaGen",
@@ -69457,23 +69539,24 @@
       "qualityPriority": false,
       "demoHealth": {
         "url": "https://huggingface.co/spaces/lmarena-ai/chatbot-arena",
-        "attemptedAt": "2026-10-05T12:36:57.104Z",
+        "attemptedAt": "2026-10-05T14:56:14.697Z",
         "status": "unknown",
         "error": {
           "reason": "empty_page",
-          "at": "2026-10-05T12:36:57.104Z"
+          "at": "2026-10-05T14:56:14.697Z"
         },
-        "nextCheckAt": "2026-10-05T14:36:57.104Z",
-        "consecutiveTemporaryFailures": 2
+        "nextCheckAt": "2026-10-06T14:56:14.697Z",
+        "consecutiveTemporaryFailures": 3,
+        "probeVersion": 2
       },
-      "previewAttemptAt": "2026-10-05T12:36:57.104Z",
+      "previewAttemptAt": "2026-10-05T14:56:14.697Z",
       "previewCheck": {
         "url": "https://huggingface.co/spaces/lmarena-ai/chatbot-arena",
-        "attemptedAt": "2026-10-05T12:36:57.104Z",
-        "consecutiveFailures": 1,
+        "attemptedAt": "2026-10-05T14:56:14.697Z",
+        "consecutiveFailures": 2,
         "status": "retry",
         "reason": "empty_page",
-        "nextCheckAt": "2026-10-05T14:36:57.104Z"
+        "nextCheckAt": "2026-10-05T16:56:14.697Z"
       }
     },
     {
@@ -70884,24 +70967,33 @@
       "qualityPriority": false,
       "demoHealth": {
         "url": "https://huggingface.co/spaces/fffiloni/stable-diffusion-img2img",
-        "attemptedAt": "2026-10-05T12:36:57.706Z",
-        "status": "unknown",
-        "error": {
-          "reason": "empty_page",
-          "at": "2026-10-05T12:36:57.706Z"
-        },
-        "nextCheckAt": "2026-10-05T14:36:57.706Z",
-        "consecutiveTemporaryFailures": 2
+        "attemptedAt": "2026-10-05T14:56:09.359Z",
+        "status": "working",
+        "nextCheckAt": "2026-10-12T14:56:09.359Z",
+        "consecutiveTemporaryFailures": 0,
+        "probeVersion": 2,
+        "checkedAt": "2026-10-05T14:56:09.359Z",
+        "lastWorkingAt": "2026-10-05T14:56:09.359Z",
+        "target": "https://fffiloni-stable-diffusion-img2img.hf.space/",
+        "failureCount": 0
       },
-      "previewAttemptAt": "2026-10-05T12:36:57.706Z",
+      "previewAttemptAt": "2026-10-05T14:56:09.359Z",
       "previewCheck": {
         "url": "https://huggingface.co/spaces/fffiloni/stable-diffusion-img2img",
-        "attemptedAt": "2026-10-05T12:36:57.706Z",
-        "consecutiveFailures": 1,
-        "status": "retry",
-        "reason": "empty_page",
-        "nextCheckAt": "2026-10-05T14:36:57.706Z"
-      }
+        "attemptedAt": "2026-10-05T14:56:09.359Z",
+        "consecutiveFailures": 0,
+        "status": "captured",
+        "reason": null,
+        "nextCheckAt": "2026-10-12T14:56:09.359Z"
+      },
+      "screenshots": [
+        {
+          "src": "previews/c36cccf61eaa4a22f8122cff.jpg",
+          "kind": "demo",
+          "capturedAt": "2026-10-05T14:56:09.359Z",
+          "url": "https://huggingface.co/spaces/fffiloni/stable-diffusion-img2img"
+        }
+      ]
     },
     {
       "full": "hf:arudradey/qwen-image-2.1-uncensored-gguf",
@@ -72899,28 +72991,33 @@
       "qualityPriority": false,
       "demoHealth": {
         "url": "https://huggingface.co/spaces/codeparrot/code-generation-models",
-        "attemptedAt": "2026-10-05T12:42:53.227Z",
+        "attemptedAt": "2026-10-05T15:02:16.082Z",
         "status": "working",
-        "checkedAt": "2026-10-05T01:04:16.104Z",
-        "lastWorkingAt": "2026-10-05T01:04:16.104Z",
+        "checkedAt": "2026-10-05T15:02:16.082Z",
+        "lastWorkingAt": "2026-10-05T15:02:16.082Z",
         "target": "https://codeparrot-code-generation-models.hf.space/",
         "failureCount": 0,
-        "nextCheckAt": "2026-10-05T14:42:53.227Z",
-        "consecutiveTemporaryFailures": 2,
-        "error": {
-          "reason": "empty_page",
-          "at": "2026-10-05T12:42:53.227Z"
-        }
+        "nextCheckAt": "2026-10-12T15:02:16.082Z",
+        "consecutiveTemporaryFailures": 0,
+        "probeVersion": 2
       },
-      "previewAttemptAt": "2026-10-05T12:42:53.227Z",
+      "previewAttemptAt": "2026-10-05T15:02:16.082Z",
       "previewCheck": {
         "url": "https://huggingface.co/spaces/codeparrot/code-generation-models",
-        "attemptedAt": "2026-10-05T12:42:53.227Z",
-        "consecutiveFailures": 2,
-        "status": "retry",
-        "reason": "empty_page",
-        "nextCheckAt": "2026-10-05T14:42:53.227Z"
-      }
+        "attemptedAt": "2026-10-05T15:02:16.082Z",
+        "consecutiveFailures": 0,
+        "status": "captured",
+        "reason": null,
+        "nextCheckAt": "2026-10-12T15:02:16.082Z"
+      },
+      "screenshots": [
+        {
+          "src": "previews/b448bf4a36a3141cd85f49dd.jpg",
+          "kind": "demo",
+          "capturedAt": "2026-10-05T15:02:16.082Z",
+          "url": "https://huggingface.co/spaces/codeparrot/code-generation-models"
+        }
+      ]
     },
     {
       "full": "hf:yuntian-deng/o1mini",
