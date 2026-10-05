@@ -76,7 +76,16 @@
       "curatedBatch": 40,
       "communityBatch": 20
     },
-    "browser": null,
+    "browser": {
+      "due": true,
+      "eligibilityBased": true,
+      "demoDue": 41,
+      "previewDue": 45,
+      "lastCompletedAt": "2026-10-05T18:00:25.984Z",
+      "nextDueAt": null,
+      "forced": false,
+      "reason": "45 screenshots and 41 demo checks eligible; untouched backlog can run after a recent batch."
+    },
     "coverageBefore": {
       "admissionPolicy": "validated-demo-v1",
       "publication": {
@@ -155,24 +164,24 @@
     "coverageAfter": {
       "admissionPolicy": "validated-demo-v1",
       "publication": {
-        "published": 3490,
-        "pending": 46,
+        "published": 3528,
+        "pending": 9,
         "quarantined": 565,
-        "unavailable": 222
+        "unavailable": 221
       },
-      "workingDemos": 3495,
+      "workingDemos": 3533,
       "browserBacklog": {
         "demo": {
-          "never": 39,
-          "retry": 5,
+          "never": 0,
+          "retry": 7,
           "repeated": 559,
-          "complete": 3714
+          "complete": 3751
         },
         "screenshot": {
-          "never": 39,
-          "retry": 7,
+          "never": 0,
+          "retry": 9,
           "repeated": 563,
-          "complete": 3492
+          "complete": 3530
         },
         "reviewCount": 568,
         "reviewReasons": {
@@ -205,7 +214,7 @@
       "targets": {
         "repositoryChecks": 4102,
         "demoChecks": 4102,
-        "screenshots": 3691
+        "screenshots": 3692
       },
       "reasons": [
         "Demo validation is below 95%.",
@@ -213,14 +222,14 @@
       ],
       "pending": {
         "repositoryChecks": 0,
-        "demoChecks": 597,
-        "screenshots": 609
+        "demoChecks": 560,
+        "screenshots": 572
       },
       "available": 4317,
-      "visible": 4101,
+      "visible": 4102,
       "repositoryChecks": 4317,
-      "demoChecks": 3720,
-      "screenshots": 3492,
+      "demoChecks": 3757,
+      "screenshots": 3530,
       "ready": true,
       "githubBatch": 250,
       "spacesBatch": 25,
@@ -228,30 +237,65 @@
       "communityBatch": 20
     },
     "qualityGains": {
-      "demoChecks": 0,
-      "screenshots": 0,
-      "workingDemos": 0,
-      "published": 0
+      "demoChecks": 37,
+      "screenshots": 38,
+      "workingDemos": 38,
+      "published": 38
     }
   },
-  "phase": "discovery",
-  "publication": "checkpoint_saved",
+  "phase": "complete",
+  "publication": "awaiting_publication",
   "id": "37354625094",
   "attempt": 1,
   "startedAt": "2026-10-05T18:17:54.415Z",
-  "recordedAt": "2026-10-05T18:20:04.292Z",
+  "recordedAt": "2026-10-05T18:23:56.867Z",
   "trigger": "push",
   "status": "success",
   "counts": {
     "before": 4284,
     "after": 4323,
     "added": 39,
-    "updated": 96,
+    "updated": 98,
     "removed": 0,
-    "withDemo": 4101
+    "withDemo": 4102
   },
-  "temporaryFailures": 0,
+  "temporaryFailures": 2,
   "stages": [
+    {
+      "id": "capture_providers",
+      "name": "Optional screenshot providers",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "schema": 1,
+        "at": "2026-10-05T18:23:53.717Z",
+        "ready": {
+          "screenshotone": false,
+          "thumio": true,
+          "cloudflare": false
+        },
+        "attempted": 0,
+        "candidates": 0,
+        "reasons": {},
+        "providers": {},
+        "reason": "worker_key_missing"
+      },
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "browser_merge",
+      "name": "Merge parallel browser results",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
     {
       "id": "cleanup_publish",
       "name": "Demo-only cleanup checkpoint",
@@ -277,6 +321,17 @@
     {
       "id": "compression",
       "name": "Existing screenshot compression",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "compression_final",
+      "name": "New screenshot compression",
       "status": "success",
       "temporaryFailures": 0,
       "details": null,
@@ -394,6 +449,137 @@
       "warnings": 0
     },
     {
+      "id": "browser_cycle",
+      "name": "Two-hour browser cycle",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "due": true,
+        "eligibilityBased": true,
+        "demoDue": 41,
+        "previewDue": 45,
+        "lastCompletedAt": "2026-10-05T18:00:25.984Z",
+        "nextDueAt": null,
+        "forced": false,
+        "reason": "45 screenshots and 41 demo checks eligible; untouched backlog can run after a recent batch."
+      },
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "browser_complete",
+      "name": "Browser cycle saved",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "health",
+      "name": "Demo health",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "mode": "two_runner_shards",
+        "complete": true,
+        "reasons": {
+          "http_404": 1
+        },
+        "examples": [
+          {
+            "project": "polkadot-developers/awesome-substrate",
+            "reason": "http_404"
+          }
+        ],
+        "shards": 2,
+        "due": 2,
+        "selected": 2,
+        "limit": 8646,
+        "attempted": 2,
+        "working": 1,
+        "captured": 0,
+        "unavailable": 1,
+        "temporaryFailures": 0,
+        "deferred": 0,
+        "remainingDue": 0,
+        "durationMs": 78637,
+        "workerTimeMs": 6966,
+        "progressWarnings": 0,
+        "linksRepaired": 1,
+        "merge": {
+          "applied": 47,
+          "conflicts": 0
+        }
+      },
+      "checked": 2,
+      "unavailableResponses": 1,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "previews",
+      "name": "Preview screenshots",
+      "status": "success",
+      "temporaryFailures": 2,
+      "details": {
+        "mode": "two_runner_shards",
+        "complete": true,
+        "reasons": {
+          "access_restricted": 1,
+          "dns_unresolved": 1
+        },
+        "examples": [
+          {
+            "project": "dansday-com/dansday-discord-bot",
+            "reason": "access_restricted"
+          },
+          {
+            "project": "wonbyte/thunderdome",
+            "reason": "dns_unresolved"
+          }
+        ],
+        "shards": 2,
+        "due": 45,
+        "selected": 45,
+        "limit": 8646,
+        "attempted": 45,
+        "working": 43,
+        "captured": 43,
+        "unavailable": 0,
+        "temporaryFailures": 2,
+        "deferred": 0,
+        "remainingDue": 0,
+        "durationMs": 78637,
+        "workerTimeMs": 170160,
+        "progressWarnings": 0,
+        "linksRepaired": 1,
+        "merge": {
+          "applied": 47,
+          "conflicts": 0
+        }
+      },
+      "checked": 45,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 2,
+      "warnings": 0
+    },
+    {
+      "id": "growth",
+      "name": "Growth history",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
       "id": "validate",
       "name": "Application checks",
       "status": "success",
@@ -495,6 +681,17 @@
         "curatedBatch": 40,
         "communityBatch": 20
       },
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "checkpoint_publish",
+      "name": "Discovery checkpoint",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
       "checked": 0,
       "unavailableResponses": 0,
       "inconclusiveChecks": 0,
