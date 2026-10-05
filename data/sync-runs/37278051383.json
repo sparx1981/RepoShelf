@@ -41,7 +41,16 @@
       "curatedBatch": 0,
       "communityBatch": 0
     },
-    "browser": null,
+    "browser": {
+      "due": true,
+      "eligibilityBased": true,
+      "demoDue": 1639,
+      "previewDue": 2114,
+      "lastCompletedAt": "2026-10-05T06:59:28.055Z",
+      "nextDueAt": null,
+      "forced": false,
+      "reason": "2114 screenshots and 1639 demo checks eligible; untouched backlog can run after a recent batch."
+    },
     "coverageBefore": {
       "browserBacklog": {
         "demo": {
@@ -85,16 +94,16 @@
     "coverageAfter": {
       "browserBacklog": {
         "demo": {
-          "never": 1374,
-          "retry": 445,
+          "never": 0,
+          "retry": 661,
           "repeated": 0,
-          "complete": 2401
+          "complete": 3559
         },
         "screenshot": {
-          "never": 2406,
-          "retry": 369,
+          "never": 1492,
+          "retry": 652,
           "repeated": 0,
-          "complete": 1406
+          "complete": 2037
         }
       },
       "targets": {
@@ -108,14 +117,14 @@
       ],
       "pending": {
         "repositoryChecks": 0,
-        "demoChecks": 1819,
-        "screenshots": 2775
+        "demoChecks": 661,
+        "screenshots": 2144
       },
       "available": 4220,
       "visible": 4181,
       "repositoryChecks": 4220,
-      "demoChecks": 2401,
-      "screenshots": 1406,
+      "demoChecks": 3559,
+      "screenshots": 2037,
       "ready": false,
       "githubBatch": 0,
       "spacesBatch": 0,
@@ -123,23 +132,23 @@
       "communityBatch": 0
     }
   },
-  "phase": "discovery",
-  "publication": "checkpoint_saved",
+  "phase": "complete",
+  "publication": "awaiting_publication",
   "id": "37278051383",
   "attempt": 1,
   "startedAt": "2026-10-05T07:31:33.484Z",
-  "recordedAt": "2026-10-05T07:33:22.411Z",
+  "recordedAt": "2026-10-05T07:59:35.697Z",
   "trigger": "push",
   "status": "success",
   "counts": {
     "before": 4226,
     "after": 4226,
     "added": 0,
-    "updated": 120,
+    "updated": 1615,
     "removed": 0,
     "withDemo": 4181
   },
-  "temporaryFailures": 0,
+  "temporaryFailures": 418,
   "stages": [
     {
       "id": "cleanup_publish",
@@ -166,6 +175,17 @@
     {
       "id": "compression",
       "name": "Existing screenshot compression",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 100,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "compression_final",
+      "name": "New screenshot compression",
       "status": "success",
       "temporaryFailures": 0,
       "details": null,
@@ -279,6 +299,259 @@
       "warnings": 0
     },
     {
+      "id": "browser_cycle",
+      "name": "Two-hour browser cycle",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "due": true,
+        "eligibilityBased": true,
+        "demoDue": 1639,
+        "previewDue": 2114,
+        "lastCompletedAt": "2026-10-05T06:59:28.055Z",
+        "nextDueAt": null,
+        "forced": false,
+        "reason": "2114 screenshots and 1639 demo checks eligible; untouched backlog can run after a recent batch."
+      },
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "browser_complete",
+      "name": "Browser cycle saved",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "browser",
+      "name": "Screenshot browser installation",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "verify",
+      "name": "Storefront verification",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "health",
+      "name": "Demo health",
+      "status": "success",
+      "temporaryFailures": 230,
+      "details": {
+        "due": 731,
+        "selected": 731,
+        "limit": 4226,
+        "attempted": 668,
+        "working": 414,
+        "captured": 0,
+        "unavailable": 24,
+        "temporaryFailures": 230,
+        "reasons": {
+          "empty_page": 60,
+          "network_or_timeout": 39,
+          "access_restricted": 71,
+          "http_503": 7,
+          "http_404": 24,
+          "dns_unresolved": 27,
+          "rate_limit": 7,
+          "http_401": 2,
+          "http_521": 1,
+          "http_502": 2,
+          "unsafe_target": 2,
+          "http_999": 1,
+          "http_402": 1,
+          "http_412": 3,
+          "http_500": 1,
+          "dns_timeout": 2,
+          "http_526": 1,
+          "http_400": 1,
+          "probe_timeout": 2
+        },
+        "examples": [
+          {
+            "project": "Rafaell007/Rafaell007",
+            "reason": "empty_page"
+          },
+          {
+            "project": "klntsky/zsh-codex-assistant",
+            "reason": "network_or_timeout"
+          },
+          {
+            "project": "scalesynthai/Plagiarism-Detector-Pro",
+            "reason": "access_restricted"
+          },
+          {
+            "project": "talhashady/stock-holmes",
+            "reason": "network_or_timeout"
+          },
+          {
+            "project": "KAVYAANPRO/Hackbriven-Rashtriya-Rifles",
+            "reason": "network_or_timeout"
+          },
+          {
+            "project": "aliasfoxkde/OpenZenith",
+            "reason": "access_restricted"
+          },
+          {
+            "project": "salmanfarooq1/ai-platform",
+            "reason": "http_503"
+          },
+          {
+            "project": "Simzy420/big-brain-ape-dashboard",
+            "reason": "http_404"
+          },
+          {
+            "project": "guillaumeboiret/train",
+            "reason": "network_or_timeout"
+          },
+          {
+            "project": "danbri/glitchcan-minigam",
+            "reason": "http_404"
+          },
+          {
+            "project": "MahdiJDS/iphone-shop",
+            "reason": "http_404"
+          },
+          {
+            "project": "yangdinghui/bing-wallpaper",
+            "reason": "empty_page"
+          }
+        ],
+        "deferred": 63,
+        "remainingDue": 63,
+        "durationMs": 600462,
+        "complete": true,
+        "mode": "time_budget"
+      },
+      "checked": 668,
+      "unavailableResponses": 24,
+      "inconclusiveChecks": 230,
+      "warnings": 0
+    },
+    {
+      "id": "previews",
+      "name": "Preview screenshots",
+      "status": "success",
+      "temporaryFailures": 188,
+      "details": {
+        "due": 2114,
+        "selected": 2114,
+        "limit": 4226,
+        "attempted": 914,
+        "working": 631,
+        "captured": 631,
+        "unavailable": 95,
+        "temporaryFailures": 188,
+        "reasons": {
+          "access_restricted": 35,
+          "http_503": 11,
+          "dns_unresolved": 46,
+          "network_or_timeout": 32,
+          "empty_page": 44,
+          "unsafe_target": 3,
+          "http_412": 1,
+          "probe_timeout": 5,
+          "http_404": 94,
+          "page_unavailable": 1,
+          "dns_timeout": 4,
+          "rate_limit": 4,
+          "http_530": 2,
+          "http_502": 1
+        },
+        "examples": [
+          {
+            "project": "celestiaorg/docs",
+            "reason": "access_restricted"
+          },
+          {
+            "project": "fhirbase/fhirbase",
+            "reason": "http_503"
+          },
+          {
+            "project": "amiechen/stitches-template-generator",
+            "reason": "dns_unresolved"
+          },
+          {
+            "project": "Abhiz2411/3D-interactive-portfolio",
+            "reason": "network_or_timeout"
+          },
+          {
+            "project": "johnnncodes/laravelsnippets",
+            "reason": "access_restricted"
+          },
+          {
+            "project": "HugoBlox/hugo-theme-documentation",
+            "reason": "access_restricted"
+          },
+          {
+            "project": "bibinprathap/VeritasGraph",
+            "reason": "empty_page"
+          },
+          {
+            "project": "hellogumbo/awesome-jev",
+            "reason": "access_restricted"
+          },
+          {
+            "project": "d4rk22/Network-Status-Page",
+            "reason": "access_restricted"
+          },
+          {
+            "project": "fgilde/MudBlazor.Extensions",
+            "reason": "empty_page"
+          },
+          {
+            "project": "HugoBlox/hugo-theme-data-science-blog",
+            "reason": "access_restricted"
+          },
+          {
+            "project": "aykutkardas/react-icomoon",
+            "reason": "access_restricted"
+          }
+        ],
+        "deferred": 1200,
+        "remainingDue": 1200,
+        "durationMs": 900402,
+        "complete": true,
+        "concurrency": 4,
+        "budgetMs": 900000,
+        "mode": "time_budget"
+      },
+      "checked": 914,
+      "unavailableResponses": 95,
+      "inconclusiveChecks": 188,
+      "warnings": 283
+    },
+    {
+      "id": "growth",
+      "name": "Growth history",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
       "id": "validate",
       "name": "Application checks",
       "status": "success",
@@ -345,6 +618,17 @@
         "curatedBatch": 0,
         "communityBatch": 0
       },
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "checkpoint_publish",
+      "name": "Discovery checkpoint",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
       "checked": 0,
       "unavailableResponses": 0,
       "inconclusiveChecks": 0,
