@@ -9,11 +9,11 @@ import {runBrowserQueues} from './browser-queues.mjs';
 import {adaptiveBrowsers,browserResources} from './adaptive-browser.mjs';
 import {liveSyncPublisher} from './live-sync-progress.mjs';
 
-export async function runQueues(root=new URL('../',import.meta.url),env=process.env,{poolFactory=createDemoPool,publisherFactory=liveSyncPublisher,resourceSampler=browserResources}={}){
+export async function runQueues(root=new URL('../',import.meta.url),env=process.env,{poolFactory=createDemoPool,publisherFactory=liveSyncPublisher,resourceSampler=browserResources,candidateSelector}={}){
  const files=['catalog','spaces'].map(name=>new URL('dist/'+name+'.json',root)),snapshots=await Promise.all(files.map(async file=>JSON.parse(await readFile(file,'utf8')))),entries=snapshots.flatMap(s=>s.repositories),started=Date.now();
  const previewBudget=Number(env.PREVIEW_BUDGET_MS||900000),healthBudget=Number(env.DEMO_CHECK_BUDGET_MS||600000),budget=previewBudget+healthBudget;
  if(!Number.isFinite(budget)||previewBudget<=0||healthBudget<=0)throw Error('Invalid browser time budget');
- const previewQueue=previewCandidates(entries,started,entries.length),previewIds=new Set(previewQueue.map(r=>r.full.toLowerCase())),healthQueue=demoCandidates(entries,started,entries.length).filter(r=>!previewIds.has(r.full.toLowerCase()));
+ const recovery=candidateSelector?.(entries,started),previewQueue=recovery?.previews||previewCandidates(entries,started,entries.length),previewIds=new Set(previewQueue.map(r=>r.full.toLowerCase())),healthQueue=(recovery?.health||demoCandidates(entries,started,entries.length)).filter(r=>!previewIds.has(r.full.toLowerCase()));
  const queues={previews:previewQueue,health:healthQueue},telemetry=Object.fromEntries(Object.entries(queues).map(([name,items])=>[name,probeMetrics({selected:items.length,due:items.length,limit:entries.length})]));
  const requested=Number(env.CATALOG_PREVIEW_CONCURRENCY||4);if(!Number.isInteger(requested)||requested<1)throw Error('Invalid browser concurrency');const max=Math.min(4,requested),adaptive=adaptiveBrowsers({max}),pool=poolFactory({max}),publisher=publisherFactory({token:env.GITHUB_TOKEN}),persist=checkpointWriter(files,snapshots);
  const scratch=await mkdtemp(join(tmpdir(),'reposhelf-browser-'));await mkdir(new URL('dist/previews/',root),{recursive:true});let complete=false,active=0,lastSave=0,resources={},lastResource=0,spent={previews:0,health:0};
