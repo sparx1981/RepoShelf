@@ -1,7 +1,46 @@
 {
   "schema": 4,
   "work": {
-    "discovery": null,
+    "discovery": {
+      "browserBacklog": {
+        "demo": {
+          "never": 2356,
+          "retry": 275,
+          "repeated": 0,
+          "complete": 1589
+        },
+        "screenshot": {
+          "never": 3002,
+          "retry": 260,
+          "repeated": 0,
+          "complete": 919
+        }
+      },
+      "targets": {
+        "repositoryChecks": 4009,
+        "demoChecks": 4009,
+        "screenshots": 3763
+      },
+      "reasons": [
+        "Demo validation is below 95%.",
+        "Screenshot coverage is below 90%."
+      ],
+      "pending": {
+        "repositoryChecks": 0,
+        "demoChecks": 2631,
+        "screenshots": 3262
+      },
+      "available": 4220,
+      "visible": 4181,
+      "repositoryChecks": 4220,
+      "demoChecks": 1589,
+      "screenshots": 919,
+      "ready": false,
+      "githubBatch": 0,
+      "spacesBatch": 0,
+      "curatedBatch": 0,
+      "communityBatch": 0
+    },
     "browser": null,
     "coverageBefore": {
       "browserBacklog": {
@@ -84,24 +123,35 @@
       "communityBatch": 0
     }
   },
-  "phase": "cleanup",
+  "phase": "discovery",
   "publication": "checkpoint_saved",
   "id": "37273291991",
   "attempt": 1,
   "startedAt": "2026-10-05T06:37:23.477Z",
-  "recordedAt": "2026-10-05T06:37:42.065Z",
+  "recordedAt": "2026-10-05T06:38:46.097Z",
   "trigger": "push",
   "status": "success",
   "counts": {
     "before": 4226,
     "after": 4226,
     "added": 0,
-    "updated": 0,
+    "updated": 139,
     "removed": 0,
     "withDemo": 4181
   },
   "temporaryFailures": 0,
   "stages": [
+    {
+      "id": "cleanup_publish",
+      "name": "Demo-only cleanup checkpoint",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
     {
       "id": "cleanup",
       "name": "Demo-only library cleanup",
@@ -116,6 +166,110 @@
     {
       "id": "compression",
       "name": "Existing screenshot compression",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "sources",
+      "name": "Spaces and curated lists",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "community",
+      "name": "Community discoveries",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "catalog",
+      "name": "GitHub discovery and revalidation",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "repositoryChecks": 0,
+        "repositoryPaused": false,
+        "repositoryPlan": {
+          "limit": 500,
+          "desired": 500,
+          "allowance": 4800,
+          "reserve": 200,
+          "remaining": 5000,
+          "checksPerDay": 6000,
+          "dailyCapacitySufficient": true,
+          "intervalHours": 48
+        },
+        "repositoryDue": 0,
+        "repositorySelected": 0,
+        "repositoryRemainingDue": 0,
+        "repositoryStopReason": null,
+        "repositoryObserved48h": 3755,
+        "repositoryObserved24h": 3755,
+        "candidateLimit": 0,
+        "candidatesChecked": 0,
+        "demosFound": 0,
+        "cacheHits": 0,
+        "searchQueries": 0,
+        "searchPaused": null,
+        "temporaryFailures": 0,
+        "durationMs": 532
+      },
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "enrich",
+      "name": "Releases and technologies",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "overviews",
+      "name": "README overviews",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "context",
+      "name": "Supporting documents",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "ai",
+      "name": "Optional AI overviews",
       "status": "success",
       "temporaryFailures": 0,
       "details": null,
@@ -141,6 +295,56 @@
       "status": "success",
       "temporaryFailures": 0,
       "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "priority",
+      "name": "Discovery quality gate",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "browserBacklog": {
+          "demo": {
+            "never": 2356,
+            "retry": 275,
+            "repeated": 0,
+            "complete": 1589
+          },
+          "screenshot": {
+            "never": 3002,
+            "retry": 260,
+            "repeated": 0,
+            "complete": 919
+          }
+        },
+        "targets": {
+          "repositoryChecks": 4009,
+          "demoChecks": 4009,
+          "screenshots": 3763
+        },
+        "reasons": [
+          "Demo validation is below 95%.",
+          "Screenshot coverage is below 90%."
+        ],
+        "pending": {
+          "repositoryChecks": 0,
+          "demoChecks": 2631,
+          "screenshots": 3262
+        },
+        "available": 4220,
+        "visible": 4181,
+        "repositoryChecks": 4220,
+        "demoChecks": 1589,
+        "screenshots": 919,
+        "ready": false,
+        "githubBatch": 0,
+        "spacesBatch": 0,
+        "curatedBatch": 0,
+        "communityBatch": 0
+      },
       "checked": 0,
       "unavailableResponses": 0,
       "inconclusiveChecks": 0,
