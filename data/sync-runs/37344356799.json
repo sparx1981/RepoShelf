@@ -76,7 +76,16 @@
       "curatedBatch": 10,
       "communityBatch": 10
     },
-    "browser": null,
+    "browser": {
+      "due": true,
+      "eligibilityBased": true,
+      "demoDue": 8,
+      "previewDue": 11,
+      "lastCompletedAt": "2026-10-05T16:52:33.981Z",
+      "nextDueAt": null,
+      "forced": false,
+      "reason": "11 screenshots and 8 demo checks eligible; untouched backlog can run after a recent batch."
+    },
     "coverageBefore": {
       "admissionPolicy": "validated-demo-v1",
       "publication": {
@@ -155,24 +164,24 @@
     "coverageAfter": {
       "admissionPolicy": "validated-demo-v1",
       "publication": {
-        "published": 3450,
-        "pending": 12,
+        "published": 3457,
+        "pending": 5,
         "quarantined": 574,
         "unavailable": 222
       },
-      "workingDemos": 3455,
+      "workingDemos": 3462,
       "browserBacklog": {
         "demo": {
-          "never": 8,
+          "never": 0,
           "retry": 3,
           "repeated": 568,
-          "complete": 3673
+          "complete": 3681
         },
         "screenshot": {
-          "never": 8,
-          "retry": 4,
+          "never": 0,
+          "retry": 5,
           "repeated": 572,
-          "complete": 3452
+          "complete": 3459
         },
         "reviewCount": 577,
         "reviewReasons": {
@@ -213,14 +222,14 @@
       ],
       "pending": {
         "repositoryChecks": 0,
-        "demoChecks": 573,
-        "screenshots": 584
+        "demoChecks": 565,
+        "screenshots": 577
       },
       "available": 4252,
       "visible": 4036,
       "repositoryChecks": 4252,
-      "demoChecks": 3679,
-      "screenshots": 3452,
+      "demoChecks": 3687,
+      "screenshots": 3459,
       "ready": true,
       "githubBatch": 150,
       "spacesBatch": 10,
@@ -228,18 +237,18 @@
       "communityBatch": 10
     },
     "qualityGains": {
-      "demoChecks": -1,
-      "screenshots": -1,
-      "workingDemos": -1,
-      "published": -1
+      "demoChecks": 7,
+      "screenshots": 6,
+      "workingDemos": 6,
+      "published": 6
     }
   },
-  "phase": "discovery",
-  "publication": "checkpoint_saved",
+  "phase": "complete",
+  "publication": "awaiting_publication",
   "id": "37344356799",
   "attempt": 1,
   "startedAt": "2026-10-05T16:55:44.763Z",
-  "recordedAt": "2026-10-05T16:58:25.710Z",
+  "recordedAt": "2026-10-05T16:59:39.726Z",
   "trigger": "workflow_dispatch",
   "status": "success",
   "counts": {
@@ -281,6 +290,17 @@
       "temporaryFailures": 0,
       "details": null,
       "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "compression_final",
+      "name": "New screenshot compression",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 10,
       "unavailableResponses": 0,
       "inconclusiveChecks": 0,
       "warnings": 0
@@ -394,6 +414,189 @@
       "warnings": 0
     },
     {
+      "id": "browser_cycle",
+      "name": "Two-hour browser cycle",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "due": true,
+        "eligibilityBased": true,
+        "demoDue": 8,
+        "previewDue": 11,
+        "lastCompletedAt": "2026-10-05T16:52:33.981Z",
+        "nextDueAt": null,
+        "forced": false,
+        "reason": "11 screenshots and 8 demo checks eligible; untouched backlog can run after a recent batch."
+      },
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "browser_complete",
+      "name": "Browser cycle saved",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "browser",
+      "name": "Screenshot browser installation",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "verify",
+      "name": "Storefront verification",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "health",
+      "name": "Demo health",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "due": 0,
+        "selected": 0,
+        "limit": 4258,
+        "attempted": 0,
+        "working": 0,
+        "captured": 0,
+        "unavailable": 0,
+        "temporaryFailures": 0,
+        "reasons": {},
+        "examples": [],
+        "deferred": 0,
+        "remainingDue": 0,
+        "durationMs": 20269,
+        "complete": true,
+        "mode": "shared_time_budget",
+        "budgetMs": 1500000,
+        "allocatedWeight": 600000,
+        "workerTimeMs": 0,
+        "adaptive": {
+          "limit": 3,
+          "max": 4,
+          "changes": [
+            {
+              "from": 2,
+              "to": 3,
+              "reason": "healthy_throughput"
+            }
+          ]
+        },
+        "resources": {
+          "availableMB": 14011,
+          "memoryRatio": 0.12374299567372837,
+          "cpuRatio": 0.1525,
+          "source": "host"
+        },
+        "pool": {
+          "workers": 0,
+          "workerStarts": 2,
+          "workerRestarts": 0,
+          "browserLaunches": 2,
+          "contexts": 12
+        },
+        "progressWarnings": 0,
+        "linksRepaired": 1
+      },
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "previews",
+      "name": "Preview screenshots",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "due": 11,
+        "selected": 11,
+        "limit": 4258,
+        "attempted": 11,
+        "working": 10,
+        "captured": 10,
+        "unavailable": 1,
+        "temporaryFailures": 0,
+        "reasons": {
+          "http_404": 1
+        },
+        "examples": [
+          {
+            "project": "nodeca/embedza",
+            "reason": "http_404"
+          }
+        ],
+        "deferred": 0,
+        "remainingDue": 0,
+        "durationMs": 20172,
+        "complete": true,
+        "mode": "shared_time_budget",
+        "budgetMs": 1500000,
+        "allocatedWeight": 900000,
+        "workerTimeMs": 36703,
+        "adaptive": {
+          "limit": 3,
+          "max": 4,
+          "changes": [
+            {
+              "from": 2,
+              "to": 3,
+              "reason": "healthy_throughput"
+            }
+          ]
+        },
+        "resources": {
+          "availableMB": 14011,
+          "memoryRatio": 0.12374299567372837,
+          "cpuRatio": 0.1525,
+          "source": "host"
+        },
+        "pool": {
+          "workers": 0,
+          "workerStarts": 2,
+          "workerRestarts": 0,
+          "browserLaunches": 2,
+          "contexts": 12
+        },
+        "progressWarnings": 0,
+        "linksRepaired": 1
+      },
+      "checked": 11,
+      "unavailableResponses": 1,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "growth",
+      "name": "Growth history",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
       "id": "validate",
       "name": "Application checks",
       "status": "success",
@@ -495,6 +698,17 @@
         "curatedBatch": 10,
         "communityBatch": 10
       },
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "checkpoint_publish",
+      "name": "Discovery checkpoint",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
       "checked": 0,
       "unavailableResponses": 0,
       "inconclusiveChecks": 0,
