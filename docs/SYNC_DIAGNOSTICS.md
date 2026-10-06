@@ -61,3 +61,7 @@ Missed schedules still use the three-hour allowance. The watchdog itself runs on
 ## Run duration
 
 Each run in Administration → Sync log shows its duration beside the status: finish time minus start time for completed runs, and "Running for" with elapsed time (refreshed with the 30-second auto-refresh) for active runs. Queued or waiting runs show "Not started". The finish time is GitHub's last update to the completed run, so cancelled and failed runs show how long they ran before stopping, and a re-run or later edit to a run can lengthen the figure slightly. Runs with an unusable start or finish time show "Not recorded".
+
+## Production-only deployments
+
+`vercel.json` runs `scripts/deployment-policy.mjs` as the ignored build step. It skips every deployment that is not a production build from `main`, so pushes to feature branches and pull requests do not create preview deployments or use the Vercel deployment allowance. Intermediate recovery checkpoints are still skipped as before, and the checkpoint and progress branches stay disabled in `git.deploymentEnabled`. If Vercel cannot supply branch details, the build proceeds instead of dropping an update. Skipped builds appear in Vercel as canceled and should not count towards the allowance; confirm this in Vercel's usage page after a few pushes. The policy is read from the commit being built, so it takes effect for a branch once that branch contains this change.

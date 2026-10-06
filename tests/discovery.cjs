@@ -9,3 +9,11 @@ test('all-repository toggle removes demo-specific qualifiers',()=>{const queries
 test('newest uses a recent creation window and popularity metadata preserves forks',()=>{assert(D.searchQueries({newest:true})[0].includes('created:>='));const r=D.mapRepo({full_name:'someone/app',name:'app',description:'A notes app',default_branch:'master',forks_count:50,stargazers_count:100});assert.equal(r.forks,50);assert.equal(r.branch,'master');assert.equal(r.category,'Productivity')});
 
 test("directory badges and incidental demo prose are not app previews",()=>{assert.equal(D.extractDemo("Our project includes live demos. [Directory](https://glama.ai/mcp/servers/a/b)"),null);assert.equal(D.demoUrl("https://glama.ai/mcp/servers/a/b"),null);assert.equal(D.extractDemo("We provide demos alongside [Documentation](https://docs.app.test/)"),null)});
+
+test("an About website on an app-hosting domain is the demo when the README names none",()=>{
+ assert.equal(D.extractDemo('A real-time glass renderer. See the video below.','https://jeantimex.github.io/glass-effect-webgpu/'),'https://jeantimex.github.io/glass-effect-webgpu/');
+ for(const host of ['https://app.vercel.app/','https://app.netlify.app/','https://app.pages.dev/','https://app.streamlit.app/','https://app.onrender.com/','https://user-app.hf.space/'])assert.equal(D.extractDemo('No demo link here.',host),host,host);
+ assert.equal(D.extractDemo('[Live demo](https://readme-demo.vercel.app/)','https://about.github.io/'),'https://readme-demo.vercel.app/','a README demo still wins over the About website')});
+test("documentation, marketing and unsafe About websites are not treated as demos",()=>{
+ for(const home of ['https://myapp.dev','https://user.readthedocs.io','https://docs.myapp.github.io/','https://user.github.io/docs/intro','https://example.com','https://github.com/owner/repo','http://localhost:3000','https://youtu.be/abc',''])assert.equal(D.extractDemo('No demo link here.',home),null,home);
+ assert.equal(D.extractDemo('No demo link here.',null),null)});
