@@ -1,0 +1,247 @@
+{
+  "schema": 4,
+  "work": {
+    "discovery": null,
+    "browser": null,
+    "coverageBefore": {
+      "admissionPolicy": "validated-demo-v1",
+      "publication": {
+        "published": 9751,
+        "pending": 780,
+        "quarantined": 959,
+        "unavailable": 580
+      },
+      "workingDemos": 9784,
+      "browserBacklog": {
+        "demo": {
+          "never": 0,
+          "retry": 627,
+          "repeated": 941,
+          "complete": 10494
+        },
+        "screenshot": {
+          "never": 0,
+          "retry": 763,
+          "repeated": 957,
+          "complete": 9770
+        },
+        "reviewCount": 965,
+        "reviewReasons": {
+          "empty_page": 244,
+          "http_401": 5,
+          "network_or_timeout": 157,
+          "access_restricted": 198,
+          "dns_unresolved": 125,
+          "http_412": 10,
+          "http_402": 8,
+          "http_502": 11,
+          "unsafe_target": 13,
+          "application_error": 3,
+          "rate_limit": 13,
+          "uniform_image": 8,
+          "http_530": 8,
+          "login_wall": 27,
+          "http_400": 11,
+          "http_503": 45,
+          "http_522": 4,
+          "http_526": 1,
+          "connection_refused": 5,
+          "screenshot_error": 11,
+          "http_500": 14,
+          "dns_timeout": 20,
+          "http_523": 2,
+          "probe_timeout": 5,
+          "http_508": 1,
+          "http_451": 3,
+          "http_454": 1,
+          "http_567": 1,
+          "http_525": 2,
+          "http_521": 2,
+          "http_520": 1,
+          "http_404": 3,
+          "http_999": 1,
+          "space_app_not_loaded": 2
+        }
+      },
+      "targets": {
+        "repositoryChecks": 11459,
+        "demoChecks": 11459,
+        "screenshots": 10341
+      },
+      "reasons": [
+        "Demo validation is below 95%.",
+        "Screenshot coverage is below 90%."
+      ],
+      "pending": {
+        "repositoryChecks": 0,
+        "demoChecks": 1560,
+        "screenshots": 1720
+      },
+      "available": 12062,
+      "visible": 11490,
+      "repositoryChecks": 12062,
+      "demoChecks": 10502,
+      "screenshots": 9770,
+      "ready": true,
+      "githubBatch": 1500,
+      "spacesBatch": 350,
+      "curatedBatch": 40,
+      "communityBatch": 20
+    },
+    "coverageAfter": {
+      "admissionPolicy": "validated-demo-v1",
+      "publication": {
+        "published": 9751,
+        "pending": 780,
+        "quarantined": 959,
+        "unavailable": 580
+      },
+      "workingDemos": 9784,
+      "browserBacklog": {
+        "demo": {
+          "never": 0,
+          "retry": 627,
+          "repeated": 941,
+          "complete": 10494
+        },
+        "screenshot": {
+          "never": 0,
+          "retry": 763,
+          "repeated": 957,
+          "complete": 9770
+        },
+        "reviewCount": 965,
+        "reviewReasons": {
+          "empty_page": 244,
+          "http_401": 5,
+          "network_or_timeout": 157,
+          "access_restricted": 198,
+          "dns_unresolved": 125,
+          "http_412": 10,
+          "http_402": 8,
+          "http_502": 11,
+          "unsafe_target": 13,
+          "application_error": 3,
+          "rate_limit": 13,
+          "uniform_image": 8,
+          "http_530": 8,
+          "login_wall": 27,
+          "http_400": 11,
+          "http_503": 45,
+          "http_522": 4,
+          "http_526": 1,
+          "connection_refused": 5,
+          "screenshot_error": 11,
+          "http_500": 14,
+          "dns_timeout": 20,
+          "http_523": 2,
+          "probe_timeout": 5,
+          "http_508": 1,
+          "http_451": 3,
+          "http_454": 1,
+          "http_567": 1,
+          "http_525": 2,
+          "http_521": 2,
+          "http_520": 1,
+          "http_404": 3,
+          "http_999": 1,
+          "space_app_not_loaded": 2
+        }
+      },
+      "targets": {
+        "repositoryChecks": 11459,
+        "demoChecks": 11459,
+        "screenshots": 10341
+      },
+      "reasons": [
+        "Demo validation is below 95%.",
+        "Screenshot coverage is below 90%."
+      ],
+      "pending": {
+        "repositoryChecks": 0,
+        "demoChecks": 1560,
+        "screenshots": 1720
+      },
+      "available": 12062,
+      "visible": 11490,
+      "repositoryChecks": 12062,
+      "demoChecks": 10502,
+      "screenshots": 9770,
+      "ready": true,
+      "githubBatch": 1500,
+      "spacesBatch": 350,
+      "curatedBatch": 40,
+      "communityBatch": 20
+    },
+    "qualityGains": {
+      "demoChecks": 0,
+      "screenshots": 0,
+      "workingDemos": 0,
+      "published": 0
+    }
+  },
+  "phase": "cleanup",
+  "publication": "checkpoint_saved",
+  "id": "37450545680",
+  "attempt": 1,
+  "startedAt": "2026-10-06T10:36:52.538Z",
+  "recordedAt": "2026-10-06T10:38:45.123Z",
+  "trigger": "push",
+  "status": "success",
+  "counts": {
+    "before": 12070,
+    "after": 12070,
+    "added": 0,
+    "updated": 421,
+    "removed": 0,
+    "withDemo": 11490
+  },
+  "temporaryFailures": 0,
+  "stages": [
+    {
+      "id": "cleanup",
+      "name": "Demo-only library cleanup",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "compression",
+      "name": "Existing screenshot compression",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 100,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "validate",
+      "name": "Application checks",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "dependencies",
+      "name": "Dependencies",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    }
+  ],
+  "publishedCommit": null
+}
