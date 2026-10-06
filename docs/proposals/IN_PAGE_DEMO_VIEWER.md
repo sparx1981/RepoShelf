@@ -1,6 +1,6 @@
 # Proposal: in-page demo viewer for RepoShelf (revision 3)
 
-Status: agreed as a pilot plan after two review rounds (2026-10-06). Nothing is implemented except the classifier fix in section 3.
+Status: agreed as a pilot plan after two review rounds (2026-10-06). Implemented so far: the classifier fix (section 3) and build steps 1-4 of section 7 (the administrator harness: `docs/DEMO_VIEWER.md`). Visitors do not see the viewer.
 - Revision 1: iframe viewer for every demo whose headers allow framing (60-75% coverage). Rejected as premature.
 - Revision 2: small, individually verified pilot.
 - Revision 3 (this): reviewer answers to the open questions are recorded as decisions (section 10), and the build scope for the first step is fixed (section 7).
@@ -114,7 +114,7 @@ Payments; wallet connections; sensitive personal-data collection; requests for p
 
 ## 7. Build plan
 
-**Next step (agreed):** the **qualification tool** plus a **minimal admin-only harness** that **shares the eventual viewer's configuration and controls**. Qualification establishes eligibility; it cannot guarantee every visitor's session will work, so the persistent external-open control remains essential.
+**First step (built; see `docs/DEMO_VIEWER.md`):** the **qualification tool** plus a **minimal admin-only harness** that **shares the eventual viewer's configuration and controls**. Qualification establishes eligibility; it cannot guarantee every visitor's session will work, so the persistent external-open control remains essential.
 
 1. Viewer configuration module (one versioned definition: sandbox string, per-demo flag handling, permitted frame origins).
 2. Supabase migration: global setting, per-demo viewer controls (approval, disable, flags), qualification evidence table. All service-role writes, admin-only reads, tested with SQL tests like the existing ones.
