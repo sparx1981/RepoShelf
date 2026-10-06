@@ -48,7 +48,10 @@ export async function restoreCheckpoint(root){
  const meta=JSON.parse(git(root,['show',commit+':.sync-checkpoint.json']));if(meta.schema!==1||!/^[a-f0-9]{40}$/.test(meta.base))throw Error('Invalid checkpoint baseline');
  try{git(root,['cat-file','-e',meta.base+'^{commit}'])}catch{git(root,['fetch','--quiet','origin',meta.base])}
  const changed=git(root,['diff','--name-only','-z',meta.base,commit]).split('\0').filter(generated),current=git(root,['rev-parse','HEAD']).trim();let restored=0,conflicts=0;
- const blob=(ref,path)=>{try{return git(root,['rev-parse',ref+':'+path]).trim()}catch{return null}};
+ // Read identities once per tree instead of spawning three Git processes per
+ // generated file. Missing/deleted paths remain null for the conflict guard.
+ const trees=new Map([meta.base,commit,current].map(ref=>[ref,new Map(git(root,['ls-tree','-r','-z',ref,'--',...generatedPaths]).split('\0').filter(Boolean).map(entry=>{const tab=entry.indexOf('\t'),header=entry.slice(0,tab).split(' ');if(tab<0||header[1]!=='blob')throw Error('Invalid generated tree entry');return [entry.slice(tab+1),header[2]]}))]));
+ const blob=(ref,path)=>trees.get(ref).get(path)||null;
  for(const path of changed){if(path.includes('..')||path.startsWith('/'))throw Error('Invalid checkpoint path');const before=blob(meta.base,path),after=blob(commit,path),present=blob(current,path);if(present===after)continue;if(present!==before){conflicts++;continue}const file=join(root,path);if(after===null)await rm(file,{force:true});else{await mkdir(dirname(file),{recursive:true});const bytes=blobBytes(root,commit,path);if(bytes===null)throw Error('Checkpoint blob is missing: '+path);await writeFile(file,bytes)}restored++}
  console.log(`Checkpoint recovery: ${restored} generated files restored; ${conflicts} files kept from newer main changes.`);return {restored,conflicts};
 }
