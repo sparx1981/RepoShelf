@@ -2,6 +2,8 @@
 const $=s=>document.querySelector(s);
 const curated=RepoPicks.map(r=>({...r}));
 const categories=['All projects',...RepoEditorial.categories];
+const topCategories=['AI & machine learning','Design','Developer tools','Education','Productivity','Mobile'];
+const categoryGroups=[['Build',['Developer tools','AI & machine learning','Automation & workflows','Crypto & blockchain','Simulation & physics','Science']],['Create',['Design','Animation & motion','Games & game development','Photography','Architecture & building design','Fashion','Streaming']],['Life & work',['Productivity','Business','Finance','Education','Food & cooking','Health & fitness','Travel','Home automation','Maps & geospatial','Automotive','Kids']],['Platforms',['Mobile','Android','Apple']]];
 let state={view:'discover',source:'curated',provider:'all',technology:'All technologies',category:'All projects',query:'',page:1,loading:false};
 let discovered=[], catalog=[], searchToken=0, timer, toastTimer;
 let searchSortChosen=false;
@@ -53,6 +55,76 @@ async function shareListing(full){const r=repoData(full);if(!r)return;const url=
 function showShareLink(url){const slot=$('#share-status');if(!slot)return;slot.innerHTML='<label>Listing link<input id="share-link" readonly aria-label="Listing link" value="'+escape(url)+'"></label><p class="small">Copy this link to share the project.</p>';$('#share-link').focus();$('#share-link').select()}
 
 function hideBootLoader(){const screen=document.getElementById('boot-loader');if(!screen||screen.dataset.done)return;screen.dataset.done='1';screen.classList.add('done');setTimeout(()=>screen.remove(),400)}
+const motionOK=()=>!matchMedia('(prefers-reduced-motion:reduce)').matches;
+let categorySignature='',lastCategory,categoryChanged=false,categoryObserver;
+function categoryLayout(){
+ const grouped=new Set(categoryGroups.flatMap(([,items])=>items));
+ const rest=RepoEditorial.categories.filter(c=>!grouped.has(c)&&c!=='Other');
+ return {groups:rest.length?[...categoryGroups,['More topics',rest]]:categoryGroups,shown:['All projects',...topCategories,...(state.category!=='All projects'&&!topCategories.includes(state.category)?[state.category]:[])]};
+}
+function categoryOption(c,counts,index){const n=counts?(counts[c]??0):null;return `<button class="cat-opt${n===0?' is-empty':''}" style="--i:${index}" data-category="${escape(c)}" aria-pressed="${state.category===c}"><span>${escape(c)}</span>${n===null?'':`<small>${n.toLocaleString()}</small>`}</button>`}
+function renderCategories(){
+ const host=$('.categories');
+ if(!host.firstElementChild)host.innerHTML='<div class="cat-rail" role="group" aria-label="Filter by category"><span class="cat-pill" aria-hidden="true"></span></div><div class="cat-panel" id="cat-panel" role="group" aria-label="All categories" hidden></div>';
+ const rail=$('.cat-rail',host),panel=$('.cat-panel',host);
+ const counts=state.view==='discover'&&!state.remote?browseData?.facets?.categories:null;
+ const signature=JSON.stringify([state.category,counts]);
+ if(signature!==categorySignature){
+  const active=document.activeElement,focused=host.contains(active)?{category:active.dataset.category,inPanel:Boolean(active.closest('.cat-panel'))}:null;
+  if(lastCategory!==undefined&&lastCategory!==state.category)categoryChanged=true;
+  lastCategory=state.category;categorySignature=signature;
+  const {groups,shown}=categoryLayout(),open=!panel.hidden;
+  rail.querySelectorAll('.cat-chip,.cat-more').forEach(n=>n.remove());
+  rail.insertAdjacentHTML('beforeend',shown.map(c=>`<button class="cat-chip" data-category="${escape(c)}" aria-pressed="${state.category===c}">${c==='All projects'?'All':escape(c)}</button>`).join('')+`<button class="cat-more" aria-expanded="${open}" aria-controls="cat-panel">More categories<small>${categories.length-shown.length}</small><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></button>`);
+  let index=0;
+  panel.innerHTML=`<div class="cat-cols">${groups.map(([name,items])=>`<div class="cat-col"><h3 style="--i:${index++}">${escape(name)}</h3>${items.map(c=>categoryOption(c,counts,index++)).join('')}</div>`).join('')}</div><div class="cat-foot">${categoryOption('Other',counts,index)}</div>`;
+  categoryObserver??=new ResizeObserver(placeCategoryPill);categoryObserver.disconnect();rail.querySelectorAll('.cat-chip').forEach(chip=>categoryObserver.observe(chip));
+  if(focused)focusCategory(focused.category,focused.inPanel);
+ }
+ placeCategoryPill();
+}
+function placeCategoryPill(){
+ const rail=$('.cat-rail'),pill=$('.cat-pill'),on=rail?.querySelector('.cat-chip[aria-pressed=true]');
+ if(!on||!on.offsetWidth){if(pill)pill.style.width='0';return}
+ pill.style.width=on.offsetWidth+'px';pill.style.transform=`translateX(${on.offsetLeft}px)`;
+ if(!pill.classList.contains('ready'))requestAnimationFrame(()=>requestAnimationFrame(()=>pill.classList.add('ready')));
+ const left=on.offsetLeft,right=left+on.offsetWidth;
+ if(left<rail.scrollLeft)rail.scrollLeft=left-16;else if(right>rail.scrollLeft+rail.clientWidth)rail.scrollLeft=right-rail.clientWidth+16;
+}
+function focusCategory(c,inPanel=false){const items=[...document.querySelectorAll(inPanel?'.cat-panel .cat-opt':'.cat-chip')],target=items.find(b=>b.dataset.category===c)||$('.cat-more');target?.focus({preventScroll:true})}
+function toggleCategoryPanel(open=$('.cat-panel')?.hidden){
+ const panel=$('.cat-panel'),more=$('.cat-more');if(!panel||panel.hidden!==Boolean(open))return;
+ panel.hidden=!open;more?.setAttribute('aria-expanded',String(Boolean(open)));
+ if(open)(panel.querySelector('.cat-opt[aria-pressed=true]')||panel.querySelector('.cat-opt')).focus({preventScroll:true});
+}
+document.addEventListener('click',e=>{if(e.target.closest('.cat-more')){toggleCategoryPanel();return}if(!e.target.closest('.cat-panel'))toggleCategoryPanel(false)});
+document.addEventListener('keydown',e=>{
+ const panel=$('.cat-panel');if(!panel||panel.hidden)return;
+ if(e.key==='Escape'){toggleCategoryPanel(false);$('.cat-more')?.focus();return}
+ const options=[...panel.querySelectorAll('.cat-opt')],at=options.indexOf(document.activeElement);
+ if(at<0||!['ArrowDown','ArrowUp'].includes(e.key))return;
+ e.preventDefault();options[(at+(e.key==='ArrowDown'?1:-1)+options.length)%options.length].focus();
+});
+document.fonts?.ready.then(placeCategoryPill);
+function setResultCount(text){
+ const el=$('#result-count'),to=parseInt(text.replace(/,/g,''),10),from=Number(el.dataset.n)||0;
+ el.classList.remove('rolling');el.textContent=text;
+ if(Number.isFinite(to)&&String(to)!==el.dataset.n){el.dataset.n=String(to);if(from)el.rollFrom=from}
+}
+function rollResultCount(){
+ const el=$('#result-count'),from=el.rollFrom,to=Number(el.dataset.n);el.rollFrom=undefined;
+ if(!from||from===to||!motionOK())return;
+ const t0=performance.now(),suffix=el.textContent.replace(/^[\d,]+/,'');el.classList.add('rolling');
+ (function tick(now){const p=Math.min(1,(now-t0)/520);el.dataset.roll=Math.round(from+(to-from)*(1-(1-p)**4)).toLocaleString()+suffix;if(p<1&&el.classList.contains('rolling'))requestAnimationFrame(tick);else el.classList.remove('rolling')})(t0);
+}
+function playCategoryEntrance(){
+ if(!categoryChanged)return;
+ if(state.view==='discover'&&!state.remote&&(browsePending||browseSignature!==browseKey()))return;
+ categoryChanged=false;rollResultCount();
+ if(!motionOK())return;
+ const box=$('#grid').hidden?$('#ribbons'):$('#grid');
+ [...box.querySelectorAll('.card')].slice(0,12).forEach((card,i)=>card.animate([{opacity:0,transform:'translateY(14px) scale(.97)',filter:'blur(6px)'},{opacity:1,transform:'none',filter:'blur(0)'}],{duration:520,delay:Math.min(i*45,270),easing:'cubic-bezier(.16,1,.3,1)',fill:'backwards'}));
+}
 function render(){
 scheduleBrowse();
 $('#fork-count').textContent=new Set([...Object.keys(tracked()),...A.liked]).size;
@@ -62,12 +134,12 @@ $('#more-filters .sort-label').hidden=state.view==='collection'&&collectionMode=
 const filters=[state.provider==='all'?null:state.provider==='github'?'GitHub':'Hugging Face',J.settings.hideSeen&&state.view==='discover'?'Hide already seen':null,$('#sort').value===(state.query.trim()?'relevance':'popular')?null:$('#sort').selectedOptions[0].textContent].filter(Boolean);$('#filter-count').hidden=!filters.length;$('#filter-count').textContent=`${filters.length} active`;$('#filter-count').title=filters.join(' · ');const filterButton=$('#more-filters summary');filterButton.dataset.active=String(Boolean(filters.length));filterButton.setAttribute('aria-label',filters.length?`Filters, ${filters.length} active: ${filters.join(', ')}`:'Filters');filterButton.title=filters.length?`Filters: ${filters.join(' · ')}`:'Filters';$('#clear-source').hidden=state.provider==='all';$('.source-control').hidden=state.view==='collection';$('#channels').hidden=state.view==='collection';renderHero();
 document.querySelectorAll('.nav').forEach(b=>{b.classList.toggle('active',b.dataset.view===state.view);b.setAttribute('aria-current',b.dataset.view===state.view?'page':'false')});
 $('#curated').classList.toggle('active',state.source==='curated');$('#github').classList.toggle('active',state.source==='github');
-$('.categories').innerHTML=categories.map(c=>`<button class="category ${state.category===c?'active':''}" data-category="${c}" aria-pressed="${state.category===c}">${c==='All projects'?'All':c}</button>`).join('');
+renderCategories();
 $('#channels').innerHTML=S.channels.map(t=>`<button class="channel ${state.technology===t?'active':''}" data-tech="${escape(t)}" aria-pressed="${state.technology===t}"><span>${t==='All technologies'?'◈':escape(t==='Three.js'?'3D':t==='Node.js'?'N':t.slice(0,2))}</span>${escape(t)}</button>`).join('');
 const storefront=state.view==='discover'&&state.source==='curated'&&!state.query;
 let repos=state.view==='discover'&&!state.remote&&browseData?browseData.items.map(r=>({...repoData(r.full),...r})):matching(state.view==='collection'?savedProjects():state.source==='curated'?catalog:discovered);if((state.view==='collection'&&collectionMode!=='recent')||state.remote||!browseData)repos=order(repos);
 $('#ribbons').hidden=!storefront;$('#grid').hidden=storefront;if(storefront)renderRibbons();
-$('#result-count').textContent=`${(state.view==='discover'&&!state.remote&&browseData?browseData.total:repos.length).toLocaleString()} project${(browseData?.total??repos.length)===1?'':'s'}`;
+setResultCount(`${(state.view==='discover'&&!state.remote&&browseData?browseData.total:repos.length).toLocaleString()} project${(browseData?.total??repos.length)===1?'':'s'}`);
 $('#data-note').textContent=state.view==='collection'?(A.user?'Likes and verified forks synced to your account':'Sign in to save likes and verify public forks'):`${(browseData?.indexed??catalog.filter(D.isAvailable).length).toLocaleString()} indexed${checkedCandidates?' · '+checkedCandidates.toLocaleString()+' checked live':''}`;
 const busy=state.loading||(browsePending&&state.view==='discover'&&!state.remote);
 $('#grid').innerHTML=repos.slice(0,visibleLimit).map((r,i,list)=>{const grouped=state.view==='discover'&&!state.remote&&state.query&&$('#sort').value==='relevance'&&r.searchMatch;const group=r.searchMatch?.group;const heading=grouped&&(i===0||list[i-1].searchMatch?.group!==group)?`<div class="search-group-heading"><h3>${group==='best'?'Best matches':'Other matches'}</h3><p>${group==='best'?'Matches in project names, descriptions and technologies.':'Matches in README keywords, related terms or similar spellings.'}</p></div>`:'';return heading+card(r).replace('<article ',`<article ${grouped?`data-search-group="${group}"`:''} `).replace('</article>',`${state.query&&r.searchMatch?`<p class="search-match-reason">${escape(r.searchMatch.reason)}</p>`:''}</article>`)}).join('')||`<div class="empty">${busy?'<span class="rs-loader rs-loader-lg" aria-hidden="true"></span>':''}<h3>${busy?'Finding your next project…':state.view==='collection'&&!savedProjects().length?'Your next project starts here.':'No projects found'}</h3><p>${busy?'Checking repository README files for live demo links.':state.view==='collection'&&!savedProjects().length?'Sign in with GitHub to save likes and see your verified public forks across devices.':$('#sort').value==='trending'?'Trending requires measured star and fork growth. Choose Popular while history accumulates.':'Try a different search, category or technology.'}</p>${!busy?'<button class="button outline" id="reset-filters">Reset filters</button>':''}</div>`;
@@ -75,6 +147,7 @@ if(!repos.length&&!state.loading&&!browsePending&&browseSignature===browseKey()&
 if(!repos.length&&!state.loading&&state.view==='collection'&&collectionMode==='recent')$('#grid').innerHTML=`<div class="empty"><h3>Find your way back to a project</h3><p>${!A.user?'Sign in and enable viewing history to remember the projects you open.':J.error?escape(J.error):!J.settings.rememberViews?'Turn on “Remember viewed projects” above to start your private history.':'Projects you open will appear here, with the most recent first.'}</p></div>`;const moreLocal=state.view==='discover'&&!state.remote&&browseData?Boolean(browseData.nextCursor):repos.length>visibleLimit;$('#search-external').hidden=!A.user?.admin||storefront||state.view==='collection'||state.provider==='huggingface';$('#search-external').disabled=state.loading;$('#search-external').textContent=state.loading?'Checking GitHub…':state.remote&&hasMore()?'Find more on GitHub':'Search beyond the catalog on GitHub';
 $('#load-more').hidden=storefront||!moreLocal;$('#load-more').disabled=state.view==='discover'&&!state.remote&&(browsePending||browseSignature!==browseKey());$('#load-more').textContent='Show more projects';
 const accountButton=$('#account-button'),accountLabel=A.user?`Account menu for @${A.user.name}`:'Sign in with GitHub';accountButton.classList.toggle('signed-in',Boolean(A.user));accountButton.setAttribute('aria-label',accountLabel);accountButton.title=accountLabel;
+playCategoryEntrance();
 }
 function reportDemoUrl(r){const u=new URL('https://github.com/sparx1981/RepoShelf/issues/new');u.searchParams.set('template','broken-demo.md');u.searchParams.set('title',`[Broken demo] ${r.name}`);u.searchParams.set('body',`Project: \`${r.full}\`
 Demo: ${r.demo}
@@ -135,7 +208,7 @@ function openAccount(){renderAccount();if(!$('#account').open)$('#account').show
 $('#account-button').onclick=openAccount;
 document.querySelectorAll('dialog .close').forEach(b=>b.onclick=()=>b.closest('dialog').close());
 document.querySelectorAll('dialog').forEach(d=>d.addEventListener('click',e=>{if(e.target===d){const r=d.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)d.close()}}));
-document.addEventListener('click',e=>{const suggestion=e.target.closest('[data-search-suggestion]');if(suggestion){const item=browseData?.suggestions?.[Number(suggestion.dataset.searchSuggestion)];if(item){state.query=item.options.q;state.category=item.options.category||'All projects';state.technology=item.options.technology||'All technologies';state.provider=item.options.source;$('#search').value=state.query;$('#provider').value=state.provider;$('#sort').value=item.options.sort;useCatalog()}return}const share=e.target.closest('[data-share]');if(share){void shareListing(share.dataset.share);return}const like=e.target.closest('[data-like]');if(like){if(!A.user){openAccount();return}void A.toggle(like.dataset.like,repoData(like.dataset.like)).catch(err=>toast(err.message));return}if(e.target.closest('[data-open-recent]')){openCollection();collectionMode='recent';render();return}const mode=e.target.closest('[data-collection-mode]');if(mode){collectionMode=mode.dataset.collectionMode;render();return}const gated=e.target.closest('[data-requires-login]');if(gated&&!A.user?.githubConnected){e.preventDefault();openAccount();return}const analytic=e.target.closest('[data-analytics]');if(analytic&&analytic.dataset.analytics==='fork_click'&&analytic.dataset.githubFork==='true'&&!A.user){e.preventDefault();openAccount();return}if(analytic)A.track(analytic.dataset.analytics,analytic.dataset.project,analytic.closest('.ribbon')?.dataset.shelf||analytic.closest('[data-shelf]')?.dataset.shelf);if($('#more-filters').open&&!e.target.closest('#more-filters'))$('#more-filters').open=false;const heroStep=e.target.closest('[data-hero-step]');if(heroStep)moveHero(Number(heroStep.dataset.heroStep));const details=e.target.closest('[data-details]');if(details){detailImage=0;showDetails(details.dataset.details,false,details.closest('.ribbon')?.dataset.shelf||details.closest('[data-shelf]')?.dataset.shelf)}const tech=e.target.closest('[data-tech]');if(tech){state.technology=tech.dataset.tech;$('#detail').close();if(state.source==='github')useCatalog();else render()}const rank=e.target.closest('[data-ribbon-rank]');if(rank){ribbonModes[rank.dataset.ribbonCategory]=rank.dataset.ribbonRank;render()}const all=e.target.closest('[data-view-all]');if(all){state.source='github';state.category=all.dataset.viewAll;$('#sort').value=all.dataset.rank;useCatalog()}const gallery=e.target.closest('[data-gallery]');if(gallery){detailImage=Number(gallery.dataset.gallery);showDetails(gallery.dataset.repo)}const cat=e.target.closest('[data-category]');if(cat){state.category=cat.dataset.category;if(state.source==='github'&&state.view==='discover')useCatalog();else render()}const nav=e.target.closest('[data-view]');if(nav){if(nav.dataset.view==='collection'){openCollection();return}if(state.view==='collection'&&collectionBrowseFilters){const prior=collectionBrowseFilters;for(const key of ['query','category','technology','provider'])state[key]=prior[key];$('#search').value=prior.query;$('#provider').value=prior.provider;$('#sort').value=prior.sort;collectionBrowseFilters=null}if(state.view!==nav.dataset.view)A.track('page_view');state.view=nav.dataset.view;if(state.view==='collection'){searchToken++;state.loading=false}$('#status').textContent='';render()}if(e.target.closest('#reset-filters')){state.category='All projects';state.technology='All technologies';state.provider='all';$('#provider').value='all';state.query='';$('#search').value='';render();if(state.source==='github'&&state.view==='discover')useCatalog()}});
+document.addEventListener('click',e=>{const suggestion=e.target.closest('[data-search-suggestion]');if(suggestion){const item=browseData?.suggestions?.[Number(suggestion.dataset.searchSuggestion)];if(item){state.query=item.options.q;state.category=item.options.category||'All projects';state.technology=item.options.technology||'All technologies';state.provider=item.options.source;$('#search').value=state.query;$('#provider').value=state.provider;$('#sort').value=item.options.sort;useCatalog()}return}const share=e.target.closest('[data-share]');if(share){void shareListing(share.dataset.share);return}const like=e.target.closest('[data-like]');if(like){if(!A.user){openAccount();return}void A.toggle(like.dataset.like,repoData(like.dataset.like)).catch(err=>toast(err.message));return}if(e.target.closest('[data-open-recent]')){openCollection();collectionMode='recent';render();return}const mode=e.target.closest('[data-collection-mode]');if(mode){collectionMode=mode.dataset.collectionMode;render();return}const gated=e.target.closest('[data-requires-login]');if(gated&&!A.user?.githubConnected){e.preventDefault();openAccount();return}const analytic=e.target.closest('[data-analytics]');if(analytic&&analytic.dataset.analytics==='fork_click'&&analytic.dataset.githubFork==='true'&&!A.user){e.preventDefault();openAccount();return}if(analytic)A.track(analytic.dataset.analytics,analytic.dataset.project,analytic.closest('.ribbon')?.dataset.shelf||analytic.closest('[data-shelf]')?.dataset.shelf);if($('#more-filters').open&&!e.target.closest('#more-filters'))$('#more-filters').open=false;const heroStep=e.target.closest('[data-hero-step]');if(heroStep)moveHero(Number(heroStep.dataset.heroStep));const details=e.target.closest('[data-details]');if(details){detailImage=0;showDetails(details.dataset.details,false,details.closest('.ribbon')?.dataset.shelf||details.closest('[data-shelf]')?.dataset.shelf)}const tech=e.target.closest('[data-tech]');if(tech){state.technology=tech.dataset.tech;$('#detail').close();if(state.source==='github')useCatalog();else render()}const rank=e.target.closest('[data-ribbon-rank]');if(rank){ribbonModes[rank.dataset.ribbonCategory]=rank.dataset.ribbonRank;render()}const all=e.target.closest('[data-view-all]');if(all){state.source='github';state.category=all.dataset.viewAll;$('#sort').value=all.dataset.rank;useCatalog()}const gallery=e.target.closest('[data-gallery]');if(gallery){detailImage=Number(gallery.dataset.gallery);showDetails(gallery.dataset.repo)}const cat=e.target.closest('[data-category]');if(cat){const fromPanel=Boolean(cat.closest('.cat-panel'));state.category=cat.dataset.category;toggleCategoryPanel(false);if(state.source==='github'&&state.view==='discover')useCatalog();else render();if(fromPanel)focusCategory(state.category)}const nav=e.target.closest('[data-view]');if(nav){if(nav.dataset.view==='collection'){openCollection();return}if(state.view==='collection'&&collectionBrowseFilters){const prior=collectionBrowseFilters;for(const key of ['query','category','technology','provider'])state[key]=prior[key];$('#search').value=prior.query;$('#provider').value=prior.provider;$('#sort').value=prior.sort;collectionBrowseFilters=null}if(state.view!==nav.dataset.view)A.track('page_view');state.view=nav.dataset.view;if(state.view==='collection'){searchToken++;state.loading=false}$('#status').textContent='';render()}if(e.target.closest('#reset-filters')){state.category='All projects';state.technology='All technologies';state.provider='all';$('#provider').value='all';state.query='';$('#search').value='';render();if(state.source==='github'&&state.view==='discover')useCatalog()}});
 
 $('#curated').onclick=()=>{state.remote=false;session=null;state.source='curated';state.query='';$('#search').value='';visibleLimit=48;searchToken++;state.loading=false;$('#status').textContent='';render()};$('#github').onclick=()=>{state.source='github';useCatalog()};
 $('#search').oninput=e=>{clearTimeout(timer);if(e.target.value.trim())timer=setTimeout(()=>A.track('search'),700);state.query=e.target.value;if(!searchSortChosen)$('#sort').value=state.query.trim()?'relevance':'popular';if(state.query)state.source='github';useCatalog()};
