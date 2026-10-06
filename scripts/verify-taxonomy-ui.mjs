@@ -1,0 +1,30 @@
+import {spawn} from 'node:child_process';
+import assert from 'node:assert/strict';
+import {chromium} from 'playwright';
+import {createRequire} from 'node:module';
+import {withBrowseFixtures,settleBrowse} from './browse-fixtures.mjs';
+const E=createRequire(import.meta.url)('../dist/editorial.js'),port=4403,base=`http://127.0.0.1:${port}`;
+const server=spawn(process.execPath,['scripts/serve.mjs'],{env:{...process.env,PORT:String(port)},stdio:['ignore','pipe','inherit']});let browser,signedIn=false;
+const projects=[{full:'team/building',name:'Building sunlight simulator',description:'Building design and floor plans with a physics engine.',category:'Other',demo:'https://building.example'},{full:'team/food',name:'Food ordering',description:'Restaurant meal ordering application.',category:'Business',demo:'https://food.example'}];
+try{
+ await new Promise((resolve,reject)=>{server.stdout.once('data',resolve);server.once('exit',()=>reject(Error('Server exited')))});
+ browser=await chromium.launch();const context=await browser.newContext({serviceWorkers:'block',viewport:{width:390,height:844}}),page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await context.route('**/*',withBrowseFixtures(async route=>{const url=new URL(route.request().url());if(url.origin!==base)return route.abort();const path=url.pathname;
+ if(path==='/api/auth')return route.fulfill({json:{enabled:true,analyticsEnabled:false,legal:{active:false,required:false},user:signedIn?{id:'member',name:'member',githubConnected:true,admin:true}:null}});
+ if(path==='/api/collection')return route.fulfill({json:{items:[]}});
+ if(path==='/api/forks')return route.fulfill({json:{items:[],sync:{lastAttemptAt:new Date().toISOString()}}});
+ if(path==='/catalog.json')return route.fulfill({json:{repositories:projects}});
+ if(path==='/spaces.json')return route.fulfill({json:{repositories:[]}});
+ if(path==='/community.json')return route.fulfill({json:{mentions:[]}});
+ if(path==='/api/editorial')return route.fulfill({json:{rows:E.defaults(),customRows:false,builtinSetupRequired:false}});
+ if(path==='/api/promotions')return route.fulfill({json:{items:[]}});
+ return route.continue();}));
+ await page.goto(base);await page.waitForFunction(()=>RepoAccount.ready);await settleBrowse(page);await page.locator('#github').click();await settleBrowse(page);
+ await page.locator('[data-category="Architecture & building design"]').click();await settleBrowse(page);assert.equal(await page.locator('#grid .card').count(),1);assert(await page.locator('#grid [data-details="team/building"]').isVisible());
+ await page.locator('#grid [data-details="team/building"]').click();await page.locator('.detail-subjects').waitFor();assert.match(await page.locator('.detail-subjects').textContent(),/Architecture.*Simulation/);await page.locator('#detail .close').click();
+ await page.locator('[data-category="Simulation & physics"]').click();await settleBrowse(page);assert.equal(await page.locator('#grid .card').count(),1);
+ await page.goto(base+'/connect.html');await page.waitForFunction(()=>RepoAccount.ready);assert(await page.locator('#connect-setup').isHidden());assert.match(await page.locator('#connect-access a').getAttribute('href'),/return=%2Fconnect.html/);
+ signedIn=true;await page.reload();await page.locator('#connect-setup:not([hidden])').waitFor();await page.locator('[data-client="claude"]').click();assert(await page.locator('#claude-setup').isVisible());assert(await page.locator('#codex-setup').isHidden());assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Connector guide fits mobile');
+ await page.goto(base+'/admin.html');await page.waitForFunction(()=>RepoAccount.user?.admin);await page.locator('.row-tile').filter({has:page.getByRole('heading',{name:'Architecture & building design',exact:true})}).getByRole('button',{name:'Edit',exact:true}).click();assert.equal(await page.locator('#row-category').inputValue(),'Architecture & building design');assert(await page.locator('#row-category option').filter({hasText:'Simulation & physics'}).count()>0);
+ assert.deepEqual(errors,[]);console.log('PASS real browser overlapping subject filters, detail tags, editable subject rows and member connector guide gate/client selection/mobile layout.');
+}finally{await browser?.close();server.kill('SIGTERM')}
