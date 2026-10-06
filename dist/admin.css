@@ -170,7 +170,7 @@
 /* Sync log */
 #sync-content>.analytics-box,#sync-content>.sync-run{margin-bottom:16px}
 .sync-run{padding:0}
-.sync-run-summary{position:relative;display:grid;grid-template-columns:minmax(0,1.6fr) auto minmax(0,1.4fr);gap:16px;align-items:center;padding:16px 48px 16px 20px;cursor:pointer;list-style:none}
+.sync-run-summary{position:relative;display:grid;grid-template-columns:minmax(0,1.6fr) auto auto minmax(0,1.4fr);gap:16px;align-items:center;padding:16px 48px 16px 20px;cursor:pointer;list-style:none}
 .sync-run-summary::-webkit-details-marker{display:none}
 .sync-run-summary::after{content:"";position:absolute;right:22px;top:50%;width:8px;height:8px;border-right:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:translateY(-70%) rotate(45deg);transition:transform .15s}
 .sync-run[open]>.sync-run-summary::after{transform:translateY(-30%) rotate(-135deg)}
@@ -258,6 +258,8 @@
  .admin-tabs{overflow-x:auto;flex-wrap:nowrap;padding-right:32px;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 40px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 40px),transparent)}
  .admin-tabs>*{white-space:nowrap;flex-shrink:0}
  .sync-run-summary{grid-template-columns:1fr auto;gap:10px 12px}
+ .sync-run-summary .run-duration{grid-column:1/-1;text-align:left}
+ .sync-run-summary .run-duration small{display:inline;margin-right:6px}
  .run-delta{grid-column:1/-1;text-align:left}
 }
 @media(max-width:600px){
@@ -336,3 +338,6 @@
  .targets-table td.target-col,.targets-table th.target-col{display:none}
  .targets-table .target-inline{display:inline}
 }
+
+.run-duration{font-size:13px;color:var(--text-secondary);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.run-duration small{display:block;margin-bottom:2px;font-size:12px;color:var(--muted)}
