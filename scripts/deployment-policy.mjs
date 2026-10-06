@@ -8,7 +8,7 @@ export function shouldBuild(message, paths, branch = null, environment = null) {
   if (branch && branch !== 'main') return false;
   const checkpoint = message.split('\n')[0] === 'Save catalogue recovery checkpoint';
   const generated = path => path.startsWith('data/') || path.startsWith('dist/previews/')
-    || /^dist\/(?:catalog|spaces|community|growth)\.json$/.test(path);
+    || /^dist\/(?:catalog|spaces|community|growth)\.json(?:\.gz)?$/.test(path);
   return !(checkpoint && paths.length > 0 && paths.every(generated));
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

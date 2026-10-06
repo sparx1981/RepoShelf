@@ -4,7 +4,7 @@ RepoShelf provides a read-only REST API and MCP tools for finding existing start
 
 ## Connector setup
 
-The hosted MCP connector is a **members-only** feature. A signed-in member opens **Account & data → AI connector keys** and creates a personal key (`rsk_` plus 43 characters, shown once, up to five active keys, revocable any time). The key goes into the assistant as an `Authorization: Bearer rsk_…` header:
+The hosted MCP connector is a **members-only** feature. A signed-in member opens **Connect your AI assistant → Your connector keys** and creates a personal key (`rsk_` plus 43 characters, shown once, up to five active keys, revocable any time). The key goes into the assistant as an `Authorization: Bearer rsk_…` header:
 
 - Claude: **Settings → Connectors → Add custom connector**, paste the address, then under advanced settings add a request header `Authorization` with value `Bearer rsk_…`.
 - Claude Code: `claude mcp add --transport http reposhelf <address> --header "Authorization: Bearer rsk_…"`.

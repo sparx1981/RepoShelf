@@ -17,6 +17,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
+      - name: Unpack saved catalogue data
+        run: node scripts/data-packing.mjs unpack
       - name: Restore latest saved catalogue
         run: node scripts/publish-catalog.mjs restore
       - name: Record starting catalogue

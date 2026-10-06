@@ -117,6 +117,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
+      - name: Unpack saved catalogue data
+        run: node scripts/data-packing.mjs unpack
       - name: Restore unpublished generated checkpoint data
         run: node scripts/publish-catalog.mjs restore
       - name: Reserve bounded launch pass
@@ -310,6 +312,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ needs.prepare.outputs.sha }}
+      - name: Unpack saved catalogue data
+        run: node scripts/data-packing.mjs unpack
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -368,6 +372,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ needs.prepare.outputs.sha }}
+      - name: Unpack saved catalogue data
+        run: node scripts/data-packing.mjs unpack
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
