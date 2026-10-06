@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>RepoShelf loader options</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0b0d;--surface:#16171a;--surface-raised:#202126;--text:#f4f4f5;--muted:#a2a2ab;--line:#2b2c32;--line-strong:#3a3b43;--lime:#d6fb79;--on-accent:#111113}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 'DM Sans',system-ui,sans-serif}
+main{max-width:1200px;margin:auto;padding:48px 24px 72px}
+h1{font:800 34px/1.2 Manrope,system-ui,sans-serif;letter-spacing:-1.2px;margin:0 0 8px}
+h1 span{color:var(--lime)}
+.lede{color:var(--muted);margin:0 0 36px;max-width:60ch}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;overflow:hidden;display:flex;flex-direction:column}
+.stage{background:var(--bg);border-bottom:1px solid var(--line);display:grid;place-items:center;padding:28px 0}
+.stage img{width:200px;height:200px;display:block}
+.sizes{display:flex;align-items:center;gap:22px;padding:14px 20px;border-bottom:1px solid var(--line);color:var(--muted);font-size:12px}
+.sizes img{display:block}
+.body{padding:18px 20px 20px;display:flex;flex-direction:column;gap:6px;flex:1}
+.num{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--lime)}
+h2{font:800 20px/1.3 Manrope,system-ui,sans-serif;letter-spacing:-.5px;margin:0}
+.body p{margin:0;font-size:14px;color:var(--muted)}
+.body button{margin-top:auto;align-self:flex-start;margin-top:14px;background:var(--lime);color:var(--on-accent);border:0;border-radius:6px;padding:10px 15px;font:700 14px 'DM Sans',system-ui,sans-serif;cursor:pointer}
+.body button:hover{background:var(--surface-raised);color:var(--text)}
+button:focus-visible{outline:2px solid var(--lime);outline-offset:3px}
+.note{margin-top:32px;font-size:13px;color:var(--muted)}
+dialog{border:0;padding:0;margin:0;max-width:none;max-height:none;width:100vw;height:100vh;background:var(--bg);color:var(--text)}
+dialog::backdrop{background:var(--bg)}
+.full{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px}
+.full img{width:min(240px,50vw);height:auto}
+.full p{margin:0;color:var(--muted);font-size:14px;letter-spacing:.5px}
+.close{position:fixed;top:18px;right:18px;background:var(--surface-raised);border:1px solid var(--line-strong);color:var(--text);border-radius:7px;padding:10px 14px;font:600 14px 'DM Sans',system-ui,sans-serif;cursor:pointer}
+</style>
+</head>
+<body>
+<main>
+  <h1>Loader options <span>r.</span></h1>
+  <p class="lede">Six loading graphics built from the RepoShelf “r.” mark. Pick a favourite and I can apply it to the app later. Nothing here is wired into the app yet.</p>
+  <div class="grid" id="grid"></div>
+  <p class="note">Each file is a self-contained animated SVG with no font or script dependency, so the letters are drawn as shapes. Animations pause for visitors who prefer reduced motion (except option 6, which uses SVG-native animation).</p>
+</main>
+
+<dialog id="full" aria-label="Full-screen loader preview">
+  <button class="close" type="button" id="full-close">Close (Esc)</button>
+  <div class="full" role="status"><img id="full-img" alt="Loading"><p>Loading…</p></div>
+</dialog>
+
+<script>
+const loaders=[
+  {file:'01-bounce.svg',name:'Bounce',text:'The full stop hops up and down like a ball, squashing as it lands. The most direct nod to the dot in “r.”'},
+  {file:'02-breathe.svg',name:'Breathe',text:'The tile gently grows and shrinks while soft lime ripples spread outwards. Calm and understated.'},
+  {file:'03-draw.svg',name:'Draw-on',text:'The “r” is drawn stroke by stroke, the dot pops in, then it all wipes away and starts again.'},
+  {file:'04-orbit.svg',name:'Orbit',text:'A lime streak chases around the outside of the tile. Reads clearly as “working on it”.'},
+  {name:'Typing dots',text:'The full stop grows into “…” one dot at a time, like someone typing. Friendly and playful.',file:'05-ellipsis.svg'},
+  {file:'06-fill.svg',name:'Fill up',text:'The tile fills with lime from the bottom while the letters flip colour, then drains and repeats.'}
+];
+const grid=document.getElementById('grid');
+loaders.forEach((l,i)=>{
+  const card=document.createElement('article');card.className='card';
+  card.innerHTML=
+    '<div class="stage"><img src="'+l.file+'" alt="'+l.name+' loader"></div>'+
+    '<div class="sizes"><span>Sizes</span><img src="'+l.file+'" width="32" height="32" alt=""><img src="'+l.file+'" width="64" height="64" alt=""><img src="'+l.file+'" width="96" height="96" alt=""></div>'+
+    '<div class="body"><span class="num">OPTION '+(i+1)+'</span><h2>'+l.name+'</h2><p>'+l.text+'</p><button type="button" data-file="'+l.file+'">Full-screen preview</button></div>';
+  grid.appendChild(card);
+});
+const dlg=document.getElementById('full'),img=document.getElementById('full-img');
+grid.addEventListener('click',e=>{const b=e.target.closest('button[data-file]');if(!b)return;img.src=b.dataset.file;dlg.showModal()});
+document.getElementById('full-close').addEventListener('click',()=>dlg.close());
+</script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Loading">
+  <title>Loading</title>
+  <style>
+    .mark{transform-origin:100px 100px;animation:breathe 2s ease-in-out infinite}
+    .ripple{transform-origin:100px 100px;fill:none;stroke:#d6fb79;stroke-width:2.5;opacity:0;animation:ripple 2s ease-out infinite}
+    .ripple.two{animation-delay:1s}
+    @keyframes breathe{0%,100%{transform:scale(.94)}50%{transform:scale(1.04)}}
+    @keyframes ripple{0%{transform:scale(.8);opacity:.55}100%{transform:scale(1.5);opacity:0}}
+    @media (prefers-reduced-motion:reduce){.mark{animation:none}.ripple{animation:none;opacity:0}}
+  </style>
+  <rect class="ripple" x="40" y="40" width="120" height="120" rx="29"/>
+  <rect class="ripple two" x="40" y="40" width="120" height="120" rx="29"/>
+  <g class="mark">
+    <rect x="40" y="40" width="120" height="120" rx="29" fill="#d6fb79"/>
+    <g fill="none" stroke="#111113" stroke-width="14">
+      <path d="M78 69V131"/>
+      <path d="M78 102V94A18 18 0 0 1 96 76H106"/>
+    </g>
+    <circle cx="122" cy="124" r="7.5" fill="#111113"/>
+  </g>
+</svg>

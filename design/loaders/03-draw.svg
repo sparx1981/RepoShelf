@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200" role="img" aria-label="Loading">
+  <title>Loading</title>
+  <style>
+    .stem,.arm{stroke-dasharray:1 1;animation-duration:2.8s;animation-iteration-count:infinite;animation-timing-function:cubic-bezier(.5,0,.3,1)}
+    .stem{animation-name:stem}
+    .arm{animation-name:arm}
+    .dot{transform-origin:122px 124px;animation:dot 2.8s infinite}
+    @keyframes stem{0%{stroke-dashoffset:1}20%,78%{stroke-dashoffset:0}94%,100%{stroke-dashoffset:-1}}
+    @keyframes arm{0%,14%{stroke-dashoffset:1}38%,78%{stroke-dashoffset:0}94%,100%{stroke-dashoffset:-1}}
+    @keyframes dot{
+      0%,38%{transform:scale(0)}
+      46%{transform:scale(1.35)}
+      52%,78%{transform:scale(1)}
+      90%,100%{transform:scale(0)}
+    }
+    @media (prefers-reduced-motion:reduce){.stem,.arm{animation:none;stroke-dashoffset:0}.dot{animation:none;transform:none}}
+  </style>
+  <rect x="40" y="40" width="120" height="120" rx="29" fill="#d6fb79"/>
+  <g fill="none" stroke="#111113" stroke-width="14">
+    <path class="stem" pathLength="1" d="M78 69V131"/>
+    <path class="arm" pathLength="1" d="M78 102V94A18 18 0 0 1 96 76H106"/>
+  </g>
+  <circle class="dot" cx="122" cy="124" r="7.5" fill="#111113"/>
+</svg>
