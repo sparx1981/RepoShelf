@@ -1,15 +1,26 @@
 {
   "schema": 1,
-  "at": "2026-10-06T18:21:52.857Z",
+  "at": "2026-10-06T21:42:14.825Z",
   "workerKeyConfigured": true,
   "ready": {
     "screenshotone": false,
     "thumio": true,
     "cloudflare": false
   },
-  "attempted": 0,
+  "attempted": 10,
   "candidates": 0,
-  "reasons": {},
-  "providers": {},
-  "reason": "capture_configuration_unavailable"
+  "reasons": {
+    "provider_failure": 10
+  },
+  "providers": {
+    "thumio": {
+      "used": 10,
+      "limit": 1000,
+      "period": "2026-10-01",
+      "allowed": true
+    }
+  },
+  "enabled": [
+    "thumio"
+  ]
 }
