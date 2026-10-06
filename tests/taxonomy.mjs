@@ -15,6 +15,9 @@ assert.equal(T.annotate(classified),classified,'Current-version assignments need
 assert(T.annotate({...classified,classification:{version:0},subjects:[]}).subjects.length>0,'Stale versions are backfilled');
 assert(T.annotate({...project,full:'hf:team/sunlight',source:'huggingface'}).subjects.includes('Architecture & building design'));
 assert.equal(T.annotate({...project,full:'hf:team/sunlight',source:'huggingface'}).category,'AI & machine learning');
+assert(T.annotate({name:'BIM Viewer',topics:['ifc']}).subjects.includes('Architecture & building design'));
+assert(T.annotate({name:'Babylon',description:'A game and rendering engine.'}).subjects.includes('Games & game development'));
+assert(T.annotate({name:'ComfyUI',description:'Image generation workflows.'}).subjects.includes('Automation & workflows'));
 const unrelated=T.annotate({name:'API recipes',description:'Software architecture and cryptography cookbook with a model simulator dependency.',readmeSnapshot:{searchTerms:['restaurant','blender']}});
 assert(!unrelated.subjects.includes('Food & cooking'),'Code recipes are not food');
 assert(!unrelated.subjects.includes('Architecture & building design'),'Software architecture is not building design');

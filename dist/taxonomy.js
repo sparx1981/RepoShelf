@@ -4,13 +4,13 @@
 const version=1;
 const broadCategories=['Design','Developer tools','Productivity','Business','Finance','Education','AI & machine learning','Other'];
 const rules=[
- ['Architecture & building design',/\b(architectural editor|architectural design|building design|interior design|floor[ -]?plans?|building information model(?:ling|ing)?|bim viewer|ifc viewer|cad viewer|text.to.cad|urban planning|building sunlight)\b/i],
- ['Games & game development',/\b(game engine|game development|game dev|game design|level editor|godot|unity|unreal engine|gameplay|video games?|html5 games?|2d games?|3d games?|tetris)\b/i],
+ ['Architecture & building design',/\b(architectural editor|architectural design|building design|interior design|floor[ -]?plans?|building information model(?:ling|ing)?|bim viewer|ifc viewer|cad viewer|text.to.cad|urban planning|building sunlight|bim|ifc|cad)\b/i],
+ ['Games & game development',/\b(games?|game engine|game development|game dev|game design|level editor|godot|unity|unreal engine|gameplay|video games?|html5 games?|2d games?|3d games?|tetris)\b/i],
  ['Animation & motion',/\b(animation|motion graphics|skeletal animation|rigging|blender|spritesheet|sprite sheet|vfx|lottie)\b/i],
  ['Simulation & physics',/\b(physics engine|digital twin|fluid dynamics|particle system|simulator|simulation|simulating)\b/i],
  ['Crypto & blockchain',/\b(blockchain|bitcoin|ethereum|web3|defi|solidity|cryptocurrency|metamask)\b/i],
  ['Food & cooking',/\b(food|cooking|meals?|nutrition|restaurant|recipe management|recipe app|recipes app|meal.prep)\b/i],
- ['Automation & workflows',/\b(automation|automate|automating|workflow engine|workflow automation|no.code workflow|n8n|zapier|rpa|automated workflows)\b/i],
+ ['Automation & workflows',/\b(automation|automate|automating|workflows?|workflow engine|workflow automation|no.code workflow|n8n|zapier|rpa|automated workflows)\b/i],
  ['Home automation',/\b(home automation|home assistant|smart home|domotics)\b/i],
  ['Maps & geospatial',/\b(geospatial|cartography|geographic information|gis viewer|maplibre|leaflet|google maps|web mapping)\b/i],
  ['Photography',/\b(photography|photo management|photo editor|photo editing|photo gallery|image gallery|photo albums?)\b/i],
