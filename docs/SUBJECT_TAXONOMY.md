@@ -12,8 +12,20 @@ Apply migration **15**, `supabase/migrations/202610060015_expanded_categories.sq
 
 The subjects are Architecture & building design, Games & game development, Animation & motion, Simulation & physics, Crypto & blockchain, Food & cooking, Automation & workflows, Home automation, Maps & geospatial, Photography, Health & fitness, Android, Apple, Mobile, Streaming, Fashion, Science, Kids, Automotive and Travel.
 
+Taxonomy version 3 adds thirteen subjects: MCP servers & agents, Image, audio & video AI, Chatbots & assistants, Templates & UI components, Portfolios & personal sites, Browser extensions & PWAs, Maths & algorithms, Data & dashboards, 3D & graphics, Music & audio, Writing & documents, Self-hosted apps and Privacy & security. Apply migration **18**, `supabase/migrations/202610060018_more_subjects.sql`, in Supabase SQL Editor to add their editable storefront rows; it is safe to run more than once. Classification applies automatically on the next sync or index build, which backfills existing listings. On the saved catalogue at the time of writing, tagged listings rose from about 13% to about 41%.
+
+The new rules read only the name, author description and topics, like the originals. Two protections are worth knowing: Hugging Face Spaces carry an automatic `mcp-server` topic from Gradio, so a Space counts as an MCP project only if its own name or description says so; and generic words such as `audio`, `templates`, `portfolio`, `charts`, `wiki` and `end to end` only count with supporting context (for example, `audio` needs a word like player, editor or synth; `portfolio` is ignored for investment or trading projects). Rules are keyword-based, so expect occasional wrong tags. Use the admin **Subject classification needs review** filter and refine the patterns in `dist/taxonomy.js` (bumping `version`) when you see a pattern of mistakes.
+
 Version 2 distinguishes media streaming from data/token streaming, fitness from reinforcement-learning Gym, children’s projects from React children, and travel from debugging time travel. Kids describes the author’s intended audience, not an independent suitability assessment. Platform metadata is based on author descriptions/topics, not runtime platform testing. Apple includes explicit iOS/iPadOS/macOS evidence; Flutter alone does not establish Android or Apple support. REST/MCP and detail records retain the narrower `platforms` claims and their evidence.
 
 Source membership and captured previews are separate from classification: every public shelf still uses the existing availability, working-demo and screenshot publication rules. Empty rows can fill as suitable projects arrive; classifications do not bypass quality gates.
 
 The classification pass is recorded as **Category and subject refresh** in sync logs, separately from browser validation and screenshots. A high classification update count after introducing rules is not evidence of new demos or captures.
+
+## Category filter on the storefront
+
+The browse page shows one row: **All** plus the six largest categories (AI & machine learning, Design, Developer tools, Education, Productivity, Mobile). **More categories** opens a panel that groups the rest under Build, Create, Life & work and Platforms, with **Other** last. Choosing a category from the panel adds it to the row so the active filter is always visible. Any category added to `dist/taxonomy.js` but not listed in `categoryGroups` in `dist/app.js` appears under an automatic **More topics** column, so new subjects are never hidden.
+
+Project counts appear only in the panel. They come from the browse response's `facets.categories`, so they reflect the current search, technology and source filters. Categories with no matches show `0` and are dimmed but remain selectable.
+
+Motion (sliding highlight, panel unfold, card entrance and result-count roll) is disabled when the visitor prefers reduced motion. The panel is keyboard operable: Enter or Space on **More categories**, Up and Down between options, Escape to close.

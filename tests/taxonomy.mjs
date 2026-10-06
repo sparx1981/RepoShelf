@@ -30,7 +30,7 @@ assert(T.matches(override,'Education'));assert(T.matches(override,'Simulation & 
 const result=B.select([classified],{category:'Simulation & physics',demos:false,limit:48});assert.equal(result.total,1);assert.equal(result.facets.categories['Architecture & building design'],1);
 const duplicate=B.select([{...classified,category:'Simulation & physics'}],{demos:false});assert.equal(duplicate.facets.categories['Simulation & physics'],1,'Facet counts do not double-count the same category');
 const existing=E.defaults().find(r=>r.builtin_key==='reposhelf');assert.equal(existing.id,'e0000000-0000-4000-8000-000000000014','Existing editorial IDs stay stable');
-assert.equal(E.defaults().filter(r=>T.subjects.includes(r.category)).length,20);
+assert.equal(E.defaults().filter(r=>T.subjects.includes(r.category)).length,T.subjects.length);assert.equal(T.subjects.length,33);assert.equal(T.version,3);
 const themes=['Home automation','Maps & geospatial','Photography','Health & fitness','Android','Apple','Mobile','Streaming','Fashion','Science','Kids','Automotive','Travel'];
 for(const label of themes){assert(E.categories.includes(label));assert(E.defaults().some(r=>r.category===label));}
 for(const [description,expected] of [['Android app',['Android','Mobile']],['iOS and macOS application',['Apple','Mobile']],['Video streaming media server',['Streaming']],['Virtual-try-on clothing wardrobe',['Fashion']],['Molecular chemistry laboratory',['Science']],['Learning games for children',['Kids']],['Vehicle diagnostics and OBD telemetry',['Automotive']],['Vacation itinerary trip planner',['Travel']],['Gym workout tracker',['Health & fitness']],['Smart home assistant',['Home automation']],['Geospatial maplibre viewer',['Maps & geospatial']],['Photo management gallery',['Photography']]]){const tags=T.annotate({description}).subjects;for(const label of expected)assert(tags.includes(label),description+' -> '+label);}
@@ -39,7 +39,38 @@ assert.deepEqual(T.annotate({description:'Flutter mobile application'}).platform
 assert.deepEqual(T.annotate({description:'Android iOS macOS app'}).platforms,['Android','iOS & iPadOS','macOS']);
 assert.deepEqual(T.annotate({description:'Kotlin server and Swift Linux tooling'}).platforms,[]);
 assert(!T.annotate({description:'OpenAI Gym reinforcement learning',subjects:['Health & fitness'],classification:{version:1}}).subjects.includes('Health & fitness'),'Old assignments are corrected');
-assert.equal(E.defaults().length,34);
+assert.equal(E.defaults().length,47);
 const temp=await mkdtemp(tmpdir()+'/reposhelf-taxonomy-'),root=pathToFileURL(temp+'/');
 try{await mkdir(new URL('dist/',root));await writeFile(new URL('dist/catalog.json',root),JSON.stringify({updatedAt:project.lastCheckedAt,repositories:[project]}));const first=await reclassifyCatalog(root),second=await reclassifyCatalog(root);assert.equal(first.checked,1);assert.equal(second.changed,0,'Repeated local passes are deterministic');const saved=JSON.parse(await readFile(new URL('dist/catalog.json',root)));assert.equal(saved.updatedAt,project.lastCheckedAt);assert.equal(saved.repositories[0].lastCheckedAt,project.lastCheckedAt);assert(saved.repositories[0].classification.version===T.version)}finally{await rm(root,{recursive:true,force:true})}
+for(const [metadata,expected] of [
+ [{name:'mcp-weather',description:'An MCP server that gives AI assistants weather data.'},'MCP servers & agents'],
+ [{name:'crew',description:'Multi-agent framework for LLM agents'},'MCP servers & agents'],
+ [{name:'speak',description:'Text-to-speech with neural voice cloning',topics:['gradio']},'Image, audio & video AI'],
+ [{name:'sd-ui',description:'Stable Diffusion image generation interface'},'Image, audio & video AI'],
+ [{name:'helper',description:'A chatbot that lets you chat with your PDF'},'Chatbots & assistants'],
+ [{name:'starter',description:'React and Tailwind starter template for landing pages'},'Templates & UI components'],
+ [{name:'folio',description:'My developer portfolio built with Next.js'},'Portfolios & personal sites'],
+ [{name:'tabs',description:'A Chrome extension for managing tabs'},'Browser extensions & PWAs'],
+ [{name:'notes',description:'Offline-first progressive web app',topics:['pwa']},'Browser extensions & PWAs'],
+ [{name:'tsp',description:'Graph theory and operations research demos'},'Maths & algorithms'],
+ [{name:'plots',description:'Interactive data visualization dashboard'},'Data & dashboards'],
+ [{name:'viewer',description:'WebGL and Three.js 3D model viewer',topics:['threejs']},'3D & graphics'],
+ [{name:'synth',description:'A browser music synthesizer with MIDI input'},'Music & audio'],
+ [{name:'inkpad',description:'A markdown editor and note taking app'},'Writing & documents'],
+ [{name:'cloud',description:'Self-hosted file sync for your homelab'},'Self-hosted apps'],
+ [{name:'vault',description:'An encrypted password manager'},'Privacy & security']
+])assert(T.annotate(metadata).subjects.includes(expected),`${metadata.description} should be ${expected}`);
+for(const [metadata,excluded] of [
+ [{name:'tool',description:'Gradio Space',topics:['mcp-server'],source:'huggingface',full:'hf:team/tool'},'MCP servers & agents'],
+ [{name:'tool',description:'A user agent parser for HTTP requests'},'MCP servers & agents'],
+ [{name:'media',description:'Process images, audio, and video files'},'Music & audio'],
+ [{name:'stocks',description:'Investment portfolio tracker and trading dashboard'},'Portfolios & personal sites'],
+ [{name:'ts',description:'TypeScript is a superset of JavaScript'},'Data & dashboards'],
+ [{name:'deploy',description:'Helm charts for Kubernetes'},'Data & dashboards'],
+ [{name:'ml',description:'Machine learning prompt templates for Python'},'Templates & UI components'],
+ [{name:'e2e',description:'End to end tests for the checkout flow'},'Privacy & security'],
+ [{name:'rm',description:'Rick and Morty character wiki'},'Writing & documents']
+])assert(!T.annotate(metadata).subjects.includes(excluded),`${metadata.description} should not be ${excluded}`);
+assert.equal(T.annotate({name:'x',description:'Gradio Space',topics:['mcp-server'],source:'huggingface',full:'hf:team/x'}).subjects.includes('MCP servers & agents'),false,'An automatic Gradio mcp-server topic is not an MCP project');
+assert(T.annotate({name:'x',description:'An MCP server for files',source:'huggingface',full:'hf:team/x'}).subjects.includes('MCP servers & agents'),'A Space that says it is an MCP server is one');
 console.log('PASS versioned overlapping subjects, conservative evidence, Spaces, administrator overrides, facets, stable shelf IDs and idempotent backfill without artificial freshness.');

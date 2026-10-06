@@ -1,0 +1,43 @@
+import assert from 'node:assert/strict';import {Readable} from 'node:stream';import {createAccounts} from '../lib/accounts.mjs';import {createAuthHandler} from '../api/auth.mjs';
+const base='https://reposhelf.test',supa='https://fixture.supabase.co',A='00000000-0000-0000-0000-0000000000a1',B='00000000-0000-0000-0000-0000000000b2';
+const people={tokenA:{id:A,last_sign_in_at:new Date().toISOString(),identities:[{provider:'github',identity_data:{sub:'101',user_name:'owner'}}],user_metadata:{}},staleA:{id:A,last_sign_in_at:new Date(Date.now()-3*3600000).toISOString(),identities:[{provider:'github',identity_data:{sub:'101',user_name:'owner'}}],user_metadata:{}},tokenB:{id:B,identities:[{provider:'google',identity_data:{}}],user_metadata:{name:'Gia'}},sameAsA:{id:A,identities:[{provider:'github',identity_data:{sub:'101',user_name:'owner'}},{provider:'google',identity_data:{}}],user_metadata:{}}};
+let calls=[],verdict={ok:true,providers:['google'],counts:{likes:3,history:5,forks:0,submissions:1,promotions:0}},mergeResult={ok:true,moved:{likes:3},providers:['google']},exchange='tokenB',deleteFails=false;
+const make=({serviceKey='server-key',google=true}={})=>createAccounts({legal:{active:false},config:{url:supa,key:'public-key',serviceKey,origin:base,google},fetcher:async(url,opts)=>{const u=new URL(url),token=opts.headers.Authorization?.replace('Bearer ',''),body=opts.body&&JSON.parse(opts.body);calls.push({path:u.pathname,method:opts.method||'GET',token,body});
+ if(u.pathname==='/auth/v1/user')return people[token]?Response.json(people[token]):Response.json({},{status:401});if(u.pathname==='/auth/v1/token')return Response.json({access_token:exchange,refresh_token:'rB',expires_in:3600,provider_token:'SECRET'});if(u.pathname==='/auth/v1/logout')return Response.json({});
+ if(u.pathname.endsWith('/reposhelf_merge_check'))return Response.json(verdict);if(u.pathname.endsWith('/reposhelf_merge_accounts'))return Response.json(mergeResult);if(u.pathname.startsWith('/auth/v1/admin/users/'))return deleteFails?Response.json({},{status:500}):Response.json({});return Response.json({})}});
+async function run(accounts,url,{method='GET',body,cookie='',origin=base}={}){const req=Readable.from(body?[JSON.stringify(body)]:[]);Object.assign(req,{url,method,headers:{origin,cookie}});const res={headers:{},setHeader(k,v){this.headers[k.toLowerCase()]=v},getHeader(k){return this.headers[k.toLowerCase()]},writeHead(s,h={}){this.status=s;for(const [k,v] of Object.entries(h))this.headers[k.toLowerCase()]=v},end(b){if(b)try{this.data=JSON.parse(b)}catch{}}};await createAuthHandler(accounts)(req,res);return res}
+const setCookies=res=>[].concat(res.headers['set-cookie']||[]);const val=(res,name)=>{const c=setCookies(res).filter(x=>x.includes(`-${name}=`)).at(-1);return c?decodeURIComponent(c.split(';')[0].split('=').slice(1).join('=')):null};
+const jar=(res,...names)=>names.map(n=>`__Host-reposhelf-${n}=${encodeURIComponent(val(res,n))}`).join('; ');
+const sessionA='__Host-reposhelf-access=tokenA';
+let accounts=make();
+// 1. start: signed-in A chooses to prove a Google account
+let r=await run(accounts,'/api/auth?action=merge-start&provider=google',{cookie:sessionA});assert.equal(r.status,302);const authorize=new URL(r.headers.location);assert.equal(authorize.origin,supa);assert.equal(authorize.searchParams.get('provider'),'google');assert(val(r,'verifier').endsWith('~merge-google'));assert.equal(val(r,'return'),'/account.html');assert(val(r,'merge').includes('.'),'A signed intent is stored');
+const intent=jar(r,'merge','verifier');
+assert.equal((await run(accounts,'/api/auth?action=merge-start&provider=github',{cookie:sessionA})).headers.location,'/account.html?merge=already','A cannot prove a method it already has');
+assert.equal((await run(accounts,'/api/auth?action=merge-start&provider=google')).headers.location,'/account.html','Signed-out visitors are sent to the account page');
+assert.equal((await run(make({google:false}),'/api/auth?action=merge-start&provider=google',{cookie:sessionA})).headers.location,'/account.html?merge=failed');
+assert.equal((await run(make({serviceKey:''}),'/api/auth?action=merge-start&provider=google',{cookie:sessionA})).status,503,'Merging needs the server key');
+// 2. callback: the other account is identified, its session discarded, and the current session untouched
+calls=[];r=await run(accounts,'/api/auth?action=callback&code=abc',{cookie:sessionA+'; '+intent});assert.equal(r.headers.location,'/account.html?merge=ready');
+const cookieNames=setCookies(r).map(c=>c.split('=')[0]);assert(!cookieNames.some(n=>/-(access|refresh|github)$/.test(n)),'Proving the other account never changes who you are signed in as');assert(!setCookies(r).join(' ').includes('SECRET'));
+assert(calls.some(c=>c.path==='/auth/v1/logout'&&c.token==='tokenB'),'The other account session is revoked');const check=calls.find(c=>c.path.endsWith('/reposhelf_merge_check'));assert.deepEqual(check.body,{p_target:A,p_source:B});
+const ready=jar(r,'merge');
+// 3. preview
+r=await run(accounts,'/api/auth?action=merge-preview',{cookie:sessionA+'; '+ready});assert.equal(r.status,200);assert.equal(r.data.counts.likes,3);assert.equal(r.data.provider,'google');
+assert.equal((await run(accounts,'/api/auth?action=merge-preview',{cookie:sessionA})).status,409,'No proof, no preview');
+// 4. confirm
+assert.equal((await run(accounts,'/api/auth?action=merge-confirm',{method:'POST',body:{confirm:'merge'},cookie:sessionA+'; '+ready})).status,400,'The word MERGE must be typed exactly');
+assert.equal((await run(accounts,'/api/auth?action=merge-confirm',{method:'POST',body:{confirm:'MERGE'},cookie:sessionA+'; '+ready,origin:'https://attacker.test'})).status,403);
+assert.equal((await run(accounts,'/api/auth?action=merge-confirm',{method:'POST',body:{confirm:'MERGE'},cookie:'__Host-reposhelf-access=staleA; '+ready})).status,401,'An old sign-in must be refreshed first');
+const tampered=ready.replace(/.$/,c=>c==='A'?'B':'A');assert.equal((await run(accounts,'/api/auth?action=merge-confirm',{method:'POST',body:{confirm:'MERGE'},cookie:sessionA+'; '+tampered})).status,409,'A tampered token is rejected');
+calls=[];r=await run(accounts,'/api/auth?action=merge-confirm',{method:'POST',body:{confirm:'MERGE'},cookie:sessionA+'; '+ready});assert.equal(r.status,200);assert.deepEqual(r.data,{merged:true,closed:true,moved:{likes:3},reconnect:'google'});
+assert.deepEqual(calls.find(c=>c.path.endsWith('/reposhelf_merge_accounts')).body,{p_target:A,p_source:B});assert(calls.some(c=>c.method==='DELETE'&&c.path==='/auth/v1/admin/users/'+B),'The emptied account is closed');assert(setCookies(r).some(c=>c.includes('-merge=;')||c.includes('-merge=')&&c.includes('Max-Age=0')),'The proof is cleared');
+deleteFails=true;r=await run(accounts,'/api/auth?action=merge-confirm',{method:'POST',body:{confirm:'MERGE'},cookie:sessionA+'; '+ready});assert.equal(r.data.merged,true);assert.equal(r.data.closed,false,'A failed closure is reported, not hidden');deleteFails=false;
+// Another person's token cannot be replayed
+const stranger=make();people.tokenC={id:'00000000-0000-0000-0000-0000000000c3',last_sign_in_at:new Date().toISOString(),identities:[{provider:'github',identity_data:{sub:'9'}}],user_metadata:{}};assert.equal((await run(stranger,'/api/auth?action=merge-confirm',{method:'POST',body:{confirm:'MERGE'},cookie:'__Host-reposhelf-access=tokenC; '+ready})).status,409,'A merge proof only works for the account that started it');
+// blocked and degenerate outcomes
+verdict={ok:false,reason:'promotions_active'};r=await run(accounts,'/api/auth?action=callback&code=abc',{cookie:sessionA+'; '+intent});assert.equal(r.headers.location,'/account.html?merge=blocked&reason=promotions_active');verdict={ok:true,providers:['google'],counts:{}};
+exchange='sameAsA';r=await run(accounts,'/api/auth?action=callback&code=abc',{cookie:sessionA+'; '+intent});assert.equal(r.headers.location,'/account.html?merge=same','Providers that already point at one account need no merge');exchange='tokenB';
+r=await run(accounts,'/api/auth?action=callback&code=abc',{cookie:sessionA+'; '+jar(await run(accounts,'/api/auth?action=merge-start&provider=google',{cookie:sessionA}),'verifier')});assert.equal(r.headers.location,'/account.html?merge=failed','No signed intent, no merge');
+r=await run(accounts,'/api/auth?action=merge-cancel',{method:'POST',cookie:sessionA});assert.equal(r.data.cancelled,true);
+console.log('PASS: guided merge needs both accounts proved, a signed short-lived token, a typed confirmation and a recent sign-in, never changes the current session, and reports a failed closure honestly.');

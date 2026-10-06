@@ -4,17 +4,25 @@ RepoShelf provides a read-only REST API and MCP tools for finding existing start
 
 ## Connector setup
 
-Anyone can open **Connect your AI assistant** in the account menu, or visit `/connect.html`. The page shows the connector address (`/api/mcp` on the site's own domain) and two short routes: in Claude, **Settings → Connectors → Add custom connector** and paste the address; in Codex, add the address as `url` under `[mcp_servers.reposhelf]` in `~/.codex/config.toml`. No sign-in, API key or local install is needed.
+The hosted MCP connector is a **members-only** feature. A signed-in member opens **Account & data → AI connector keys** and creates a personal key (`rsk_` plus 43 characters, shown once, up to five active keys, revocable any time). The key goes into the assistant as an `Authorization: Bearer rsk_…` header:
 
-The hosted MCP endpoint is open and read-only by default. It serves nine read-only tools and three prompts (see below), refuses browser requests from other sites, and limits each caller to 120 requests per minute. Apply `supabase/migrations/202610060017_mcp_gate.sql` in the Supabase SQL editor to share that limit across servers and to count tool use (shown in Administration → Analytics → AI connector usage); without it the limit is kept in memory per server instance. The migration stores only a salted hash of the caller for one-minute windows, purged opportunistically after 15 minutes, and daily totals per tool with no caller, query or project data. Privacy Policy wording for this operational logging should be checked with your legal adviser. If the open endpoint is abused, set `REPOSHELF_MCP_REQUIRE_KEY=1` in Vercel and redeploy to require the private Bearer key again; clients without the key then receive HTTP 401. The REST API under `/api/v1` is not affected and always needs the key.
+- Claude: **Settings → Connectors → Add custom connector**, paste the address, then under advanced settings add a request header `Authorization` with value `Bearer rsk_…`.
+- Claude Code: `claude mcp add --transport http reposhelf <address> --header "Authorization: Bearer rsk_…"`.
+- Codex: set `bearer_token_env_var = "REPOSHELF_KEY"` under `[mcp_servers.reposhelf]` in `~/.codex/config.toml` and export the key in that variable.
 
-The local connector (`node scripts/mcp-server.mjs` from a clone of the repository) remains available for offline use against a downloaded snapshot. It is no longer part of the member setup page.
+`/connect.html` (linked from the account menu) shows these steps with the site's own address. Anonymous calls receive HTTP 401. The operator key (`REPOSHELF_API_KEY`) is also accepted, so the operator can test without creating a member key.
+
+Apply `supabase/migrations/202610060020_mcp_keys.sql` in the Supabase SQL editor before enabling keys. Only a SHA-256 hash of each key is stored, plus its first eight characters, label and dates. Keys are verified server-side with a short cache (60 seconds for valid keys, 10 seconds for unknown ones), so a revoked key stops working within a minute on every server. Repeated invalid keys from one address are limited to 30 a minute. Merging two accounts moves their keys to the surviving account.
+
+The endpoint serves nine read-only tools and three prompts (see below), refuses browser requests from other sites, and limits each member to 120 requests per minute. Apply `supabase/migrations/202610060017_mcp_gate.sql` to share that limit across servers and to count tool use (shown in Administration → Analytics → AI connector usage); without it the limit is kept in memory per server instance. The migration stores only a salted hash of the member for one-minute windows, purged opportunistically after 15 minutes, and daily totals per tool with no member, query or project data.
+
+The local connector (`node scripts/mcp-server.mjs` from a clone of the repository) remains available for offline use against a downloaded snapshot. It is not part of the member setup page.
 
 ## Private hosted access
 
 The API is disabled until `REPOSHELF_API_KEY` is configured in **Vercel → RepoShelf → Settings → Environment Variables**, for Production (and Preview if desired). Use at least 32 random characters, keep it secret, and redeploy. Generate a key locally with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. Do not commit it, paste it into a URL, or put it in frontend code. The same key is used by your own clients through `Authorization: Bearer …`.
 
-Changing the server key and redeploying revokes the old key. This first version is a single-owner API, with no write operations, OAuth, per-user scopes, or shared durable rate limiter. The API uses private/no-store response caching and rejects cross-origin browser requests. Authentication protects `/api/v1/*`, and `/api/mcp` when `REPOSHELF_MCP_REQUIRE_KEY=1`; it does not change the visibility of the existing storefront, GitHub repository, or its public catalog assets. Do not store private upstream repositories or secrets in the catalog.
+Changing the server key and redeploying revokes the old key. This first version is a single-owner API, with no write operations, OAuth, per-user scopes, or shared durable rate limiter. The API uses private/no-store response caching and rejects cross-origin browser requests. Authentication protects `/api/v1/*` and `/api/mcp` (the latter also accepts member keys); it does not change the visibility of the existing storefront, GitHub repository, or its public catalog assets. Do not store private upstream repositories or secrets in the catalog.
 
 ## REST API
 

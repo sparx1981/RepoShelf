@@ -78,12 +78,24 @@ jobs:
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-taxonomy.sql
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610060015_expanded_categories.sql
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-expanded-categories.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610060016_legal_version_2.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-legal-v2.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610060017_mcp_gate.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610060017_mcp_gate.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-mcp-gate.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610060018_more_subjects.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610060019_merge_accounts.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610060019_merge_accounts.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-merge.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610060020_mcp_keys.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610060020_mcp_keys.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-mcp-keys.sql
       - name: Install browser
         run: |
           npm install --no-save --package-lock=false playwright@1.56.1
           npx playwright install --with-deps chromium
       - name: Verify catalog search, sources, tracking, and responsive layout
-        run: node scripts/verify-taxonomy-ui.mjs && node scripts/verify-browser-pool.mjs && node scripts/verify-public-launch-ui.mjs && node scripts/verify-launch-ui.mjs && node scripts/verify-pwa-ui.mjs && node scripts/verify-browsing-ui.mjs && node scripts/verify-ui.mjs && node scripts/verify-accounts-ui.mjs && node scripts/verify-legal-ui.mjs && node scripts/verify-promotions-ui.mjs && node scripts/verify-submissions-ui.mjs && node scripts/verify-qa-ui.mjs && node scripts/verify-journey-ui.mjs
+        run: node scripts/verify-taxonomy-ui.mjs && node scripts/verify-browser-pool.mjs && node scripts/verify-public-launch-ui.mjs && node scripts/verify-launch-ui.mjs && node scripts/verify-pwa-ui.mjs && node scripts/verify-browsing-ui.mjs && node scripts/verify-ui.mjs && node scripts/verify-accounts-ui.mjs && node scripts/verify-legal-ui.mjs && node scripts/verify-promotions-ui.mjs && node scripts/verify-submissions-ui.mjs && node scripts/verify-qa-ui.mjs && node scripts/verify-journey-ui.mjs && node scripts/verify-merge-ui.mjs && node scripts/verify-connector-ui.mjs
       - name: Verify deployed agent routes
         if: github.event_name == 'push'
         run: node scripts/verify-deployed-api.mjs && REPOSHELF_VERIFY_LIVE_ADMIN=true node scripts/verify-accounts-ui.mjs

@@ -1,0 +1,40 @@
+name: Demo framing probe
+
+# Manual only. Measures how many catalogue demos can be shown inside a RepoShelf page (an iframe) and why the
+# others cannot. Read-only: it saves a result file as a run artifact and a summary on the run page.
+on:
+  workflow_dispatch:
+    inputs:
+      sample:
+        description: Number of demos to check
+        default: '400'
+      browser:
+        description: Also load real iframes in Chromium to confirm the header verdicts (slower)
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install --package-lock=false
+      - name: Install Chromium
+        if: ${{ inputs.browser }}
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Probe demos
+        run: node scripts/frame-probe.mjs --sample=${{ inputs.sample }} ${{ inputs.browser && '--browser=60' || '' }} --out=frame-probe-result.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frame-probe-result
+          path: frame-probe-result.json
