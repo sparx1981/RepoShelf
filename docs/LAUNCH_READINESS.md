@@ -33,3 +33,9 @@ Conversion metrics count listing/session pairs in which the same browser session
 ## Verification
 
 Unit tests cover freshness gates, preview recovery, description provenance, public hiding across API surfaces, persisted exclusions, safe retries and authorization. PostgreSQL CI tests verify reporter privacy, admin-only moderation/audits, revision conflicts, duplicate reports, public controls with no private data and ordered conversion counts. Browser CI exercises guest/member/admin flows, reporting, queue requests, moderation, shelf-attributed demo/like events, the conversion panel and mobile layout.
+
+## Launch quality targets and tiles
+
+The Launch quality targets table reports real coverage across every saved, available listing, with the count behind each percentage. Fresh repository checks and demo validation target 95%, captured screenshots 90%, and Featured selection eligibility 100% of the administrator's picks. Each check has an information icon that explains what is checked, why and how often; it opens on hover, keyboard focus or tap, and closes with Escape.
+
+Featuring requires a published listing, so "Ready to feature" can never exceed "Published quality-ready projects". "Ready to feature" counts every qualifying listing; Featured selection eligibility counts only the picks an administrator has made. "Failing repeatedly" replaces the separate quarantine and manual-review tiles: three or more consecutive failed demo checks or screenshot captures, with a breakdown of likely causes. These listings stay saved and keep retrying; nothing is deleted.
