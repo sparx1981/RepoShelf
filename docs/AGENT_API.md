@@ -2,6 +2,10 @@
 
 RepoShelf provides a read-only REST API and MCP tools for finding existing starting points before building an application. Both use saved catalog data; requests never call GitHub, run a demo, execute a README command, or fork a repository.
 
+## Member setup guide
+
+Signed-in members can open **Connect your AI assistant** in their profile, or visit `/connect.html`, for copyable Codex and Claude Desktop local configurations. Local mode requires no API key but reads a downloaded snapshot; use `git pull` to update it. GitHub sign-in does not issue a hosted API key. Self-service member keys and OAuth are not implemented.
+
 ## Private hosted access
 
 The API is disabled until `REPOSHELF_API_KEY` is configured in **Vercel → RepoShelf → Settings → Environment Variables**, for Production (and Preview if desired). Use at least 32 random characters, keep it secret, and redeploy. Generate a key locally with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. Do not commit it, paste it into a URL, or put it in frontend code. The same key is used by your own clients through `Authorization: Bearer …`.
