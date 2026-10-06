@@ -79,6 +79,10 @@
     {
       "source": "/api/maintenance",
       "destination": "/api/sync-log?action=maintenance"
+    },
+    {
+      "source": "/api/viewer",
+      "destination": "/api/editorial?area=viewer"
     }
   ],
   "ignoreCommand": "node scripts/deployment-policy.mjs",

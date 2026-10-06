@@ -9,7 +9,7 @@ The in-page demo viewer is built as an **administrator-only pilot**. Visitors do
 | Shared viewer configuration (sandbox string, per-demo flags, configuration id, own-origin rule, eligibility decision) | `dist/viewer-config.js` |
 | Viewer component (persistent Close, Open in new tab and "Third-party demo" label; uncached check before opening, while open, and when the tab regains focus) | `dist/viewer.js`, `dist/viewer.css` |
 | Scenario format and validation | `lib/viewer-scenario.mjs` |
-| API: visitor eligibility, administrator controls, qualification worker | `api/viewer.mjs`, `lib/viewer.mjs` |
+| API: visitor eligibility, administrator controls, qualification worker | `lib/viewer.mjs`, served as `/api/viewer` by the editorial function (`api/editorial.mjs`, `area=viewer`, rewritten in `vercel.json`) |
 | Database: global switch and required profiles, approved demos, scenario history, evidence per browser profile | `supabase/migrations/202610060021_demo_viewer.sql` and `…0022_demo_viewer_v2.sql`, `tests/database-viewer.sql` |
 | Qualification tool | `scripts/viewer-qualify.mjs` |
 | Daily qualification job (one run per browser profile) | `.github/workflows/viewer-qualification.yml` |
@@ -90,6 +90,10 @@ On the administrator page each demo has two buttons:
 - **Manual disable** is cleared only by an administrator. A successful qualification never clears it.
 - A failed or inconclusive qualification in any profile suspends the demo; only a later pass in that same profile (or an explicit clearance) lifts it.
 - While a viewer is open it re-checks every **45 seconds**, each request has a **4-second timeout**, and it re-checks as soon as the tab regains focus. It closes if the check fails, times out, or reports a different address or configuration. About a minute is a **foreground target**: browsers throttle timers in background tabs, so there is no strict guarantee.
+
+## Function limit
+
+The Vercel Hobby plan allows at most **12 serverless functions** per deployment, and a 13th fails the build only after the push. The viewer endpoint therefore shares the editorial function instead of having its own file, and `tests/deployment-limits.mjs` fails if `api/` ever holds more than 12 files.
 
 ## Not done yet (by design)
 
