@@ -33,6 +33,8 @@ on:
       - 'scripts/prune-no-demo.mjs'
       - 'scripts/compress-previews.mjs'
       - 'scripts/build-browse-index.mjs'
+      - 'dist/taxonomy.js'
+      - 'scripts/reclassify-catalog.mjs'
       - 'lib/browse-index.mjs'
       - 'dist/picks.js'
       - 'scripts/index-catalog.mjs'
@@ -238,6 +240,13 @@ jobs:
           mkdir -p .sync-logs
           set -o pipefail
           node scripts/generate-ai-overviews.mjs 2>&1 | tee .sync-logs/ai.log
+      - name: Refresh all saved category and subject assignments
+        id: taxonomy
+        if: always() && steps.baseline.outcome == 'success'
+        run: |
+          mkdir -p .sync-logs
+          set -o pipefail
+          node scripts/reclassify-catalog.mjs 2>&1 | tee .sync-logs/taxonomy.log
       - name: Record growth before browser checks
         if: always() && steps.baseline.outcome == 'success'
         id: growth_checkpoint
