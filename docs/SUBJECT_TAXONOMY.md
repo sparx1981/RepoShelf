@@ -21,3 +21,11 @@ Version 2 distinguishes media streaming from data/token streaming, fitness from 
 Source membership and captured previews are separate from classification: every public shelf still uses the existing availability, working-demo and screenshot publication rules. Empty rows can fill as suitable projects arrive; classifications do not bypass quality gates.
 
 The classification pass is recorded as **Category and subject refresh** in sync logs, separately from browser validation and screenshots. A high classification update count after introducing rules is not evidence of new demos or captures.
+
+## Category filter on the storefront
+
+The browse page shows one row: **All** plus the six largest categories (AI & machine learning, Design, Developer tools, Education, Productivity, Mobile). **More categories** opens a panel that groups the rest under Build, Create, Life & work and Platforms, with **Other** last. Choosing a category from the panel adds it to the row so the active filter is always visible. Any category added to `dist/taxonomy.js` but not listed in `categoryGroups` in `dist/app.js` appears under an automatic **More topics** column, so new subjects are never hidden.
+
+Project counts appear only in the panel. They come from the browse response's `facets.categories`, so they reflect the current search, technology and source filters. Categories with no matches show `0` and are dimmed but remain selectable.
+
+Motion (sliding highlight, panel unfold, card entrance and result-count roll) is disabled when the visitor prefers reduced motion. The panel is keyboard operable: Enter or Space on **More categories**, Up and Down between options, Escape to close.
