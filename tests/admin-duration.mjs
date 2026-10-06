@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import vm from 'node:vm';
+const noop=()=>{},context={console,document:{addEventListener:noop,documentElement:{},querySelector:()=>null},addEventListener:noop,MutationObserver:class{observe(){}},queueMicrotask,CSS:{escape:x=>x}};context.window=context;vm.createContext(context);vm.runInContext(readFileSync(new URL('../dist/admin-ui.js',import.meta.url),'utf8'),context);
+const {duration}=context.RepoAdminUI,t=(s)=>new Date(Date.UTC(2026,9,6,12,0,s)).toISOString();
+assert.equal(duration(t(0),t(45)),'45 s');
+assert.equal(duration(t(0),t(0)),'0 s');
+assert.equal(duration(t(0),t(60)),'1 min 00 s');
+assert.equal(duration(t(0),t(14*60+32)),'14 min 32 s');
+assert.equal(duration(t(0),t(3600+5*60)),'1 h 05 min');
+assert.equal(duration(t(0),t(26*3600+30*60)),'26 h 30 min');
+assert.equal(duration(t(10),t(0)),null,'a finish before the start is not shown');
+assert.equal(duration('not a date',t(0)),null);
+assert.equal(duration(t(0),null),null);
+assert.equal(duration(undefined,undefined),null);
+assert.equal(duration(t(0),Date.UTC(2026,9,6,12,2,5)),'2 min 05 s','a live run passes the current time as a number');
+console.log('PASS: sync run durations format and reject invalid spans.');

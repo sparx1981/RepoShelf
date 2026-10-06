@@ -57,3 +57,7 @@ The watchdog requests the first retry of a failed or timed-out workflow after 30
 Missed schedules still use the three-hour allowance. The watchdog itself runs on GitHub Actions, so a delayed GitHub scheduler can delay both maintenance and recovery. This is not an independent availability guarantee.
 
 “Checks awaiting retry” counts individual inconclusive demo, screenshot or source checks. It does not represent a failed workflow or failed publication. Consult the run status and stage results for those failures.
+
+## Run duration
+
+Each run in Administration → Sync log shows its duration beside the status: finish time minus start time for completed runs, and "Running for" with elapsed time (refreshed with the 30-second auto-refresh) for active runs. Queued or waiting runs show "Not started". The finish time is GitHub's last update to the completed run, so cancelled and failed runs show how long they ran before stopping, and a re-run or later edit to a run can lengthen the figure slightly. Runs with an unusable start or finish time show "Not recorded".

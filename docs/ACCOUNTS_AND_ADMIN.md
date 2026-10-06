@@ -7,7 +7,7 @@ The code is deployed with safe fallbacks. GitHub sign-in, cross-device likes and
 1. In Vercel → RepoShelf → Storage, connect a Supabase project through the Marketplace, or use an existing Supabase project. Select a suitable region and review the provider's plan before creating a paid resource.
 2. In Supabase's SQL editor, run [the migration](../supabase/migrations/202610030001_accounts_editorial_analytics.sql). It creates likes, editorial rows, roles and private analytics, with row-level security. Run it once; policies intentionally fail if accidentally applied twice. Future changes should use a new migration.
 3. In Supabase → Authentication → Providers, enable GitHub. Create a GitHub OAuth App with homepage `https://reposhelf.vercel.app` and callback URL `https://YOUR_PROJECT.supabase.co/auth/v1/callback`. Enter its client ID and secret in Supabase's GitHub provider settings. Public-repository browsing and fork links need no GitHub repository-write scope.
-4. Set Supabase's authentication Site URL to `https://reposhelf.vercel.app`, and allow the redirect URL `https://reposhelf.vercel.app/api/auth?action=callback`. Preview/custom domains need their own explicit configuration; production sign-in is deliberately tied to one origin.
+4. Set Supabase's authentication Site URL to `https://www.reposhelf.co.uk`, and allow the redirect URLs `https://www.reposhelf.co.uk/api/auth?action=callback`, `https://reposhelf.co.uk/api/auth?action=callback` and `https://reposhelf.vercel.app/api/auth?action=callback`. The app accepts those three production origins by default; add others (for example a staging domain) with the comma-separated `REPOSHELF_ALLOWED_ORIGINS` variable and a matching Supabase redirect URL. Sign-in returns to the domain it started on; sessions are separate per domain.
 5. Add these **server-side Production environment variables** to Vercel, then redeploy:
 
 | Variable | Value |
@@ -15,7 +15,8 @@ The code is deployed with safe fallbacks. GitHub sign-in, cross-device likes and
 | `SUPABASE_URL` | Your project URL |
 | `SUPABASE_ANON_KEY` | Publishable/legacy anon key |
 | `SUPABASE_SERVICE_ROLE_KEY` | Secret/service-role key for anonymous analytics ingestion |
-| `REPOSHELF_PUBLIC_URL` | `https://reposhelf.vercel.app` (default; change for a custom domain) |
+| `REPOSHELF_PUBLIC_URL` | `https://www.reposhelf.co.uk` (default canonical origin) |
+| `REPOSHELF_ALLOWED_ORIGINS` | Optional extra comma-separated origins allowed to call the API |
 
 The Marketplace aliases `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_PUBLISHABLE_KEY`, and `SUPABASE_SECRET_KEY` are also supported server-side. No database key or OAuth secret is sent to frontend JavaScript. Do not paste secrets into chat, commit them, or put them in URLs. No Supabase secret is needed in GitHub Actions: scheduled catalog growth is saved with the catalog.
 
