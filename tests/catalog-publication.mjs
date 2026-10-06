@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import {execFileSync} from 'node:child_process';
 import {mkdtemp,mkdir,writeFile,readFile,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';import {join} from 'node:path';
-import {publicFileChanged,publishCatalog,restoreCheckpoint,CHECKPOINT_BRANCH} from '../scripts/catalog-publication.mjs';
+import {publicFileChanged,changedPublicFiles,publishCatalog,restoreCheckpoint,CHECKPOINT_BRANCH} from '../scripts/catalog-publication.mjs';
 import {createCheckpointStore} from '../lib/checkpoint-store.mjs';
 import {diagnoseSync} from '../lib/sync-diagnostics.mjs';
 const json=value=>JSON.stringify(value),before={updatedAt:'2026-10-04',repositories:[{full:'team/demo',stars:10,lastCheckedAt:'2026-10-03',enrichmentAttemptAt:'old'}]};
@@ -37,6 +37,17 @@ try{
  assert.equal((await publishCatalog(recover,{scheduled:true,now:Date.parse('2026-10-06T08:00:00Z')})).alreadyHandled,true);
  assert.equal((await publishCatalog(recover,{now:Date.parse('2026-10-06T08:00:00Z')})).published,true,'Manual publishing is allowed after daily publishing');
  await writeFile(join(recover,'dist/catalog.json'),json({...before,repositories:[{...before.repositories[0],stars:50}]}));await publishCatalog(recover,{checkpoint:true,completed:true});
+ // A grown browse index produces more than Node's default 1 MB of Git names.
+ // Internal detail chunks must not trigger publication or buffer overflow.
+ const chunks=join(recover,'data/browse/projects');await mkdir(chunks,{recursive:true});
+ for(let start=0;start<12000;start+=200)await Promise.all(Array.from({length:Math.min(200,12000-start)},(_,i)=>writeFile(join(chunks,String(start+i).padStart(100,'0')+'.json'),'{}')));
+ git(recover,'add','--','data/browse/projects');
+ const names=execFileSync('git',['diff','--cached','--name-only','-z'],{cwd:recover,maxBuffer:8*1024*1024});assert(names.length>1024*1024,'Fixture exceeds the old buffer');
+ const publicChanges=changedPublicFiles(recover);assert(!publicChanges.some(path=>path.startsWith('data/browse/')),'Internal chunks do not request publication');assert(publicChanges.includes('dist/catalog.json'),'Actual public catalogue changes still publish');
+ await publishCatalog(recover,{checkpoint:true,completed:true});
+ const largeRecover=join(root,'large-recover');git(root,'clone','--branch',CHECKPOINT_BRANCH,remote,largeRecover);
+ const largeRecovery=await restoreCheckpoint(largeRecover);assert.equal(largeRecovery.restored,0,'Large checkpoint already present is traversed without truncation or overwrites');assert.equal(largeRecovery.conflicts,0);
+ git(recover,'reset','--quiet','HEAD','--','data/browse');
  // Newer generated main updates must survive recovery and reject conflicting publication.
  git(other,'pull','--rebase');await writeFile(join(other,'dist/catalog.json'),json({...before,repositories:[{...before.repositories[0],stars:99}]}));git(other,'add','.');git(other,'commit','-m','Concurrent catalogue');git(other,'push');git(recover,'reset','--hard','HEAD');git(recover,'pull','--rebase');const guarded=await restoreCheckpoint(recover);assert(guarded.conflicts>=1);assert.equal(JSON.parse(await readFile(join(recover,'dist/catalog.json'))).repositories[0].stars,99);
  await assert.rejects(()=>publishCatalog(work),/conflicts/);assert.equal(JSON.parse(git(other,'show','origin/main:dist/catalog.json')).repositories[0].stars,99);
