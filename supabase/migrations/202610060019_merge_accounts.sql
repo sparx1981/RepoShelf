@@ -53,6 +53,8 @@ begin
  update public.fork_sync_state set user_id=p_target where user_id=p_source and not exists(select 1 from public.fork_sync_state where user_id=p_target);
  delete from public.fork_sync_state where user_id=p_source;
 
+ -- Connector keys travel with the person (only when migration 20 has created them).
+ if to_regclass('public.mcp_keys') is not null then execute 'update public.mcp_keys set user_id=$1 where user_id=$2' using p_target,p_source;end if;
  update public.repository_submissions s set user_id=p_target where s.user_id=p_source and not exists(select 1 from public.repository_submissions t where t.user_id=p_target and t.repo_id=s.repo_id);
  update public.promotions set user_id=p_target where user_id=p_source;
  update public.promotions set reviewed_by=p_target where reviewed_by=p_source;
