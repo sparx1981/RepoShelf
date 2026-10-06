@@ -1,16 +1,18 @@
-# Proposal: in-page demo viewer for RepoShelf (revision 2)
+# Proposal: in-page demo viewer for RepoShelf (revision 3)
 
-Status: revised after review (2026-10-06). Nothing in this document is implemented except the classifier fix listed in section 3.
-Revision 1 proposed an iframe viewer for every demo whose headers allowed framing (60-75% coverage). Review showed that was premature. This revision proposes a small, individually verified pilot, with the wider rollout earned by evidence.
+Status: agreed as a pilot plan after two review rounds (2026-10-06). Nothing is implemented except the classifier fix in section 3.
+- Revision 1: iframe viewer for every demo whose headers allow framing (60-75% coverage). Rejected as premature.
+- Revision 2: small, individually verified pilot.
+- Revision 3 (this): reviewer answers to the open questions are recorded as decisions (section 10), and the build scope for the first step is fixed (section 7).
 
 ## 1. Problem
 
-RepoShelf lists public GitHub repositories and Hugging Face Spaces that have a live demo. "Try demo" opens the demo in a new tab. Two drawbacks:
+RepoShelf lists public GitHub repositories and Hugging Face Spaces that have a live demo. "Try demo" opens the demo in a new tab. That keeps the original RepoShelf tab available, so leaving the product is not the main problem. The real opportunities:
 
-1. **Repo address leakage.** We wanted visitors to try demos while the repository stays behind sign-in. Many demo addresses give the repo away on their own (section 4). Review pointed out this benefit is modest: repository identifiers are public in the published data and demos can reveal their source themselves. So it is a secondary reason, not the main one.
-2. **Leaving the product.** A new tab sends the visitor away with no way back to what they were browsing, and we learn nothing about whether the demo worked.
+1. A demo can be tried without leaving the page, with a smoother browsing experience, and we can learn whether demos work.
+2. A secondary benefit: the demo address is not shown. This is modest, because repository identifiers are public in published data and demos can reveal their source themselves.
 
-The risk that matters: **a demo failing inside RepoShelf will feel like RepoShelf failing**, even when an external site is to blame. That risk drives every decision below.
+The risk that matters: **a demo failing inside RepoShelf will feel like RepoShelf failing**, even when an external site is to blame. Every decision below follows from that. External opening stays the baseline, and the viewer must earn expansion through a demonstrably better browsing experience.
 
 ## 2. What we measured, and what it does not show
 
@@ -23,17 +25,15 @@ The risk that matters: **a demo failing inside RepoShelf will feel like RepoShel
 | github.io / netlify.app / vercel.app | 100% / 94% / 85% header-embeddable |
 | huggingface.co | 0% of 90, a probe artefact: it tested the `huggingface.co/spaces/...` page, not the Space's own app address |
 
-Corrections to how revision 1 used these numbers:
-- The "98%" is **header verdict versus iframe load**, not "the demo works". The browser check looks for a frame and certain refusal errors. It does not verify usable content or interaction, it silently drops timed-out checks, and it ran with popups allowed, unlike the proposed viewer.
-- "Embeddable" therefore does not show that OAuth sign-in, storage, downloads or device permissions work in a frame. Coverage of 60-75% is a **header ceiling, not a success rate**, and is unvalidated in the actual viewer.
-- The sample is one point in time from a datacenter address.
+- The "98%" is **header verdict versus iframe load**, not "the demo works". The browser check looks for a frame and certain refusal errors. It does not verify usable content or interaction, silently drops timed-out checks, and ran with popups allowed.
+- 60-75% is a **header ceiling, not a success rate**, and is unvalidated in the actual viewer.
 
 ## 3. Defects found in existing code during review
 
-1. **Framing classifier false positives** (confirmed and fixed in this branch, with tests):
-   - `frame-ancestors https://reposhelf.vercel.app` was accepted for the canonical site `https://www.reposhelf.co.uk`, because any of our three origins counted. Likewise `https://reposhelf.co.uk` (bare domain). The classifier now judges against the canonical viewer origin only.
-   - A bare `http:` source was accepted for an https page. It is now not accepted as evidence (CSP3 lets `http:` match https, but we want explicit evidence before gating a user-facing feature).
-2. **Demo health `working` is too permissive for viewer eligibility.** The health code deliberately preserves an earlier success after temporary failures; the reviewer reproduced a listing staying `working` after a newer application error. That is right for catalogue retention but wrong here. Viewer eligibility needs its own, stricter evidence (section 6.1).
+1. **Framing classifier** (fixed in this branch, with tests):
+   - A policy allowing only `https://reposhelf.vercel.app` or the bare `https://reposhelf.co.uk` was accepted for the canonical site `https://www.reposhelf.co.uk`. The classifier now judges against the canonical viewer origin only.
+   - A bare `http:` source is not accepted as evidence for an https page. CSP3 does let `http:` match https, so this is **a deliberately conservative eligibility policy, not a spec correction**.
+2. **Demo health `working` is too permissive for viewer eligibility.** The health code deliberately preserves an earlier success after temporary failures (a listing can stay `working` after a newer application error). That suits catalogue retention but not the viewer. Eligibility needs its own stricter evidence (section 6.1).
 
 ## 4. Which demo addresses reveal the repository (context only)
 
@@ -50,97 +50,131 @@ Computed on 11,211 saved demos by comparing the address with the repo owner and 
 ## 5. Goals and non-goals
 
 Goals
-- Let visitors try a **verified** demo without leaving RepoShelf.
-- Never present a broken or blank frame as if it worked, and always keep an obvious way out.
+- Let visitors try a **verified** demo without leaving RepoShelf, signed in or not.
+- Never present a broken or blank frame as if it worked; always keep an obvious way out.
+- Uncertainty always sends the visitor to the external demo.
 - Keep security and privacy at least as strong as today's outbound link.
 - Learn the real failure rate before expanding.
 
 Non-goals
-- Guaranteeing the repository cannot be discovered. Popups and outbound links inside a demo are **not** blocked just to suppress GitHub links; breaking legitimate demo behaviour is not worth a modest hiding benefit.
-- Streaming a remote browser (cost and operations).
+- Guaranteeing the repository cannot be discovered.
+- Blocking legitimate demo behaviour (popups, downloads where approved) to suppress GitHub links.
+- Streaming a remote browser.
 - Wide coverage in the first release. A smaller set that works consistently beats a large set that sometimes does not.
+- A mandatory "you are leaving RepoShelf" page. The existing new-tab flow already keeps RepoShelf open; an easy report action on return is the lighter alternative.
 
-## 6. Proposed design
+## 6. Design
 
 ### 6.1 Eligibility: positive, recent, specific evidence
 A listing may use the viewer only if **all** hold:
-- It is on the **approved pilot list** (section 7), reviewed individually. No whole host groups (github.io, Netlify, Vercel) by default.
-- It has a **recent successful framed check** (suggest within 7 days) tied to the **exact current demo URL and the exact viewer configuration** (sandbox and `allow` string version). A changed URL or configuration invalidates the evidence.
-- The check was run by a headless browser inside an iframe with the production sandbox on the canonical origin, and passed a **meaningful content assertion** (page produced non-trivial visible content, no frame-refusal error, no top-navigation attempt), not only "frame loaded".
+- It has a **manual approval** by a RepoShelf admin (pilot list, section 7). No whole host groups.
+- Its latest **qualification check** succeeded **and** is at most **48 hours old**, tied to the **exact resolved demo URL** and the **exact viewer configuration version** (sandbox string, popup/download flags, permitted frame origins). A changed URL or configuration invalidates the evidence.
+- The latest check, not an older one, decides: **any failed or inconclusive latest check suspends eligibility**, even if an older success is still inside 48 hours.
+- No active global disable and no active per-demo disable (6.4).
 - The address is `https://`.
-- No active per-demo or global disable (6.4).
+- It does not need camera, microphone, geolocation or other device permissions (the parent page denies these, see 6.3).
 
-Unknown, stale, or inconclusive (timed out, challenge page, error page) results keep the demo **opening in a new tab**, as today. Header classification (`classifyFraming`) is a cheap pre-filter for which demos to qualify, not the gate.
+Unknown, stale, inconclusive (timeout, challenge page, error page) or disabled demos **open externally**, as today. `classifyFraming` is a cheap pre-filter for choosing candidates, not the gate.
 
-Evidence is stored privately and the public browse record gets at most one small boolean (the storefront's first response is about 685 KB against a 750 KB deployed-route guard).
-
-### 6.2 Hugging Face Spaces
-Do not guess hostnames. RepoShelf already stores the API-provided `appUrl` for Spaces. Use that address, verify it with the same framed check, and apply the same rule to a **GitHub listing whose demo is supplied by a Space**. A sleeping Space gets a "waking up" state and falls back to the new tab.
+### 6.2 Qualification (what "meaningful interaction" means)
+- **One short, explicit scenario per approved demo**, written and reviewed by a RepoShelf admin: an app accepts input and shows a visible result; a Hugging Face Space completes a small inference; a static demo performs its advertised interaction. A content-length check alone is not enough.
+- The automated check runs the scenario in a headless browser **inside an iframe with the exact production sandbox on the canonical origin**, in Chromium, and records: scenario, result, browser, timestamp, resolved URL (after redirects), viewer configuration version, any popup destinations, any download events, any top-navigation attempt, and a screenshot.
+- Playwright WebKit and mobile emulation supplement the check. They **do not replace** manual checks on real Safari and real devices, which are repeated after significant demo or viewer changes.
+- Hugging Face Spaces use the API-provided `appUrl` already stored on the listing (including when a Space supplies a GitHub listing's demo). No hostname guessing.
+- Before approving, run **deliberately difficult cases** (OAuth, downloads, device permissions, top-navigation attempts, error pages, refusal to frame) through the tool to confirm it rejects them correctly.
+- The daily bounded job re-runs qualification for approved demos (6.4). Evidence storage is separate from manual approval and disable state.
 
 ### 6.3 The viewer
-- Opened by "Try demo". The frame is created only after the click.
-- **Persistent** controls always visible: Close, **Open in new tab**, and a short label "Third-party demo". The new-tab control is visible immediately, not after a timeout. A slow-load hint may appear later, but a timeout cannot prove failure, and `load` cannot prove success, for a cross-origin frame, so the UI makes no success or failure claims.
-- iframe: `referrerpolicy="no-referrer"`, lazy, and a sandbox that **allows what legitimate demos need**: scripts, forms, modals, `allow-same-origin` (the frame is cross-origin to RepoShelf so this only lets the demo use its own storage), and popups, including `allow-popups-to-escape-sandbox` so OAuth and "open in new window" work. Not `allow-top-navigation`. Whether to allow `allow-top-navigation-by-user-activation` is an open question. The exact string is versioned (6.1).
-- `allow` feature policy starts empty; add per demo only with evidence.
-- Site-wide CSP is currently absent; adding `frame-src https:` and the rest is part of the work (open question 5).
-- The viewer chrome obeys the signed-out lock rules (no repository name or link for signed-out visitors).
-- Keyboard focus trap, Escape to close, screen reader labels, and a mobile-safe full-screen layout.
+- Opened by "Try demo" for eligible demos. The frame is created only after the click, and only after an **uncached eligibility check** (6.4) passes; if that check fails or errors, the demo opens externally.
+- **Persistent controls**, visible immediately: Close, **Open in new tab**, report, and a short label "Third-party demo". A slow-load hint may appear later but the UI makes **no success or failure claims** from timers or `load` events (neither is reliable for cross-origin frames).
+- iframe: `referrerpolicy="no-referrer"`, lazy.
+- Sandbox: scripts, forms, modals, `allow-same-origin` (the frame is cross-origin to RepoShelf, so this only lets the demo use its own storage). **Neither `allow-top-navigation` nor `allow-top-navigation-by-user-activation`**: a click inside a demo must not replace RepoShelf, and demos needing that open externally. Navigation inside the iframe stays available.
+- **Popups** (`allow-popups`, `allow-popups-to-escape-sandbox`) and **downloads** (`allow-downloads`) are **per-demo flags**, off by default, granted only to individually reviewed demos that need them. Qualification must inspect popup destinations and exercise the actual login or download flow. These attributes do not guarantee OAuth works (cookie restrictions and provider rules can still break it).
+- **Permissions:** an empty iframe `allow` attribute does not deny every capability, but RepoShelf's parent `Permissions-Policy` already denies camera, microphone and geolocation, and per-iframe attributes cannot override that. Demos that depend on those stay external initially.
+- **CSP for the pilot:** `frame-src` lists the **exact approved frame origins**, including any redirect destinations the demo needs, not `https:`. A comprehensive site-wide CSP is a **separate, separately tested change**: inventory scripts, styles, authentication and connections, then introduce restrictions in **report-only** mode first.
+- Signed-out visitors may use the viewer. Trying demos is the useful introduction. Sign-in stays attached to saving, collections and repository actions. No arbitrary open limits. Conversion is assessed separately from viewer success. The viewer chrome obeys the signed-out lock rules (no repository name or link).
+- Keyboard focus trap, Escape to close, screen-reader labels, mobile-safe full-screen layout.
 
-### 6.4 Disabling, reports and feedback
-- **Immediate global switch** (admin, no deploy needed) and **per-demo disable** controls. Either reverts to the new tab at once.
-- **Report "Demo not working"** works **independently of analytics consent**. It is an explicit user action, so it is stored as a report (rate limited, no extra identifiers).
-- A disabled demo is restored **only after a new successful framed check** (6.1), never after an ordinary page-load health check, which could re-enable the same broken experience.
-- Aggregate events (`viewer_open`, `viewer_new_tab_click`, `viewer_close`) only with analytics consent. Treat a low report rate as **weak evidence**: frustrated visitors mostly just leave. Watch quiet signals too: quick closes, immediate new-tab clicks and repeat opens.
+### 6.4 Controls, propagation, reports
+- **Storage:** a dedicated **global setting** and **per-demo viewer controls** in Supabase, under existing admin authorization. Qualification evidence is stored separately from manual approval and disable state.
+- **An automatic successful check never clears an admin's manual disable.** A viewer-disabled demo (from reports or an automatic failure) is restored **only after a new successful qualification**; a manual disable is cleared only by an admin.
+- **Propagation:** the existing listing-controls code caches for 30 seconds and can keep stale controls after backend errors, so it cannot back an "immediate" emergency switch. Instead:
+  1. Before creating the iframe, call a **dedicated uncached endpoint** for eligibility (global switch, per-demo state, evidence age). If it fails or errors, open externally.
+  2. While a viewer is open, **poll** that endpoint and remove the viewer if the demo or the feature is disabled. Document the propagation limit (polling interval plus request time).
+- **Report "Demo not working"** works **independently of analytics consent**. It is an explicit user action, stored as a report (rate limited, no extra identifiers). Reports can suspend a demo (6.4 above). Aggregate events (`viewer_open`, `viewer_new_tab_click`, `viewer_close`) are recorded only with analytics consent.
+- A low report rate is **weak evidence**; many frustrated visitors leave. Also track quick closes, immediate new-tab clicks and repeat opens.
+- On the existing new-tab flow, add an easy report action on return rather than an interstitial.
 
-### 6.5 Privacy and legal
+### 6.5 Excluded categories (initial)
+Payments; wallet connections; sensitive personal-data collection; requests for passwords or API keys; anything needing device permissions; complicated login. Benign provider OAuth may be considered individually after its complete flow passes qualification. Start with straightforward demos.
+
+### 6.6 Privacy and legal
 - The demo receives the visitor's IP and user agent when it loads, as with a new tab. No RepoShelf identifiers are shared (`no-referrer`, cross-origin).
-- Update the Privacy Policy and Cookie Policy: demos in a frame may set their own cookies and RepoShelf does not control them.
+- Update the Privacy and Cookie Policies: demos in a frame may set their own cookies; RepoShelf does not control them.
 
-## 7. Pilot and rollout
+## 7. Build plan
 
-1. **Fix and harden the classifier** (done) and build the qualification tool: loads a demo inside the exact production sandbox on the canonical origin, performs a defined interaction check, records evidence and timestamp.
-2. **Pick roughly 20-50 demos individually**, mixed across hosts, Spaces, and some deliberately difficult ones (OAuth, storage, downloads, device permissions). Qualify each on **desktop and mobile, in Chrome, Safari and Firefox**.
-3. **Ship the viewer for the approved list only**, behind the global switch, admin-only first.
-4. **Measure** fallback use, quick closes, reports, and sign-in prompt clicks. Expand only in small batches, with observed reliability, host group by host group. Wider coverage is a later decision, not a goal.
+**Next step (agreed):** the **qualification tool** plus a **minimal admin-only harness** that **shares the eventual viewer's configuration and controls**. Qualification establishes eligibility; it cannot guarantee every visitor's session will work, so the persistent external-open control remains essential.
 
-Success measures: the approved set works consistently across the browser matrix; new-tab fallback and quick-close rates stay low; no complaints attributed to RepoShelf; no increase in demo abandonment.
+1. Viewer configuration module (one versioned definition: sandbox string, per-demo flag handling, permitted frame origins).
+2. Supabase migration: global setting, per-demo viewer controls (approval, disable, flags), qualification evidence table. All service-role writes, admin-only reads, tested with SQL tests like the existing ones.
+3. Qualification tool (`scripts/` + bounded daily workflow): scenario file format, Playwright Chromium (plus WebKit and mobile emulation), evidence recorder, rejection tests with local fixture pages (frame refusal, top navigation, popup, download, error page, challenge page, slow page).
+4. Uncached eligibility endpoint (admin-only at first) and an admin harness page to open a candidate in the exact viewer configuration, run the scenario, and see evidence.
+5. Pilot: **about 20-50 individually approved demos**, each also checked manually on **desktop and mobile in Chrome, Safari and Firefox**. Then expose the viewer to visitors for the approved list only, behind the global switch.
+6. Expand in small batches on observed reliability and fallback use, host group by host group. Wider coverage is a later decision.
+
+Success measures: the approved set works consistently across the browser matrix; fallback and quick-close rates stay low; no complaints attributed to RepoShelf; no increase in demo abandonment; viewer judged a better browsing experience than the new tab.
 
 ## 8. Risks
 
 | Risk | Mitigation |
 |---|---|
-| Demo fails inside the frame and looks like a RepoShelf failure | Approved pilot list; strict evidence; visible new-tab control; global and per-demo disable |
-| Eligibility based on stale or inconclusive evidence | Recent, URL-bound, configuration-bound framed check; unknowns open externally |
-| Demo needs third-party cookies/storage (Safari, Firefox partitioning) | Browser-matrix qualification; excluded from the list if it fails |
-| OAuth or downloads blocked by the sandbox | Popups allowed; test explicitly; exclude or leave external if failing |
-| Frame breaks out via top navigation | Sandbox without `allow-top-navigation`; qualification checks for it |
-| Malicious demo content inside our page | Cross-origin frame (no access to our storage or HttpOnly `__Host-` cookies); sandbox limits; pilot list reviewed by hand |
-| Storefront payload growth | One small boolean on the public record; evidence stored privately |
-| Silent failure after re-enabling | Restore only after a successful framed check |
+| Demo fails inside the frame and looks like a RepoShelf failure | Approved pilot list; strict evidence; persistent external-open control; global and per-demo disable; uncached check before opening |
+| Eligibility based on stale or inconclusive evidence | 48-hour evidence, latest result decides, unknown opens externally |
+| Emergency switch cannot act quickly | Uncached endpoint before opening plus polling while open; documented propagation limit |
+| Demo needs third-party cookies/storage (Safari, Firefox partitioning) | Browser-matrix qualification; excluded if it fails |
+| OAuth or downloads blocked | Per-demo flags; test the full flow; otherwise external |
+| Top navigation replaces RepoShelf | Neither top-navigation sandbox flag; demos needing it open externally |
+| Popups escape the sandbox | Per-demo only; inspect popup destinations during qualification; hand review |
+| Malicious demo content inside our page | Cross-origin frame (no access to our storage or HttpOnly `__Host-` cookies); exact `frame-src` origins; hand-reviewed pilot list |
+| Storefront payload growth | At most one small boolean on the public record; evidence stored privately |
+| Automatic re-enable overrides an admin | Manual disable only cleared by an admin |
 
 ## 9. Test plan
 
-- Unit: classifier fixtures (extended in this branch); eligibility function (freshness, URL binding, configuration binding, `https` only); Space `appUrl` handling.
-- Qualification tool: runs against local fixture pages that refuse framing, attempt top navigation, need a popup, or return error pages, and passes or fails them correctly.
-- Browser verifier (route-mocked, like the other `scripts/verify-*-ui.mjs`): viewer opens for an approved listing; never for unapproved, stale or `http`; persistent controls; fallback; report works with analytics declined; signed-out lock rules; mobile layout; exact sandbox string; global switch.
-- Manual: the browser matrix in section 7 on real devices before expansion.
+- Unit: classifier fixtures (extended in this branch); eligibility function (48-hour age, latest-result-decides, URL binding, configuration binding, `https` only, per-demo flags, manual disable precedence); Space `appUrl` handling.
+- Qualification tool against fixture pages that refuse framing, attempt top navigation, need a popup, trigger a download, show an error or challenge page, or load slowly.
+- SQL tests for the migration (admin-only access, evidence separate from approval, privileges).
+- Browser verifier (route-mocked like the other `scripts/verify-*-ui.mjs`): viewer opens only for eligible demos; persistent controls; uncached check failure opens externally; poll removes the viewer when disabled; report works with analytics declined; signed-out visitors can use it; lock rules; mobile layout; exact sandbox string.
+- Manual: the browser matrix before each expansion.
 
-## 10. Open questions
+## 10. Decisions on earlier open questions
 
-1. What is the right meaningful-interaction check per demo type (static page, app, Streamlit, Hugging Face Space), and who defines it for each approved demo?
-2. Should the sandbox allow `allow-top-navigation-by-user-activation`? Frame-busting scripts rarely have user activation, but a click inside the demo could then navigate the whole tab away.
-3. Is `allow-popups-to-escape-sandbox` acceptable security-wise for a hand-reviewed pilot, and does it need to change for a wider rollout?
-4. How fresh must framed-check evidence be (7 days suggested), and what runs the re-check without adding load to the sync? (A separate low-frequency job over the approved list is the likely answer.)
-5. What belongs in a site-wide CSP now, given none is sent today? Is `frame-src https:` too permissive for a launch with a curated list (a host allow-list may fit the pilot better)?
-6. Should signed-out visitors get the viewer, given the sign-in conversion goal? Alternatives: a limited number of opens, or sign-in after the first.
-7. Which demo categories are excluded by policy regardless of evidence (login-required, payments, anything asking for credentials)?
-8. Where do per-demo disable and the global switch live (existing editorial or listing controls tables, or a new setting), and how fast does a change reach visitors given the short cache on listing controls?
-9. Is there a simpler way to achieve the retention and feedback value without a viewer, for example an interstitial "You are leaving RepoShelf" with a return link and a working/not working prompt on return?
+| Question | Decision |
+|---|---|
+| Meaningful interaction check | One short explicit scenario per approved demo, admin-reviewed; record scenario, result, browser, timestamp, resolved URL, configuration. WebKit/mobile emulation supplements real Safari/device checks |
+| Top navigation | Both top-navigation sandbox flags absent; demos needing it open externally |
+| Popups and downloads | Per-demo, off by default; inspect popup destinations; test real login and download flows |
+| Freshness and rechecking | Daily bounded job; maximum evidence age 48 hours (initial operating choices, not proven thresholds); latest failed or inconclusive check suspends eligibility |
+| CSP | Exact approved frame origins for the pilot; comprehensive CSP separately, report-only first |
+| Permissions | Parent Permissions-Policy denies camera/microphone/geolocation and cannot be overridden per iframe; such demos stay external |
+| Signed-out visitors | Allowed; no open limits; sign-in stays on saving, collections and repository actions |
+| Excluded categories | Payments, wallets, sensitive data, credentials, device permissions, complicated login; benign OAuth individually |
+| Switch storage and propagation | Supabase global and per-demo controls with existing admin auth; evidence separate; uncached check before opening plus polling; manual disable never auto-cleared |
+| Simpler alternative | No obligatory interstitial; keep external opening as the baseline; easy report on return |
 
-## 11. Reference
+## 11. Remaining questions
+
+1. Polling interval for the open viewer, and the acceptable propagation limit to document (suggest 30-60 seconds).
+2. Where the per-demo scenario definitions live (a reviewed file in the repository versus a database column) and who may edit them.
+3. Whether the qualification job should run in the existing sync workflow or a separate scheduled workflow with its own failure alerts (a separate bounded job is the current assumption).
+4. How to qualify demos that need a browser capability headless Chromium lacks (GPU, WebGL), and whether those are simply excluded.
+
+## 12. Reference
 
 - Probe and workflow: `scripts/frame-probe.mjs`, `.github/workflows/frame-probe.yml`, `tests/frame-probe.mjs`.
 - Demo health: `scripts/demo-health.mjs`, `scripts/check-demo-health.mjs`, `scripts/demo-probe.mjs`; Space `appUrl` is stored on Space listings.
+- Listing controls cache: `lib/listing-policy.mjs`.
 - Browse record shape: `lib/browse-index.mjs` (`compactProject`).
 - Sign-in lock rules: `docs/ACCOUNTS_AND_ADMIN.md` ("Revealing repository details").
 
@@ -148,14 +182,16 @@ Success measures: the approved set works consistently across the browser matrix;
 
 | Review point | Response |
 |---|---|
-| 98% does not show demos work | Accepted. Reworded; coverage is a header ceiling, not a success rate. Pilot with real framed checks instead |
-| Browser probe drops timeouts, allows popups | Accepted. New qualification tool uses the production sandbox; inconclusive means external |
-| `working` too permissive | Accepted. Separate, recent, URL- and configuration-bound evidence |
-| Classifier false positives | Confirmed and fixed with tests (canonical origin only; bare `http:` not accepted) |
-| Fallback visible immediately; timeout proves nothing | Accepted. Persistent controls, no success or failure claims from timers |
+| 98% does not show demos work | Accepted; header ceiling, not success rate |
+| Browser probe drops timeouts, allows popups | Accepted; qualification uses the production sandbox; inconclusive means external |
+| `working` too permissive | Accepted; separate, recent, URL- and configuration-bound evidence |
+| Classifier false positives | Canonical-origin fix confirmed and fixed; bare `http:` rejection is a conservative policy, not a spec correction (reviewer agreed CSP3 lets `http:` match https) |
+| Fallback visible immediately; timers prove nothing | Accepted |
 | Reports independent of analytics consent | Accepted |
-| Restore only after a successful framed check | Accepted |
-| Hugging Face hostname guessing | Accepted. Use stored `appUrl` and verify it |
-| Start with 20-50 approved demos, not host groups | Accepted as the pilot |
-| Do not break demos to hide GitHub links | Accepted. Popups allowed; repo hiding is best effort |
-| Report rate under 5% is weak evidence | Accepted. Watch quick closes and fallback use as well |
+| Restore only after a successful framed check; never clear an admin disable | Accepted |
+| Hugging Face hostname guessing | Accepted; use stored `appUrl` |
+| Pilot of 20-50 approved demos | Accepted |
+| Do not break demos to hide GitHub links | Accepted |
+| Empty `allow` is not a deny; parent Permissions-Policy already denies camera, microphone, geolocation | Accepted; permission-dependent demos stay external |
+| Existing 30-second control cache cannot back an immediate switch | Accepted; uncached eligibility endpoint plus polling |
+| Existing new-tab flow already preserves a return path | Accepted; no mandatory interstitial |
