@@ -72,7 +72,7 @@ Apply **migration 13**, `supabase/migrations/202610050013_capture_providers.sql`
 Add credentials as **GitHub repository → Settings → Secrets and variables → Actions** secrets:
 
 - ScreenshotOne: `SCREENSHOTONE_ACCESS_KEY` from a dedicated free account. Enforced cap: 100 request attempts per UTC calendar month.
-- Thum.io: its free URL API needs no key. Enforced cap: 1,000 request attempts per UTC calendar month. No paid-only options are used.
+- Thum.io: its free URL API needs no key. Optionally add `THUMIO_KEY` and requests use the authenticated `/get/auth/<key>/` URL instead (the key is part of the request URL, so keep it restricted to your Thum.io account's allowed use). Enforced cap: 1,000 request attempts per UTC calendar month. No paid-only options are used.
 - Cloudflare Browser Run: `CLOUDFLARE_BROWSER_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`; token must allow Browser Run for that account. Enforced cap: 10 request attempts per UTC day, conservatively reserving 60 seconds each against the 10-minute free allowance. The HTTP request has a 45-second deadline and navigation a 30-second deadline.
 
 Use dedicated free accounts, keep provider billing disabled, and account for any use outside RepoShelf. RepoShelf's counters track its own attempts, including failures; they cannot see external use or changes to a provider's pricing. These are hard application safety caps, not purchased quotas. No paid plans or proxies are automatically enabled. Official references: [ScreenshotOne](https://screenshotone.com/pricing/), [Thum.io API](https://www.thum.io/documentation/api/url), [Cloudflare](https://developers.cloudflare.com/browser-run/pricing/).
