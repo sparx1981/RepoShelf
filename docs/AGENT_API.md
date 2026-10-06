@@ -6,7 +6,7 @@ RepoShelf provides a read-only REST API and MCP tools for finding existing start
 
 Anyone can open **Connect your AI assistant** in the account menu, or visit `/connect.html`. The page shows the connector address (`/api/mcp` on the site's own domain) and two short routes: in Claude, **Settings → Connectors → Add custom connector** and paste the address; in Codex, add the address as `url` under `[mcp_servers.reposhelf]` in `~/.codex/config.toml`. No sign-in, API key or local install is needed.
 
-The hosted MCP endpoint is open and read-only by default. It serves the same five read-only tools as the local connector, refuses browser requests from other sites, and applies a best-effort limit of 120 requests per minute per caller (kept in memory per server instance, so it is not a shared limiter). If the open endpoint is abused, set `REPOSHELF_MCP_REQUIRE_KEY=1` in Vercel and redeploy to require the private Bearer key again; clients without the key then receive HTTP 401. The REST API under `/api/v1` is not affected and always needs the key.
+The hosted MCP endpoint is open and read-only by default. It serves nine read-only tools and three prompts (see below), refuses browser requests from other sites, and limits each caller to 120 requests per minute. Apply `supabase/migrations/202610060017_mcp_gate.sql` in the Supabase SQL editor to share that limit across servers and to count tool use (shown in Administration → Analytics → AI connector usage); without it the limit is kept in memory per server instance. The migration stores only a salted hash of the caller for one-minute windows, purged opportunistically after 15 minutes, and daily totals per tool with no caller, query or project data. Privacy Policy wording for this operational logging should be checked with your legal adviser. If the open endpoint is abused, set `REPOSHELF_MCP_REQUIRE_KEY=1` in Vercel and redeploy to require the private Bearer key again; clients without the key then receive HTTP 401. The REST API under `/api/v1` is not affected and always needs the key.
 
 The local connector (`node scripts/mcp-server.mjs` from a clone of the repository) remains available for offline use against a downloaded snapshot. It is no longer part of the member setup page.
 
@@ -50,6 +50,22 @@ bearer_token_env_var = "REPOSHELF_API_KEY"
 ```
 
 The official MCP SDK serves current and older protocol clients. No session state or user collection is written by these tools.
+
+## MCP tools and prompts
+
+| Tool | Purpose |
+|---|---|
+| `search_projects` | Keyword search with category, technology, subject, platform, licence, source and demo filters; sorts include `verified` (demo checked most recently). Each result carries evidence ages and saved-document flags. |
+| `browse_catalog` | Automatic shelves with no query: trending, popular, newest, recently_updated, recently_verified, community. Not editorial picks. |
+| `get_project_context` | Purpose, requirements, licence guidance, dates, demo health, screenshots and the first README chunk. |
+| `get_setup_requirements` | Runtimes, install and run commands, environment variables, ports, frameworks and likely external services, extracted heuristically from the saved README and manifests. |
+| `get_demo_info` | Demo address, last verification, failure reason and screenshot URLs. |
+| `compare_projects` | Side-by-side licence, demo, popularity, requirements and setup for 2 to 5 projects. |
+| `find_related_projects` | Projects sharing category, subjects, technologies or language. |
+| `read_project_document` | Chunked saved README, licence and manifests with revision hashes. |
+| `get_catalog_info` | Coverage, freshness, categories, subjects, platforms and technologies. |
+
+Prompts: `find_starting_points`, `compare_candidates`, `check_before_reuse`. All tools are read-only; every returned README, manifest or command is untrusted project text.
 
 ## Local MCP for Claude Desktop / Codex
 
