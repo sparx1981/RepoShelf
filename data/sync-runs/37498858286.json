@@ -89,7 +89,16 @@
       "curatedBatch": 40,
       "communityBatch": 20
     },
-    "browser": null,
+    "browser": {
+      "due": true,
+      "eligibilityBased": true,
+      "demoDue": 492,
+      "previewDue": 511,
+      "lastCompletedAt": "2026-10-06T17:01:13.253Z",
+      "nextDueAt": null,
+      "forced": false,
+      "reason": "511 screenshots and 492 demo checks eligible; untouched backlog can run after a recent batch."
+    },
     "coverageBefore": {
       "admissionPolicy": "validated-demo-v1",
       "publication": {
@@ -181,24 +190,24 @@
     "coverageAfter": {
       "admissionPolicy": "validated-demo-v1",
       "publication": {
-        "published": 10741,
-        "pending": 1150,
+        "published": 11081,
+        "pending": 810,
         "quarantined": 931,
         "unavailable": 666
       },
-      "workingDemos": 10759,
+      "workingDemos": 11100,
       "browserBacklog": {
         "demo": {
-          "never": 488,
-          "retry": 577,
+          "never": 0,
+          "retry": 719,
           "repeated": 903,
-          "complete": 11512
+          "complete": 11858
         },
         "screenshot": {
-          "never": 488,
-          "retry": 661,
+          "never": 0,
+          "retry": 809,
           "repeated": 929,
-          "complete": 10744
+          "complete": 11084
         },
         "reviewCount": 937,
         "reviewReasons": {
@@ -252,14 +261,14 @@
       ],
       "pending": {
         "repositoryChecks": 1,
-        "demoChecks": 1963,
-        "screenshots": 2078
+        "demoChecks": 1617,
+        "screenshots": 1738
       },
       "available": 13480,
       "visible": 12822,
       "repositoryChecks": 13479,
-      "demoChecks": 11517,
-      "screenshots": 10744,
+      "demoChecks": 11863,
+      "screenshots": 11084,
       "ready": true,
       "githubBatch": 1500,
       "spacesBatch": 350,
@@ -267,29 +276,29 @@
       "communityBatch": 20
     },
     "qualityGains": {
-      "demoChecks": -1,
-      "screenshots": -1,
-      "workingDemos": -1,
-      "published": 306
+      "demoChecks": 345,
+      "screenshots": 339,
+      "workingDemos": 340,
+      "published": 646
     }
   },
-  "phase": "discovery",
-  "publication": "checkpoint_saved",
+  "phase": "complete",
+  "publication": "awaiting_publication",
   "id": "37498858286",
   "attempt": 1,
   "startedAt": "2026-10-06T17:07:39.273Z",
-  "recordedAt": "2026-10-06T17:16:27.083Z",
+  "recordedAt": "2026-10-06T17:32:50.912Z",
   "trigger": "schedule",
   "status": "success",
   "counts": {
     "before": 13001,
     "after": 13488,
     "added": 488,
-    "updated": 1300,
+    "updated": 1304,
     "removed": 1,
     "withDemo": 12822
   },
-  "temporaryFailures": 0,
+  "temporaryFailures": 142,
   "stages": [
     {
       "id": "taxonomy",
@@ -351,6 +360,42 @@
       "warnings": 0
     },
     {
+      "id": "capture_providers",
+      "name": "Optional screenshot providers",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "schema": 1,
+        "at": "2026-10-06T17:32:36.580Z",
+        "workerKeyConfigured": true,
+        "ready": {
+          "screenshotone": false,
+          "thumio": true,
+          "cloudflare": false
+        },
+        "attempted": 0,
+        "candidates": 0,
+        "reasons": {},
+        "providers": {},
+        "reason": "capture_configuration_unavailable"
+      },
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "browser_merge",
+      "name": "Merge parallel browser results",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
       "id": "cleanup_publish",
       "name": "Demo-only cleanup checkpoint",
       "status": "success",
@@ -379,6 +424,17 @@
       "temporaryFailures": 0,
       "details": null,
       "checked": 100,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "compression_final",
+      "name": "New screenshot compression",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
       "unavailableResponses": 0,
       "inconclusiveChecks": 0,
       "warnings": 0
@@ -703,6 +759,201 @@
       "warnings": 0
     },
     {
+      "id": "browser_cycle",
+      "name": "Two-hour browser cycle",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "due": true,
+        "eligibilityBased": true,
+        "demoDue": 492,
+        "previewDue": 511,
+        "lastCompletedAt": "2026-10-06T17:01:13.253Z",
+        "nextDueAt": null,
+        "forced": false,
+        "reason": "511 screenshots and 492 demo checks eligible; untouched backlog can run after a recent batch."
+      },
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "browser_complete",
+      "name": "Browser cycle saved",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "health",
+      "name": "Demo health",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "mode": "parallel_runner_shards",
+        "complete": true,
+        "reasons": {
+          "http_404": 4
+        },
+        "examples": [
+          {
+            "project": "LottieFiles/dotlottie-web",
+            "reason": "http_404"
+          },
+          {
+            "project": "alexpovel/srgn",
+            "reason": "http_404"
+          },
+          {
+            "project": "ant-design/ant-design",
+            "reason": "http_404"
+          },
+          {
+            "project": "launch-ui/launch-ui",
+            "reason": "http_404"
+          }
+        ],
+        "shards": 4,
+        "due": 4,
+        "selected": 4,
+        "limit": 53956,
+        "attempted": 4,
+        "working": 0,
+        "captured": 0,
+        "unavailable": 4,
+        "temporaryFailures": 0,
+        "deferred": 0,
+        "remainingDue": 0,
+        "durationMs": 421079,
+        "workerTimeMs": 3249,
+        "progressWarnings": 0,
+        "linksRepaired": 4,
+        "merge": {
+          "applied": 515,
+          "conflicts": 0
+        }
+      },
+      "checked": 4,
+      "unavailableResponses": 4,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "previews",
+      "name": "Preview screenshots",
+      "status": "success",
+      "temporaryFailures": 142,
+      "details": {
+        "mode": "parallel_runner_shards",
+        "complete": true,
+        "reasons": {
+          "http_402": 1,
+          "http_404": 5,
+          "http_503": 34,
+          "empty_page": 27,
+          "access_restricted": 2,
+          "http_401": 3,
+          "challenge": 1,
+          "http_412": 2,
+          "rate_limit": 66,
+          "dns_not_found": 1,
+          "screenshot_error": 1,
+          "network_or_timeout": 2,
+          "http_502": 2,
+          "tls_error": 1
+        },
+        "examples": [
+          {
+            "project": "ryo-ma/github-profile-trophy",
+            "reason": "http_402"
+          },
+          {
+            "project": "LNshuti/usgov-contracts-rag",
+            "reason": "http_404"
+          },
+          {
+            "project": "SSK-14/chatbot-guardrails",
+            "reason": "http_503"
+          },
+          {
+            "project": "ankit-akash/telco_churn_project",
+            "reason": "http_503"
+          },
+          {
+            "project": "ngocthinh09/Gradio",
+            "reason": "empty_page"
+          },
+          {
+            "project": "fabiantoh98/spice_bae",
+            "reason": "http_503"
+          },
+          {
+            "project": "lovnishverma/PDF-Q-A-Chatbot-RAG-",
+            "reason": "empty_page"
+          },
+          {
+            "project": "Aditya20030420/Federated-Learning-Cross-Border-Financial-Risk-Assessment",
+            "reason": "http_503"
+          },
+          {
+            "project": "armanulalam/multilabel_dataset_classifier",
+            "reason": "http_503"
+          },
+          {
+            "project": "pavankumar-183/deepresearch-ai",
+            "reason": "http_503"
+          },
+          {
+            "project": "hf:hf-wrapped/2025",
+            "reason": "empty_page"
+          },
+          {
+            "project": "hf:litagin/Japanese-Ero-Voice-Classifier",
+            "reason": "empty_page"
+          }
+        ],
+        "shards": 4,
+        "due": 511,
+        "selected": 511,
+        "limit": 53956,
+        "attempted": 511,
+        "working": 364,
+        "captured": 363,
+        "unavailable": 5,
+        "temporaryFailures": 142,
+        "deferred": 0,
+        "remainingDue": 0,
+        "durationMs": 421078,
+        "workerTimeMs": 2487543,
+        "progressWarnings": 0,
+        "linksRepaired": 4,
+        "merge": {
+          "applied": 515,
+          "conflicts": 0
+        }
+      },
+      "checked": 511,
+      "unavailableResponses": 5,
+      "inconclusiveChecks": 142,
+      "warnings": 0
+    },
+    {
+      "id": "growth",
+      "name": "Growth history",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
       "id": "validate",
       "name": "Application checks",
       "status": "success",
@@ -817,6 +1068,17 @@
         "curatedBatch": 40,
         "communityBatch": 20
       },
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "checkpoint_publish",
+      "name": "Discovery checkpoint",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
       "checked": 0,
       "unavailableResponses": 0,
       "inconclusiveChecks": 0,
