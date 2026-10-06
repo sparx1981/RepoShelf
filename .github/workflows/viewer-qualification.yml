@@ -1,22 +1,15 @@
 name: Demo viewer qualification
 
-# Qualifies the administrator-approved demos for the in-page viewer: loads each one in the exact viewer sandbox on the
-# canonical origin, runs its scenario, and records dated evidence through the worker API. Evidence is good for 48 hours,
-# so this runs daily. It never pushes to the repository and never deploys. Without the worker key it does nothing.
+# Qualifies the administrator-approved demos for the in-page viewer, once per browser profile that the administrator has
+# marked as required. Each run loads the demo in the real viewer component with the production headers, runs its
+# scenario, and records dated evidence through the worker API. Evidence is good for 48 hours, so this runs daily.
+# It never pushes to the repository and never deploys. Without the worker key it does nothing.
+# A job fails when any demo failed or could not be checked, so GitHub's failed-run notification is the alert. The
+# administrator page also warns when any approved demo's evidence is missing or older than 36 hours (a missed run).
 on:
   schedule:
     - cron: '41 5 * * *'
   workflow_dispatch:
-    inputs:
-      browser:
-        description: Browser engine
-        type: choice
-        options: [chromium, webkit, firefox]
-        default: chromium
-      mobile:
-        description: Use mobile emulation
-        type: boolean
-        default: false
 
 permissions:
   contents: read
@@ -27,8 +20,18 @@ concurrency:
 
 jobs:
   qualify:
+    name: qualify (${{ matrix.profile }})
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {profile: chromium, browser: chromium, mobile: ''}
+          - {profile: chromium-mobile, browser: chromium, mobile: '--mobile'}
+          - {profile: webkit, browser: webkit, mobile: ''}
+          - {profile: webkit-mobile, browser: webkit, mobile: '--mobile'}
+          - {profile: firefox, browser: firefox, mobile: ''}
     steps:
       - uses: actions/checkout@v4
       - name: Unpack saved catalogue data
@@ -39,8 +42,8 @@ jobs:
       - name: Install browser
         run: |
           npm install --no-save --package-lock=false playwright@1.56.1
-          npx playwright install --with-deps ${{ inputs.browser || 'chromium' }}
+          npx playwright install --with-deps ${{ matrix.browser }}
       - name: Qualify approved demos
         env:
           REPOSHELF_SUBMISSION_SYNC_KEY: ${{ secrets.REPOSHELF_SUBMISSION_SYNC_KEY }}
-        run: node scripts/viewer-qualify.mjs --queue --browser=${{ inputs.browser || 'chromium' }} ${{ inputs.mobile && '--mobile' || '' }}
+        run: node scripts/viewer-qualify.mjs --queue --if-required --browser=${{ matrix.browser }} ${{ matrix.mobile }}

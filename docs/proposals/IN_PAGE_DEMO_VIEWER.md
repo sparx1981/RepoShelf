@@ -1,6 +1,6 @@
 # Proposal: in-page demo viewer for RepoShelf (revision 3)
 
-Status: agreed as a pilot plan after two review rounds (2026-10-06). Implemented so far: the classifier fix (section 3) and build steps 1-4 of section 7 (the administrator harness: `docs/DEMO_VIEWER.md`). Visitors do not see the viewer.
+Status: agreed as a pilot plan after two review rounds (2026-10-06). Implemented so far: the classifier fix (section 3) and build steps 1-4 of section 7 (the administrator harness: `docs/DEMO_VIEWER.md`), revised after a third review round (per-profile evidence, scenario revisions, production-realistic harness, honest popup and download handling, separate preview and live-test modes). Visitors do not see the viewer.
 - Revision 1: iframe viewer for every demo whose headers allow framing (60-75% coverage). Rejected as premature.
 - Revision 2: small, individually verified pilot.
 - Revision 3 (this): reviewer answers to the open questions are recorded as decisions (section 10), and the build scope for the first step is fixed (section 7).
@@ -163,12 +163,16 @@ Success measures: the approved set works consistently across the browser matrix;
 | Switch storage and propagation | Supabase global and per-demo controls with existing admin auth; evidence separate; uncached check before opening plus polling; manual disable never auto-cleared |
 | Simpler alternative | No obligatory interstitial; keep external opening as the baseline; easy report on return |
 
-## 11. Remaining questions
+## 11. Decisions on the remaining questions (third review)
 
-1. Polling interval for the open viewer, and the acceptable propagation limit to document (suggest 30-60 seconds).
-2. Where the per-demo scenario definitions live (a reviewed file in the repository versus a database column) and who may edit them.
-3. Whether the qualification job should run in the existing sync workflow or a separate scheduled workflow with its own failure alerts (a separate bounded job is the current assumption).
-4. How to qualify demos that need a browser capability headless Chromium lacks (GPU, WebGL), and whether those are simply excluded.
+| Question | Decision |
+|---|---|
+| Polling | 45 seconds with a short request timeout (4 s) and an immediate recheck when the tab regains focus; compare the URL as well as the configuration. "About a minute" is a foreground target: background-tab throttling prevents a strict guarantee |
+| Scenario storage | Database rows, with revision history, editor identity and evidence invalidation on every edit. Credentials never appear in scenarios |
+| Workflow | Separate and bounded; publish a summary; alert on failed jobs and on missed runs before evidence expires (failed-run notification plus an administrator-page warning at 36 hours); run the complete suite on GitHub before merging |
+| GPU/WebGL | Not excluded automatically: test a representative operation and visible output; if the runner cannot meaningfully verify it, keep the demo external for the pilot; a hardware-specific manual pass alone does not enable it universally |
+
+Further changes from this round (see `docs/DEMO_VIEWER.md`): evidence is judged per browser profile and one profile's pass never clears another's failure; editing a scenario invalidates earlier evidence and runs for a changed scenario are rejected; provider-login popup flows are out of the pilot (qualification cannot complete them) and downloads must save completely; the harness uses the real viewer component and production headers and checks that every request is public; RepoShelf can never be a demo; the validator requires a result assertion after the last interaction; the admin page has a labelled unqualified preview and a separate "test as visitor" mode.
 
 ## 12. Reference
 

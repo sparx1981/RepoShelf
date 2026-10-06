@@ -16,6 +16,7 @@ on:
       - 'package.json'
       - '.github/workflows/checks.yml'
   pull_request:
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
@@ -94,6 +95,8 @@ jobs:
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-mcp-keys.sql
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610060021_demo_viewer.sql
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610060021_demo_viewer.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610060022_demo_viewer_v2.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610060022_demo_viewer_v2.sql
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-viewer.sql
       - name: Install browser
         run: |

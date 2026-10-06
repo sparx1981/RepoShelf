@@ -6,20 +6,20 @@ The in-page demo viewer is built as an **administrator-only pilot**. Visitors do
 
 | Piece | Where |
 |---|---|
-| Shared viewer configuration (sandbox string, per-demo flags, configuration id, eligibility decision) | `dist/viewer-config.js` |
-| Viewer component (persistent Close, Open in new tab and "Third-party demo" label; uncached check before opening and while open) | `dist/viewer.js`, `dist/viewer.css` |
+| Shared viewer configuration (sandbox string, per-demo flags, configuration id, own-origin rule, eligibility decision) | `dist/viewer-config.js` |
+| Viewer component (persistent Close, Open in new tab and "Third-party demo" label; uncached check before opening, while open, and when the tab regains focus) | `dist/viewer.js`, `dist/viewer.css` |
 | Scenario format and validation | `lib/viewer-scenario.mjs` |
 | API: visitor eligibility, administrator controls, qualification worker | `api/viewer.mjs`, `lib/viewer.mjs` |
-| Database: global switch, approved demos, evidence | `supabase/migrations/202610060021_demo_viewer.sql`, `tests/database-viewer.sql` |
+| Database: global switch and required profiles, approved demos, scenario history, evidence per browser profile | `supabase/migrations/202610060021_demo_viewer.sql` and `…0022_demo_viewer_v2.sql`, `tests/database-viewer.sql` |
 | Qualification tool | `scripts/viewer-qualify.mjs` |
-| Daily qualification job | `.github/workflows/viewer-qualification.yml` |
+| Daily qualification job (one run per browser profile) | `.github/workflows/viewer-qualification.yml` |
 | Administrator page | `/admin-viewer.html` (link on the Administration tabs) |
 
 ## Setting it up
 
-1. Apply `supabase/migrations/202610060021_demo_viewer.sql` in the Supabase SQL editor (safe to run twice). All three tables and every function are server-only.
+1. Apply `supabase/migrations/202610060021_demo_viewer.sql` and then `202610060022_demo_viewer_v2.sql` in the Supabase SQL editor (both are safe to run twice, and migration 22 must come after 21). All tables and functions are server-only.
 2. The worker key is the existing `REPOSHELF_SUBMISSION_SYNC_KEY` (Vercel environment variable and GitHub Actions secret). Without it the daily job does nothing.
-3. Open **Administration → Demo viewer**. The global switch starts **off**.
+3. Open **Administration → Demo viewer**. The global switch starts **off** and the required profile list starts as `chromium`.
 
 ## Approving a demo
 
@@ -36,42 +36,62 @@ On the administrator page, add the listing id and the demo address (https only),
 }
 ```
 
-- Actions: `click`, `fill`, `press`, `waitFor`, `expectVisible`, `expectText`, `expectPopup` (optionally `host`), `expectDownload`. At most 14 steps.
-- A scenario **must contain at least one interaction and at least one expected result**. Loading the page is never enough.
+- Actions: `click`, `fill`, `press`, `waitFor`, `expectVisible`, `expectText`, `expectPopup` (optionally `host`), `expectDownload` (optionally `filename`, `minBytes`). At most 14 steps.
+- A scenario needs **at least one interaction and a result assertion after the last interaction**. Loading the page is never enough, an assertion that comes before the action proves nothing about it, and `expectVisible` on `body` is not a result. Review must still establish that the scenario proves something useful.
+- **Keep credentials out of scenarios.** Password fields and token-shaped values are refused.
+- **RepoShelf itself can never be a demo** (its own hosts, `*.reposhelf.co.uk`, `reposhelf.vercel.app`, including after redirects): the sandbox runs scripts with the frame's own storage, which is only safe while the content stays cross-origin.
 - For a Hugging Face Space use the Space's `appUrl` as the demo address, not the `huggingface.co` page.
-- **Popups** and **downloads** are per-demo flags, off by default. A demo that needs a provider login needs popups, and its scenario should use `expectPopup` with the expected host. A demo that serves a file needs downloads and `expectDownload`. Neither flag guarantees a login flow works.
+- **Popups** and **downloads** are per-demo flags, off by default. **Provider login (OAuth) demos stay external:** qualification cannot sign in and verify the result back in the demo, so popup hosts such as accounts.google.com and github.com are refused in scenarios. The popup flag is for ordinary windows (documentation, previews). A download passes only when the whole file is saved, is not empty, and (if given) has the expected name and size.
 - Neither top-navigation sandbox flag is ever allowed. A demo that tries to replace RepoShelf fails qualification.
-- Demos that need camera, microphone or location stay external: the site-wide Permissions-Policy denies them and an iframe cannot override it. Also keep payments, wallets, credential requests and complicated logins out.
+- Demos that need camera, microphone or location stay external: the site-wide Permissions-Policy denies them and an iframe cannot override it. Also keep payments, wallets, credential requests and complicated logins out. For GPU or WebGL demos, test a representative operation and visible output; if the runner cannot meaningfully verify it, keep the demo external for the pilot.
+
+## Scenario revisions
+
+Every change to a scenario or demo address bumps a **revision**, stored with the editor and time (the page shows the revision; the last five are kept). Editing invalidates earlier evidence immediately, because eligibility requires evidence for the **saved scenario hash**. A qualification run that finishes after its scenario or address changed is **rejected by the server**, not recorded.
 
 ## What counts as eligible
 
-A demo opens in the viewer only if **all** hold: global switch on; approved; not manually disabled; not suspended by a failed check; an `https://` address; a latest qualification run that **passed**, for the **exact current address** and **exact viewer configuration**, **within 48 hours**. The latest run decides: a failed or inconclusive run suspends the demo even if an older success is still fresh. Changing the address or toggling popups or downloads invalidates the evidence until the demo is re-qualified.
+A demo opens in the viewer only if **all** hold: global switch on; approved; not manually disabled; not suspended; an `https://` address that is not RepoShelf; and **for every required browser profile** the latest run **passed**, for the **exact current address, saved scenario and viewer configuration**, **within 48 hours**.
+
+- Evidence is tracked **per browser profile** (`chromium`, `chromium-mobile`, `webkit`, `webkit-mobile`, `firefox`, `firefox-mobile`). A passing Chromium run never hides or clears another profile's failure: any profile whose latest run failed or was inconclusive keeps the demo external until it passes again, or an administrator explicitly clears that profile's result (for example when retiring a profile).
+- Which profiles must pass is set on the administrator page (default `chromium`). The daily workflow runs every profile but skips those not required.
+- Changing the address, scenario, or the popup/download flags invalidates evidence until the demo is re-qualified.
 
 Reasons are shown in plain language on the administrator page. `GET /api/viewer?id=owner/repo` returns the same decision for visitors, uncached; any backend problem answers "not eligible".
 
 ## Qualification
 
-`scripts/viewer-qualify.mjs` loads the exact sandbox on a page served as `https://www.reposhelf.co.uk` (so `frame-ancestors` rules are judged as for visitors), runs the scenario inside the frame and records: result, reason, browser, timestamp, resolved URL after redirects, configuration id, scenario hash, popup destinations, downloads, top-navigation attempts and console errors.
+`scripts/viewer-qualify.mjs` loads the **real viewer component and stylesheet, with the production response headers from `vercel.json`** (including the Permissions-Policy), on a page served as `https://www.reposhelf.co.uk`. It checks the frame carries the exact sandbox, runs the scenario inside it, and records: result, reason, browser profile, timestamp, resolved URL after redirects, configuration id, scenario hash, popup destinations, saved downloads (with size), top-navigation attempts and console errors.
 
+- Every browser request and redirect must go to a **public address** (the same check the health checker uses). A request to a private address fails the run (`unsafe_destination`).
 - **ok**: every step passed and nothing unexpected happened.
-- **failed**: frame refused, HTTP error, top-navigation attempt, a step that cannot find its element, an unexpected popup or download, or a non-https address.
+- **failed**: frame refused, HTTP error, top-navigation attempt, unsafe destination, RepoShelf as the destination, a step that cannot find its element, an unexpected popup or download, an incomplete download, or a non-https address.
 - **inconclusive**: load timeout, challenge page, or a problem in the tool itself. Inconclusive is never a pass.
 
 ```
 node scripts/viewer-qualify.mjs --url=https://demo.example/ --scenario=scenario.json [--popups] [--downloads] [--browser=chromium|webkit|firefox] [--mobile] [--screenshot=out.png]
-node scripts/viewer-qualify.mjs --queue      # the daily job: qualify the approved list and report each result
+node scripts/viewer-qualify.mjs --queue [--if-required] [--browser=...] [--mobile]   # the daily job, one profile at a time
 ```
 
-The daily workflow runs Chromium. Run WebKit, Firefox and mobile emulation from **Actions → Demo viewer qualification → Run workflow**. These supplement real Safari and real device checks, which are repeated by hand after significant demo or viewer changes. Qualification shows a demo can work; it cannot guarantee every visitor's session.
+Playwright WebKit and mobile emulation supplement, and do not replace, checks on real Safari and real devices, which are repeated by hand after significant demo or viewer changes. Qualification shows a demo can work; it cannot guarantee every visitor's session.
+
+**Alerting:** the workflow publishes a summary on the run page and **fails the job when any demo failed or could not be checked**, so GitHub's failed-run notification is the alert. The administrator page also warns when any approved demo's evidence is missing or older than 36 hours, which catches a missed run before the 48-hour limit.
+
+## The two preview modes
+
+On the administrator page each demo has two buttons:
+
+- **Unqualified preview** skips every eligibility check and polling. It is labelled "Unqualified preview" in the viewer bar so nobody mistakes it for what visitors get.
+- **Test as visitor** runs the **real** path: the uncached eligibility check before the frame is created, polling while open, a recheck when the tab regains focus, and shutdown when the demo is disabled or its address or configuration changes. If the demo is not eligible it does not open and says why.
 
 ## Disabling and propagation
 
-- **Manual disable** on the administrator page is cleared only by an administrator. A successful qualification never clears it.
-- A failed or inconclusive qualification suspends the demo automatically; only a later **successful** qualification lifts that suspension.
-- The global switch and per-demo state are read by an **uncached** endpoint immediately before the frame is created, and again every 45 seconds while a viewer is open, so a disable reaches an open viewer within about a minute (polling interval plus request time).
+- **Manual disable** is cleared only by an administrator. A successful qualification never clears it.
+- A failed or inconclusive qualification in any profile suspends the demo; only a later pass in that same profile (or an explicit clearance) lifts it.
+- While a viewer is open it re-checks every **45 seconds**, each request has a **4-second timeout**, and it re-checks as soon as the tab regains focus. It closes if the check fails, times out, or reports a different address or configuration. About a minute is a **foreground target**: browsers throttle timers in background tabs, so there is no strict guarantee.
 
 ## Not done yet (by design)
 
 - No visitor-facing button, report action or analytics events.
 - No site-wide Content-Security-Policy. The pilot plan is exact `frame-src` origins for approved demos (the evidence records the resolved origins), added when the viewer reaches visitors. A comprehensive CSP is a separate change, in report-only mode first.
-- Scenario definitions live in the database row for each demo and are edited by administrators on the page.
+- Provider-login (OAuth) demos are out of the pilot.

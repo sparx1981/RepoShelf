@@ -2,7 +2,7 @@
 // Playwright routes on fake https hosts, so the tool is exercised exactly as in production (canonical-origin
 // harness page, exact sandbox string) without any network access.
 import assert from 'node:assert/strict';import {createRequire} from 'node:module';import {existsSync,statSync,rmSync} from 'node:fs';
-import {qualifyDemo,qualifyQueue,HARNESS_PATH} from './viewer-qualify.mjs';
+import {qualifyDemo,qualifyQueue,harnessResponse,summaryMarkdown,HARNESS_PATH} from './viewer-qualify.mjs';
 const require=createRequire(import.meta.url),C=require('../dist/viewer-config.js'),{chromium}=require('playwright');
 const html=(body,script='')=>`<!doctype html><meta charset="utf-8"><title>fixture</title><body>${body}<script>${script}</script></body>`;
 const page=(status,body,headers={})=>({status,headers:{'content-type':'text/html; charset=utf-8',...headers},body});
@@ -19,10 +19,15 @@ const hosts={
  'challenge.demo.test':()=>page(200,html('<h1>Just a moment...</h1><p>Checking your browser before accessing the site.</p>')),
  'redirect.demo.test':()=>page(200,html('<p>Moving…</p>',`location.replace('https://ok.demo.test/')`)),
  'slow.demo.test':()=>null,
+ 'beacon.demo.test':()=>page(200,html('<button id="go">Go</button><p id="r"></p>',`document.getElementById('go').onclick=()=>{fetch('https://internal.demo.test/secret').catch(()=>{});document.getElementById('r').textContent='sent'}`)),
+ 'bounce.demo.test':()=>page(200,html('<p>Moving…</p>',`location.replace('https://reposhelf.vercel.app/')`)),
+ 'empty.demo.test':()=>page(200,html('<a id="get" href="https://nothing.demo.test/r.csv" download="r.csv">Download</a>')),
+ 'nothing.demo.test':()=>({status:200,headers:{'content-type':'text/csv','content-disposition':'attachment; filename="r.csv"'},body:''}),
 };
-const setup=async context=>{await context.route(/^https:\/\/[a-z]+\.demo\.test\//,async route=>{const host=new URL(route.request().url()).hostname,make=hosts[host];if(!make)return route.abort();const r=make();if(r===null){await new Promise(resolve=>setTimeout(resolve,6000));return route.abort().catch(()=>{})}return route.fulfill(r)});await context.route(/^https:\/\/evil\.demo\.test\//,route=>route.fulfill(page(200,html('<p>Taken over</p>'))))};
+const setup=async context=>{await context.route(/^https:\/\/[a-z]+\.demo\.test\//,async route=>{const host=new URL(route.request().url()).hostname,make=hosts[host];if(!make)return route.abort();const r=make();if(r===null){await new Promise(resolve=>setTimeout(resolve,6000));return route.abort().catch(()=>{})}return route.fulfill(r)});await context.route(/^https:\/\/evil\.demo\.test\//,route=>route.fulfill(page(200,html('<p>Taken over</p>'))));await context.route(/^https:\/\/reposhelf\.vercel\.app\//,route=>route.fulfill(page(200,html('<p>RepoShelf</p>'))))};
+const guard=async url=>!/internal\.demo\.test/.test(url);
 const launch=()=>chromium.launch();
-const run=(host,scenario,flags={},options={})=>qualifyDemo({project:'team/'+host.split('.')[0],demoUrl:`https://${host}/`,scenario,flags,launch,setup,loadTimeoutMs:2500,stepTimeoutMs:2000,...options});
+const run=(host,scenario,flags={},options={})=>qualifyDemo({project:'team/'+host.split('.')[0],demoUrl:`https://${host}/`,scenario,flags,launch,setup,guard,loadTimeoutMs:2500,stepTimeoutMs:2000,...options});
 const add={summary:'Adding a task shows it in the list',steps:[{action:'fill',selector:'#t',value:'Buy milk'},{action:'click',selector:'#add'},{action:'expectText',selector:'#list',text:'Buy milk'}]};
 let r;
 // a demo that really works qualifies, and the evidence names exactly what was tested
@@ -51,10 +56,25 @@ r=await run('popup.demo.test',{...popup,steps:[...popup.steps.slice(0,2),{action
 const download={summary:'The report downloads',steps:[{action:'click',selector:'#get'},{action:'expectDownload'}]};
 r=await run('download.demo.test',download);assert.equal(r.result,'failed');assert.equal(r.reason,'step_2_expectDownload');
 r=await run('download.demo.test',download,{downloads:true});assert.equal(r.result,'ok',JSON.stringify(r));assert.equal(r.details.downloads[0].file,'report.csv');
+// the harness is the production page: real component, production headers (including the denied device permissions)
+const h=await harnessResponse({demoUrl:'https://ok.demo.test/',flags:{}});assert.match(h.body,/RepoViewer\.create/);assert.match(h.body,/viewer-bar/);assert.match(h.headers['Permissions-Policy']||'',/camera=\(\)/);assert.equal(h.headers['X-Content-Type-Options'],'nosniff');assert.equal(h.headers['Referrer-Policy'],'strict-origin-when-cross-origin');
+// every browser request must go to a public address; RepoShelf is never an acceptable demo
+r=await run('beacon.demo.test',{summary:'x',steps:[{action:'click',selector:'#go'},{action:'expectText',selector:'#r',text:'sent'}]});assert.equal(r.result,'failed',JSON.stringify(r));assert.equal(r.reason,'unsafe_destination');assert(r.details.blockedRequests.includes('internal.demo.test'));
+r=await qualifyDemo({demoUrl:'https://www.reposhelf.co.uk/',scenario:add,launch,setup,guard});assert.equal(r.reason,'own_origin');r=await qualifyDemo({demoUrl:'https://reposhelf.vercel.app/x',scenario:add,launch,setup,guard});assert.equal(r.reason,'own_origin');
+r=await run('bounce.demo.test',add);assert.equal(r.result,'failed',JSON.stringify(r));assert.equal(r.reason,'own_origin','a redirect to RepoShelf is refused');
+// a download that arrives empty is not a successful download
+r=await run('empty.demo.test',{summary:'x',steps:[{action:'click',selector:'#get'},{action:'expectDownload'}]},{downloads:true});assert.equal(r.result,'failed');assert.equal(r.reason,'step_2_expectDownload');
+r=await run('download.demo.test',{summary:'x',steps:[{action:'click',selector:'#get'},{action:'expectDownload',filename:'other.csv'}]},{downloads:true});assert.equal(r.reason,'step_2_expectDownload','an unexpected file name fails');
+r=await run('download.demo.test',{summary:'x',steps:[{action:'click',selector:'#get'},{action:'expectDownload',filename:'report.csv',minBytes:8}]},{downloads:true});assert.equal(r.result,'ok',JSON.stringify(r));assert.equal(r.details.downloads[0].bytes,8,'the saved size is recorded');
 // non-https demos never qualify
 r=await qualifyDemo({demoUrl:'http://ok.demo.test/',scenario:add,launch,setup});assert.equal(r.reason,'not_https');
-// the queue runner reports every result and only posts what the tool measured
-const posted=[];const summary=await qualifyQueue({origin:'https://x.test',key:'k'.repeat(40),browserName:'chromium',report:async(path,body)=>{if(path==='queue')return {items:[{project_id:'team/ok',demo_url:'https://ok.demo.test/',scenario:add,allow_popups:false,allow_downloads:false},{project_id:'team/refuse',demo_url:'https://refuse.demo.test/',scenario:add}]};posted.push(body);return {ok:true}},qualify:o=>run(new URL(o.demoUrl).host,o.scenario,o.flags)});
-assert.deepEqual([summary.checked,summary.ok,summary.failed,summary.inconclusive],[2,1,1,0]);assert.deepEqual(posted.map(p=>[p.project,p.result]),[['team/ok','ok'],['team/refuse','failed']]);assert(posted.every(p=>/^v\d+\|/.test(p.configId)&&p.browser&&p.demoUrl));
+// the queue runner: one browser profile at a time, every result reported, edited-while-running results discarded
+const posted=[];const items=[{project_id:'team/ok',demo_url:'https://ok.demo.test/',scenario:add,allow_popups:false,allow_downloads:false},{project_id:'team/refuse',demo_url:'https://refuse.demo.test/',scenario:add},{project_id:'team/edited',demo_url:'https://ok.demo.test/',scenario:add}];
+const queueReport=required=>async(path,body)=>{if(path==='queue')return {items,requiredProfiles:required};posted.push(body);return body.project==='team/edited'?{ok:false,reason:'scenario_changed'}:{ok:true}};
+const summary=await qualifyQueue({origin:'https://x.test',key:'k'.repeat(40),browserName:'chromium',report:queueReport(['chromium']),qualify:o=>run(new URL(o.demoUrl).host,o.scenario,o.flags,{project:o.project})});
+assert.deepEqual([summary.profile,summary.checked,summary.ok,summary.failed,summary.inconclusive,summary.discarded],['chromium',2,1,1,0,1]);assert.deepEqual(posted.map(p=>[p.project,p.result,p.browser]),[['team/ok','ok','chromium'],['team/refuse','failed','chromium'],['team/edited','ok','chromium']]);assert(posted.every(p=>/^v\d+\|/.test(p.configId)&&/^[a-f0-9]{16}$/.test(p.scenarioHash)&&p.demoUrl));
+assert.match(summaryMarkdown(summary),/1 discarded/);assert.match(summaryMarkdown(summary),/team\/refuse \| failed \| frame_refused/);
+const before=posted.length,skipped=await qualifyQueue({origin:'https://x.test',key:'k'.repeat(40),browserName:'webkit',ifRequired:true,report:queueReport(['chromium']),qualify:()=>{throw Error('must not run')}});assert.equal(skipped.notRequired,true);assert.equal(posted.length,before,'a profile that is not required is not run');
+const mobile=await qualifyQueue({origin:'https://x.test',key:'k'.repeat(40),browserName:'chromium',mobile:true,ifRequired:true,report:queueReport(['chromium-mobile']),qualify:async o=>({project:o.project,result:'ok',reason:null,browser:'chromium-mobile',configId:'v1|popups=0|downloads=0',demoUrl:o.demoUrl,resolvedUrl:o.demoUrl,scenarioHash:'0123456789abcdef',details:{}})});assert.equal(mobile.profile,'chromium-mobile');assert.equal(mobile.ok,2);
 assert.equal(HARNESS_PATH,'/__viewer-qualify');
 console.log('PASS: viewer qualification runs real interactions in the exact sandbox on the canonical origin, fails refused frames, top-navigation, errors, missing results and unexpected popups or downloads, never passes uncertainty, and reports every result.');
