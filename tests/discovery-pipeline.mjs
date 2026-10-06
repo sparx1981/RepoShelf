@@ -3,7 +3,7 @@ import {tmpdir} from 'node:os';import path from 'node:path';import {pathToFileUR
 const root=await mkdtemp(path.join(tmpdir(),'reposhelf-discovery-')),fetcher=globalThis.fetch,original=Object.fromEntries(['CATALOG_BATCH_SIZE','CATALOG_SEARCH_QUERIES'].map(k=>[k,process.env[k]]));
 try{
  for(const dir of ['dist','scripts','lib'])await mkdir(path.join(root,dir));
- for(const file of ['lib/listing-policy.mjs','scripts/index-catalog.mjs','scripts/discovery-search.mjs','scripts/sync-metrics.mjs','scripts/catalog-health.mjs','scripts/readme-overviews.mjs','scripts/agent-snapshots.mjs','scripts/project-insights.mjs','dist/discovery.js','dist/storefront.js'])await copyFile(new URL('../'+file,import.meta.url),path.join(root,file));
+ for(const file of ['dist/taxonomy.js','lib/listing-policy.mjs','scripts/index-catalog.mjs','scripts/discovery-search.mjs','scripts/sync-metrics.mjs','scripts/catalog-health.mjs','scripts/readme-overviews.mjs','scripts/agent-snapshots.mjs','scripts/project-insights.mjs','dist/discovery.js','dist/storefront.js'])await copyFile(new URL('../'+file,import.meta.url),path.join(root,file));
  const at=new Date(Date.now()-3600000).toISOString(),prior={full:'owner/cached',name:'cached',demo:'https://demo.org/',availability:'available',stars:10,updated:at,lastCheckedAt:at,lastAvailableAt:at};
  await writeFile(path.join(root,'dist/catalog.json'),JSON.stringify({repositories:[prior]}));await writeFile(path.join(root,'.catalog-cache.json'),JSON.stringify({'owner/cached':{parserVersion:2,updated:at,checked:Date.now(),demo:prior.demo}}));
  process.env.CATALOG_BATCH_SIZE='5';process.env.CATALOG_SEARCH_QUERIES='1';let blocked=false,searches=0;
