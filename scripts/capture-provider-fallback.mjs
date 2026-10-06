@@ -7,7 +7,7 @@ async function boundedBytes(response,max=8000000){if(!response.ok||!/^image\/(pn
 export async function providerImage(id,target,{env=process.env,fetcher=fetch}={}){
  const options={signal:AbortSignal.timeout(45000),redirect:'error'};let url,headers={},body,method='GET';
  if(id==='screenshotone'){url=new URL('https://api.screenshotone.com/take');url.search=new URLSearchParams({url:target,format:'jpg',viewport_width:'1280',viewport_height:'800',image_quality:'60',delay:'3',timeout:'35',cache:'false',fail_if_request_failed:'true'}).toString();headers={'X-Access-Key':env.SCREENSHOTONE_ACCESS_KEY}}
- else if(id==='thumio')url='https://image.thum.io/get/noanimate/width/1200/crop/800/?url='+encodeURIComponent(target);
+ else if(id==='thumio')url='https://image.thum.io/get/'+(env.THUMIO_KEY?'auth/'+encodeURIComponent(env.THUMIO_KEY)+'/':'')+'noanimate/width/1200/crop/800/?url='+encodeURIComponent(target);
  else if(id==='cloudflare'){if(!providerReadiness(env).cloudflare)throw Error('provider_not_configured');url='https://api.cloudflare.com/client/v4/accounts/'+env.CLOUDFLARE_ACCOUNT_ID+'/browser-run/screenshot';method='POST';headers={Authorization:'Bearer '+env.CLOUDFLARE_BROWSER_TOKEN,'Content-Type':'application/json'};body=JSON.stringify({url:target,viewport:{width:1280,height:800},gotoOptions:{waitUntil:'networkidle2',timeout:30000},screenshotOptions:{type:'jpeg',quality:60,fullPage:false}})}
  else throw Error('invalid_provider');return boundedBytes(await fetcher(url,{...options,method,headers,body}));
 }

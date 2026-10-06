@@ -403,6 +403,7 @@ jobs:
         env:
           REPOSHELF_SUBMISSION_SYNC_KEY: ${{ secrets.REPOSHELF_SUBMISSION_SYNC_KEY }}
           SCREENSHOTONE_ACCESS_KEY: ${{ secrets.SCREENSHOTONE_ACCESS_KEY }}
+          THUMIO_KEY: ${{ secrets.THUMIO_KEY }}
           CLOUDFLARE_BROWSER_TOKEN: ${{ secrets.CLOUDFLARE_BROWSER_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: node scripts/capture-provider-fallback.mjs
