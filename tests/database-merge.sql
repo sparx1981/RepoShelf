@@ -4,6 +4,8 @@ begin;
 do $$
 declare t uuid:='00000000-0000-0000-0000-000000000001';s uuid:='00000000-0000-0000-0000-000000000004';other uuid:='00000000-0000-0000-0000-000000000002';r jsonb;n integer;
 begin
+ -- earlier tests in the same database may have left rows for these users; start from a known state
+ delete from public.user_likes where user_id in (t,s,other);delete from public.user_project_history where user_id in (t,s,other);delete from public.user_discovery_settings where user_id in (t,s,other);delete from public.repository_submissions where user_id in (t,s,other);delete from public.promotions where user_id in (t,s,other);delete from public.listing_reports where reporter in (t,s,other);delete from public.legal_acceptances where user_id in (t,s,other);delete from public.fork_sync_state where user_id in (t,s,other);delete from public.user_forks where user_id in (t,s,other);delete from public.reposhelf_admins where user_id in (t,s,other);
  insert into public.user_likes(user_id,project_id,project_snapshot) values(t,'team/a','{"name":"A"}'),(t,'team/shared','{"name":"target copy"}'),(s,'team/shared','{"name":"source copy"}'),(s,'team/c','{"name":"C"}');
  insert into public.user_project_history(user_id,project_id,project_snapshot,viewed_at) values(t,'team/h','{"v":"old"}','2026-01-01'),(s,'team/h','{"v":"new"}','2026-02-01'),(s,'team/only','{"v":"src"}','2026-01-15');
  insert into public.user_discovery_settings(user_id,remember_views,hide_seen) values(t,false,false),(s,true,true);
