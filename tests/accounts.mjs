@@ -32,3 +32,5 @@ assert.equal((await run(growthHandler,'/api/analytics?action=popularity')).statu
 assert.equal((await run(growthHandler,'/api/analytics?action=popularity',{token:'member'})).status,403);assert.equal(growthReads,0);
 const growthResponse=await run(growthHandler,'/api/analytics?action=popularity&sort=forks',{token:'owner'});assert.equal(growthResponse.status,200);assert.equal(growthResponse.data.sort,'forks');assert.equal(growthReads,1);assert.equal(growthResponse.headers['cache-control'],'private, no-store');
 console.log('PASS: growth analytics require administrator access and never enter shared caches.');
+
+assert.equal(authReturn('/connect.html'),'/connect.html');
