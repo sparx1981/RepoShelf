@@ -77,3 +77,10 @@ body>header{position:sticky;top:0;z-index:30;background:var(--bg)}
 a.nav{display:flex;align-items:center;text-decoration:none}
 a.nav:hover{color:var(--text)}
 @media(max-width:760px){html{scroll-padding-top:80px}}
+
+.google-signin{width:100%;min-height:53px;border-radius:9px;gap:11px;margin-top:10px;font-size:14px}.google-signin .google-mark{flex:none}.google-signin span{flex:1;text-align:left}.signin-note{margin:10px 0 0;font-size:12px;line-height:1.5;color:var(--muted)}
+
+.consent-banner{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom));z-index:70;display:flex;align-items:center;gap:20px;max-width:900px;margin:0 auto;padding:18px 20px;background:var(--surface-raised);border:1px solid var(--line-strong);border-radius:14px;box-shadow:0 18px 40px -10px var(--shadow-strong)}
+.consent-banner p{margin:0;flex:1;font-size:14px;line-height:1.55;color:var(--text-secondary)}.consent-banner a{color:var(--text);text-decoration:underline}
+.consent-actions{display:flex;gap:10px;flex:none}.consent-actions .button{min-height:44px;white-space:nowrap}
+@media(max-width:700px){.consent-banner{flex-direction:column;align-items:stretch;gap:14px}.consent-actions .button{flex:1}}
