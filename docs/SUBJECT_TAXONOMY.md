@@ -1,0 +1,15 @@
+# Categories and subject tags
+
+Listings retain one broad category and can have several subject tags. Subjects power category filters, curated row selection, search facets, project details and REST/MCP results. A Space can remain in AI & machine learning while also appearing under Architecture or Animation.
+
+Rules live in `dist/taxonomy.js`. Bump `version` whenever changing their meaning. Existing non-Other broad categories are retained; new metadata refreshes still use the upstream category mapper. Uncategorized listings can receive a broad category from local metadata. Subject assignments are recomputed from current saved name, author description and topics. Saved author overview and README keywords supply suggestions for review, not automatic tags, to avoid classifying dependency mentions and code recipes as project purposes. No AI API key is required.
+
+`node scripts/reclassify-catalog.mjs` checks every saved GitHub listing and Space, regardless of its repository API revalidation schedule or an unchanged/304 response. Every sync runs this pass after enrichment, and index generation runs it again before publication/build, so newly added rules also backfill existing data. No upstream network requests occur. Results are saved in each listing's `subjects` and `classification`, with aggregate counts in `data/taxonomy-report.json`. Repeat passes are deterministic and do not change repository/demo check dates or pretend the catalogue was freshly checked.
+
+Live administrator category overrides are applied after classification. They remain authoritative for the main category, while automatic subject tags remain available for overlapping discovery. The admin quality filter **Subject classification needs review** shows uncertain assignments; opening moderation shows assigned and suggested subjects. Suggestions are not automatically featured. This is a rules-based classifier, not guaranteed understanding of a project's purpose. Administrators can adjust row selections and report/review errors; individual subject override editing is not included in this version.
+
+Apply migration **14**, `supabase/migrations/202610060014_subject_taxonomy.sql`, in Supabase SQL Editor. It adds seven editable built-in rows for Architecture, Games, Animation, Simulation, Crypto, Food and Automation. It does not overwrite existing rows or selections. Their default mode is Popular; administrators can change selections, ordering, mode and publication in Storefront editor. With custom rows enabled, built-in category rows remain hidden by the existing setting.
+
+Home automation, Maps & geospatial, Photography and Health & fitness are also available as tags/filters and can be used in additional custom rows. Source membership and captured previews are separate from classification: every public shelf still uses the existing availability, working-demo and screenshot publication rules.
+
+The classification pass is recorded as **Category and subject refresh** in sync logs, separately from browser validation and screenshots. A high classification update count after introducing rules is not evidence of new demos or captures.
