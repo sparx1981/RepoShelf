@@ -18,6 +18,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
+      - name: Unpack saved catalogue data
+        run: node scripts/data-packing.mjs unpack
       - name: Request one extra sync only while quality-ready growth needs acceleration
         env:
           GITHUB_TOKEN: ${{ github.token }}

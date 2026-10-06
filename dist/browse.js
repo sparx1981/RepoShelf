@@ -1,6 +1,6 @@
 (function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory(require('./providers.js'),require('./storefront.js'),require('./quality.js'),require('./community.js'),require('./editorial.js'));else root.RepoBrowse=factory(root.RepoProviders,root.RepoStore,root.RepoQuality,root.RepoCommunity,root.RepoEditorial)})(globalThis,function(P,S,Q,C,E){
 'use strict';
-function card(r){const {searchText,searchOverview,searchReadme,communityPosts,...out}=r;return out}
+function card(r){const {searchText,searchOverview,searchReadme,communityPosts,classification,previewAttemptAt,...out}=r;return out}
 const searchCache=new WeakMap();
 const aliases={nodejs:['nodejs'],nextjs:['nextjs'],threejs:['threejs'],reactjs:['react'],js:['javascript'],ts:['typescript'],ai:['ai','machine learning','artificial intelligence'],photo:['photo','photography','picture','image'],picture:['picture','photo','image'],budget:['budget','finance','expense'],kanban:['kanban','task board'],todo:['todo','task','to do']};
 function normalize(value){return String(value||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\b(node|next|three|react)\s*\.\s*js\b/g,'$1js').replace(/[^\p{L}\p{N}+#]+/gu,' ').trim()}

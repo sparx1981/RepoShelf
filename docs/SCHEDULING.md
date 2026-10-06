@@ -72,7 +72,7 @@ Apply **migration 13**, `supabase/migrations/202610050013_capture_providers.sql`
 Add credentials as **GitHub repository → Settings → Secrets and variables → Actions** secrets:
 
 - ScreenshotOne: `SCREENSHOTONE_ACCESS_KEY` from a dedicated free account. Enforced cap: 100 request attempts per UTC calendar month.
-- Thum.io: its free URL API needs no key. Enforced cap: 1,000 request attempts per UTC calendar month. No paid-only options are used.
+- Thum.io: its free URL API needs no key. Optionally add `THUMIO_KEY` and requests use the authenticated `/get/auth/<key>/` URL instead (the key is part of the request URL, so keep it restricted to your Thum.io account's allowed use). Enforced cap: 1,000 request attempts per UTC calendar month. No paid-only options are used.
 - Cloudflare Browser Run: `CLOUDFLARE_BROWSER_TOKEN` and `CLOUDFLARE_ACCOUNT_ID`; token must allow Browser Run for that account. Enforced cap: 10 request attempts per UTC day, conservatively reserving 60 seconds each against the 10-minute free allowance. The HTTP request has a 45-second deadline and navigation a 30-second deadline.
 
 Use dedicated free accounts, keep provider billing disabled, and account for any use outside RepoShelf. RepoShelf's counters track its own attempts, including failures; they cannot see external use or changes to a provider's pricing. These are hard application safety caps, not purchased quotas. No paid plans or proxies are automatically enabled. Official references: [ScreenshotOne](https://screenshotone.com/pricing/), [Thum.io API](https://www.thum.io/documentation/api/url), [Cloudflare](https://developers.cloudflare.com/browser-run/pricing/).
@@ -84,3 +84,14 @@ Fallback is limited to missing captures whose demo independently passed a fresh 
 ## Growth milestones, not record ceilings
 
 Catalogue quality shows progress towards the **first 5,000 published quality-ready listings**. Pending and quarantined references do not count. The counter can exceed 100% and intake never stops at 5,000. There is no total-record cap. Per-run time, concurrency, free-provider allowance and GitHub rate limits remain operational budgets. Growth snapshots now retain `published` counts; older history without this field remains unknown rather than reconstructed.
+
+## Compressed catalogue files
+
+GitHub rejects any file over 100 MB, and the saved catalogue passed that size (105 MB in October 2026), which stopped every sync from saving its results. The four largest generated files are now stored in Git compressed (`dist/catalog.json.gz`, `dist/spaces.json.gz`, `data/browse/index.json.gz`, `data/catalogue-quality.json.gz`), about six to ten times smaller. Scripts still read and write the plain JSON files, which are not tracked by Git.
+
+- `node scripts/data-packing.mjs unpack` recreates the plain files after a checkout. Every workflow runs it right after checkout and `npm run build` runs it first, so deployments are unchanged.
+- Publishing and recovery checkpoints pack the files automatically before staging, and compare the unpacked content, so unchanged data never publishes.
+- Locally, run `node scripts/data-packing.mjs unpack` after cloning. `--force` replaces plain files you already have.
+- `tests/data-packing.mjs` fails if a tracked file approaches 100 MB or a workflow checkout lacks the unpack step.
+
+The deployed functions also bundle the plain files (`vercel.json` `includeFiles`), about 350 MB in total today and growing with the catalogue. Watch Vercel's function size limit as the catalogue grows.

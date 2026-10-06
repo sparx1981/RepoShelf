@@ -13,3 +13,11 @@ node_modules/
 .community-cache.json
 
 .submission-results.json
+
+# Large generated files are stored compressed (see lib/data-packing.mjs); the raw JSON is recreated by
+# `node scripts/data-packing.mjs unpack` after a checkout and by `npm run build`.
+/dist/catalog.json
+/dist/spaces.json
+/data/browse/index.json
+/data/browse/search.json
+/data/catalogue-quality.json

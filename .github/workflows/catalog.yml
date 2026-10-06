@@ -117,6 +117,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: main
+      - name: Unpack saved catalogue data
+        run: node scripts/data-packing.mjs unpack
       - name: Restore unpublished generated checkpoint data
         run: node scripts/publish-catalog.mjs restore
       - name: Reserve bounded launch pass
@@ -310,6 +312,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ needs.prepare.outputs.sha }}
+      - name: Unpack saved catalogue data
+        run: node scripts/data-packing.mjs unpack
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -368,6 +372,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ needs.prepare.outputs.sha }}
+      - name: Unpack saved catalogue data
+        run: node scripts/data-packing.mjs unpack
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -397,6 +403,7 @@ jobs:
         env:
           REPOSHELF_SUBMISSION_SYNC_KEY: ${{ secrets.REPOSHELF_SUBMISSION_SYNC_KEY }}
           SCREENSHOTONE_ACCESS_KEY: ${{ secrets.SCREENSHOTONE_ACCESS_KEY }}
+          THUMIO_KEY: ${{ secrets.THUMIO_KEY }}
           CLOUDFLARE_BROWSER_TOKEN: ${{ secrets.CLOUDFLARE_BROWSER_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: node scripts/capture-provider-fallback.mjs
