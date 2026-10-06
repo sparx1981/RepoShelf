@@ -77,3 +77,26 @@ body>header{position:sticky;top:0;z-index:30;background:var(--bg)}
 a.nav{display:flex;align-items:center;text-decoration:none}
 a.nav:hover{color:var(--text)}
 @media(max-width:760px){html{scroll-padding-top:80px}}
+
+/* RepoShelf loader: the r. tile with a bouncing full stop. Decorative; pair it with visible text or a .sr-only label. Size it with --loader-size or the .rs-loader-sm/-lg/-xl modifiers. Glyph colour matches --on-accent. */
+.rs-loader{--loader-size:44px;position:relative;display:inline-block;flex:none;width:var(--loader-size);height:var(--loader-size);border-radius:24.2%;background:var(--lime) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='40 40 120 120'%3E%3Cg fill='none' stroke='%23111113' stroke-width='14'%3E%3Cpath d='M78 69V131'/%3E%3Cpath d='M78 102V94A18 18 0 0 1 96 76H106'/%3E%3C/g%3E%3C/svg%3E") center/100% 100% no-repeat;vertical-align:middle}
+.rs-loader::before,.rs-loader::after{content:'';position:absolute;background:var(--on-accent)}
+.rs-loader::after{left:62.08%;top:63.75%;width:12.5%;height:12.5%;border-radius:50%;transform-origin:50% 100%;animation:rs-loader-hop 1.1s infinite}
+.rs-loader::before{left:60.83%;top:75.42%;width:15%;height:4.17%;border-radius:50%;opacity:.28;animation:rs-loader-shadow 1.1s infinite}
+.rs-loader-sm{--loader-size:24px}.rs-loader-lg{--loader-size:64px}.rs-loader-xl{--loader-size:96px}
+@keyframes rs-loader-hop{
+0%{transform:translateY(0) scale(1.25,.7);animation-timing-function:cubic-bezier(.2,.7,.3,1)}
+12%{transform:translateY(0) scale(.92,1.1);animation-timing-function:cubic-bezier(.2,.7,.3,1)}
+50%{transform:translateY(-227%) scale(1,1);animation-timing-function:cubic-bezier(.7,0,.8,.3)}
+88%{transform:translateY(0) scale(1,1)}
+100%{transform:translateY(0) scale(1.25,.7)}}
+@keyframes rs-loader-shadow{0%,100%{transform:scale(1.2);opacity:.28}50%{transform:scale(.55);opacity:.12}}
+@media(prefers-reduced-motion:reduce){.rs-loader::before,.rs-loader::after{animation:none}}
+.empty .rs-loader{display:block;margin:0 auto 20px}
+.detail-loading{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+/* Sits under the sticky header (z-index 30, 90px tall; 72px on phones) so the header bar stays visible while the store opens. */
+.boot-loader{position:fixed;top:90px;left:0;right:0;bottom:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;background:var(--bg);transition:opacity .3s}
+.boot-loader-text{margin:0;font:600 18px Manrope,sans-serif;letter-spacing:-.3px;color:var(--text-secondary)}
+@media(max-width:760px){.boot-loader{top:72px}}
+.boot-loader.done{opacity:0;pointer-events:none}
+@media(prefers-reduced-motion:reduce){.boot-loader{transition:none}}

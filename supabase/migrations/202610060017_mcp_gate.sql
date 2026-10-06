@@ -2,10 +2,10 @@
 -- Rate-limit rows hold a salted hash of the caller (never the address itself) for one-minute windows and are
 -- purged opportunistically after 15 minutes. Usage counts are totals per tool per day with no caller data.
 -- Only the server (service role) can call these functions; the application falls back to a per-instance limiter
--- when this migration has not been applied.
+-- when this migration has not been applied. Safe to run more than once.
 begin;
-create table public.mcp_rate_limits(bucket text not null check(length(bucket)<=64),window_start timestamptz not null,hits integer not null default 0,primary key(bucket,window_start));
-create table public.mcp_usage_daily(day date not null,tool text not null check(tool ~ '^[a-z_]{1,48}$'),calls bigint not null default 0,primary key(day,tool));
+create table if not exists public.mcp_rate_limits(bucket text not null check(length(bucket)<=64),window_start timestamptz not null,hits integer not null default 0,primary key(bucket,window_start));
+create table if not exists public.mcp_usage_daily(day date not null,tool text not null check(tool ~ '^[a-z_]{1,48}$'),calls bigint not null default 0,primary key(day,tool));
 alter table public.mcp_rate_limits enable row level security;
 alter table public.mcp_usage_daily enable row level security;
 revoke all on public.mcp_rate_limits from public,anon,authenticated;
