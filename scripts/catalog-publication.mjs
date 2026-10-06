@@ -7,7 +7,14 @@ import {scheduledPublicationDue,utcDay} from '../lib/publication-policy.mjs';
 export const CHECKPOINT_BRANCH='reposhelf-checkpoints';
 export const generatedPaths=['dist/catalog.json','dist/spaces.json','dist/community.json','dist/growth.json','data','dist/previews'];
 export const generated=path=>path.startsWith('data/')||path.startsWith('dist/previews/')||/^dist\/(catalog|spaces|community|growth)\.json$/.test(path);
-const git=(root,args,options={})=>execFileSync('git',args,{cwd:root,encoding:'utf8',stdio:['pipe','pipe','pipe'],...options});
+const git=(root,args,options={})=>{
+ if(options.stdio)return execFileSync('git',args,{cwd:root,encoding:'utf8',...options});
+ // File lists grow with the catalogue too. Capture all Git stdout on disk,
+ // including diff/ls-files, so neither restore nor publication has a 1 MB cap.
+ const directory=mkdtempSync(join(tmpdir(),'reposhelf-git-')),file=join(directory,'stdout'),fd=openSync(file,'w');
+ try{execFileSync('git',args,{cwd:root,encoding:'utf8',stdio:['pipe',fd,'pipe'],...options});return readFileSync(file,'utf8')}
+ finally{closeSync(fd);rmSync(directory,{recursive:true,force:true})}
+};
 // Git blobs can exceed Node's 1 MB captured-output limit. Stream stdout to a
 // temporary file rather than imposing a size ceiling on catalogue/assets.
 function blobBytes(root,ref,path){
@@ -17,13 +24,14 @@ function blobBytes(root,ref,path){
  finally{closeSync(fd);rmSync(directory,{recursive:true,force:true})}
 }
 function publicJson(path,text){const value=JSON.parse(text);if(path==='dist/catalog.json'||path==='dist/spaces.json'){delete value.updatedAt;delete value.revalidation;delete value.discovery;value.repositories=(value.repositories||[]).map(r=>{const row={...r};for(const key of ['enrichmentAttemptAt','overviewAttemptAt','agentContextAttemptAt','aiOverviewAttemptAt'])delete row[key];return row}).sort((a,b)=>a.full.localeCompare(b.full))}else if(path==='dist/community.json')delete value.updatedAt;return JSON.stringify(value)}
+const internalFile=path=>path.startsWith('data/sync-runs/')||path.startsWith('data/browse/')||path==='data/catalogue-quality.json'||path==='data/publication.json'||path==='data/recovery-results.json'||path==='data/discovery-search.json'||path==='data/capture-providers.json'||path==='data/browser-cycle.json'||path==='data/launch-cadence.json'||path==='data/ai-overview-usage.json'||path==='dist/growth.json';
 export function publicFileChanged(path,before,after){
- if(path.startsWith('data/sync-runs/')||path.startsWith('data/browse/')||path==='data/catalogue-quality.json'||path==='data/publication.json'||path==='data/recovery-results.json'||path==='data/discovery-search.json'||path==='data/capture-providers.json'||path==='data/browser-cycle.json'||path==='data/launch-cadence.json'||path==='data/ai-overview-usage.json'||path==='dist/growth.json')return false;
+ if(internalFile(path))return false;
  if(/^dist\/(catalog|spaces|community)\.json$/.test(path)&&before!==null&&after!==null){try{return publicJson(path,before)!==publicJson(path,after)}catch{return true}}
  return before!==after;
 }
 async function stage(root){const paths=generatedPaths.filter(p=>existsSync(join(root,p))||git(root,['ls-files','--',p]).trim());if(paths.length)git(root,['add','-A','--',...paths]);return paths}
-export function changedPublicFiles(root){const paths=git(root,['diff','--cached','--name-only','-z']).split('\0').filter(Boolean);return paths.filter(path=>{if(!generated(path))throw Error('Only generated files may be published');const encoding=path.endsWith('.json')?'utf8':'base64',before=blobBytes(root,'HEAD',path),after=blobBytes(root,'',path);return publicFileChanged(path,before===null?null:before.toString(encoding),after===null?null:after.toString(encoding))})}
+export function changedPublicFiles(root){const paths=git(root,['diff','--cached','--name-only','-z']).split('\0').filter(Boolean);return paths.filter(path=>{if(!generated(path))throw Error('Only generated files may be published');if(internalFile(path))return false;const encoding=path.endsWith('.json')?'utf8':'base64',before=blobBytes(root,'HEAD',path),after=blobBytes(root,'',path);return publicFileChanged(path,before===null?null:before.toString(encoding),after===null?null:after.toString(encoding))})}
 async function report(root,publication,commit=null){const id=process.env.GITHUB_RUN_ID;if(!/^\d+$/.test(id||''))return;const path=join(root,'data/sync-runs',id+'.json');try{const row=JSON.parse(await readFile(path,'utf8'));row.publication=publication;row.publishedCommit=commit;await writeFile(path,JSON.stringify(row,null,2)+'\n')}catch(e){if(e.code!=='ENOENT')throw e}}
 function remoteCheckpoint(root){try{git(root,['ls-remote','--exit-code','--heads','origin',CHECKPOINT_BRANCH])}catch(e){if(e.status===2)return null;throw e}git(root,['fetch','--quiet','origin',`refs/heads/${CHECKPOINT_BRANCH}:refs/remotes/origin/${CHECKPOINT_BRANCH}`]);return git(root,['rev-parse','refs/remotes/origin/'+CHECKPOINT_BRANCH]).trim()}
 export async function saveCheckpoint(root,{base,phase='checkpoint'}={}){
@@ -40,7 +48,10 @@ export async function restoreCheckpoint(root){
  const meta=JSON.parse(git(root,['show',commit+':.sync-checkpoint.json']));if(meta.schema!==1||!/^[a-f0-9]{40}$/.test(meta.base))throw Error('Invalid checkpoint baseline');
  try{git(root,['cat-file','-e',meta.base+'^{commit}'])}catch{git(root,['fetch','--quiet','origin',meta.base])}
  const changed=git(root,['diff','--name-only','-z',meta.base,commit]).split('\0').filter(generated),current=git(root,['rev-parse','HEAD']).trim();let restored=0,conflicts=0;
- const blob=(ref,path)=>{try{return git(root,['rev-parse',ref+':'+path]).trim()}catch{return null}};
+ // Read identities once per tree instead of spawning three Git processes per
+ // generated file. Missing/deleted paths remain null for the conflict guard.
+ const trees=new Map([meta.base,commit,current].map(ref=>[ref,new Map(git(root,['ls-tree','-r','-z',ref,'--',...generatedPaths]).split('\0').filter(Boolean).map(entry=>{const tab=entry.indexOf('\t'),header=entry.slice(0,tab).split(' ');if(tab<0||header[1]!=='blob')throw Error('Invalid generated tree entry');return [entry.slice(tab+1),header[2]]}))]));
+ const blob=(ref,path)=>trees.get(ref).get(path)||null;
  for(const path of changed){if(path.includes('..')||path.startsWith('/'))throw Error('Invalid checkpoint path');const before=blob(meta.base,path),after=blob(commit,path),present=blob(current,path);if(present===after)continue;if(present!==before){conflicts++;continue}const file=join(root,path);if(after===null)await rm(file,{force:true});else{await mkdir(dirname(file),{recursive:true});const bytes=blobBytes(root,commit,path);if(bytes===null)throw Error('Checkpoint blob is missing: '+path);await writeFile(file,bytes)}restored++}
  console.log(`Checkpoint recovery: ${restored} generated files restored; ${conflicts} files kept from newer main changes.`);return {restored,conflicts};
 }
