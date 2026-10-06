@@ -8,18 +8,19 @@ await context.route('**/*',async route=>{const u=new URL(route.request().url()),
   return route.fulfill({json:{enabled:true,analyticsEnabled:true,googleEnabled:false,user:signedIn?{id:'1',name:'owner',githubConnected:true,providers:['github'],admin:false}:null,legal:{active:false,required:false}}})}
  if(u.pathname==='/api/collection'||u.pathname==='/api/forks')return route.fulfill({json:{items:[],nextCursor:null,sync:{}}});return route.continue()});
 await page.addInitScript(()=>localStorage.setItem('reposhelf.analytics.consent.v1','no'));
-// signed-out visitors are told the connector is for members and offered sign-in
-signedIn=false;await page.goto(base+'/connect.html');await page.waitForFunction(()=>RepoAccount.ready);await page.waitForFunction(()=>!document.querySelector('#connect-signin').hidden);assert(await page.locator('#connect-keys').isHidden());assert.match(await page.locator('#connect-gate-text').textContent(),/members-only/);
-await page.goto(base+'/account.html');await page.waitForFunction(()=>RepoAccount.ready);await page.waitForTimeout(300);assert(await page.locator('#connector-keys').isHidden(),'No key manager when signed out');
-// members see the key manager, create a key once, and can revoke it
-signedIn=true;await page.goto(base+'/connect.html');await page.waitForFunction(()=>RepoAccount.ready);await page.waitForFunction(()=>!document.querySelector('#connect-keys').hidden);assert(await page.locator('#connect-signin').isHidden());assert.equal(await page.locator('#connect-keys').getAttribute('href'),'/account.html#connector-keys');
+// signed-out visitors are told the connector is for members and offered sign-in; no key manager
+signedIn=false;await page.goto(base+'/connect.html');await page.waitForFunction(()=>RepoAccount.ready);await page.waitForTimeout(300);assert(await page.locator('#connect-signin').isVisible());assert(await page.locator('#connector-keys').isHidden());assert.match(await page.locator('#connect-gate').textContent(),/members-only/);
+// the account page no longer hosts keys
+signedIn=true;await page.goto(base+'/account.html');await page.waitForFunction(()=>RepoAccount.ready);await page.waitForTimeout(300);assert.equal(await page.locator('#connector-keys').count(),0,'Keys live on the Connect page');
+// members see the key manager on the Connect page, create a key once, and can revoke it
+await page.goto(base+'/connect.html');await page.waitForSelector('#connector-keys:not([hidden])');assert(await page.locator('#connect-gate').isHidden());
 for(const id of ['claude-header','claude-code-command','codex-env','codex-config'])assert.match(await page.locator('#'+id).textContent(),/rsk_YOUR_KEY|REPOSHELF_KEY/,id);
-await page.goto(base+'/account.html');await page.waitForSelector('#connector-keys:not([hidden])');assert.match(await page.locator('#key-list').textContent(),/no connector keys yet/);assert(await page.locator('#key-reveal').isHidden());
+assert.match(await page.locator('#key-list').textContent(),/no connector keys yet/);assert(await page.locator('#key-reveal').isHidden());
 await page.locator('#key-label').fill('Claude on my laptop');await page.locator('#key-create').click();await page.waitForSelector('#key-reveal:not([hidden])');assert.equal(await page.locator('#new-key').textContent(),KEY);assert.match(await page.locator('#key-reveal').textContent(),/shown once/);assert.match(await page.locator('#key-list').textContent(),/Claude on my laptop · rsk_AAAA…/);assert.equal(await page.locator('#key-label').inputValue(),'');assert(await page.evaluate(()=>{const r=document.querySelector('#new-key').getBoundingClientRect();return r.right<=innerWidth}),'The key wraps inside a phone screen');
 await page.reload();await page.waitForSelector('#key-list li');assert(await page.locator('#key-reveal').isHidden(),'The plain key is not shown again after a reload');assert.doesNotMatch(await page.locator('#key-list').textContent(),/AAAAAAAAAA/);
 await page.getByRole('button',{name:'Revoke key Claude on my laptop'}).click();await page.waitForFunction(()=>/no connector keys yet/.test(document.querySelector('#key-list').textContent));assert.equal(revoked.length,1);assert.match(await page.locator('#key-status').textContent(),/revoked/i);
 // the limit is explained rather than failing silently
 keys=Array.from({length:5},(_,i)=>({id:'00000000-0000-0000-0000-00000000010'+i,label:'k'+i,key_prefix:'rsk_Bbbb',created_at:new Date().toISOString(),last_used_at:null}));await page.reload();await page.waitForSelector('#key-list li');await page.locator('#key-label').fill('sixth');await page.locator('#key-create').click();await page.waitForFunction(()=>/up to five active keys/.test(document.querySelector('#key-status').textContent));assert(await page.locator('#key-reveal').isHidden());
 assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Fits a phone screen');assert.deepEqual(errors,[]);
-console.log('PASS: connector keys are for signed-in members: gate for visitors, one-time key reveal, list without secrets, revoke, five-key limit explained and mobile layout.');
+console.log('PASS: connector keys live on the Connect page for signed-in members: gate for visitors, one-time key reveal, list without secrets, revoke, five-key limit explained and mobile layout.');
 }finally{await browser?.close();server.kill('SIGTERM')}
