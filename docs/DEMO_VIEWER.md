@@ -53,7 +53,7 @@ Every change to a scenario or demo address bumps a **revision**, stored with the
 
 A demo opens in the viewer only if **all** hold: global switch on; approved; not manually disabled; not suspended; an `https://` address that is not RepoShelf; and **for every required browser profile** the latest run **passed**, for the **exact current address, saved scenario and viewer configuration**, **within 48 hours**.
 
-- Evidence is tracked **per browser profile** (`chromium`, `chromium-mobile`, `webkit`, `webkit-mobile`, `firefox`, `firefox-mobile`). A passing Chromium run never hides or clears another profile's failure: any profile whose latest run failed or was inconclusive keeps the demo external until it passes again, or an administrator explicitly clears that profile's result (for example when retiring a profile).
+- Evidence is tracked **per browser profile** (`chromium`, `chromium-mobile`, `webkit`, `webkit-mobile`, `firefox`; Firefox has no mobile emulation). A passing Chromium run never hides or clears another profile's failure: any profile whose latest run failed or was inconclusive keeps the demo external until it passes again, or an administrator explicitly clears that profile's result (for example when retiring a profile).
 - Which profiles must pass is set on the administrator page (default `chromium`). The daily workflow runs every profile but skips those not required.
 - Changing the address, scenario, or the popup/download flags invalidates evidence until the demo is re-qualified.
 
@@ -63,6 +63,7 @@ Reasons are shown in plain language on the administrator page. `GET /api/viewer?
 
 `scripts/viewer-qualify.mjs` loads the **real viewer component and stylesheet, with the production response headers from `vercel.json`** (including the Permissions-Policy), on a page served as `https://www.reposhelf.co.uk`. It checks the frame carries the exact sandbox, runs the scenario inside it, and records: result, reason, browser profile, timestamp, resolved URL after redirects, configuration id, scenario hash, popup destinations, saved downloads (with size), top-navigation attempts and console errors.
 
+- **Navigation is checked while the scenario runs, not only before it.** Any request aimed at RepoShelf (apart from the qualification page itself) is refused before it loads, every address the frame visits is recorded and validated, and the **address the frame ended on** (not the one it started on) is what gets validated and stored as the resolved URL.
 - Every browser request and redirect must go to a **public address** (the same check the health checker uses). A request to a private address fails the run (`unsafe_destination`).
 - **ok**: every step passed and nothing unexpected happened.
 - **failed**: frame refused, HTTP error, top-navigation attempt, unsafe destination, RepoShelf as the destination, a step that cannot find its element, an unexpected popup or download, an incomplete download, or a non-https address.
@@ -75,7 +76,7 @@ node scripts/viewer-qualify.mjs --queue [--if-required] [--browser=...] [--mobil
 
 Playwright WebKit and mobile emulation supplement, and do not replace, checks on real Safari and real devices, which are repeated by hand after significant demo or viewer changes. Qualification shows a demo can work; it cannot guarantee every visitor's session.
 
-**Alerting:** the workflow publishes a summary on the run page and **fails the job when any demo failed or could not be checked**, so GitHub's failed-run notification is the alert. The administrator page also warns when any approved demo's evidence is missing or older than 36 hours, which catches a missed run before the 48-hour limit.
+**Alerting:** the workflow publishes a summary on the run page and **fails the job when any demo failed, could not be checked, or was left unchecked** (time budget or queue limit), because unchecked demos' evidence would silently expire, so GitHub's failed-run notification is the alert. The administrator page also warns when any approved demo's evidence is missing or older than 36 hours, which catches a missed run before the 48-hour limit.
 
 ## The two preview modes
 

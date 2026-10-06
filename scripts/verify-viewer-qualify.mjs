@@ -2,7 +2,7 @@
 // Playwright routes on fake https hosts, so the tool is exercised exactly as in production (canonical-origin
 // harness page, exact sandbox string) without any network access.
 import assert from 'node:assert/strict';import {createRequire} from 'node:module';import {existsSync,statSync,rmSync} from 'node:fs';
-import {qualifyDemo,qualifyQueue,harnessResponse,summaryMarkdown,HARNESS_PATH} from './viewer-qualify.mjs';
+import {qualifyDemo,qualifyQueue,harnessResponse,summaryMarkdown,needsAlert,HARNESS_PATH} from './viewer-qualify.mjs';
 const require=createRequire(import.meta.url),C=require('../dist/viewer-config.js'),{chromium}=require('playwright');
 const html=(body,script='')=>`<!doctype html><meta charset="utf-8"><title>fixture</title><body>${body}<script>${script}</script></body>`;
 const page=(status,body,headers={})=>({status,headers:{'content-type':'text/html; charset=utf-8',...headers},body});
@@ -19,12 +19,14 @@ const hosts={
  'challenge.demo.test':()=>page(200,html('<h1>Just a moment...</h1><p>Checking your browser before accessing the site.</p>')),
  'redirect.demo.test':()=>page(200,html('<p>Moving…</p>',`location.replace('https://ok.demo.test/')`)),
  'slow.demo.test':()=>null,
+ 'navigate.demo.test':()=>page(200,html('<button id="own">RepoShelf</button><button id="next">Next</button><button id="plain">Plain</button><p id="r">ready</p>',`document.getElementById('own').onclick=()=>{location.href='https://reposhelf.vercel.app/page'};document.getElementById('next').onclick=()=>{location.href='https://ok.demo.test/'};document.getElementById('plain').onclick=()=>{location.href='http://plain.demo.test/'}`)),
+ 'plain.demo.test':()=>page(200,html('<p>Plain http page</p>')),
  'beacon.demo.test':()=>page(200,html('<button id="go">Go</button><p id="r"></p>',`document.getElementById('go').onclick=()=>{fetch('https://internal.demo.test/secret').catch(()=>{});document.getElementById('r').textContent='sent'}`)),
  'bounce.demo.test':()=>page(200,html('<p>Moving…</p>',`location.replace('https://reposhelf.vercel.app/')`)),
  'empty.demo.test':()=>page(200,html('<a id="get" href="https://nothing.demo.test/r.csv" download="r.csv">Download</a>')),
  'nothing.demo.test':()=>({status:200,headers:{'content-type':'text/csv','content-disposition':'attachment; filename="r.csv"'},body:''}),
 };
-const setup=async context=>{await context.route(/^https:\/\/[a-z]+\.demo\.test\//,async route=>{const host=new URL(route.request().url()).hostname,make=hosts[host];if(!make)return route.abort();const r=make();if(r===null){await new Promise(resolve=>setTimeout(resolve,6000));return route.abort().catch(()=>{})}return route.fulfill(r)});await context.route(/^https:\/\/evil\.demo\.test\//,route=>route.fulfill(page(200,html('<p>Taken over</p>'))));await context.route(/^https:\/\/reposhelf\.vercel\.app\//,route=>route.fulfill(page(200,html('<p>RepoShelf</p>'))))};
+const setup=async context=>{await context.route(/^http:\/\/plain\.demo\.test\//,route=>route.fulfill(page(200,html('<p>Plain http page</p>'))));await context.route(/^https:\/\/[a-z]+\.demo\.test\//,async route=>{const host=new URL(route.request().url()).hostname,make=hosts[host];if(!make)return route.abort();const r=make();if(r===null){await new Promise(resolve=>setTimeout(resolve,6000));return route.abort().catch(()=>{})}return route.fulfill(r)});await context.route(/^https:\/\/evil\.demo\.test\//,route=>route.fulfill(page(200,html('<p>Taken over</p>'))));await context.route(/^https:\/\/reposhelf\.vercel\.app\//,route=>route.fulfill(page(200,html('<p>RepoShelf</p>'))))};
 const guard=async url=>!/internal\.demo\.test/.test(url);
 const launch=()=>chromium.launch();
 const run=(host,scenario,flags={},options={})=>qualifyDemo({project:'team/'+host.split('.')[0],demoUrl:`https://${host}/`,scenario,flags,launch,setup,guard,loadTimeoutMs:2500,stepTimeoutMs:2000,...options});
@@ -62,6 +64,12 @@ const h=await harnessResponse({demoUrl:'https://ok.demo.test/',flags:{}});assert
 r=await run('beacon.demo.test',{summary:'x',steps:[{action:'click',selector:'#go'},{action:'expectText',selector:'#r',text:'sent'}]});assert.equal(r.result,'failed',JSON.stringify(r));assert.equal(r.reason,'unsafe_destination');assert(r.details.blockedRequests.includes('internal.demo.test'));
 r=await qualifyDemo({demoUrl:'https://www.reposhelf.co.uk/',scenario:add,launch,setup,guard});assert.equal(r.reason,'own_origin');r=await qualifyDemo({demoUrl:'https://reposhelf.vercel.app/x',scenario:add,launch,setup,guard});assert.equal(r.reason,'own_origin');
 r=await run('bounce.demo.test',add);assert.equal(r.result,'failed',JSON.stringify(r));assert.equal(r.reason,'own_origin','a redirect to RepoShelf is refused');
+// navigation caused by an interaction is validated too, and the address the frame ENDED on is what gets recorded
+const stays={summary:'Nothing navigates',steps:[{action:'click',selector:'#r'},{action:'expectText',selector:'#r',text:'ready'}]};
+r=await run('navigate.demo.test',{summary:'Open RepoShelf',steps:[{action:'click',selector:'#own'},{action:'expectVisible',selector:'#own'}]});assert.equal(r.result,'failed',JSON.stringify(r));assert.equal(r.reason,'own_origin','navigating the frame to RepoShelf fails even though the scenario assertions still pass');assert(r.details.ownOriginRequests.includes('reposhelf.vercel.app'),'the request was refused before the destination loaded');
+r=await run('navigate.demo.test',{summary:'Go to the next page',steps:[{action:'click',selector:'#next'},{action:'expectText',selector:'body',text:'Add'}]});assert.equal(r.result,'ok',JSON.stringify(r));assert.equal(r.resolvedUrl,'https://ok.demo.test/','the recorded address is where the frame ended up');assert.equal(r.details.initialUrl,'https://navigate.demo.test/');assert.equal(r.details.finalUrl,'https://ok.demo.test/');assert(r.details.frameUrls.includes('https://ok.demo.test/'));
+r=await run('navigate.demo.test',{summary:'Go to a plain http page',steps:[{action:'click',selector:'#plain'},{action:'expectText',selector:'body',text:'Plain http page'}]});assert.equal(r.result,'failed',JSON.stringify(r));assert.equal(r.reason,'step_2_expectText','the browser refuses to frame an http page inside the https viewer, so the scenario cannot pass');assert.equal(r.resolvedUrl,'https://navigate.demo.test/');assert(r.details.consoleErrors>=1,'the blocked navigation is recorded');
+r=await run('navigate.demo.test',stays);assert.equal(r.result,'ok');assert.equal(r.resolvedUrl,'https://navigate.demo.test/','a demo that stays put records its own address');
 // a download that arrives empty is not a successful download
 r=await run('empty.demo.test',{summary:'x',steps:[{action:'click',selector:'#get'},{action:'expectDownload'}]},{downloads:true});assert.equal(r.result,'failed');assert.equal(r.reason,'step_2_expectDownload');
 r=await run('download.demo.test',{summary:'x',steps:[{action:'click',selector:'#get'},{action:'expectDownload',filename:'other.csv'}]},{downloads:true});assert.equal(r.reason,'step_2_expectDownload','an unexpected file name fails');
@@ -76,5 +84,9 @@ assert.deepEqual([summary.profile,summary.checked,summary.ok,summary.failed,summ
 assert.match(summaryMarkdown(summary),/1 discarded/);assert.match(summaryMarkdown(summary),/team\/refuse \| failed \| frame_refused/);
 const before=posted.length,skipped=await qualifyQueue({origin:'https://x.test',key:'k'.repeat(40),browserName:'webkit',ifRequired:true,report:queueReport(['chromium']),qualify:()=>{throw Error('must not run')}});assert.equal(skipped.notRequired,true);assert.equal(posted.length,before,'a profile that is not required is not run');
 const mobile=await qualifyQueue({origin:'https://x.test',key:'k'.repeat(40),browserName:'chromium',mobile:true,ifRequired:true,report:queueReport(['chromium-mobile']),qualify:async o=>({project:o.project,result:'ok',reason:null,browser:'chromium-mobile',configId:'v1|popups=0|downloads=0',demoUrl:o.demoUrl,resolvedUrl:o.demoUrl,scenarioHash:'0123456789abcdef',details:{}})});assert.equal(mobile.profile,'chromium-mobile');assert.equal(mobile.ok,2);
+// incomplete qualification is an alert too
+assert.equal(needsAlert({failed:0,inconclusive:0,skipped:0}),false);assert.equal(needsAlert({failed:1,inconclusive:0,skipped:0}),true);assert.equal(needsAlert({failed:0,inconclusive:1,skipped:0}),true);assert.equal(needsAlert({failed:0,inconclusive:0,skipped:2}),true,'demos left unchecked by the time budget or queue limit raise an alert');assert.equal(needsAlert({notRequired:true,failed:0,inconclusive:0,skipped:0}),false);
+const limited=await qualifyQueue({origin:'https://x.test',key:'k'.repeat(40),browserName:'chromium',max:1,report:queueReport(['chromium']),qualify:o=>run(new URL(o.demoUrl).host,o.scenario,o.flags,{project:o.project})});assert.equal(limited.skipped,2);assert.equal(needsAlert(limited),true);assert.match(summaryMarkdown(limited),/Incomplete: the time budget or queue limit left approved demos unqualified/);
+const timed=await qualifyQueue({origin:'https://x.test',key:'k'.repeat(40),browserName:'chromium',deadlineMs:-1,report:queueReport(['chromium']),qualify:()=>{throw Error('must not run')}});assert.equal(timed.skipped,3);assert.equal(needsAlert(timed),true,'an exhausted time budget raises an alert');
 assert.equal(HARNESS_PATH,'/__viewer-qualify');
 console.log('PASS: viewer qualification runs real interactions in the exact sandbox on the canonical origin, fails refused frames, top-navigation, errors, missing results and unexpected popups or downloads, never passes uncertainty, and reports every result.');

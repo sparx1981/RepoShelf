@@ -9,7 +9,7 @@ alter table public.viewer_demos add column if not exists scenario_hash text chec
 alter table public.viewer_demos add column if not exists scenario_revision integer not null default 1;
 do $$ begin
  if not exists(select 1 from pg_constraint where conname='viewer_settings_profiles_check') then
-  alter table public.viewer_settings add constraint viewer_settings_profiles_check check(required_profiles<@array['chromium','chromium-mobile','webkit','webkit-mobile','firefox','firefox-mobile']::text[] and cardinality(required_profiles)>=1);
+  alter table public.viewer_settings add constraint viewer_settings_profiles_check check(required_profiles<@array['chromium','chromium-mobile','webkit','webkit-mobile','firefox']::text[] and cardinality(required_profiles)>=1);
  end if;
 end $$;
 
@@ -102,7 +102,7 @@ declare d public.viewer_demos;e_id bigint;
 begin
  select * into d from public.viewer_demos where project_id=p_project;
  if not found then return jsonb_build_object('ok',false,'reason','unknown_demo');end if;
- if p_browser !~ '^(chromium|webkit|firefox)(-mobile)?$' then return jsonb_build_object('ok',false,'reason','unknown_profile');end if;
+ if p_browser !~ '^(chromium|webkit)(-mobile)?$|^firefox$' then return jsonb_build_object('ok',false,'reason','unknown_profile');end if;
  if p_scenario_hash is distinct from d.scenario_hash then return jsonb_build_object('ok',false,'reason','scenario_changed');end if;
  if p_demo_url is distinct from d.demo_url then return jsonb_build_object('ok',false,'reason','address_changed');end if;
  insert into public.viewer_evidence(project_id,result,reason,browser,config_id,demo_url,resolved_url,scenario_hash,details)

@@ -19,7 +19,7 @@ function frameOrigins(demo,latest){return [...new Set([originOf(demo?.demo_url),
 // (Template literals, so the storage-key scan in the Cookie Policy test does not mistake these hosts for storage keys.)
 const APEX=`reposhelf.co.uk`,OWN_HOSTS=[`www.${APEX}`,APEX,`reposhelf.vercel.app`];
 function isOwnOrigin(url){try{const h=new URL(url).hostname.toLowerCase();return OWN_HOSTS.includes(h)||h.endsWith('.'+APEX)}catch{return false}}
-const PROFILES=['chromium','chromium-mobile','webkit','webkit-mobile','firefox','firefox-mobile'];
+const PROFILES=['chromium','chromium-mobile','webkit','webkit-mobile','firefox'];
 // Pure eligibility decision. `state` is {enabled, required_profiles, demo, latest, profiles} as returned by
 // reposhelf_viewer_state, where `profiles` holds the latest run of each browser profile.
 // Anything unknown, stale, changed or inconclusive is not eligible, so the visitor gets the external demo.
