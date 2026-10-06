@@ -44,6 +44,9 @@ try{
  git(recover,'add','--','data/browse/projects');
  const names=execFileSync('git',['diff','--cached','--name-only','-z'],{cwd:recover,maxBuffer:8*1024*1024});assert(names.length>1024*1024,'Fixture exceeds the old buffer');
  const publicChanges=changedPublicFiles(recover);assert(!publicChanges.some(path=>path.startsWith('data/browse/')),'Internal chunks do not request publication');assert(publicChanges.includes('dist/catalog.json'),'Actual public catalogue changes still publish');
+ await publishCatalog(recover,{checkpoint:true,completed:true});
+ const largeRecover=join(root,'large-recover');git(root,'clone','--branch',CHECKPOINT_BRANCH,remote,largeRecover);
+ const largeRecovery=await restoreCheckpoint(largeRecover);assert.equal(largeRecovery.restored,0,'Large checkpoint already present is traversed without truncation or overwrites');assert.equal(largeRecovery.conflicts,0);
  git(recover,'reset','--quiet','HEAD','--','data/browse');
  // Newer generated main updates must survive recovery and reject conflicting publication.
  git(other,'pull','--rebase');await writeFile(join(other,'dist/catalog.json'),json({...before,repositories:[{...before.repositories[0],stars:99}]}));git(other,'add','.');git(other,'commit','-m','Concurrent catalogue');git(other,'push');git(recover,'reset','--hard','HEAD');git(recover,'pull','--rebase');const guarded=await restoreCheckpoint(recover);assert(guarded.conflicts>=1);assert.equal(JSON.parse(await readFile(join(recover,'dist/catalog.json'))).repositories[0].stars,99);
