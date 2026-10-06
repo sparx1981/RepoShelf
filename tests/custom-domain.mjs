@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {createAccounts,accountConfig} from '../lib/accounts.mjs';
+const a=createAccounts({config:accountConfig({SUPABASE_URL:'https://x.supabase.co',SUPABASE_ANON_KEY:'k'})});
+assert.equal(a.config.origin,'https://www.reposhelf.co.uk');
+for(const origin of ['https://www.reposhelf.co.uk','https://reposhelf.co.uk','https://reposhelf.vercel.app'])assert.doesNotThrow(()=>a.origin({headers:{origin}}),origin);
+for(const origin of [undefined,'https://evil.example','http://www.reposhelf.co.uk','https://reposhelf.co.uk.evil.example'])assert.throws(()=>a.origin({headers:{origin}}),{code:'origin_not_allowed'});
+assert.equal(accountConfig({REPOSHELF_ALLOWED_ORIGINS:'https://staging.example.com'}).origins.includes('https://staging.example.com'),true);
+assert.equal(a.originOf({headers:{host:'reposhelf.vercel.app'}}),'https://reposhelf.vercel.app');
+assert.equal(a.originOf({headers:{host:'reposhelf.co.uk','x-forwarded-host':'www.reposhelf.co.uk'}}),'https://www.reposhelf.co.uk');
+assert.equal(a.originOf({headers:{host:'evil.example'}}),a.config.origin);
+const res={h:{},setHeader(k,v){this.h[k]=v},getHeader(k){return this.h[k]},writeHead(s,h){this.s=s;this.l=h.Location},end(){}};
+await a.start({url:'/api/auth?action=start',headers:{host:'reposhelf.vercel.app'}},res);
+assert.equal(new URL(res.l).searchParams.get('redirect_to'),'https://reposhelf.vercel.app/api/auth?action=callback');
+console.log('custom domain origin checks passed');
