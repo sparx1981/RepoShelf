@@ -4,13 +4,16 @@
 // X-Frame-Options, as in current browsers. Optional --browser mode loads a real iframe to confirm the verdicts.
 import {readFile,writeFile,mkdir} from 'node:fs/promises';import {pathToFileURL} from 'node:url';import {createRequire} from 'node:module';
 import {publicUrlGuard} from './demo-health.mjs';
-const OUR_ORIGINS=['https://www.reposhelf.co.uk','https://reposhelf.co.uk','https://reposhelf.vercel.app'];
+// The viewer would only run on the canonical site. Other hosts that serve RepoShelf would not show it.
+const VIEWER_ORIGIN='https://www.reposhelf.co.uk';
 const header=(headers,name)=>typeof headers?.get==='function'?headers.get(name):headers?.[name]??headers?.[name.toLowerCase()]??null;
-const sourceMatches=(token,origins)=>{const t=token.toLowerCase();if(t==='*'||t==='https:'||t==='http:')return true;return origins.some(o=>{const url=new URL(o);return t===o||t===url.host||t==='https://'+url.host||(t.startsWith('*.')&&url.hostname.endsWith(t.slice(1)))})};
-export function classifyFraming(headers,{origins=OUR_ORIGINS}={}){
+// A frame-ancestors source matches only if it names the origin the viewer actually runs on. Scheme-only sources
+// other than https: (for example http:) are not accepted as evidence, even though CSP3 lets http: match https pages.
+const sourceMatches=(token,origin)=>{const t=token.toLowerCase();if(t==='*'||t==='https:')return true;if(t==='http:'||t.endsWith(':')&&!t.includes('/'))return false;const url=new URL(origin);if(t==='https://'+url.host||t===url.host)return true;const wildcard=t.replace(/^https:\/\//,'');return wildcard.startsWith('*.')&&url.hostname.endsWith(wildcard.slice(1))&&url.hostname!==wildcard.slice(2)};
+export function classifyFraming(headers,{origin=VIEWER_ORIGIN}={}){
  const csp=String(header(headers,'content-security-policy')||''),directives=csp.split(',').flatMap(policy=>policy.split(';')).map(x=>x.trim()).filter(x=>/^frame-ancestors\s/i.test(x));
  // Every policy is enforced, so one restrictive frame-ancestors list is enough to block framing.
- if(directives.length){let allowed=true,blocked=null;for(const directive of directives){const tokens=directive.split(/\s+/).slice(1);if(tokens.includes("'none'"))blocked??='frame_ancestors_none';else if(!tokens.some(t=>sourceMatches(t,origins)))blocked??=tokens.includes("'self'")&&tokens.length===1?'frame_ancestors_self':'frame_ancestors_other'}return blocked?{embeddable:false,reason:blocked}:{embeddable:true,reason:'frame_ancestors_allows'}}
+ if(directives.length){let allowed=true,blocked=null;for(const directive of directives){const tokens=directive.split(/\s+/).slice(1);if(tokens.includes("'none'"))blocked??='frame_ancestors_none';else if(!tokens.some(t=>sourceMatches(t,origin)))blocked??=tokens.includes("'self'")&&tokens.length===1?'frame_ancestors_self':'frame_ancestors_other'}return blocked?{embeddable:false,reason:blocked}:{embeddable:true,reason:'frame_ancestors_allows'}}
  const xfo=String(header(headers,'x-frame-options')||'').toLowerCase().split(',').map(x=>x.trim()).filter(Boolean);
  if(xfo.some(v=>v==='deny'))return {embeddable:false,reason:'x_frame_options_deny'};if(xfo.some(v=>v==='sameorigin'))return {embeddable:false,reason:'x_frame_options_sameorigin'};if(xfo.some(v=>v.startsWith('allow-from')))return {embeddable:false,reason:'x_frame_options_allow_from'};
  return {embeddable:true,reason:'no_restrictions'};
@@ -39,7 +42,7 @@ export function markdown(summary,{browser=null}={}){
  return `## Demo framing probe\n\n**${summary.embeddablePercent??'n/a'}% of ${summary.measured} reachable demos can be shown inside a RepoShelf page** (${summary.blocked} blocked, ${summary.unreachable} unreachable of ${summary.checked} checked).\n\n| Reason | Demos |\n|---|---|\n${reasons}\n\n| Host | Checked | Embeddable | Share |\n|---|---|---|---|\n${rows}\n${browser?`\n### Real iframe check\n\n${browser.agreed} of ${browser.checked} browser results agreed with the header verdict; ${browser.disagreed} disagreed.\n${browser.differences.slice(0,10).map(d=>`- ${d.url}: headers said ${d.header?'embeddable':'blocked'}, browser ${d.browser?'embedded it':'refused'}`).join('\n')}\n`:''}`;
 }
 async function browserCheck(results,{limit=40}={}){
- const require=createRequire(import.meta.url),{chromium}=require('playwright'),browser=await chromium.launch(),origin=OUR_ORIGINS[0],differences=[];let checked=0,agreed=0;
+ const require=createRequire(import.meta.url),{chromium}=require('playwright'),browser=await chromium.launch(),origin=VIEWER_ORIGIN,differences=[];let checked=0,agreed=0;
  try{for(const r of results.filter(x=>x.embeddable!==null).slice(0,limit)){const context=await browser.newContext(),page=await context.newPage();let refused=false;page.on('console',m=>{if(/Refused to (display|frame)/i.test(m.text()))refused=true});
   await page.route(origin+'/__frame_test',route=>route.fulfill({contentType:'text/html',body:`<!doctype html><iframe src="${r.url.replace(/"/g,'&quot;')}" style="width:900px;height:600px" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" referrerpolicy="no-referrer"></iframe>`}));
   try{await page.goto(origin+'/__frame_test',{waitUntil:'load',timeout:30000});await page.waitForTimeout(4000);const frame=page.frames().find(f=>f!==page.mainFrame()),embedded=Boolean(frame)&&!frame.url().startsWith('chrome-error:')&&!refused;checked++;if(embedded===r.embeddable)agreed++;else differences.push({url:r.url,header:r.embeddable,browser:embedded})}catch{}finally{await context.close()}}}finally{await browser.close()}

@@ -9,6 +9,10 @@ assert.equal(classifyFraming(h({'content-security-policy':"frame-ancestors 'self
 assert.equal(classifyFraming(h({'content-security-policy':"frame-ancestors https://example.org"})).reason,'frame_ancestors_other');
 assert.equal(classifyFraming(h({'content-security-policy':'frame-ancestors *'})).embeddable,true);assert.equal(classifyFraming(h({'content-security-policy':'frame-ancestors https:'})).embeddable,true);
 assert.equal(classifyFraming(h({'content-security-policy':'frame-ancestors https://www.reposhelf.co.uk'})).embeddable,true,'Our own origin is allowed');assert.equal(classifyFraming(h({'content-security-policy':'frame-ancestors *.reposhelf.co.uk'})).embeddable,true,'Wildcard subdomains match');
+assert.equal(classifyFraming(h({'content-security-policy':'frame-ancestors https://reposhelf.vercel.app'})).embeddable,false,'Allowing only the Vercel address does not allow the canonical site');
+assert.equal(classifyFraming(h({'content-security-policy':'frame-ancestors https://reposhelf.co.uk'})).embeddable,false,'Allowing only the bare domain does not allow www');
+assert.equal(classifyFraming(h({'content-security-policy':'frame-ancestors http:'})).embeddable,false,'A bare http: source is not accepted as evidence for an https page');
+assert.equal(classifyFraming(h({'content-security-policy':'frame-ancestors https://*.reposhelf.co.uk'})).embeddable,true);assert.equal(classifyFraming(h({'content-security-policy':'frame-ancestors *.reposhelf.co.uk'})).embeddable,true);assert.equal(classifyFraming(h({'content-security-policy':'frame-ancestors *.co.uk'})).embeddable,true,'A parent wildcard covers www.reposhelf.co.uk');
 assert.equal(classifyFraming(h({'content-security-policy':"frame-ancestors *",'x-frame-options':'DENY'})).embeddable,true,'frame-ancestors takes precedence over X-Frame-Options');
 assert.equal(classifyFraming(h({'content-security-policy':"frame-ancestors *, frame-ancestors 'none'"})).embeddable,false,'Any restrictive policy blocks framing');
 assert.equal(classifyFraming({'x-frame-options':'deny'}).embeddable,false,'Plain header objects work');

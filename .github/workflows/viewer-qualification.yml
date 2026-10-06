@@ -1,0 +1,49 @@
+name: Demo viewer qualification
+
+# Qualifies the administrator-approved demos for the in-page viewer, once per browser profile that the administrator has
+# marked as required. Each run loads the demo in the real viewer component with the production headers, runs its
+# scenario, and records dated evidence through the worker API. Evidence is good for 48 hours, so this runs daily.
+# It never pushes to the repository and never deploys. Without the worker key it does nothing.
+# A job fails when any demo failed or could not be checked, so GitHub's failed-run notification is the alert. The
+# administrator page also warns when any approved demo's evidence is missing or older than 36 hours (a missed run).
+on:
+  schedule:
+    - cron: '41 5 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: viewer-qualification
+  cancel-in-progress: false
+
+jobs:
+  qualify:
+    name: qualify (${{ matrix.profile }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {profile: chromium, browser: chromium, mobile: ''}
+          - {profile: chromium-mobile, browser: chromium, mobile: '--mobile'}
+          - {profile: webkit, browser: webkit, mobile: ''}
+          - {profile: webkit-mobile, browser: webkit, mobile: '--mobile'}
+          - {profile: firefox, browser: firefox, mobile: ''}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unpack saved catalogue data
+        run: node scripts/data-packing.mjs unpack
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps ${{ matrix.browser }}
+      - name: Qualify approved demos
+        env:
+          REPOSHELF_SUBMISSION_SYNC_KEY: ${{ secrets.REPOSHELF_SUBMISSION_SYNC_KEY }}
+        run: node scripts/viewer-qualify.mjs --queue --if-required --browser=${{ matrix.browser }} ${{ matrix.mobile }}
