@@ -157,3 +157,20 @@ Google sign-in is optional and off until configured. Google users can like and s
 4. In Vercel add `REPOSHELF_GOOGLE_SIGNIN` = `1` for Production and redeploy. Until then the Google button is hidden and `provider=google` requests are refused.
 
 Notes: Supabase links sign-ins that share a verified email address automatically, so a person using the same email for GitHub and Google normally ends up with one account. RepoShelf never stores a Google access token (only a GitHub token is kept, in the HttpOnly cookie, for fork verification), never displays email addresses, and shows a Google user's name without the `@` used for GitHub handles. The Privacy and Cookie Policies name Google as a sign-in provider.
+
+## Linking and merging accounts
+
+Account & data shows which sign-in methods are connected and offers **Connect GitHub** or **Connect Google** for the one that is missing. Linking attaches the new method to the account you are signed in to, so the same collection, history and submissions appear whichever method is used. Supabase also links methods that share a verified email address automatically.
+
+If someone has already used both methods and ended up with two accounts, **Merge a separate account** moves one into the other:
+
+1. Signed in to the account that should keep everything (the target), the person chooses the other method. They stay signed in; a fresh sign-in as the other account (the source) is used once to prove it is theirs and is then discarded.
+2. A signed, ten-minute proof cookie (`__Host-reposhelf-merge`) records the pair. The screen shows what will move and asks for the word MERGE. The target sign-in must be under an hour old.
+3. `reposhelf_merge_accounts` (migration 19, server-only) moves likes, viewing history, discovery settings, verified forks and fork-verification progress, repository submissions, promotions, report and moderation attribution and agreement records in one transaction. A like or history entry that exists on both keeps the target's copy (history keeps the newest view). A submission for a repository both accounts submitted stays behind with the closed account.
+4. The server then deletes the emptied source account and sends the person to re-connect that sign-in method to the target.
+
+Merges are refused when both accounts use the same sign-in method (for example two different GitHub accounts), when only the source is an administrator, when either account has a reserved or running promotion, or while a fork verification or submission check is running. The closed account cannot be recovered, so take a Supabase backup before first use. If the final deletion fails, the data has still moved; the screen says so and the source account can be deleted in Supabase. Apply migration 19 (`supabase/migrations/202610060019_merge_accounts.sql`) before using the feature; without it, the preview step reports the merge as unavailable.
+
+## Repository details for signed-out visitors
+
+Signed-out visitors can browse and open demos. The repository owner and name line, the Repository and fork buttons, release and source links, and the "also on Hugging Face" and "discovered via" notes are hidden or shown as inert buttons until sign-in; clicking an inert button opens sign-in. This is a presentation rule: repository identifiers still exist in the catalogue, the browse responses and the open MCP connector, so it reduces casual discovery and does not make details secret.
