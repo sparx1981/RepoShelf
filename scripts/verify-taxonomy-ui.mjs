@@ -20,8 +20,8 @@ try{
  if(path==='/api/promotions')return route.fulfill({json:{items:[]}});
  return route.continue();}));
  await page.goto(base);await page.waitForFunction(()=>RepoAccount.ready);await settleBrowse(page);await page.locator('#github').click();await settleBrowse(page);
- await page.locator('[data-category="Architecture & building design"]').click();await settleBrowse(page);assert.equal(await page.locator('#grid .card').count(),1);assert(await page.locator('#grid [data-details="team/building"]').isVisible());
- await page.locator('#grid [data-details="team/building"]').click();await page.locator('.detail-subjects').waitFor();assert.match(await page.locator('.detail-subjects').textContent(),/Architecture.*Simulation/);await page.locator('#detail .close').click();
+ await page.locator('[data-category="Architecture & building design"]').click();await settleBrowse(page);assert.equal(await page.locator('#grid .card').count(),1);assert(await page.locator('#grid [data-details="team/building"]').first().isVisible());
+ await page.locator('#grid [data-details="team/building"]').first().click();await page.locator('.detail-subjects').waitFor();assert.match(await page.locator('.detail-subjects').textContent(),/Architecture.*Simulation/);await page.locator('#detail .close').click();
  await page.locator('[data-category="Simulation & physics"]').click();await settleBrowse(page);assert.equal(await page.locator('#grid .card').count(),1);
  await page.goto(base+'/connect.html');await page.waitForFunction(()=>RepoAccount.ready);assert(await page.locator('#connect-setup').isHidden());assert.match(await page.locator('#connect-access a').getAttribute('href'),/return=%2Fconnect.html/);
  signedIn=true;await page.reload();await page.locator('#connect-setup:not([hidden])').waitFor();await page.locator('[data-client="claude"]').click();assert(await page.locator('#claude-setup').isVisible());assert(await page.locator('#codex-setup').isHidden());assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'Connector guide fits mobile');
