@@ -13,6 +13,11 @@ assert.equal(shouldBuild('Sync progress [skip ci]',['data/sync-progress.json'],'
 assert.equal(shouldBuild('Refresh public demo catalog',['dist/catalog.json']),true);
 assert.equal(shouldBuild('Save catalogue recovery checkpoint',['data/browse/index.json','dist/admin.js']),true);
 assert.equal(shouldBuild('Save catalogue recovery checkpoint',[]),true);
+assert.equal(shouldBuild('Add feature',['dist/app.js'],'claude/some-feature','preview'),false,'preview deployments are skipped');
+assert.equal(shouldBuild('Add feature',['dist/app.js'],'claude/some-feature'),false,'non-main branches are skipped even without VERCEL_ENV');
+assert.equal(shouldBuild('Add feature',['dist/app.js'],'main','preview'),false,'a preview environment never builds');
+assert.equal(shouldBuild('Add feature',['dist/app.js'],'main','production'),true,'production builds from main');
+assert.equal(shouldBuild('Add feature',['dist/app.js'],null,null),true,'unknown metadata still builds rather than dropping an update');
 const blocked=deploymentStatus({statuses:[{context:'Vercel',state:'failure',description:'Deployment rate limited — retry in 24 hours.',target_url:'https://vercel.com/sparx1981?upgradeToPro=build-rate-limit'}]});
 assert.equal(blocked.state,'blocked');assert(blocked.description.includes('rate limited'));
 assert.equal(deploymentStatus({statuses:[{context:'Vercel',state:'success',target_url:'javascript:alert(1)'}]}).url,'https://vercel.com/sparx1981/reposhelf');
