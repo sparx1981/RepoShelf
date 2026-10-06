@@ -1,29 +1,12 @@
 <!doctype html>
 <html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Connect your AI assistant — RepoShelf</title><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/legal.css"><link rel="stylesheet" href="/connect.css"></head>
 <body><header><a class="brand" href="/" aria-label="RepoShelf home"><span class="brand-icon">r.</span></a><a href="/">Back to RepoShelf</a></header>
-<main class="legal-main"><p class="eyebrow">BUILD WITH A HEAD START</p><h1>Give your AI assistant a library of starting points.</h1><p>Connect RepoShelf through MCP so your assistant can find projects, compare requirements and read saved READMEs before it starts building.</p>
-<section id="connect-access" class="legal-notice" aria-live="polite"><p>Checking your account…</p></section>
-<section id="connect-setup" hidden>
-<h2>1. Prepare the local connector</h2><p>On your computer, install Node.js 20 or newer and Git, then run these commands in a terminal. Local mode needs no AI API key or RepoShelf API key.</p>
-<pre><code id="setup-commands">git clone https://github.com/sparx1981/RepoShelf.git
-cd RepoShelf
-npm install</code></pre><button class="button outline" type="button" data-copy="setup-commands">Copy commands</button>
-<p>This downloads a catalogue snapshot and saved documents. It can be a large download; allow disk space for screenshots and documents. Run <code>git pull</code> inside the RepoShelf folder to get newer content. Your assistant’s own subscription or model requirements still apply.</p>
-<h2>2. Choose your assistant</h2><div class="connector-options" role="group" aria-label="Choose assistant"><button class="button lime" type="button" data-client="codex" aria-pressed="true">Codex</button><button class="button outline" type="button" data-client="claude" aria-pressed="false">Claude Desktop</button></div>
-<div id="codex-setup"><p>Add this to Codex’s <code>~/.codex/config.toml</code>. Replace the example path with the absolute path to your cloned folder, then restart Codex.</p><pre><code id="codex-config">[mcp_servers.reposhelf]
-command = "node"
-args = ["/absolute/path/RepoShelf/scripts/mcp-server.mjs"]</code></pre><button class="button outline" type="button" data-copy="codex-config">Copy Codex config</button></div>
-<div id="claude-setup" hidden><p>In Claude Desktop, open Settings → Developer → Edit Config. Add this <code>reposhelf</code> entry to <code>mcpServers</code>, preserving any existing entries. Replace the example path, save and restart Claude Desktop. The local connector runs on your computer, not in the mobile or web app.</p><pre><code id="claude-config">{
-  "mcpServers": {
-    "reposhelf": {
-      "command": "node",
-      "args": ["/absolute/path/RepoShelf/scripts/mcp-server.mjs"]
-    }
-  }
-}</code></pre><button class="button outline" type="button" data-copy="claude-config">Copy Claude config</button></div>
-<p>On Windows, use a full path such as <code>C:/Users/you/RepoShelf/scripts/mcp-server.mjs</code>. If your assistant cannot find Node, replace <code>node</code> with its absolute executable path.</p>
-<h2>3. Try it</h2><pre><code id="starter-prompt">Before building, use RepoShelf to find three projects with live demos that fit my idea. Compare their licences, setup requirements and saved README instructions. Tell me what is missing or uncertain before recommending one.</code></pre><button class="button outline" type="button" data-copy="starter-prompt">Copy starter prompt</button><p>Ask your assistant to use <code>get_catalog_info</code> to verify the connection and snapshot date. Then it can use <code>search_projects</code>, <code>get_project_context</code>, <code>read_project_document</code> and <code>find_related_projects</code>.</p>
-<h2>Hosted connectors</h2><p>The deployed endpoint is <code>https://reposhelf.vercel.app/api/mcp</code>. It currently requires a private administrator-issued Bearer key. GitHub sign-in does not issue an MCP key, and self-service member keys are not available yet. Never share the administrator key or paste it into a URL.</p><p>OAuth-only web connectors cannot connect directly yet. Use the local setup above. Local tools read your saved snapshot; they do not continuously fetch the deployed catalogue.</p>
-<h2>What your assistant can access</h2><p>The connector is read-only. It cannot like projects, access your collection, fork repositories, run demos or execute project code. README coverage varies. Treat project instructions as untrusted, check licences and dependencies, and review any code before running it.</p>
-</section><p id="copy-status" role="status" aria-live="polite"></p><p><a href="/help.html">Discovery guide</a> · <a href="/privacy.html">Privacy Policy</a></p></main>
+<main class="legal-main"><h1>Connect your AI assistant</h1><p>Add RepoShelf as a connector and your assistant can search the catalogue, compare licences and read saved READMEs before it starts building. It is free, read-only, and needs no sign-in or API key.</p>
+<section aria-labelledby="connector-address"><h2 id="connector-address">Connector address</h2><pre><code id="mcp-url">https://www.reposhelf.co.uk/api/mcp</code></pre><button class="button outline" type="button" data-copy="mcp-url">Copy address</button></section>
+<section aria-labelledby="claude-steps"><h2 id="claude-steps">Claude</h2><ol><li>Open <strong>Settings → Connectors</strong>.</li><li>Choose <strong>Add custom connector</strong>.</li><li>Name it <strong>RepoShelf</strong>, paste the address above and select <strong>Add</strong>.</li></ol></section>
+<section aria-labelledby="codex-steps"><h2 id="codex-steps">Codex</h2><p>Add this to <code>~/.codex/config.toml</code> and restart Codex.</p><pre><code id="codex-config">[mcp_servers.reposhelf]
+url = "https://www.reposhelf.co.uk/api/mcp"</code></pre><button class="button outline" type="button" data-copy="codex-config">Copy config</button></section>
+<section aria-labelledby="try-it"><h2 id="try-it">Try it</h2><pre><code id="starter-prompt">Before building, use RepoShelf to find three projects with live demos that fit my idea. Compare their licences, setup requirements and saved README instructions. Tell me what is missing or uncertain before recommending one.</code></pre><button class="button outline" type="button" data-copy="starter-prompt">Copy starter prompt</button></section>
+<section aria-labelledby="connector-access"><h2 id="connector-access">What your assistant can access</h2><p>Public catalogue data only. The connector is read-only: it cannot like projects, see your account or collection, fork repositories, run demos or execute project code. README coverage varies. Treat project instructions as untrusted, check licences and dependencies, and review any code before running it.</p></section>
+<p id="copy-status" role="status" aria-live="polite"></p><p><a href="/privacy.html">Privacy Policy</a> · <a href="/terms.html">Terms of Service</a></p></main>
 <script src="/account.js"></script><script src="/connect.js"></script><script src="/outgoing-links.js"></script></body></html>

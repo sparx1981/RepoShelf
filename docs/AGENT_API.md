@@ -2,15 +2,19 @@
 
 RepoShelf provides a read-only REST API and MCP tools for finding existing starting points before building an application. Both use saved catalog data; requests never call GitHub, run a demo, execute a README command, or fork a repository.
 
-## Member setup guide
+## Connector setup
 
-Signed-in members can open **Connect your AI assistant** in their profile, or visit `/connect.html`, for copyable Codex and Claude Desktop local configurations. Local mode requires no API key but reads a downloaded snapshot; use `git pull` to update it. GitHub sign-in does not issue a hosted API key. Self-service member keys and OAuth are not implemented.
+Anyone can open **Connect your AI assistant** in the account menu, or visit `/connect.html`. The page shows the connector address (`/api/mcp` on the site's own domain) and two short routes: in Claude, **Settings → Connectors → Add custom connector** and paste the address; in Codex, add the address as `url` under `[mcp_servers.reposhelf]` in `~/.codex/config.toml`. No sign-in, API key or local install is needed.
+
+The hosted MCP endpoint is open and read-only by default. It serves the same five read-only tools as the local connector, refuses browser requests from other sites, and applies a best-effort limit of 120 requests per minute per caller (kept in memory per server instance, so it is not a shared limiter). If the open endpoint is abused, set `REPOSHELF_MCP_REQUIRE_KEY=1` in Vercel and redeploy to require the private Bearer key again; clients without the key then receive HTTP 401. The REST API under `/api/v1` is not affected and always needs the key.
+
+The local connector (`node scripts/mcp-server.mjs` from a clone of the repository) remains available for offline use against a downloaded snapshot. It is no longer part of the member setup page.
 
 ## Private hosted access
 
 The API is disabled until `REPOSHELF_API_KEY` is configured in **Vercel → RepoShelf → Settings → Environment Variables**, for Production (and Preview if desired). Use at least 32 random characters, keep it secret, and redeploy. Generate a key locally with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. Do not commit it, paste it into a URL, or put it in frontend code. The same key is used by your own clients through `Authorization: Bearer …`.
 
-Changing the server key and redeploying revokes the old key. This first version is a single-owner API, with no write operations, OAuth, per-user scopes, or shared durable rate limiter. The API uses private/no-store response caching and rejects cross-origin browser requests. Authentication protects `/api/v1/*` and `/api/mcp`; it does not change the visibility of the existing storefront, GitHub repository, or its public catalog assets. Do not store private upstream repositories or secrets in the catalog.
+Changing the server key and redeploying revokes the old key. This first version is a single-owner API, with no write operations, OAuth, per-user scopes, or shared durable rate limiter. The API uses private/no-store response caching and rejects cross-origin browser requests. Authentication protects `/api/v1/*`, and `/api/mcp` when `REPOSHELF_MCP_REQUIRE_KEY=1`; it does not change the visibility of the existing storefront, GitHub repository, or its public catalog assets. Do not store private upstream repositories or secrets in the catalog.
 
 ## REST API
 
