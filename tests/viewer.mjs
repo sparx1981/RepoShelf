@@ -101,6 +101,8 @@ r=await call('POST','/api/viewer?action=my-preview',{body:{preview:false},admin:
  probes.length=0;let r=await ask('team/up','http://demo.example/plain');assert.equal(probes.at(-1).url,'https://demo.example/plain','an http address is probed at https');assert.equal(r.data.url,'https://demo.example/plain');assert.equal(r.data.embeddable,true);probes.length=0;
  r=await ask('team/a','https://demo.example/app');assert.deepEqual(r.data,{embeddable:true,reason:'no_restrictions',url:'https://demo.example/app'});assert.equal(probes.length,1);
  await ask('team/a','https://demo.example/app');assert.equal(probes.length,1,'a recent answer is reused');
+ probes.length=0;r=await ask('team/st','https://my-app.streamlit.app/');assert.equal(probes.at(-1).url,'https://my-app.streamlit.app/?embed=true','Streamlit apps are framed in embed mode');assert.equal(r.data.url,'https://my-app.streamlit.app/?embed=true');
+ r=await ask('team/st2','https://my-app.streamlit.app/?embed=true&x=1');assert.equal(r.data.url,'https://my-app.streamlit.app/?embed=true&x=1','an existing embed setting is left alone');
  probeResult={embeddable:false,reason:'x_frame_options_deny'};r=await ask('team/b','https://deny.example/');assert.deepEqual(r.data,{embeddable:false,reason:'x_frame_options_deny',url:'https://deny.example/'});
  probeResult={embeddable:null,reason:'timeout'};r=await ask('team/c','https://slow.example/');assert.equal(r.data.embeddable,false,'unreachable or unknown never opens a frame');
  probeResult=Error('boom');r=await ask('team/d','https://boom.example/');assert.deepEqual(r.data,{embeddable:false,reason:'check_failed',url:'https://boom.example/'});
