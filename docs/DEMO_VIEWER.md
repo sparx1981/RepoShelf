@@ -7,7 +7,7 @@ The in-page demo viewer is built as an **administrator-only pilot**. Visitors do
 | Piece | Where |
 |---|---|
 | Shared viewer configuration (sandbox string, per-demo flags, configuration id, own-origin rule, eligibility decision) | `dist/viewer-config.js` |
-| Viewer component (persistent Close, Open in new tab and "Third-party demo" label; uncached check before opening, while open, and when the tab regains focus) | `dist/viewer.js`, `dist/viewer.css` |
+| Viewer component (persistent RepoShelf logo, "Open in new tab" icon button and Close (X) button; uncached check before opening, while open, and when the tab regains focus) | `dist/viewer.js`, `dist/viewer.css` |
 | Scenario format and validation | `lib/viewer-scenario.mjs` |
 | API: visitor eligibility, administrator controls, qualification worker | `lib/viewer.mjs`, served as `/api/viewer` by the editorial function (`api/editorial.mjs`, `area=viewer`, rewritten in `vercel.json`) |
 | Database: global switch and required profiles, approved demos, scenario history, evidence per browser profile | `supabase/migrations/202610060021_demo_viewer.sql` and `…0022_demo_viewer_v2.sql`, `tests/database-viewer.sql` |
@@ -82,7 +82,7 @@ Playwright WebKit and mobile emulation supplement, and do not replace, checks on
 
 **Administration → Demo viewer → "Open demos in the viewer on RepoShelf"** is a per-account switch for hand-checking demos while browsing the storefront. It needs **migration 23**, `supabase/migrations/202610070023_viewer_admin_preview.sql`, applied in the Supabase SQL editor (safe to run twice). Until then the switch reports that it is unavailable and demos keep opening in a new tab.
 
-- **On:** every "Try demo" link opens that demo inside the viewer as an **unqualified preview**, whether or not it has passed qualification. The viewer bar says "Unqualified preview" so nobody mistakes it for what visitors get. "Open in new tab" and "Close" are always available.
+- **On:** every "Try demo" link opens that demo inside the viewer as an **unqualified preview**, whether or not it has passed qualification. The viewer bar looks the same as it does for visitors; `data-mode="preview"` on the dialog says which it is. "Open in new tab" and "Close" are always available.
 - **Off (the default), and for every visitor:** "Try demo" opens a new tab exactly as before. The viewer code is not even downloaded unless an administrator has the switch on.
 - The setting follows the account across devices and is read when a storefront page loads, so **reload the storefront after changing it**.
 - Anything the viewer refuses to frame (a non-https address, or a demo on RepoShelf itself) opens in a new tab. Some sites forbid being framed at all; the viewer then shows an empty or blocked frame, and "Open in new tab" is the way out. For Hugging Face Spaces the listing's demo address can be the Space page rather than its `appUrl`, which may refuse to be framed.
@@ -108,7 +108,7 @@ The diagnosis is repeatable: **Actions → Demo viewer diagnosis** (optional `on
 
 On the administrator page each demo has two buttons:
 
-- **Unqualified preview** skips every eligibility check and polling. It is labelled "Unqualified preview" in the viewer bar so nobody mistakes it for what visitors get.
+- **Unqualified preview** skips every eligibility check and polling. The bar is not labelled; only administrators can open it.
 - **Test as visitor** runs the **real** path: the uncached eligibility check before the frame is created, polling while open, a recheck when the tab regains focus, and shutdown when the demo is disabled or its address or configuration changes. If the demo is not eligible it does not open and says why.
 
 ## Disabling and propagation

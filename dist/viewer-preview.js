@@ -33,7 +33,7 @@ document.addEventListener('click',event=>{
  const link=event.target.closest?.('a[data-analytics="demo_click"][href]');if(!link)return;
  const url=link.href,id=link.dataset.project||url;
  event.preventDefault();event.stopImmediatePropagation();
- say('Checking whether this demo can open inside RepoShelf\u2026');
+ say('Warming up the demo\u2026');
  frameCheck(id,url).then(result=>{
   if(!result?.embeddable||!result.url)return newTab(url,REASONS[result?.reason]||'it cannot be shown inside RepoShelf');
   hide();
