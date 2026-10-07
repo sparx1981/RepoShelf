@@ -22,6 +22,15 @@ const blocked=deploymentStatus({statuses:[{context:'Vercel',state:'failure',desc
 assert.equal(blocked.state,'blocked');assert(blocked.description.includes('rate limited'));
 assert.equal(deploymentStatus({statuses:[{context:'Vercel',state:'success',target_url:'javascript:alert(1)'}]}).url,'https://vercel.com/sparx1981/reposhelf');
 assert.equal(deploymentStatus({statuses:[]}).state,'unknown');
+{const live='a'.repeat(40),newer='b'.repeat(40),now=Date.parse('2026-10-07T12:00:00Z'),at=minutes=>new Date(now-minutes*60000).toISOString();
+ assert.equal(deploymentStatus(null,now,{liveSha:live,head:{sha:live,at:at(5)}}).state,'ready','the site is running the newest commit');
+ assert.equal(deploymentStatus(null,now,{liveSha:live,head:{sha:newer,at:at(5)}}).state,'pending','a very recent commit is still being published');
+ const late=deploymentStatus(null,now,{liveSha:live,head:{sha:newer,at:at(45)}});assert.equal(late.state,'delayed');assert(late.description.includes('45 minutes'));
+ assert.equal(deploymentStatus(null,now,{liveSha:live,head:{sha:newer,at:'not a date'}}).state,'delayed','an unreadable time never reads as up to date');
+ assert.equal(deploymentStatus(null,now,{liveSha:null,head:{sha:newer,at:at(5)}}).state,'unknown','without the running commit nothing is claimed');
+ assert.equal(deploymentStatus(null,now,{liveSha:'main',head:{sha:'zz',at:at(5)}}).state,'unknown','malformed commit ids are ignored');
+ assert.equal(deploymentStatus({statuses:[{context:'Vercel',state:'failure',description:'x'}]},now,{liveSha:live,head:{sha:live,at:at(5)}}).state,'blocked','Vercel\'s own failure still wins when it can be read');
+}
 const telemetry=probeMetrics({due:10,selected:4,limit:4});
 telemetry.record('team/one',{kind:'working'},true);
 telemetry.record('team/two',{kind:'temporary',reason:'probe_timeout'},false);

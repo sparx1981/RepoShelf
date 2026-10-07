@@ -38,3 +38,26 @@ const build=serverToken=>createSyncLogHandler({checkpoint:{reports:async()=>[],j
 const withServer=await call(build('server-fixture-token'),'/api/sync-log');assert.equal(withServer.data.runs[0].status,'success','A 404 for the account token falls back to the server token, so run history still loads');assert.equal(withServer.data.notice,null);
 const without=await call(build(undefined),'/api/sync-log');assert.match(without.data.notice,/HTTP 404.*REPOSHELF_ACTIONS_TOKEN/,'A 404 explains that the private repository needs the Actions token')}
 console.log('PASS: a private repository 404 falls back to the server token and names the token to check.');
+{// Record counts: a 404 for the first token must not stop the second, and a refusal of every token is explained.
+const {createCheckpointStore}=await import('../lib/checkpoint-store.mjs');
+const report={id:'900',attempt:1,phase:'complete',recordedAt:'2026-10-07T10:00:00Z',stages:[],counts:{added:1,updated:2,total:3}};
+const seen=[];const fetcher=async(url,options)=>{const auth=options?.headers?.Authorization||null;seen.push(auth);if(/api\.github\.com/.test(url)&&auth==='Bearer server-token')return Response.json(/sync-checkpoint/.test(url)?{schema:1,reportIds:['900']}:report);return new Response('',{status:404})};
+process.env.REPOSHELF_ACTIONS_TOKEN='server-token';
+const store=createCheckpointStore({fetcher});
+assert.deepEqual((await store.reports(['900'],'account-token')).map(r=>r.id),['900'],'the server token is tried after the account token gets a 404');
+const meta=await store.json('.sync-checkpoint.json',1500,'account-token');assert.equal(meta.schema,1);assert.equal(store.access,'ok');
+process.env.REPOSHELF_ACTIONS_TOKEN='token-without-contents-access';
+const refused=createCheckpointStore({fetcher});assert.equal(await refused.json('.sync-checkpoint.json',1500,null),null);assert.equal(refused.access,'denied','every token refused is reported as denied, not as missing data');
+const run={id:900,name:'Refresh demo catalog',run_attempt:1,status:'completed',conclusion:'success',event:'schedule',display_title:'Refresh demo catalog',created_at:'2026-10-07T04:45:17Z',run_started_at:'2026-10-07T04:45:17Z',updated_at:'2026-10-07T05:25:00Z'};
+const live=async(url,options)=>{if(/\/actions\//.test(url))return Response.json({workflow_runs:/catalog\.yml/.test(url)?[run]:[],total_count:1});return fetcher(url,options)};
+const handler=createSyncLogHandler({checkpoint:refused,accounts:{...accounts,admin:async()=>({githubToken:null})},saved:async()=>[],fetcher:live,progress:async()=>null,serverToken:'token-without-contents-access'});
+const denied=await call(handler,'/api/sync-log');assert.match(denied.data.notice,/Record counts are unavailable.*Contents: Read-only/,'the log says why record counts are missing');
+delete process.env.REPOSHELF_ACTIONS_TOKEN;
+// The deployment card: compares the running site's commit with the newest commit on main when Vercel's status cannot be read.
+const sha=c=>c.repeat(40),mk=(liveSha,headSha,minutes)=>createSyncLogHandler({checkpoint:{reports:async()=>[],json:async()=>null},accounts:{...accounts,admin:async()=>({githubToken:'t'})},saved:async()=>[],progress:async()=>null,liveSha,fetcher:async url=>{if(/\/actions\//.test(url))return Response.json({workflow_runs:/catalog\.yml/.test(url)?[run]:[],total_count:1});if(/commits\/main\/status/.test(url))return new Response('',{status:404});if(/commits\/main$/.test(url))return Response.json({sha:headSha,commit:{committer:{date:new Date(Date.now()-minutes*60000).toISOString()}}});return Response.json({})}});
+assert.equal((await call(mk(sha('a'),sha('a'),3),'/api/sync-log')).data.deployment.state,'ready');
+assert.equal((await call(mk(sha('a'),sha('b'),3),'/api/sync-log')).data.deployment.state,'pending');
+assert.equal((await call(mk(sha('a'),sha('b'),90),'/api/sync-log')).data.deployment.state,'delayed');
+assert.equal((await call(mk(undefined,sha('b'),3),'/api/sync-log')).data.deployment.state,'unknown');
+}
+console.log('PASS: record counts survive a token that cannot see the repository, a refusal is explained, and the website-update card works without Vercel\'s status API.');
