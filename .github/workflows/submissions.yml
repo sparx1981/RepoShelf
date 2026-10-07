@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     outputs:
-      ready: ${{ steps.check.outputs.ready }}
+      ready: ${{ steps.queue.outputs.ready }}
     steps:
       - name: Check configuration and catalogue availability
         id: check
@@ -36,6 +36,31 @@ jobs:
             }catch{console.log('Catalogue availability could not be checked; submissions retained for retry.')}
           }else console.log('Submission scan awaits configuration; catalogue queue left untouched.');
           appendFileSync(process.env.GITHUB_OUTPUT,'ready='+ready+'\n');
+          JS
+      # Restoring the saved catalogue takes about six minutes, so the scan only starts when someone has submitted a repository that is
+      # due. This also shows a missing database update in seconds, as its own failed step, instead of after the restore.
+      - name: Check submissions database access
+        id: queue
+        env:
+          REPOSHELF_SUBMISSION_SYNC_KEY: ${{ secrets.REPOSHELF_SUBMISSION_SYNC_KEY }}
+          REPOSHELF_PUBLIC_URL: https://reposhelf.vercel.app
+          CATALOGUE_READY: ${{ steps.check.outputs.ready }}
+        run: |
+          node --input-type=module <<'JS'
+          import {appendFileSync} from 'node:fs';
+          const out=ready=>appendFileSync(process.env.GITHUB_OUTPUT,'ready='+ready+'\n');
+          if(process.env.CATALOGUE_READY!=='true'){out(false);process.exit(0)}
+          const origin=process.env.REPOSHELF_PUBLIC_URL||'https://reposhelf.vercel.app';
+          let response,data;
+          try{
+            response=await fetch(origin+'/api/submissions?action=pending',{method:'POST',headers:{Authorization:'Bearer '+process.env.REPOSHELF_SUBMISSION_SYNC_KEY,'Content-Type':'application/json'},body:'{}',signal:AbortSignal.timeout(20000)});
+            data=await response.json().catch(()=>({}));
+          }catch{console.log('The website could not be reached; submissions stay queued for the next check.');out(false);process.exit(0)}
+          if(response.ok){console.log(data.pending?'Submissions are waiting; starting the scan.':'No submissions are due; nothing to scan.');out(data.pending===true);process.exit(0)}
+          const code=data?.error?.code,message=data?.error?.message||'Request failed';
+          if(code==='migration_required'){console.log('::error::The submissions database tables are missing. Apply supabase/migrations/202610030007_repository_submissions.sql in the Supabase SQL editor, then run this check again.');out(false);process.exit(1)}
+          if(response.status===401||response.status===403){console.log('::error::The website rejected REPOSHELF_SUBMISSION_SYNC_KEY. The value in GitHub Actions secrets must match the one in Vercel.');out(false);process.exit(1)}
+          console.log('The submissions queue could not be read ('+response.status+': '+message+'); submissions stay queued for the next check.');out(false);
           JS
   scan:
     needs: readiness

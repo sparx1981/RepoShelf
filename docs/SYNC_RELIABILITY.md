@@ -30,3 +30,17 @@ The Sync log's **website update** card answers one question for the administrato
 
 **Reading the run list.** Each run says what kind it is and how it started: *Catalogue sync* (scheduled, started by an administrator, or automatic after a code change), *Catch-up sync* (started automatically because syncs were late), *Website publication*, *Submitted repositories check*, *Launch pacing check* and *Listing repair*. Only catalogue syncs and repairs have record counts; other kinds say so instead of "No record counts". A running catalogue sync shows its phase (1 finding and saving listings, 2 checking demos and capturing screenshots, 3 merging and saving results) and its step. Record counts and the live browser counters need the Actions token to have Contents read access.
 
+
+## The submitted-repositories check
+
+The "Scan submitted repositories" workflow runs every 15 minutes. Restoring the saved catalogue takes about six minutes, so it no
+longer starts that work unless it has to:
+
+1. A short readiness job first checks that no catalogue sync or publication is running.
+2. It then asks the website (`/api/submissions?action=pending`, authorised by `REPOSHELF_SUBMISSION_SYNC_KEY`) whether any
+   submission is due. This only reads the queue; it never claims a submission. Nothing due means the scan is skipped.
+3. If the website reports that the submissions tables are missing (migration 7, `202610030007_repository_submissions.sql`), or
+   rejects the key, the step "Check submissions database access" fails within seconds and the Sync log explains why. Other
+   problems, such as the website being unreachable, leave submissions queued for the next check.
+
+A catalogue sync does not read the submissions queue, so it neither exercises nor depends on this check.
