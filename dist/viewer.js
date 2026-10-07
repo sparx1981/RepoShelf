@@ -8,9 +8,9 @@
 //    and again every poll interval and whenever the tab regains focus. The request has a short timeout. If the check
 //    fails, times out or reports a different address or configuration, the viewer closes and the caller opens the demo
 //    externally. Background tabs throttle timers, so "about a minute" is a foreground target, not a guarantee.
-//  - A preview open skips those checks. It exists so an administrator can look at an unqualified demo, and it is
-//    labelled so nobody mistakes it for what visitors get.
-const DEFAULT_TIMEOUT=4000;
+//  - A preview open skips those checks. It exists so an administrator can look at an unqualified demo; the bar looks the
+//    same, and dialog.dataset.mode ('preview' or 'live') says which it is.
+const DEFAULT_TIMEOUT=4000,SVG_NS='http://www.w3.org/2000/svg';
 function withTimeout(promise,ms){let timer;return Promise.race([Promise.resolve(promise),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('timeout')),ms)})]).finally(()=>clearTimeout(timer))}
 // The uncached eligibility request used by live opens.
 const liveEligibility=(base='')=>id=>fetch(base+'/api/viewer?id='+encodeURIComponent(id),{cache:'no-store',credentials:'omit',signal:globalThis.AbortSignal?.timeout?AbortSignal.timeout(DEFAULT_TIMEOUT):undefined}).then(r=>r.json());
@@ -31,14 +31,15 @@ function create({document:doc=globalThis.document,window:win=globalThis.window,f
   }
   const dialog=doc.createElement('div');dialog.className='viewer-dialog';dialog.setAttribute('role','dialog');dialog.setAttribute('aria-modal','true');dialog.setAttribute('aria-label',title+' (third-party demo)');
   const bar=doc.createElement('div');bar.className='viewer-bar';
-  const label=doc.createElement('span');label.className='viewer-label';label.textContent='Third-party demo';
-  const name=doc.createElement('strong');name.className='viewer-title';name.textContent=title;
-  const external=doc.createElement('a');external.className='button outline viewer-external';external.href=href;external.target='_blank';external.rel='noopener noreferrer';external.textContent='Open in new tab';
-  const closeButton=doc.createElement('button');closeButton.type='button';closeButton.className='button outline viewer-close';closeButton.textContent='Close';closeButton.addEventListener('click',()=>close('closed'));
-  bar.append(label);if(preview){const banner=doc.createElement('span');banner.className='viewer-banner';banner.textContent='Unqualified preview: eligibility checks are off. Visitors would not see this demo in the viewer unless it passes.';bar.append(banner)}
-  bar.append(name,external,closeButton);
+  // The bar is the RepoShelf logo with two icon buttons. The demo's name, the third-party label and the preview banner are
+  // deliberately not shown; the dialog and frame keep their accessible names, and data-mode records live versus preview.
+  const logo=doc.createElement('span');logo.className='viewer-logo';logo.setAttribute('aria-hidden','true');logo.textContent='r.';
+  const icon=(...paths)=>{const svg=doc.createElementNS(SVG_NS,'svg');svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('width','20');svg.setAttribute('height','20');svg.setAttribute('fill','none');svg.setAttribute('stroke','currentColor');svg.setAttribute('stroke-width','2');svg.setAttribute('stroke-linecap','round');svg.setAttribute('stroke-linejoin','round');svg.setAttribute('aria-hidden','true');svg.setAttribute('focusable','false');for(const d of paths){const path=doc.createElementNS(SVG_NS,'path');path.setAttribute('d',d);svg.append(path)}return svg};
+  const external=doc.createElement('a');external.className='button outline viewer-icon-button viewer-external';external.href=href;external.target='_blank';external.rel='noopener noreferrer';external.setAttribute('aria-label','Open in new tab');external.title='Open in new tab';external.append(icon('M14 4h6v6','M20 4l-9 9','M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5'));
+  const closeButton=doc.createElement('button');closeButton.type='button';closeButton.className='button outline viewer-icon-button viewer-close';closeButton.setAttribute('aria-label','Close');closeButton.title='Close';closeButton.append(icon('M6 6l12 12','M18 6L6 18'));closeButton.addEventListener('click',()=>close('closed'));
+  bar.append(logo,external,closeButton);dialog.dataset.mode=preview?'preview':'live';
   const frame=doc.createElement('iframe');frame.className='viewer-frame';frame.setAttribute('sandbox',sandbox);frame.setAttribute('referrerpolicy','no-referrer');frame.setAttribute('title',title+' (third-party demo)');frame.setAttribute('loading','lazy');frame.src=href;
-  dialog.append(bar,frame);dialog.addEventListener('keydown',ev=>{if(ev.key==='Escape'){ev.stopPropagation();close('closed')}else if(ev.key==='Tab'){const items=[external,closeButton,frame],at=items.indexOf(doc.activeElement);if(ev.shiftKey&&at<=0){ev.preventDefault();items.at(-1).focus()}else if(!ev.shiftKey&&at===items.length-1){ev.preventDefault();items[0].focus()}}});
+  dialog.append(bar,frame);dialog.addEventListener('keydown',ev=>{if(ev.key==='Escape'){ev.preventDefault();ev.stopPropagation();close('closed')}else if(ev.key==='Tab'){const items=[external,closeButton,frame],at=items.indexOf(doc.activeElement);if(ev.shiftKey&&at<=0){ev.preventDefault();items.at(-1).focus()}else if(!ev.shiftKey&&at===items.length-1){ev.preventDefault();items[0].focus()}}});
   doc.body.append(dialog);doc.body.classList?.add('viewer-open');
   current={dialog,opener,id,url:href,configId,preview,timer:null};closeButton.focus();
   if(!preview){
