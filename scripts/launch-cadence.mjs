@@ -2,11 +2,13 @@ import {readFile,writeFile,mkdir,appendFile} from 'node:fs/promises';
 import {pathToFileURL} from 'node:url';
 import {launchDecision,launchMilestone} from '../lib/launch-cadence.mjs';
 const root=new URL('../',import.meta.url);
-export async function checkpointJson(path,{fetcher=fetch}={}){
+export async function checkpointJson(path,{fetcher=fetch,token=process.env.GITHUB_TOKEN}={}){
+ // The repository is private, so anonymous raw reads answer 404: read through the API with the workflow token first.
+ if(token)try{const res=await fetcher('https://api.github.com/repos/sparx1981/RepoShelf/contents/'+path+'?ref=reposhelf-checkpoints',{headers:{Accept:'application/vnd.github.raw+json','User-Agent':'RepoShelf',Authorization:'Bearer '+token},signal:AbortSignal.timeout(10000)});if(res.ok)return await res.json()}catch{}
  try{const res=await fetcher('https://raw.githubusercontent.com/sparx1981/RepoShelf/reposhelf-checkpoints/'+path,{signal:AbortSignal.timeout(10000),redirect:'error'});return res.ok?await res.json():null;}catch{return null;}
 }
 export async function requestLaunch({fetcher=fetch,token=process.env.GITHUB_TOKEN,now=Date.now()}={}){
- const [growth,state]=await Promise.all([checkpointJson('dist/growth.json',{fetcher}),checkpointJson('data/launch-cadence.json',{fetcher})]);
+ const [growth,state]=await Promise.all([checkpointJson('dist/growth.json',{fetcher,token}),checkpointJson('data/launch-cadence.json',{fetcher,token})]);
  const snapshot=growth?.snapshots?.at(-1),fresh=now-Date.parse(snapshot?.at)<6*3600000;
  const decision=launchDecision({now,published:fresh&&Number.isFinite(snapshot?.published)?snapshot.published:null,state:state||{}});
  if(!decision.extra)return {requested:false,reason:decision.reason};
