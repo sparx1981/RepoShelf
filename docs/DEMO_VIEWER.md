@@ -78,6 +78,16 @@ Playwright WebKit and mobile emulation supplement, and do not replace, checks on
 
 **Alerting:** the workflow publishes a summary on the run page and **fails the job when any demo failed, could not be checked, or was left unchecked** (time budget or queue limit), because unchecked demos' evidence would silently expire, so GitHub's failed-run notification is the alert. The administrator page also warns when any approved demo's evidence is missing or older than 36 hours, which catches a missed run before the 48-hour limit.
 
+## Opening demos in the viewer from the storefront (administrators only)
+
+**Administration → Demo viewer → "Open demos in the viewer on RepoShelf"** is a per-account switch for hand-checking demos while browsing the storefront. It needs **migration 23**, `supabase/migrations/202610070023_viewer_admin_preview.sql`, applied in the Supabase SQL editor (safe to run twice). Until then the switch reports that it is unavailable and demos keep opening in a new tab.
+
+- **On:** every "Try demo" link opens that demo inside the viewer as an **unqualified preview**, whether or not it has passed qualification. The viewer bar says "Unqualified preview" so nobody mistakes it for what visitors get. "Open in new tab" and "Close" are always available.
+- **Off (the default), and for every visitor:** "Try demo" opens a new tab exactly as before. The viewer code is not even downloaded unless an administrator has the switch on.
+- The setting follows the account across devices and is read when a storefront page loads, so **reload the storefront after changing it**.
+- Anything the viewer refuses to frame (a non-https address, or a demo on RepoShelf itself) opens in a new tab. Some sites forbid being framed at all; the viewer then shows an empty or blocked frame, and "Open in new tab" is the way out. For Hugging Face Spaces the listing's demo address can be the Space page rather than its `appUrl`, which may refuse to be framed.
+- This is **manual** checking. The automated check is the daily qualification job described above, which runs each approved demo's scenario in the viewer.
+
 ## The two preview modes
 
 On the administrator page each demo has two buttons:

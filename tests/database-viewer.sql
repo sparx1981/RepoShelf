@@ -74,4 +74,15 @@ begin
  end loop;
  if to_regprocedure('public.reposhelf_viewer_save(uuid,text,text,jsonb,boolean,boolean,boolean,text)') is not null or to_regprocedure('public.reposhelf_viewer_settings(uuid,boolean)') is not null then raise exception 'the superseded function signatures must be gone';end if;
 end$$;
+-- administrator preview preference: per account, off by default, server-only
+do $$
+declare u uuid:='00000000-0000-0000-0000-000000000001';
+begin
+ if public.reposhelf_viewer_pref_get(u) then raise exception 'the preview preference must start off';end if;
+ if not public.reposhelf_viewer_pref_set(u,true) then raise exception 'preference not saved';end if;
+ if not public.reposhelf_viewer_pref_get(u) then raise exception 'preference not read back';end if;
+ if public.reposhelf_viewer_pref_get('00000000-0000-0000-0000-000000000002') then raise exception 'another account must be unaffected';end if;
+ if has_function_privilege('anon','public.reposhelf_viewer_pref_get(uuid)','execute') or has_function_privilege('authenticated','public.reposhelf_viewer_pref_set(uuid,boolean)','execute') then raise exception 'clients must not call the preference functions';end if;
+ if not has_function_privilege('service_role','public.reposhelf_viewer_pref_set(uuid,boolean)','execute') then raise exception 'the server must be able to set the preference';end if;
+end$$;
 rollback;
