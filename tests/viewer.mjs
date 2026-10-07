@@ -49,11 +49,11 @@ assert.equal(bad({steps:[{action:'fill',selector:'#key',value:'ghp_abcdefghijklm
 assert.equal(bad({steps:[{action:'click',selector:'a'},{action:'expectPopup',host:'accounts.google.com'}]}).ok,false);assert.equal(bad({steps:[{action:'click',selector:'a'},{action:'expectPopup',host:'github.com'}]}).ok,false);assert.equal(bad({steps:[{action:'click',selector:'a'},{action:'expectPopup',host:'docs.example.org'}]}).ok,true,'an ordinary popup is fine');
 assert.deepEqual(bad({steps:[{action:'click',selector:'a'},{action:'expectDownload',filename:'report.csv',minBytes:4}]}).scenario.steps[1],{action:'expectDownload',filename:'report.csv',minBytes:4});assert.equal(bad({steps:[{action:'click',selector:'a'},{action:'expectDownload',minBytes:0}]}).ok,false);
 // ---- the endpoint
-const calls=[];let db,failing=false,prefs=false;const reset=()=>{db=state()};reset();
+const calls=[];let db,failing=false,prefs=false,site=false;const reset=()=>{db=state()};reset();
 const person={id:'00000000-0000-0000-0000-000000000001'};
 const accounts={config:{origin:'https://www.reposhelf.co.uk'},origin(req){if(req.headers.origin!=='https://www.reposhelf.co.uk')throw new AccountError(403,'origin_not_allowed','no')},async admin(req){if(!req.admin)throw new AccountError(403,'forbidden','Administrator access is required.');return person},
  async request(path,{body}={}){calls.push({path,body});if(failing)throw new AccountError(503,'database_unavailable','down');const name=path.split('/').pop();
-  if(name==='reposhelf_viewer_state')return db;if(name==='reposhelf_viewer_list')return {enabled:true,required_profiles:['chromium'],demos:[{...demo,project_id:'team/a',latest:run('chromium'),profiles:[run('chromium')]}]};if(name==='reposhelf_viewer_queue')return {required_profiles:['chromium','firefox'],items:[{project_id:'team/a'}]};if(name==='reposhelf_viewer_pref_get')return prefs;if(name==='reposhelf_viewer_pref_set'){prefs=body.p_preview;return prefs}return {ok:true,called:name,body}}};
+  if(name==='reposhelf_viewer_state')return db;if(name==='reposhelf_viewer_list')return {enabled:true,required_profiles:['chromium'],demos:[{...demo,project_id:'team/a',latest:run('chromium'),profiles:[run('chromium')]}]};if(name==='reposhelf_viewer_queue')return {required_profiles:['chromium','firefox'],items:[{project_id:'team/a'}]};if(name==='reposhelf_viewer_site_get')return site;if(name==='reposhelf_viewer_site_set'){site=body.p_all;return site}if(name==='reposhelf_viewer_pref_get')return prefs;if(name==='reposhelf_viewer_pref_set'){prefs=body.p_preview;return prefs}return {ok:true,called:name,body}}};
 const key='k'.repeat(40),handler=createViewerHandler({accounts,key,now:()=>now});
 const call=async(method,url,{body,admin=false,origin='https://www.reposhelf.co.uk',auth}={})=>{const res={status:0,headers:{},body:'',setHeader(k,v){this.headers[k.toLowerCase()]=v},writeHead(s,h){this.status=s;Object.assign(this.headers,Object.fromEntries(Object.entries(h||{}).map(([k,v])=>[k.toLowerCase(),v])))},end(b){this.body=b}};try{await handler({method,url,headers:{origin,...(auth?{authorization:auth}:{})},admin,body:body===undefined?undefined:JSON.stringify(body)},res)}catch(e){return {status:e.status,code:e.code,message:e.message}}return {status:res.status,headers:res.headers,data:res.body?JSON.parse(res.body):null}};
 // visitors
@@ -95,7 +95,7 @@ r=await call('POST','/api/viewer?action=my-preview',{body:{preview:false},admin:
  const fetcher=async url=>{hfCalls.push(url);return hfOk?Response.json(hfBody):new Response('',{status:404})};
  const h=createViewerHandler({accounts,key,now:()=>now,frameProbe,fetcher});
  const ask=async(id,url,admin=true)=>{const res={status:0,headers:{},body:'',setHeader(){},writeHead(st){this.status=st},end(b){this.body=b}};try{await h({method:'GET',url:'/api/viewer?action=frame-check&id='+encodeURIComponent(id)+'&url='+encodeURIComponent(url),headers:{origin:'https://www.reposhelf.co.uk'},admin},res)}catch(e){return {status:e.status,code:e.code}}return {status:res.status,data:JSON.parse(res.body)}};
- assert.equal((await ask('team/a','https://demo.example/app',false)).code,'forbidden','administrators only');
+ assert.equal((await ask('team/a','https://demo.example/app',false)).code,'viewer_not_enabled','visitors cannot have the server look at a demo while the all-users switch is off');
  assert.equal((await ask('nope','https://demo.example/app')).code,'invalid_demo');assert.equal((await ask('team/a','ftp://demo.example/app')).code,'invalid_demo','only http and https addresses are looked at');assert.equal((await ask('team/a','not a url')).code,'invalid_demo');
  assert.deepEqual((await ask('team/own','https://www.reposhelf.co.uk/x')).data,{embeddable:false,reason:'own_origin',url:'https://www.reposhelf.co.uk/x'});assert.equal(probes.length,0,'RepoShelf is never even probed');
  probes.length=0;let r=await ask('team/up','http://demo.example/plain');assert.equal(probes.at(-1).url,'https://demo.example/plain','an http address is probed at https');assert.equal(r.data.url,'https://demo.example/plain');assert.equal(r.data.embeddable,true);probes.length=0;
@@ -111,5 +111,36 @@ r=await call('POST','/api/viewer?action=my-preview',{body:{preview:false},admin:
  r=await ask('hf:o/s','https://huggingface.co/spaces/o/s');assert.equal(hfCalls.at(-1),'https://huggingface.co/api/spaces/o/s');assert.equal(probes.at(-1).url,'https://o-s.hf.space/','the Space app address is probed, not the Space page');assert.equal(r.data.url,'https://o-s.hf.space/');assert.equal(r.data.embeddable,true);
  for(const bad of [{host:'https://evil.example/'},{host:'http://o-s.hf.space/'},{host:'https://user:pw@o-s.hf.space/'},{host:'https://o-s.hf.space:8443/'},{}]){hfBody=bad;probes.length=0;r=await ask('hf:o/s'+probes.length+Math.random().toString(36).slice(2,5),'https://huggingface.co/spaces/o/s');assert.equal(r.data.reason,'no_app_address',JSON.stringify(bad));assert.equal(probes.length,0)}
  hfOk=false;r=await ask('hf:o/other','https://huggingface.co/spaces/o/other');assert.deepEqual(r.data,{embeddable:false,reason:'no_app_address',url:'https://huggingface.co/spaces/o/other'},'a lookup failure means a new tab');
+}
+// The all-users switch: public to read, administrators only to change, and visitors may only have a listed demo checked.
+{site=false;
+ const mk=(extra={})=>createViewerHandler({accounts,key,now:()=>now,frameProbe:async(url)=>({url,embeddable:true,reason:'no_restrictions'}),fetcher:async()=>new Response('',{status:404}),demoFor:async id=>id==='team/listed'?'https://listed.example/app':null,...extra});
+ const h=mk();
+ const hit=async(method,url,{body,admin=false,origin='https://www.reposhelf.co.uk'}={})=>{const res={status:0,headers:{},body:'',setHeader(){},writeHead(st){this.status=st},end(b){this.body=b}};try{await h({method,url,headers:{origin},admin,body:body===undefined?undefined:JSON.stringify(body)},res)}catch(e){return {status:e.status,code:e.code}}return {status:res.status,data:JSON.parse(res.body)}};
+ assert.deepEqual((await hit('GET','/api/viewer?action=public-preview')).data,{allUsers:false},'anyone can read the setting, and it starts off');
+ assert.equal((await hit('GET','/api/viewer?action=all-users')).code,'forbidden','only administrators read the full setting');
+ assert.equal((await hit('POST','/api/viewer?action=all-users',{body:{allUsers:true}})).code,'forbidden','only administrators change it');
+ assert.equal((await hit('POST','/api/viewer?action=all-users',{body:{allUsers:true},admin:true,origin:'https://evil.example'})).code,'origin_not_allowed');
+ for(const bad of [{},{allUsers:'yes'},{allUsers:1}])assert.equal((await hit('POST','/api/viewer?action=all-users',{body:bad,admin:true})).code,'invalid_preference',JSON.stringify(bad));
+ assert.deepEqual((await hit('GET','/api/viewer?action=all-users',{admin:true})).data,{allUsers:false,available:true});
+ let r=await hit('POST','/api/viewer?action=all-users',{body:{allUsers:true},admin:true});assert.deepEqual(r.data,{allUsers:true,available:true});assert.equal(calls.at(-1).body.p_actor,person.id,'the change records who made it');assert.equal(calls.at(-1).body.p_all,true);
+ assert.deepEqual((await hit('GET','/api/viewer?action=public-preview')).data,{allUsers:true},'visitors see the change');
+ {const res={status:0,headers:{},body:'',setHeader(){},writeHead(st,hd){this.status=st;this.headers=hd},end(b){this.body=b}};await h({method:'GET',url:'/api/viewer?action=public-preview',headers:{}},res);assert.match(res.headers['Cache-Control'],/public.*s-maxage=30/,'the public answer can be reused briefly, so every page view does not reach the function');assert(!/set-cookie/i.test(JSON.stringify(res.headers)),'no cookie is set')}
+ const frame=(id,url)=>hit('GET','/api/viewer?action=frame-check&id='+encodeURIComponent(id)+'&url='+encodeURIComponent(url));
+ assert.deepEqual((await frame('team/listed','https://listed.example/app')).data,{embeddable:true,reason:'no_restrictions',url:'https://listed.example/app'},'a visitor can have a listed demo checked once the switch is on');
+ assert.deepEqual((await frame('team/listed','https://elsewhere.example/')).data,{embeddable:false,reason:'not_listed',url:'https://elsewhere.example/'},'a visitor cannot have the server look at any other address');
+ assert.equal((await frame('team/unknown','https://listed.example/app')).data.reason,'not_listed','nor a listing that is not in the catalogue');
+ assert.equal((await frame('team/listed','http://listed.example/app')).data.reason,'not_listed','the address must match the saved one exactly');
+ r=await hit('POST','/api/viewer?action=all-users',{body:{allUsers:false},admin:true});assert.equal(r.data.allUsers,false);
+ assert.deepEqual((await hit('GET','/api/viewer?action=public-preview')).data,{allUsers:false});assert.equal((await frame('team/listed','https://listed.example/app')).code,'viewer_not_enabled','switching it off closes the visitor path straight away');
+ failing=true;const broken=mk();const res={status:0,body:'',setHeader(){},writeHead(st){this.status=st},end(b){this.body=b}};await broken({method:'GET',url:'/api/viewer?action=public-preview',headers:{}},res);assert.deepEqual(JSON.parse(res.body),{allUsers:false},'any trouble reading the setting means off');failing=false;
+ site=false;
+}
+// Administration page: the pilot tools share one closed section; the two "open in the viewer" switches stay outside it.
+{const {readFile}=await import('node:fs/promises');const html=await readFile(new URL('../dist/admin-viewer.html',import.meta.url),'utf8');
+ const open=/<details\b[^>]*\bid="vw-pilot"[^>]*>/.exec(html);assert(open,'the pilot section exists');assert(!/\bopen\b/.test(open[0]),'the pilot section is collapsed by default');
+ const inside=html.slice(open.index,html.indexOf('</details>',open.index));
+ for(const id of ['vw-enabled','vw-profiles-save','vw-form','vw-list','vw-how-title'])assert(inside.includes('id="'+id+'"'),id+' is inside the pilot section');
+ for(const id of ['vw-my-preview','vw-all-users'])assert(html.includes('id="'+id+'"')&&!inside.includes('id="'+id+'"'),id+' stays outside the pilot section');
 }
 console.log('PASS: demo viewer eligibility is per browser profile and needs fresh evidence for the saved scenario and address, RepoShelf is never a demo, scenarios must show a result after their last action and keep credentials out, and the endpoint is uncached, admin-only or worker-only with safe failure.');

@@ -20,4 +20,6 @@ The two-hour schedule remains. `scripts/catalog-priority.mjs` pauses automatic n
 
 Each run revalidates up to 500 GitHub repositories and 150 Spaces, checks up to 200 demo pages, and captures up to 120 previews with three isolated browser probes at a time and a 12-minute batch budget. Missing screenshots remain first in the queue. Existing image compression and saved-progress publication continue. These are maximum batch sizes, not guaranteed completions: rate limits, unavailable pages and time budgets retain entries for retry.
 
-Admin run history retries the public GitHub endpoint without the account token if GitHub rejects that token with 401/403. Other failures still show saved reports and an honest unavailable notice.
+Admin run history tries the account token, then the server's `REPOSHELF_ACTIONS_TOKEN`, then the public endpoint, moving on when GitHub answers 401, 403 or 404 (a private repository answers 404 to a token that cannot see it). Other failures still show saved reports and an honest unavailable notice; a 404 names `REPOSHELF_ACTIONS_TOKEN` as the thing to check.
+
+The catalogue workflow's "Validate catalog logic" step runs `tests/public-launch.mjs`, which must not read live saved sync reports: two recent failed "Application checks" reports (restored from the checkpoint branch) would make the operational-health monitor raise an alert, fail the test, and record yet another failed report, so a transient test failure could keep every sync failing for hours. The test now passes its own empty report list to `monitor`.

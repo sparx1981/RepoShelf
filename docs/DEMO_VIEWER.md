@@ -1,6 +1,6 @@
-# Demo viewer pilot (administrator harness)
+# Demo viewer
 
-The in-page demo viewer is built as an **administrator-only pilot**. Visitors do not see it yet; "Try demo" still opens the demo in a new tab. The design, the reviewer decisions and the rollout plan are in `docs/proposals/IN_PAGE_DEMO_VIEWER.md`. Core rule: **uncertainty always sends the visitor to the external demo.**
+The in-page demo viewer began as an **administrator-only pilot**. It now reaches visitors through one switch, **Administration → Demo viewer → "Open demos in the viewer for everyone"** (see below). With that switch off, "Try demo" opens the demo in a new tab for visitors. The design, the reviewer decisions and the rollout plan are in `docs/proposals/IN_PAGE_DEMO_VIEWER.md`. Core rule: **uncertainty always sends the visitor to the external demo.**
 
 ## What exists
 
@@ -13,7 +13,7 @@ The in-page demo viewer is built as an **administrator-only pilot**. Visitors do
 | Database: global switch and required profiles, approved demos, scenario history, evidence per browser profile | `supabase/migrations/202610060021_demo_viewer.sql` and `…0022_demo_viewer_v2.sql`, `tests/database-viewer.sql` |
 | Qualification tool | `scripts/viewer-qualify.mjs` |
 | Daily qualification job (one run per browser profile) | `.github/workflows/viewer-qualification.yml` |
-| Administrator page | `/admin-viewer.html` (link on the Administration tabs) |
+| Administrator page | `/admin-viewer.html` (link on the Administration tabs). The approval and qualification tools (Global switch, Add or update a demo, Pilot demos, Qualifying) sit in a **Pilot tools** section that is closed by default. |
 
 ## Setting it up
 
@@ -80,7 +80,7 @@ Playwright WebKit and mobile emulation supplement, and do not replace, checks on
 
 ## Opening demos in the viewer from the storefront (administrators only)
 
-**Administration → Demo viewer → "Open demos in the viewer on RepoShelf"** is a per-account switch for hand-checking demos while browsing the storefront. It needs **migration 23**, `supabase/migrations/202610070023_viewer_admin_preview.sql`, applied in the Supabase SQL editor (safe to run twice). Until then the switch reports that it is unavailable and demos keep opening in a new tab.
+**Administration → Demo viewer → "Open demos in the viewer on RepoShelf"** is a per-account switch for hand-checking demos while browsing the storefront. It stays available alongside the all-users switch below. It needs **migration 23**, `supabase/migrations/202610070023_viewer_admin_preview.sql`, applied in the Supabase SQL editor (safe to run twice). Until then the switch reports that it is unavailable and demos keep opening in a new tab.
 
 - **On:** every "Try demo" link opens that demo inside the viewer as an **unqualified preview**, whether or not it has passed qualification. The viewer bar looks the same as it does for visitors; `data-mode="preview"` on the dialog says which it is. "Open in new tab" and "Close" are always available.
 - If the demo was opened from a listing's modal, the listing closes while the demo is open (a modal sits above the viewer otherwise) and comes back, with focus on "Try demo", when the demo is closed with X or Escape.
@@ -105,6 +105,16 @@ The diagnosis is repeatable: **Actions → Demo viewer diagnosis** (optional `on
 
 - This is **manual** checking. The automated check is the daily qualification job described above, which runs each approved demo's scenario in the viewer.
 
+## Opening demos in the viewer for everyone
+
+**Administration → Demo viewer → "Open demos in the viewer for everyone"** is a site-wide switch. It needs **migration 24**, `supabase/migrations/202610070024_viewer_all_users.sql`, applied in the Supabase SQL editor (safe to run twice). Until then the switch reports that it is unavailable and every visitor keeps getting a new tab.
+
+- **On:** every visitor, signed in or not, gets "Try demo" opened inside the viewer as an **unqualified preview**, exactly as an administrator does with their own switch on. Demos that cannot be framed, cannot be reached, are not https, or are on RepoShelf itself open in a new tab.
+- **Off (the default):** "Try demo" opens a new tab, and the viewer code is not downloaded. An administrator's own switch still works independently.
+- **Reading the setting** is public (`GET /api/viewer?action=public-preview`, answers `{allUsers}`, any trouble means off). The answer may be reused for 30 seconds by the server and 30 seconds by the CDN or browser (it is not stored in the visitor's browser storage), so a change reaches visitors within about a minute.
+- **The framing check is public while the switch is on.** `GET /api/viewer?action=frame-check` only ever probes the demo address saved in the catalogue for that listing: a visitor who asks about any other address (or a listing that is not in the catalogue) gets `not_listed` and a new tab, and a visitor gets a 403 while the switch is off. Administrators can still check any address.
+- The setting is recorded with the administrator who changed it (`viewer_site_prefs.updated_by`).
+
 ## The two preview modes
 
 On the administrator page each demo has two buttons:
@@ -124,6 +134,6 @@ The Vercel Hobby plan allows at most **12 serverless functions** per deployment,
 
 ## Not done yet (by design)
 
-- No visitor-facing button, report action or analytics events.
+- No visitor-facing report action or analytics events for the viewer, and no per-visitor choice: the all-users switch applies to everyone.
 - No site-wide Content-Security-Policy. The pilot plan is exact `frame-src` origins for approved demos (the evidence records the resolved origins), added when the viewer reaches visitors. A comprehensive CSP is a separate change, in report-only mode first.
 - Provider-login (OAuth) demos are out of the pilot.
