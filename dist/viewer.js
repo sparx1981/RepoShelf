@@ -39,7 +39,7 @@ function create({document:doc=globalThis.document,window:win=globalThis.window,f
   const closeButton=doc.createElement('button');closeButton.type='button';closeButton.className='button outline viewer-icon-button viewer-close';closeButton.setAttribute('aria-label','Close');closeButton.title='Close';closeButton.append(icon('M6 6l12 12','M18 6L6 18'));closeButton.addEventListener('click',()=>close('closed'));
   bar.append(logo,external,closeButton);dialog.dataset.mode=preview?'preview':'live';
   const frame=doc.createElement('iframe');frame.className='viewer-frame';frame.setAttribute('sandbox',sandbox);frame.setAttribute('referrerpolicy','no-referrer');frame.setAttribute('title',title+' (third-party demo)');frame.setAttribute('loading','lazy');frame.src=href;
-  dialog.append(bar,frame);dialog.addEventListener('keydown',ev=>{if(ev.key==='Escape'){ev.stopPropagation();close('closed')}else if(ev.key==='Tab'){const items=[external,closeButton,frame],at=items.indexOf(doc.activeElement);if(ev.shiftKey&&at<=0){ev.preventDefault();items.at(-1).focus()}else if(!ev.shiftKey&&at===items.length-1){ev.preventDefault();items[0].focus()}}});
+  dialog.append(bar,frame);dialog.addEventListener('keydown',ev=>{if(ev.key==='Escape'){ev.preventDefault();ev.stopPropagation();close('closed')}else if(ev.key==='Tab'){const items=[external,closeButton,frame],at=items.indexOf(doc.activeElement);if(ev.shiftKey&&at<=0){ev.preventDefault();items.at(-1).focus()}else if(!ev.shiftKey&&at===items.length-1){ev.preventDefault();items[0].focus()}}});
   doc.body.append(dialog);doc.body.classList?.add('viewer-open');
   current={dialog,opener,id,url:href,configId,preview,timer:null};closeButton.focus();
   if(!preview){

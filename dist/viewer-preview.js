@@ -6,7 +6,7 @@
 const A=globalThis.RepoAccount;if(!A)return;
 let on=false,asked=false,viewer=null,loading=null;
 const load=src=>new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=()=>reject(Error('load failed'));document.head.append(s)});
-function ensureViewer(){return loading||(loading=(async()=>{const css=document.createElement('link');css.rel='stylesheet';css.href='/viewer.css';document.head.append(css);await load('/viewer-config.js');await load('/viewer.js');viewer=globalThis.RepoViewer.create({fetchEligibility:async()=>({eligible:false})})})().catch(()=>{loading=null}))}
+function ensureViewer(){return loading||(loading=(async()=>{const css=document.createElement('link');css.rel='stylesheet';css.href='/viewer.css';document.head.append(css);await load('/viewer-config.js');await load('/viewer.js');viewer=globalThis.RepoViewer.create({fetchEligibility:async()=>({eligible:false}),onClose:restoreListing})})().catch(()=>{loading=null}))}
 async function refresh(){
  if(!A.ready)return;
  if(!A.user?.admin){on=false;asked=false;return}
@@ -25,7 +25,11 @@ function say(text,link){if(!note){note=document.createElement('div');note.setAtt
 function hide(){clearTimeout(noteTimer);note?.remove();note=null}
 const REASONS={x_frame_options_deny:'the site forbids being shown inside another page',x_frame_options_sameorigin:'the site forbids being shown inside another page',frame_ancestors_none:'the site forbids being shown inside another page',frame_ancestors_self:'the site forbids being shown inside another page',frame_ancestors_other:'the site only allows certain pages to show it',own_origin:'it is hosted on RepoShelf',no_app_address:'its app address could not be found'};
 // The listing is a modal <dialog>; left open it sits above the viewer and the person has to close it by hand.
-function closeListing(){for(const d of document.querySelectorAll('dialog[open]')){try{d.close()}catch{}}document.querySelector('.viewer-close')?.focus()}
+let hidden=null;
+function closeListing(opener){const dialogs=[...document.querySelectorAll('dialog[open]')];for(const d of dialogs){try{d.close()}catch{}}hidden=dialogs.length?{dialogs,opener}:null;document.querySelector('.viewer-close')?.focus()}
+// Closing the demo brings the listing back where it was, with focus on the Try demo link that opened the demo.
+// Deferred a moment: the Escape key that closed the demo would otherwise also be taken as "close" by the dialog just reopened.
+function restoreListing(reason){const h=hidden;hidden=null;if(!h||reason!=='closed')return;setTimeout(()=>{for(const d of h.dialogs){try{if(d.isConnected&&!d.open)d.showModal()}catch{}}try{h.opener?.focus()}catch{}},0)}
 const checks=new Map();
 // Asks the server, from the demo's real response headers, whether it can be framed at all, and where a Hugging Face Space
 // really runs. Anything uncertain (timeout, error, unreachable) means a new tab, never a blank frame.
@@ -42,7 +46,7 @@ document.addEventListener('click',event=>{
   if(!result?.embeddable||!result.url)return newTab(url,REASONS[result?.reason]||'it cannot be shown inside RepoShelf');
   hide();
   // The viewer still refuses addresses it cannot safely frame (not https, RepoShelf itself); those open in a new tab as before.
-  return viewer.open({id,url:result.url,title:id,preview:true,opener:link}).then(opened=>{if(!opened.opened)return newTab(url);closeListing()});
+  return viewer.open({id,url:result.url,title:id,preview:true,opener:link}).then(opened=>{if(!opened.opened)return newTab(url);closeListing(link)});
  }).catch(()=>newTab(url));
 },true);
 })();
