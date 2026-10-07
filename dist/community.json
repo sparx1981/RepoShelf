@@ -1,32 +1,560 @@
 {
   "schema": 1,
-  "updatedAt": "2026-10-07T02:53:09.354Z",
+  "updatedAt": "2026-10-07T05:01:00.983Z",
   "sources": {
     "hackernews": {
       "status": "ok",
-      "checkedAt": "2026-10-07T02:52:51.979Z",
-      "mentionsFound": 271,
-      "lastSuccessAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "mentionsFound": 272,
+      "lastSuccessAt": "2026-10-07T05:00:42.505Z"
     },
     "bluesky": {
       "status": "ok",
       "attemptedAt": "2026-10-03T08:24:09.857Z",
-      "mentionsFound": 122,
+      "mentionsFound": 31,
       "method": "public-stream",
-      "checkedAt": "2026-10-07T02:52:51.979Z",
+      "checkedAt": "2026-10-07T05:00:42.505Z",
       "searchStatus": "http_403",
-      "eventsScanned": 37800,
-      "sampleSince": "2026-10-07T01:52:51.979Z",
+      "eventsScanned": 39836,
+      "sampleSince": "2026-10-07T04:00:42.505Z",
       "partial": false,
-      "lastSuccessAt": "2026-10-07T02:52:51.979Z"
+      "lastSuccessAt": "2026-10-07T05:00:42.505Z"
     }
   },
   "import": {
     "checked": 20,
-    "imported": 1,
+    "imported": 2,
     "failed": 0
   },
   "mentions": [
+    {
+      "source": "hackernews",
+      "id": "49988380",
+      "full": "Krako-Labs/kora-doctor",
+      "url": "https://news.ycombinator.com/item?id=49988380",
+      "title": "Show HN: KORA Doctor – find LLM calls your agent may not have needed",
+      "author": "hkalbert71",
+      "publishedAt": "2026-10-07T04:55:28Z",
+      "points": 1,
+      "comments": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z"
+    },
+    {
+      "source": "hackernews",
+      "id": "49988372",
+      "full": "AndryOre/snug",
+      "url": "https://news.ycombinator.com/item?id=49988372",
+      "title": "Show HN: Snug, a local-only bookmark export, import and backup extension",
+      "author": "AndryOre",
+      "publishedAt": "2026-10-07T04:54:28Z",
+      "points": 1,
+      "comments": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:645gwxc3ocnnlksdmtsapryz/app.bsky.feed.post/3mxb3rpa4rs2t",
+      "full": "apostrophecms/apostrophe",
+      "url": "https://bsky.app/profile/did:plc:645gwxc3ocnnlksdmtsapryz/post/3mxb3rpa4rs2t",
+      "title": "WordPress.com, Wix or Squarespace costs real money. Apostrophe is free, open-source, and yours to keep.\n\nCMS with a focus on extensible in-context editing tools. ([Demo](https://apostrophecms.com/demo), [Source Code](https://github.com/apos",
+      "author": "did:plc:645gwxc3ocnnlksdmtsapryz",
+      "authorName": "shawonshovon.bsky.social",
+      "publishedAt": "2026-10-07T04:20:27.486Z",
+      "engagementKnown": true,
+      "likes": 0,
+      "replies": 0,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:3ya6fekbfwfvs6bx4zio5p2k/app.bsky.feed.post/3mxb3rmfdit2h",
+      "full": "me1121118/praph",
+      "url": "https://bsky.app/profile/did:plc:3ya6fekbfwfvs6bx4zio5p2k/post/3mxb3rmfdit2h",
+      "title": "Praph (1.0.1) for esp8266 by me1121118\n\n➡️ https://github.com/me1121118/praph\n\nESP8266 IoT controller with Blynk SSL, DHT22 sensor, and 4-channel relay control\n\n#ArduinoLibs #ArduinoLibraries #esp8266Libraries",
+      "author": "did:plc:3ya6fekbfwfvs6bx4zio5p2k",
+      "authorName": "arduinolibs.bsky.social",
+      "publishedAt": "2026-10-07T06:20:26+02:00",
+      "engagementKnown": true,
+      "likes": 0,
+      "replies": 0,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:halfjkmxtkrwqe5ghdedqyvn/app.bsky.feed.post/3mxb3p64zd725",
+      "full": "M-Abozaid/esp32-c3-adblock",
+      "url": "https://bsky.app/profile/did:plc:halfjkmxtkrwqe5ghdedqyvn/post/3mxb3p64zd725",
+      "title": "有人把 537k 个广告域名塞进了一块 2 美元的 ESP32-C3。这块板子连 PSRAM 都没有，跑的却是 Pi-hole 那一套：UDP DNS 黑洞，外加一个网页控制台。\n\n关键在存法。域名不存原文，每个都压成 40 位的 FNV-1a 哈希，放进 flash，查的时候用二分查找。50 多万条黑名单，就这样装进了一块没有 PSRAM 的小板子。\n\n项目代码和作者的演示视频链接都在这里：github.com/M-Abozaid/e...",
+      "author": "did:plc:halfjkmxtkrwqe5ghdedqyvn",
+      "authorName": "anotherbug.com",
+      "publishedAt": "2026-10-07T04:19:02.453533+00:00",
+      "engagementKnown": true,
+      "likes": 0,
+      "replies": 0,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:t3zkzmz2242yi4rj4lwj7ux4/app.bsky.feed.post/3mxb3p25cx22w",
+      "full": "M-Abozaid/esp32-c3-adblock",
+      "url": "https://bsky.app/profile/did:plc:t3zkzmz2242yi4rj4lwj7ux4/post/3mxb3p25cx22w",
+      "title": "Adblocker on esp-32 github.com/M-Abozaid/es...",
+      "author": "did:plc:t3zkzmz2242yi4rj4lwj7ux4",
+      "authorName": "cooperq.com",
+      "publishedAt": "2026-10-07T04:18:58.307Z",
+      "engagementKnown": true,
+      "likes": 1,
+      "replies": 0,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:i4bfh2tyxihe2ksplmtcoopk/app.bsky.feed.post/3mxb3looylc2e",
+      "full": "openai/math",
+      "url": "https://bsky.app/profile/did:plc:i4bfh2tyxihe2ksplmtcoopk/post/3mxb3looylc2e",
+      "title": "it would be really helpful if they separated out the ones that have lean certs from the rest. i think it's just the ones named in this yaml file?\ngithub.com/openai/math/...",
+      "author": "did:plc:i4bfh2tyxihe2ksplmtcoopk",
+      "authorName": "ponder.ooo",
+      "publishedAt": "2026-10-07T04:17:05.642Z",
+      "engagementKnown": true,
+      "likes": 2,
+      "replies": 1,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:qy5pluw2bsuq2x6albsgkvx3/app.bsky.feed.post/3mxb3ephonc2p",
+      "full": "Stygian-Tech/the-social-wire",
+      "url": "https://bsky.app/profile/did:plc:qy5pluw2bsuq2x6albsgkvx3/post/3mxb3ephonc2p",
+      "title": "And this is without any of the CI optimizations I've got detailed here:\ngithub.com/Stygian-Tech...",
+      "author": "did:plc:qy5pluw2bsuq2x6albsgkvx3",
+      "authorName": "samclemente.me",
+      "publishedAt": "2026-10-07T04:13:11.570Z",
+      "engagementKnown": true,
+      "likes": 0,
+      "replies": 1,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:egoop22szzob7mszd3pfgdww/app.bsky.feed.post/3mxb3akbzqt2h",
+      "full": "M-Abozaid/esp32-c3-adblock",
+      "url": "https://bsky.app/profile/did:plc:egoop22szzob7mszd3pfgdww/post/3mxb3akbzqt2h",
+      "title": "ESP32-C3 Adblock https://github.com/M-Abozaid/esp32-c3-adblock (https://news.ycombinator.com/item?id=49986862)",
+      "author": "did:plc:egoop22szzob7mszd3pfgdww",
+      "authorName": "betterhn20.e-work.xyz",
+      "publishedAt": "2026-10-07T04:10:51.346Z",
+      "engagementKnown": true,
+      "likes": 0,
+      "replies": 0,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:2ow4s6cci5ylwwdedvx3qtkx/app.bsky.feed.post/3mxb37y4geu2u",
+      "full": "openai/math",
+      "url": "https://bsky.app/profile/did:plc:2ow4s6cci5ylwwdedvx3qtkx/post/3mxb37y4geu2u",
+      "title": "GitHub - openai/math\nhttps://github.com/openai/math",
+      "author": "did:plc:2ow4s6cci5ylwwdedvx3qtkx",
+      "authorName": "tech-trending.bsky.social",
+      "publishedAt": "2026-10-07T04:10:32.826Z",
+      "engagementKnown": true,
+      "likes": 0,
+      "replies": 0,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:3ya6fekbfwfvs6bx4zio5p2k/app.bsky.feed.post/3mxb37pyjz52h",
+      "full": "PervasiveDisplays/Pervasive_BWRY_Large",
+      "url": "https://bsky.app/profile/did:plc:3ya6fekbfwfvs6bx4zio5p2k/post/3mxb37pyjz52h",
+      "title": "Pervasive_BWRY_Large (10.0.4) by Pervasive Displays Inc.\n\n➡️ https://github.com/PervasiveDisplays/Pervasive_BWRY_Large\n\nDriver for Pervasive Displays colour screens\n\n#ArduinoLibs #ArduinoLibraries",
+      "author": "did:plc:3ya6fekbfwfvs6bx4zio5p2k",
+      "authorName": "arduinolibs.bsky.social",
+      "publishedAt": "2026-10-07T06:10:26+02:00",
+      "engagementKnown": true,
+      "likes": 0,
+      "replies": 0,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:ltjj43huonogytm4szn5hzkx/app.bsky.feed.post/3mxb37awt7i2g",
+      "full": "aws/amazon-vpc-resource-controller-k8s",
+      "url": "https://bsky.app/profile/did:plc:ltjj43huonogytm4szn5hzkx/post/3mxb37awt7i2g",
+      "title": "amazon-vpc-resource-controller-k8s (⭐️ 106)\n\nController for managing Trunk & Branch Network Interfaces on EKS Cluster using Security Group For Pod feature and IPv4 Addresses for Windows Node.\n\n#go",
+      "author": "did:plc:ltjj43huonogytm4szn5hzkx",
+      "authorName": "golangoss.bsky.social",
+      "publishedAt": "2026-10-07T04:10:08Z",
+      "engagementKnown": true,
+      "likes": 0,
+      "replies": 0,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:37gyncka5j5fiab3w3ty7n3r/app.bsky.feed.post/3mxb2yf5pas25",
+      "full": "RandyNorthrup/muse-spark-code",
+      "url": "https://bsky.app/profile/did:plc:37gyncka5j5fiab3w3ty7n3r/post/3mxb2yf5pas25",
+      "title": "Lesson from building Muse Spark Code with a fleet of agents: the model that writes a lane never reviews it. Muse and Codex build, Grok reviews, and a third failed review means a redesign, not another patch.\n\n#OpenSource #AIAgents #DevTools\n",
+      "author": "did:plc:37gyncka5j5fiab3w3ty7n3r",
+      "authorName": "randynorthrup.bsky.social",
+      "publishedAt": "2026-10-07T04:06:18.095Z",
+      "engagementKnown": true,
+      "likes": 2,
+      "replies": 0,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:i4bfh2tyxihe2ksplmtcoopk/app.bsky.feed.post/3mxb2vomiyk2e",
+      "full": "openai/math",
+      "url": "https://bsky.app/profile/did:plc:i4bfh2tyxihe2ksplmtcoopk/post/3mxb2vomiyk2e",
+      "title": "okok i was just looking at the challenge files, found some of the real lean content github.com/openai/math/...",
+      "author": "did:plc:i4bfh2tyxihe2ksplmtcoopk",
+      "authorName": "ponder.ooo",
+      "publishedAt": "2026-10-07T04:04:47.362Z",
+      "engagementKnown": true,
+      "likes": 1,
+      "replies": 0,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:m3ikahf5rvllui5dehfe3zwa/app.bsky.feed.post/3mxb2ufb3f22m",
+      "full": "Michael-Obele/tomoshibi",
+      "url": "https://bsky.app/profile/did:plc:m3ikahf5rvllui5dehfe3zwa/post/3mxb2ufb3f22m",
+      "title": "Just a reminder; I built github.com/Michael-Obel...\nA better alternative to firecrawl and exa for searching and reading websites for your AI models. You can just run it on docker (it's lightweight).\nGiving your AI can get up to date info. B",
+      "author": "did:plc:m3ikahf5rvllui5dehfe3zwa",
+      "authorName": "svelte-apps.me",
+      "publishedAt": "2026-10-07T04:04:03.995Z",
+      "engagementKnown": true,
+      "likes": 0,
+      "replies": 0,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:7ollew3icoshdwu37bqgs36x/app.bsky.feed.post/3mxb2qrpg6s2d",
+      "full": "soupslurpr/AppVerifier",
+      "url": "https://bsky.app/profile/did:plc:7ollew3icoshdwu37bqgs36x/post/3mxb2qrpg6s2d",
+      "title": "## App Verification\n\nTo verify the integrity/authenticity of your IronFox installation, in addition to the SHA512sums provided below, we highly recommend using AppVerifier (github.com/soupslurpr/A...):\n\nPackage ID: org.ironfoxoss.ironfox",
+      "author": "did:plc:7ollew3icoshdwu37bqgs36x",
+      "authorName": "celenity.dev",
+      "publishedAt": "2026-10-07T04:02:00.499Z",
+      "engagementKnown": true,
+      "likes": 0,
+      "replies": 1,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:saogsmfn3uydux7jsdlzvlzw/app.bsky.feed.post/3mxb2qeu5zs26",
+      "full": "openai/math",
+      "url": "https://bsky.app/profile/did:plc:saogsmfn3uydux7jsdlzvlzw/post/3mxb2qeu5zs26",
+      "title": "RL = L. Machines proved it. Now we have to understand how.  github.com/openai/math/...",
+      "author": "did:plc:saogsmfn3uydux7jsdlzvlzw",
+      "authorName": "nutanlimaye.bsky.social",
+      "publishedAt": "2026-10-07T04:01:49.354Z",
+      "engagementKnown": true,
+      "likes": 1,
+      "replies": 1,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:hzebgrkbc42iyxsrmwsdjnej/app.bsky.feed.post/3mxb2pwbukt2f",
+      "full": "mage2sk/module-quickview",
+      "url": "https://bsky.app/profile/did:plc:hzebgrkbc42iyxsrmwsdjnej/post/3mxb2pwbukt2f",
+      "title": "📦 mage2kishan/module-quickview 1.0.21\n\nSmart Quick View & Compare module for Magento 2 with Hyva theme support. Features: Quick View Modal, Product Comparison, Recently Viewed Products\n\n🔗 https://github.com/mage2sk/module-quickview",
+      "author": "did:plc:hzebgrkbc42iyxsrmwsdjnej",
+      "authorName": "throwable.bsky.social",
+      "publishedAt": "2026-10-07T04:01:34+00:00",
+      "engagementKnown": true,
+      "likes": 0,
+      "replies": 0,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:hzebgrkbc42iyxsrmwsdjnej/app.bsky.feed.post/3mxb2pwdsiy2f",
+      "full": "jonreygalera/mreycode-laravel-db-migrator",
+      "url": "https://bsky.app/profile/did:plc:hzebgrkbc42iyxsrmwsdjnej/post/3mxb2pwdsiy2f",
+      "title": "📦 mreycode/laravel-db-migrator v2.5.4\n\nA production-grade Laravel package for complex, large-scale database migrations with resumable, monitored, and batch-aware processing.\n\n🔗 https://github.com/jonreygalera/mreycode-laravel-db-migrator",
+      "author": "did:plc:hzebgrkbc42iyxsrmwsdjnej",
+      "authorName": "throwable.bsky.social",
+      "publishedAt": "2026-10-07T04:01:34+00:00",
+      "engagementKnown": true,
+      "likes": 0,
+      "replies": 0,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:hzebgrkbc42iyxsrmwsdjnej/app.bsky.feed.post/3mxb2pwfp2j2r",
+      "full": "petar-spasic/laravel-house",
+      "url": "https://bsky.app/profile/did:plc:hzebgrkbc42iyxsrmwsdjnej/post/3mxb2pwfp2j2r",
+      "title": "📦 petar-spasic/laravel-house v0.10.4\n\nHouse skills for Laravel projects, installed into Claude Code by Laravel Boost: project setup with per-layer CLAUDE.md rules, Docker hosting behind Caddy, a git-backed kanban board with worktree st...\n",
+      "author": "did:plc:hzebgrkbc42iyxsrmwsdjnej",
+      "authorName": "throwable.bsky.social",
+      "publishedAt": "2026-10-07T04:01:34+00:00",
+      "engagementKnown": true,
+      "likes": 0,
+      "replies": 0,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:hzebgrkbc42iyxsrmwsdjnej/app.bsky.feed.post/3mxb2pwhou42j",
+      "full": "edulazaro/laradomains",
+      "url": "https://bsky.app/profile/did:plc:hzebgrkbc42iyxsrmwsdjnej/post/3mxb2pwhou42j",
+      "title": "📦 edulazaro/laradomains 1.1.0\n\nEverything you can learn about a domain without visiting it: parsing with the Public Suffix List, RDAP registration data, age, DNS over HTTPS and malware or adult screening\n\n🔗 https://github.com/edulazaro/la",
+      "author": "did:plc:hzebgrkbc42iyxsrmwsdjnej",
+      "authorName": "throwable.bsky.social",
+      "publishedAt": "2026-10-07T04:01:34+00:00",
+      "engagementKnown": true,
+      "likes": 0,
+      "replies": 0,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:hzebgrkbc42iyxsrmwsdjnej/app.bsky.feed.post/3mxb2pwjqww25",
+      "full": "naiuz/sdk-php",
+      "url": "https://bsky.app/profile/did:plc:hzebgrkbc42iyxsrmwsdjnej/post/3mxb2pwjqww25",
+      "title": "📦 naiuz/sdk v0.1.1\n\nThe official PHP client for the NeuronAI API.\n\n🔗 https://github.com/naiuz/sdk-php",
+      "author": "did:plc:hzebgrkbc42iyxsrmwsdjnej",
+      "authorName": "throwable.bsky.social",
+      "publishedAt": "2026-10-07T04:01:34+00:00",
+      "engagementKnown": true,
+      "likes": 0,
+      "replies": 0,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:hzebgrkbc42iyxsrmwsdjnej/app.bsky.feed.post/3mxb2pwlqfy2f",
+      "full": "grunst3r/RouterGust",
+      "url": "https://bsky.app/profile/did:plc:hzebgrkbc42iyxsrmwsdjnej/post/3mxb2pwlqfy2f",
+      "title": "📦 luigu/router-gust v1.3.0\n\nRouter PHP profesional con soporte para middleware, grupos, inyección de dependencias, subdominios y más.\n\n🔗 https://github.com/grunst3r/RouterGust",
+      "author": "did:plc:hzebgrkbc42iyxsrmwsdjnej",
+      "authorName": "throwable.bsky.social",
+      "publishedAt": "2026-10-07T04:01:34+00:00",
+      "engagementKnown": true,
+      "likes": 0,
+      "replies": 0,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:hzebgrkbc42iyxsrmwsdjnej/app.bsky.feed.post/3mxb2pwnusi25",
+      "full": "getdevflow/core",
+      "url": "https://bsky.app/profile/did:plc:hzebgrkbc42iyxsrmwsdjnej/post/3mxb2pwnusi25",
+      "title": "📦 getdevflow/core v3.0.0\n\nCore component for Devflow CMS.\n\n🔗 https://github.com/getdevflow/core",
+      "author": "did:plc:hzebgrkbc42iyxsrmwsdjnej",
+      "authorName": "throwable.bsky.social",
+      "publishedAt": "2026-10-07T04:01:34+00:00",
+      "engagementKnown": true,
+      "likes": 0,
+      "replies": 0,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:hzebgrkbc42iyxsrmwsdjnej/app.bsky.feed.post/3mxb2pvruzk2f",
+      "full": "edulazaro/laradomains",
+      "url": "https://bsky.app/profile/did:plc:hzebgrkbc42iyxsrmwsdjnej/post/3mxb2pvruzk2f",
+      "title": "📦 edulazaro/laradomains 1.0.1\n\nEverything you can learn about a domain without visiting it: parsing with the Public Suffix List, RDAP registration data, age, DNS over HTTPS and malware or adult screening\n\n🔗 https://github.com/edulazaro/la",
+      "author": "did:plc:hzebgrkbc42iyxsrmwsdjnej",
+      "authorName": "throwable.bsky.social",
+      "publishedAt": "2026-10-07T04:01:33+00:00",
+      "engagementKnown": true,
+      "likes": 0,
+      "replies": 0,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:hzebgrkbc42iyxsrmwsdjnej/app.bsky.feed.post/3mxb2pvttjk2f",
+      "full": "gorvet/gframe-framework",
+      "url": "https://bsky.app/profile/did:plc:hzebgrkbc42iyxsrmwsdjnej/post/3mxb2pvttjk2f",
+      "title": "📦 gorvet/gframe v2.0.0\n\nFramework PHP ligero para aplicaciones web, paneles administrativos y servicios HTTP.\n\n🔗 https://github.com/gorvet/gframe-framework",
+      "author": "did:plc:hzebgrkbc42iyxsrmwsdjnej",
+      "authorName": "throwable.bsky.social",
+      "publishedAt": "2026-10-07T04:01:33+00:00",
+      "engagementKnown": true,
+      "likes": 0,
+      "replies": 0,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:hzebgrkbc42iyxsrmwsdjnej/app.bsky.feed.post/3mxb2pvvqa62a",
+      "full": "LibreSign/nextcloud-behat",
+      "url": "https://bsky.app/profile/did:plc:hzebgrkbc42iyxsrmwsdjnej/post/3mxb2pvvqa62a",
+      "title": "📦 libresign/nextcloud-behat v1.6.3\n\nBasic steps for a Nextcloud app\n\n🔗 https://github.com/LibreSign/nextcloud-behat",
+      "author": "did:plc:hzebgrkbc42iyxsrmwsdjnej",
+      "authorName": "throwable.bsky.social",
+      "publishedAt": "2026-10-07T04:01:33+00:00",
+      "engagementKnown": true,
+      "likes": 0,
+      "replies": 0,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:hzebgrkbc42iyxsrmwsdjnej/app.bsky.feed.post/3mxb2pvxskh2m",
+      "full": "edulazaro/laradomains",
+      "url": "https://bsky.app/profile/did:plc:hzebgrkbc42iyxsrmwsdjnej/post/3mxb2pvxskh2m",
+      "title": "📦 edulazaro/laradomains 1.0.2\n\nEverything you can learn about a domain without visiting it: parsing with the Public Suffix List, RDAP registration data, age, DNS over HTTPS and malware or adult screening\n\n🔗 https://github.com/edulazaro/la",
+      "author": "did:plc:hzebgrkbc42iyxsrmwsdjnej",
+      "authorName": "throwable.bsky.social",
+      "publishedAt": "2026-10-07T04:01:33+00:00",
+      "engagementKnown": true,
+      "likes": 0,
+      "replies": 0,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:hzebgrkbc42iyxsrmwsdjnej/app.bsky.feed.post/3mxb2pvzv7a2o",
+      "full": "TurboDocx/php-sdk",
+      "url": "https://bsky.app/profile/did:plc:hzebgrkbc42iyxsrmwsdjnej/post/3mxb2pvzv7a2o",
+      "title": "📦 turbodocx/sdk 0.8.0\n\nOfficial PHP SDK for TurboDocx - E-signature API, document generation, PDF signing, and workflow automation\n\n🔗 https://github.com/TurboDocx/php-sdk",
+      "author": "did:plc:hzebgrkbc42iyxsrmwsdjnej",
+      "authorName": "throwable.bsky.social",
+      "publishedAt": "2026-10-07T04:01:33+00:00",
+      "engagementKnown": true,
+      "likes": 0,
+      "replies": 0,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:hzebgrkbc42iyxsrmwsdjnej/app.bsky.feed.post/3mxb2pw3wf72m",
+      "full": "se7enxweb/sevenx_themes_media",
+      "url": "https://bsky.app/profile/did:plc:hzebgrkbc42iyxsrmwsdjnej/post/3mxb2pw3wf72m",
+      "title": "📦 se7enxweb/sevenx-themes-media v1.5.40\n\n7x Themes : Media - the 'media' site design for Exponential Legacy / Exponential 6, converted from the Netgen media-site Twig theme and now hand-maintained as native eZ4 templates, with the sevenxT.",
+      "author": "did:plc:hzebgrkbc42iyxsrmwsdjnej",
+      "authorName": "throwable.bsky.social",
+      "publishedAt": "2026-10-07T04:01:33+00:00",
+      "engagementKnown": true,
+      "likes": 0,
+      "replies": 0,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:hzebgrkbc42iyxsrmwsdjnej/app.bsky.feed.post/3mxb2pw5zjd2f",
+      "full": "wacafla/subscriberverify-php-client",
+      "url": "https://bsky.app/profile/did:plc:hzebgrkbc42iyxsrmwsdjnej/post/3mxb2pw5zjd2f",
+      "title": "📦 wacafla/subscriber-verify-client v1.0.0\n\nPHP 8 client for the documented SubscriberVerify API\n\n🔗 https://github.com/wacafla/subscriberverify-php-client",
+      "author": "did:plc:hzebgrkbc42iyxsrmwsdjnej",
+      "authorName": "throwable.bsky.social",
+      "publishedAt": "2026-10-07T04:01:33+00:00",
+      "engagementKnown": true,
+      "likes": 0,
+      "replies": 0,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:hzebgrkbc42iyxsrmwsdjnej/app.bsky.feed.post/3mxb2pw7wjq2n",
+      "full": "quineworks/taxlane-php",
+      "url": "https://bsky.app/profile/did:plc:hzebgrkbc42iyxsrmwsdjnej/post/3mxb2pw7wjq2n",
+      "title": "📦 quineworks/taxlane v0.1.5\n\nOfficial PHP SDK for TaxLane's free Nigeria tax calculator API (PAYE, VAT, WHT, CIT, CGT & 6 more).\n\n🔗 https://github.com/quineworks/taxlane-php",
+      "author": "did:plc:hzebgrkbc42iyxsrmwsdjnej",
+      "authorName": "throwable.bsky.social",
+      "publishedAt": "2026-10-07T04:01:33+00:00",
+      "engagementKnown": true,
+      "likes": 0,
+      "replies": 0,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
+    },
+    {
+      "source": "hackernews",
+      "id": "49987765",
+      "full": "nano-muse/nanoMuse",
+      "url": "https://news.ycombinator.com/item?id=49987765",
+      "title": "Show HN: NanoMuse – An open-source AI agent for your phone and computer",
+      "author": "ilreb",
+      "publishedAt": "2026-10-07T03:30:44Z",
+      "points": 2,
+      "comments": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z"
+    },
+    {
+      "source": "hackernews",
+      "id": "49987627",
+      "full": "agentty-xyz/agentty",
+      "url": "https://news.ycombinator.com/item?id=49987627",
+      "title": "Agentty is still the best way to manage agentic sessions",
+      "author": "minev-dev",
+      "publishedAt": "2026-10-07T03:11:58Z",
+      "points": 2,
+      "comments": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z"
+    },
     {
       "source": "hackernews",
       "id": "49987464",
@@ -37,7 +565,7 @@
       "publishedAt": "2026-10-07T02:48:08Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -49,7 +577,7 @@
       "publishedAt": "2026-10-07T02:28:03Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -75,9 +603,9 @@
       "title": "Show HN: Zero dependency cross-language background job queue server",
       "author": "d11wtq",
       "publishedAt": "2026-10-07T02:06:42Z",
-      "points": 2,
+      "points": 4,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -2023,9 +2551,9 @@
       "title": "ESP32-C3 Adblock",
       "author": "jayhoon",
       "publishedAt": "2026-10-07T01:39:21Z",
-      "points": 7,
-      "comments": 2,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "points": 34,
+      "comments": 8,
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -2037,7 +2565,7 @@
       "publishedAt": "2026-10-07T00:37:40Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -2049,7 +2577,23 @@
       "publishedAt": "2026-10-07T00:18:33Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
+    },
+    {
+      "source": "bluesky",
+      "id": "at://did:plc:ulxk572dnu5v56yssqyupulk/app.bsky.feed.post/3mxb3eotorw2b",
+      "full": "snarfed/granary",
+      "url": "https://bsky.app/profile/did:plc:ulxk572dnu5v56yssqyupulk/post/3mxb3eotorw2b",
+      "title": "quick test https://github.com/snarfed/granary",
+      "author": "did:plc:ulxk572dnu5v56yssqyupulk",
+      "authorName": "michaelbishop.me",
+      "publishedAt": "2026-10-07T00:00:00.000Z",
+      "engagementKnown": true,
+      "likes": 0,
+      "replies": 1,
+      "reposts": 0,
+      "checkedAt": "2026-10-07T05:00:42.505Z",
+      "discoveryMethod": "public-stream"
     },
     {
       "source": "hackernews",
@@ -2061,7 +2605,7 @@
       "publishedAt": "2026-10-06T23:42:11Z",
       "points": 9,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -2071,9 +2615,9 @@
       "title": "OpenAI just dropped 700 preprints of mathematical proofs and counterexamples",
       "author": "tootie",
       "publishedAt": "2026-10-06T23:37:02Z",
-      "points": 39,
+      "points": 40,
       "comments": 2,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -2083,9 +2627,9 @@
       "title": "AnyPS5: Port PS5 binaries to PC without emulation (87% system libraries mapped)",
       "author": "Fe2O3",
       "publishedAt": "2026-10-06T23:28:08Z",
-      "points": 120,
-      "comments": 91,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "points": 165,
+      "comments": 125,
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -2097,7 +2641,7 @@
       "publishedAt": "2026-10-06T23:15:52Z",
       "points": 3,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -2107,9 +2651,9 @@
       "title": "Integer multiplication below n log n",
       "author": "E-Reverance",
       "publishedAt": "2026-10-06T23:14:52Z",
-      "points": 70,
-      "comments": 51,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "points": 86,
+      "comments": 58,
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -2121,7 +2665,7 @@
       "publishedAt": "2026-10-06T23:00:49Z",
       "points": 3,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -2133,7 +2677,7 @@
       "publishedAt": "2026-10-06T22:22:48Z",
       "points": 42,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -2145,7 +2689,7 @@
       "publishedAt": "2026-10-06T22:15:06Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -2156,8 +2700,8 @@
       "author": "raorajat007",
       "publishedAt": "2026-10-06T22:14:22Z",
       "points": 3,
-      "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "comments": 1,
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -3017,7 +3561,7 @@
       "publishedAt": "2026-10-06T21:15:07Z",
       "points": 2,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3029,7 +3573,7 @@
       "publishedAt": "2026-10-06T21:15:01Z",
       "points": 2,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3041,7 +3585,7 @@
       "publishedAt": "2026-10-06T20:38:13Z",
       "points": 3,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3053,7 +3597,7 @@
       "publishedAt": "2026-10-06T20:32:40Z",
       "points": 3,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3065,7 +3609,7 @@
       "publishedAt": "2026-10-06T20:10:27Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3077,7 +3621,7 @@
       "publishedAt": "2026-10-06T19:54:59Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -3137,7 +3681,7 @@
       "publishedAt": "2026-10-06T19:35:19Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -3181,7 +3725,7 @@
       "publishedAt": "2026-10-06T19:29:25Z",
       "points": 2,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -3273,7 +3817,7 @@
       "publishedAt": "2026-10-06T19:23:33Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3285,7 +3829,7 @@
       "publishedAt": "2026-10-06T19:23:01Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3297,7 +3841,7 @@
       "publishedAt": "2026-10-06T19:20:34Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3309,7 +3853,7 @@
       "publishedAt": "2026-10-06T19:04:55Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3321,7 +3865,7 @@
       "publishedAt": "2026-10-06T18:56:44Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3333,7 +3877,7 @@
       "publishedAt": "2026-10-06T18:51:29Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3345,7 +3889,7 @@
       "publishedAt": "2026-10-06T18:25:22Z",
       "points": 4,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3357,7 +3901,7 @@
       "publishedAt": "2026-10-06T18:19:58Z",
       "points": 3,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3369,7 +3913,7 @@
       "publishedAt": "2026-10-06T18:07:01Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3381,7 +3925,7 @@
       "publishedAt": "2026-10-06T17:47:13Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3393,7 +3937,7 @@
       "publishedAt": "2026-10-06T17:26:07Z",
       "points": 1,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3405,7 +3949,7 @@
       "publishedAt": "2026-10-06T17:23:35Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3415,9 +3959,9 @@
       "title": "Adobe Creative Suite Cleanroom Port to Rust",
       "author": "bigwheels",
       "publishedAt": "2026-10-06T17:20:00Z",
-      "points": 103,
-      "comments": 62,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "points": 107,
+      "comments": 63,
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3429,7 +3973,7 @@
       "publishedAt": "2026-10-06T17:13:01Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3441,7 +3985,7 @@
       "publishedAt": "2026-10-06T17:10:45Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3453,7 +3997,7 @@
       "publishedAt": "2026-10-06T17:08:46Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3465,7 +4009,7 @@
       "publishedAt": "2026-10-06T17:04:30Z",
       "points": 2,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3477,7 +4021,7 @@
       "publishedAt": "2026-10-06T16:52:12Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3489,7 +4033,7 @@
       "publishedAt": "2026-10-06T16:45:13Z",
       "points": 2,
       "comments": 3,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -3549,7 +4093,7 @@
       "publishedAt": "2026-10-06T16:38:32Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -3641,7 +4185,7 @@
       "publishedAt": "2026-10-06T16:34:57Z",
       "points": 3,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3653,7 +4197,7 @@
       "publishedAt": "2026-10-06T16:34:00Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3665,7 +4209,7 @@
       "publishedAt": "2026-10-06T16:33:00Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -3787,9 +4331,9 @@
       "title": "Treg (OpenRouter for Tools)",
       "author": "trollied",
       "publishedAt": "2026-10-06T16:29:59Z",
-      "points": 2,
-      "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "points": 8,
+      "comments": 1,
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3799,9 +4343,9 @@
       "title": "OpenTPU – An open-source AI accelerator, developed by AI",
       "author": "fsbonetto",
       "publishedAt": "2026-10-06T16:23:25Z",
-      "points": 241,
-      "comments": 303,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "points": 255,
+      "comments": 321,
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3813,7 +4357,7 @@
       "publishedAt": "2026-10-06T16:15:26Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -3825,7 +4369,7 @@
       "publishedAt": "2026-10-06T16:09:39Z",
       "points": 1,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -3885,7 +4429,7 @@
       "publishedAt": "2026-10-06T16:03:18Z",
       "points": 4,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -4473,7 +5017,7 @@
       "publishedAt": "2026-10-06T15:58:19Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -4501,7 +5045,7 @@
       "publishedAt": "2026-10-06T15:55:58Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -4513,7 +5057,7 @@
       "publishedAt": "2026-10-06T15:41:00Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -4525,7 +5069,7 @@
       "publishedAt": "2026-10-06T15:39:33Z",
       "points": 3,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -4569,7 +5113,7 @@
       "publishedAt": "2026-10-06T15:39:06Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -4643,9 +5187,9 @@
       "title": "Show HN: OpenChart – OSS TradingView alternative with your own AI agent",
       "author": "Warren93",
       "publishedAt": "2026-10-06T15:16:45Z",
-      "points": 37,
-      "comments": 15,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "points": 40,
+      "comments": 16,
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -4657,7 +5201,7 @@
       "publishedAt": "2026-10-06T15:15:04Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -4669,7 +5213,7 @@
       "publishedAt": "2026-10-06T15:09:07Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -4681,7 +5225,7 @@
       "publishedAt": "2026-10-06T15:08:53Z",
       "points": 2,
       "comments": 2,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -4693,7 +5237,7 @@
       "publishedAt": "2026-10-06T15:05:28Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -4705,7 +5249,7 @@
       "publishedAt": "2026-10-06T15:04:14Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -4717,7 +5261,7 @@
       "publishedAt": "2026-10-06T14:58:56Z",
       "points": 3,
       "comments": 2,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -4729,7 +5273,7 @@
       "publishedAt": "2026-10-06T14:58:47Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -4741,7 +5285,7 @@
       "publishedAt": "2026-10-06T14:58:33Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -4753,7 +5297,7 @@
       "publishedAt": "2026-10-06T14:55:45Z",
       "points": 1,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -4765,7 +5309,7 @@
       "publishedAt": "2026-10-06T14:52:22Z",
       "points": 3,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -4841,7 +5385,7 @@
       "publishedAt": "2026-10-06T14:45:45Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -4917,7 +5461,7 @@
       "publishedAt": "2026-10-06T14:38:52Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -4929,7 +5473,7 @@
       "publishedAt": "2026-10-06T14:35:16Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -4941,7 +5485,7 @@
       "publishedAt": "2026-10-06T14:25:57Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -4953,7 +5497,7 @@
       "publishedAt": "2026-10-06T14:25:25Z",
       "points": 1,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -4965,7 +5509,7 @@
       "publishedAt": "2026-10-06T14:25:07Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -4977,7 +5521,7 @@
       "publishedAt": "2026-10-06T14:19:01Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -4989,7 +5533,7 @@
       "publishedAt": "2026-10-06T14:14:15Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5001,7 +5545,7 @@
       "publishedAt": "2026-10-06T14:11:50Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5013,7 +5557,7 @@
       "publishedAt": "2026-10-06T14:04:40Z",
       "points": 5,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5025,7 +5569,7 @@
       "publishedAt": "2026-10-06T14:03:18Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5037,7 +5581,7 @@
       "publishedAt": "2026-10-06T14:01:00Z",
       "points": 2,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5049,7 +5593,7 @@
       "publishedAt": "2026-10-06T13:58:36Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5061,7 +5605,7 @@
       "publishedAt": "2026-10-06T13:53:08Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5073,7 +5617,7 @@
       "publishedAt": "2026-10-06T13:35:13Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5085,7 +5629,7 @@
       "publishedAt": "2026-10-06T13:27:01Z",
       "points": 3,
       "comments": 2,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5097,7 +5641,7 @@
       "publishedAt": "2026-10-06T13:26:26Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5109,7 +5653,7 @@
       "publishedAt": "2026-10-06T13:19:15Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5121,7 +5665,7 @@
       "publishedAt": "2026-10-06T13:12:23Z",
       "points": 2,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5133,7 +5677,7 @@
       "publishedAt": "2026-10-06T13:10:50Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5145,7 +5689,7 @@
       "publishedAt": "2026-10-06T12:53:33Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5157,7 +5701,7 @@
       "publishedAt": "2026-10-06T12:50:54Z",
       "points": 4,
       "comments": 2,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5169,7 +5713,7 @@
       "publishedAt": "2026-10-06T12:46:52Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5181,7 +5725,7 @@
       "publishedAt": "2026-10-06T12:20:53Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5193,7 +5737,7 @@
       "publishedAt": "2026-10-06T12:19:45Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5205,7 +5749,7 @@
       "publishedAt": "2026-10-06T12:12:00Z",
       "points": 3,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5217,7 +5761,7 @@
       "publishedAt": "2026-10-06T12:06:18Z",
       "points": 3,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5229,7 +5773,7 @@
       "publishedAt": "2026-10-06T11:55:33Z",
       "points": 3,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5241,7 +5785,7 @@
       "publishedAt": "2026-10-06T11:55:21Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5253,7 +5797,7 @@
       "publishedAt": "2026-10-06T11:40:44Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5265,7 +5809,7 @@
       "publishedAt": "2026-10-06T11:35:05Z",
       "points": 4,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5277,7 +5821,7 @@
       "publishedAt": "2026-10-06T11:34:09Z",
       "points": 2,
       "comments": 3,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5289,7 +5833,7 @@
       "publishedAt": "2026-10-06T11:28:33Z",
       "points": 1,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5301,7 +5845,7 @@
       "publishedAt": "2026-10-06T11:26:42Z",
       "points": 4,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5313,7 +5857,7 @@
       "publishedAt": "2026-10-06T11:19:34Z",
       "points": 1,
       "comments": 3,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5325,7 +5869,7 @@
       "publishedAt": "2026-10-06T10:35:48Z",
       "points": 3,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5337,7 +5881,7 @@
       "publishedAt": "2026-10-06T10:22:26Z",
       "points": 1,
       "comments": 2,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5349,7 +5893,7 @@
       "publishedAt": "2026-10-06T10:14:23Z",
       "points": 2,
       "comments": 2,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5361,7 +5905,7 @@
       "publishedAt": "2026-10-06T10:05:12Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5373,7 +5917,7 @@
       "publishedAt": "2026-10-06T10:02:30Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5385,7 +5929,7 @@
       "publishedAt": "2026-10-06T09:25:25Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5397,7 +5941,7 @@
       "publishedAt": "2026-10-06T09:22:13Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -5409,7 +5953,7 @@
       "publishedAt": "2026-10-06T09:12:59Z",
       "points": 4,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -5581,7 +6125,7 @@
       "publishedAt": "2026-10-06T08:50:01Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -5769,7 +6313,7 @@
       "publishedAt": "2026-10-06T08:34:28Z",
       "points": 6,
       "comments": 4,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -7333,7 +7877,7 @@
       "publishedAt": "2026-10-06T07:35:26Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -7345,7 +7889,7 @@
       "publishedAt": "2026-10-06T07:34:23Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -7357,7 +7901,7 @@
       "publishedAt": "2026-10-06T07:28:37Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -7369,7 +7913,7 @@
       "publishedAt": "2026-10-06T07:11:36Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -7381,7 +7925,7 @@
       "publishedAt": "2026-10-06T06:49:06Z",
       "points": 28,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -7921,7 +8465,7 @@
       "publishedAt": "2026-10-06T06:31:19Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -7997,7 +8541,7 @@
       "publishedAt": "2026-10-06T06:26:05Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -8025,7 +8569,7 @@
       "publishedAt": "2026-10-06T06:18:08Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -8053,7 +8597,7 @@
       "publishedAt": "2026-10-06T06:11:04Z",
       "points": 4,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -8065,7 +8609,7 @@
       "publishedAt": "2026-10-06T06:03:48Z",
       "points": 3,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -9277,7 +9821,7 @@
       "publishedAt": "2026-10-06T04:42:22Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -9289,7 +9833,7 @@
       "publishedAt": "2026-10-06T04:23:39Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -9445,7 +9989,7 @@
       "publishedAt": "2026-10-06T03:56:39Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -9457,7 +10001,7 @@
       "publishedAt": "2026-10-06T03:00:47Z",
       "points": 2,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -9469,7 +10013,7 @@
       "publishedAt": "2026-10-06T02:40:38Z",
       "points": 1,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -9481,7 +10025,7 @@
       "publishedAt": "2026-10-06T02:38:26Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -9493,7 +10037,7 @@
       "publishedAt": "2026-10-06T02:12:56Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -9505,7 +10049,7 @@
       "publishedAt": "2026-10-06T02:00:24Z",
       "points": 3,
       "comments": 2,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -9517,7 +10061,7 @@
       "publishedAt": "2026-10-06T01:57:47Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -9529,7 +10073,7 @@
       "publishedAt": "2026-10-06T01:49:42Z",
       "points": 2,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -9541,7 +10085,7 @@
       "publishedAt": "2026-10-06T01:31:42Z",
       "points": 5,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -9553,7 +10097,7 @@
       "publishedAt": "2026-10-06T01:17:57Z",
       "points": 1,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -9565,7 +10109,7 @@
       "publishedAt": "2026-10-06T00:46:04Z",
       "points": 3,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -9577,7 +10121,7 @@
       "publishedAt": "2026-10-06T00:44:13Z",
       "points": 2,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -9587,9 +10131,9 @@
       "title": "Photopea creator weighs in on Photosuite project",
       "author": "montag",
       "publishedAt": "2026-10-06T00:41:44Z",
-      "points": 159,
-      "comments": 105,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "points": 162,
+      "comments": 107,
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -9905,7 +10449,7 @@
       "publishedAt": "2026-10-06T00:09:25Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -9965,7 +10509,7 @@
       "publishedAt": "2026-10-05T23:35:19Z",
       "points": 2,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -9977,7 +10521,7 @@
       "publishedAt": "2026-10-05T23:03:46Z",
       "points": 2,
       "comments": 2,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -9989,7 +10533,7 @@
       "publishedAt": "2026-10-05T22:32:53Z",
       "points": 3,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -10001,7 +10545,7 @@
       "publishedAt": "2026-10-05T22:13:10Z",
       "points": 3,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -10013,7 +10557,7 @@
       "publishedAt": "2026-10-05T21:47:20Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -10025,7 +10569,7 @@
       "publishedAt": "2026-10-05T21:25:24Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -10037,7 +10581,7 @@
       "publishedAt": "2026-10-05T21:17:53Z",
       "points": 2,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -10049,7 +10593,7 @@
       "publishedAt": "2026-10-05T21:11:04Z",
       "points": 5,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -10061,7 +10605,7 @@
       "publishedAt": "2026-10-05T21:05:51Z",
       "points": 4,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -10073,7 +10617,7 @@
       "publishedAt": "2026-10-05T20:57:34Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -10085,7 +10629,7 @@
       "publishedAt": "2026-10-05T20:55:30Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -10097,7 +10641,7 @@
       "publishedAt": "2026-10-05T20:49:10Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -10253,7 +10797,7 @@
       "publishedAt": "2026-10-05T19:54:58Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -10265,7 +10809,7 @@
       "publishedAt": "2026-10-05T19:28:31Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -10277,7 +10821,7 @@
       "publishedAt": "2026-10-05T19:19:39Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -10289,7 +10833,7 @@
       "publishedAt": "2026-10-05T19:02:57Z",
       "points": 4,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -10301,7 +10845,7 @@
       "publishedAt": "2026-10-05T18:58:32Z",
       "points": 3,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -10313,7 +10857,7 @@
       "publishedAt": "2026-10-05T18:51:11Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -10325,7 +10869,7 @@
       "publishedAt": "2026-10-05T18:49:08Z",
       "points": 2,
       "comments": 4,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -10337,7 +10881,7 @@
       "publishedAt": "2026-10-05T18:45:22Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -10349,7 +10893,7 @@
       "publishedAt": "2026-10-05T18:43:08Z",
       "points": 1,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -10361,7 +10905,7 @@
       "publishedAt": "2026-10-05T18:34:11Z",
       "points": 2,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -10373,7 +10917,7 @@
       "publishedAt": "2026-10-05T18:33:14Z",
       "points": 29,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -10593,7 +11137,7 @@
       "publishedAt": "2026-10-05T18:18:15Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -10605,7 +11149,7 @@
       "publishedAt": "2026-10-05T18:16:31Z",
       "points": 1,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -10649,7 +11193,7 @@
       "publishedAt": "2026-10-05T18:13:54Z",
       "points": 2,
       "comments": 2,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -10693,7 +11237,7 @@
       "publishedAt": "2026-10-05T18:10:10Z",
       "points": 3,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -10881,7 +11425,7 @@
       "publishedAt": "2026-10-05T17:55:06Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -10909,7 +11453,7 @@
       "publishedAt": "2026-10-05T17:51:29Z",
       "points": 3,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -10921,7 +11465,7 @@
       "publishedAt": "2026-10-05T17:51:08Z",
       "points": 1,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -10933,7 +11477,7 @@
       "publishedAt": "2026-10-05T17:50:32Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -10961,7 +11505,7 @@
       "publishedAt": "2026-10-05T17:46:50Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -11005,7 +11549,7 @@
       "publishedAt": "2026-10-05T17:39:58Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -11113,7 +11657,7 @@
       "publishedAt": "2026-10-05T17:33:23Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -11173,7 +11717,7 @@
       "publishedAt": "2026-10-05T17:30:02Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -11185,7 +11729,7 @@
       "publishedAt": "2026-10-05T17:27:26Z",
       "points": 1,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -11245,7 +11789,7 @@
       "publishedAt": "2026-10-05T17:17:02Z",
       "points": 1,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -11273,7 +11817,7 @@
       "publishedAt": "2026-10-05T17:15:58Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -11381,7 +11925,7 @@
       "publishedAt": "2026-10-05T17:10:52Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -11393,7 +11937,7 @@
       "publishedAt": "2026-10-05T17:03:19Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -11405,7 +11949,7 @@
       "publishedAt": "2026-10-05T17:02:16Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -11417,7 +11961,7 @@
       "publishedAt": "2026-10-05T16:58:47Z",
       "points": 4,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -11493,7 +12037,7 @@
       "publishedAt": "2026-10-05T16:50:49Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -11665,7 +12209,7 @@
       "publishedAt": "2026-10-05T16:41:19Z",
       "points": 2,
       "comments": 2,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -11677,7 +12221,7 @@
       "publishedAt": "2026-10-05T16:40:42Z",
       "points": 4,
       "comments": 3,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -11689,7 +12233,7 @@
       "publishedAt": "2026-10-05T16:19:58Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -11701,7 +12245,7 @@
       "publishedAt": "2026-10-05T16:15:36Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -11713,7 +12257,7 @@
       "publishedAt": "2026-10-05T16:13:07Z",
       "points": 3,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -11725,7 +12269,7 @@
       "publishedAt": "2026-10-05T16:07:58Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -12281,7 +12825,7 @@
       "publishedAt": "2026-10-05T15:58:06Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -12485,7 +13029,7 @@
       "publishedAt": "2026-10-05T15:33:39Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -12497,7 +13041,7 @@
       "publishedAt": "2026-10-05T15:31:56Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -12509,7 +13053,7 @@
       "publishedAt": "2026-10-05T15:16:03Z",
       "points": 1,
       "comments": 3,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -12521,7 +13065,7 @@
       "publishedAt": "2026-10-05T15:14:21Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -12533,7 +13077,7 @@
       "publishedAt": "2026-10-05T15:08:03Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -13297,7 +13841,7 @@
       "publishedAt": "2026-10-05T14:56:05Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -13309,7 +13853,7 @@
       "publishedAt": "2026-10-05T14:55:00Z",
       "points": 1,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -13481,7 +14025,7 @@
       "publishedAt": "2026-10-05T14:47:55Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -13509,7 +14053,7 @@
       "publishedAt": "2026-10-05T14:46:24Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -13649,7 +14193,7 @@
       "publishedAt": "2026-10-05T14:17:30Z",
       "points": 1,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -13661,7 +14205,7 @@
       "publishedAt": "2026-10-05T14:12:24Z",
       "points": 34,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -13673,7 +14217,7 @@
       "publishedAt": "2026-10-05T14:11:18Z",
       "points": 5,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -13685,7 +14229,7 @@
       "publishedAt": "2026-10-05T14:09:39Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -14497,7 +15041,7 @@
       "publishedAt": "2026-10-05T13:56:45Z",
       "points": 1,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -14509,7 +15053,7 @@
       "publishedAt": "2026-10-05T13:56:39Z",
       "points": 1,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -14601,7 +15145,7 @@
       "publishedAt": "2026-10-05T13:47:13Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -14661,7 +15205,7 @@
       "publishedAt": "2026-10-05T13:37:05Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -14705,7 +15249,7 @@
       "publishedAt": "2026-10-05T13:35:34Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -14813,7 +15357,7 @@
       "publishedAt": "2026-10-05T13:31:25Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -14889,7 +15433,7 @@
       "publishedAt": "2026-10-05T13:27:52Z",
       "points": 4,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -14917,7 +15461,7 @@
       "publishedAt": "2026-10-05T13:18:08Z",
       "points": 4,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -15153,7 +15697,7 @@
       "publishedAt": "2026-10-05T13:08:05Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -15821,7 +16365,7 @@
       "publishedAt": "2026-10-05T13:06:06Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -15833,7 +16377,7 @@
       "publishedAt": "2026-10-05T13:00:40Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -15845,7 +16389,7 @@
       "publishedAt": "2026-10-05T12:59:14Z",
       "points": 57,
       "comments": 38,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -15857,7 +16401,7 @@
       "publishedAt": "2026-10-05T12:56:12Z",
       "points": 9,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -15869,7 +16413,7 @@
       "publishedAt": "2026-10-05T12:48:23Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -16153,7 +16697,7 @@
       "publishedAt": "2026-10-05T12:32:55Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -16165,7 +16709,7 @@
       "publishedAt": "2026-10-05T12:29:01Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -16177,7 +16721,7 @@
       "publishedAt": "2026-10-05T12:15:48Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -16189,7 +16733,7 @@
       "publishedAt": "2026-10-05T12:14:34Z",
       "points": 2,
       "comments": 11,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -16201,7 +16745,7 @@
       "publishedAt": "2026-10-05T12:12:55Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -16325,7 +16869,7 @@
       "publishedAt": "2026-10-05T12:06:10Z",
       "points": 4,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -17105,7 +17649,7 @@
       "publishedAt": "2026-10-05T11:56:57Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -17117,7 +17661,7 @@
       "publishedAt": "2026-10-05T11:54:51Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -17129,7 +17673,7 @@
       "publishedAt": "2026-10-05T11:42:24Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -17141,7 +17685,7 @@
       "publishedAt": "2026-10-05T11:41:58Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -17263,9 +17807,9 @@
       "title": "Show HN: Minigraf – An embedded, bi-temporal graph database in Rust",
       "author": "adityamukho",
       "publishedAt": "2026-10-05T11:18:18Z",
-      "points": 38,
+      "points": 39,
       "comments": 30,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -17276,8 +17820,8 @@
       "author": "roflcopter69",
       "publishedAt": "2026-10-05T11:17:18Z",
       "points": 245,
-      "comments": 192,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "comments": 193,
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -17289,7 +17833,7 @@
       "publishedAt": "2026-10-05T11:14:11Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -17301,7 +17845,7 @@
       "publishedAt": "2026-10-05T11:07:10Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -17313,7 +17857,7 @@
       "publishedAt": "2026-10-05T10:40:04Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -17325,7 +17869,7 @@
       "publishedAt": "2026-10-05T10:28:13Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -17337,7 +17881,7 @@
       "publishedAt": "2026-10-05T10:12:35Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -17349,7 +17893,7 @@
       "publishedAt": "2026-10-05T09:54:16Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -17361,7 +17905,7 @@
       "publishedAt": "2026-10-05T09:36:53Z",
       "points": 3,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -17373,7 +17917,7 @@
       "publishedAt": "2026-10-05T08:50:08Z",
       "points": 6,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -17545,7 +18089,7 @@
       "publishedAt": "2026-10-05T08:03:23Z",
       "points": 3,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -17573,7 +18117,7 @@
       "publishedAt": "2026-10-05T07:53:17Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -17585,7 +18129,7 @@
       "publishedAt": "2026-10-05T07:33:50Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -18461,7 +19005,7 @@
       "publishedAt": "2026-10-05T06:57:16Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -18473,7 +19017,7 @@
       "publishedAt": "2026-10-05T06:53:36Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -18725,7 +19269,7 @@
       "publishedAt": "2026-10-05T06:19:53Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -18737,7 +19281,7 @@
       "publishedAt": "2026-10-05T06:19:17Z",
       "points": 5,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -20045,7 +20589,7 @@
       "publishedAt": "2026-10-05T05:25:29Z",
       "points": 1,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -20057,7 +20601,7 @@
       "publishedAt": "2026-10-05T05:04:57Z",
       "points": 2,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -20069,7 +20613,7 @@
       "publishedAt": "2026-10-05T05:03:24Z",
       "points": 2,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -20097,7 +20641,7 @@
       "publishedAt": "2026-10-05T05:00:54Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -20253,7 +20797,7 @@
       "publishedAt": "2026-10-05T04:01:18Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -20265,7 +20809,7 @@
       "publishedAt": "2026-10-05T03:27:26Z",
       "points": 5,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -20277,7 +20821,7 @@
       "publishedAt": "2026-10-05T02:41:53Z",
       "points": 2,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -20289,7 +20833,7 @@
       "publishedAt": "2026-10-05T02:00:19Z",
       "points": 1,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -20301,7 +20845,7 @@
       "publishedAt": "2026-10-05T01:33:16Z",
       "points": 7,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -20313,7 +20857,7 @@
       "publishedAt": "2026-10-05T01:29:00Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -20325,7 +20869,7 @@
       "publishedAt": "2026-10-05T00:42:14Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -20529,7 +21073,7 @@
       "publishedAt": "2026-10-04T23:49:16Z",
       "points": 3,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -20541,7 +21085,7 @@
       "publishedAt": "2026-10-04T23:09:30Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -20553,7 +21097,7 @@
       "publishedAt": "2026-10-04T22:59:09Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -20565,7 +21109,7 @@
       "publishedAt": "2026-10-04T22:29:00Z",
       "points": 1,
       "comments": 2,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -20577,7 +21121,7 @@
       "publishedAt": "2026-10-04T21:37:04Z",
       "points": 4,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -20589,7 +21133,7 @@
       "publishedAt": "2026-10-04T21:34:52Z",
       "points": 5,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -20601,7 +21145,7 @@
       "publishedAt": "2026-10-04T21:24:43Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -20629,7 +21173,7 @@
       "publishedAt": "2026-10-04T21:01:45Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -20641,7 +21185,7 @@
       "publishedAt": "2026-10-04T21:01:12Z",
       "points": 1,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -20781,7 +21325,7 @@
       "publishedAt": "2026-10-04T20:55:40Z",
       "points": 5,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -20857,7 +21401,7 @@
       "publishedAt": "2026-10-04T20:48:43Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "bluesky",
@@ -21029,7 +21573,7 @@
       "publishedAt": "2026-10-04T20:15:57Z",
       "points": 10,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -21041,7 +21585,7 @@
       "publishedAt": "2026-10-04T20:13:00Z",
       "points": 1,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -21053,7 +21597,7 @@
       "publishedAt": "2026-10-04T19:56:07Z",
       "points": 3,
       "comments": 1,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -21065,7 +21609,7 @@
       "publishedAt": "2026-10-04T19:51:23Z",
       "points": 2,
       "comments": 0,
-      "checkedAt": "2026-10-07T02:52:51.979Z"
+      "checkedAt": "2026-10-07T05:00:42.505Z"
     },
     {
       "source": "hackernews",
@@ -29442,426 +29986,6 @@
       "points": 2,
       "comments": 3,
       "checkedAt": "2026-10-05T09:13:25.348Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49929136",
-      "full": "mirged/maylang",
-      "url": "https://news.ycombinator.com/item?id=49929136",
-      "title": "Maylang – A self-hosted systems language compiled with LLMs",
-      "author": "mirged",
-      "publishedAt": "2026-10-02T01:59:58Z",
-      "points": 2,
-      "comments": 1,
-      "checkedAt": "2026-10-05T09:13:25.348Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49929121",
-      "full": "ryanalberts/best-of-agent-harnesses",
-      "url": "https://news.ycombinator.com/item?id=49929121",
-      "title": "Best-of-Agent-Harnesses – Ranked list of 167 AI agent harnesses, rescored weekly",
-      "author": "peter_d_sherman",
-      "publishedAt": "2026-10-02T01:57:56Z",
-      "points": 7,
-      "comments": 0,
-      "checkedAt": "2026-10-05T09:13:25.348Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49929101",
-      "full": "abird-ai/dotlink",
-      "url": "https://news.ycombinator.com/item?id=49929101",
-      "title": "Show HN: Simply @dotlink in ChatGPT web,space or dot to access local files,tools",
-      "author": "logxroot",
-      "publishedAt": "2026-10-02T01:55:23Z",
-      "points": 1,
-      "comments": 0,
-      "checkedAt": "2026-10-05T09:13:25.348Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49929087",
-      "full": "krishnakumar4a4/tail-userspace",
-      "url": "https://news.ycombinator.com/item?id=49929087",
-      "title": "Show HN: A userspace only nwing client for Tailscale nw",
-      "author": "krishnakumar4a4",
-      "publishedAt": "2026-10-02T01:52:25Z",
-      "points": 1,
-      "comments": 0,
-      "checkedAt": "2026-10-05T09:13:25.348Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49928885",
-      "full": "msndsn123a/Sovereign-NB",
-      "url": "https://news.ycombinator.com/item?id=49928885",
-      "title": "Show HN: Sovereign-NB: Sub-microsecond bare-metal neural engine in Rust (UEFI)",
-      "author": "msndsn123a",
-      "publishedAt": "2026-10-02T01:16:11Z",
-      "points": 1,
-      "comments": 0,
-      "checkedAt": "2026-10-05T09:13:25.348Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49928873",
-      "full": "ScalingIntelligence/KernelBench",
-      "url": "https://news.ycombinator.com/item?id=49928873",
-      "title": "KernelBench: Can LLMs Write GPU Kernels? – Benchmark and Toolkit, Torch –> CUDA",
-      "author": "peter_d_sherman",
-      "publishedAt": "2026-10-02T01:13:38Z",
-      "points": 6,
-      "comments": 0,
-      "checkedAt": "2026-10-05T09:13:25.348Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49928838",
-      "full": "ringlochid/oh-my-subagents",
-      "url": "https://news.ycombinator.com/item?id=49928838",
-      "title": "Show HN: Agent team runtime with concrete lifecycle management",
-      "author": "ringlochid",
-      "publishedAt": "2026-10-02T01:08:06Z",
-      "points": 2,
-      "comments": 0,
-      "checkedAt": "2026-10-05T08:10:41.077Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49928534",
-      "full": "electric-capital/quest",
-      "url": "https://news.ycombinator.com/item?id=49928534",
-      "title": "Quest: Open-source, safety-focused harness",
-      "author": "puntium",
-      "publishedAt": "2026-10-02T00:22:43Z",
-      "points": 3,
-      "comments": 1,
-      "checkedAt": "2026-10-05T07:32:16.961Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49928435",
-      "full": "rijuld/soothsay",
-      "url": "https://news.ycombinator.com/item?id=49928435",
-      "title": "Show HN: Soothsay - Your AI types curl | sh. soothsay checks the script first",
-      "author": "rijuldahiya",
-      "publishedAt": "2026-10-02T00:04:39Z",
-      "points": 1,
-      "comments": 0,
-      "checkedAt": "2026-10-05T06:37:49.070Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49928432",
-      "full": "manavmishra/ZeroSlop",
-      "url": "https://news.ycombinator.com/item?id=49928432",
-      "title": "Show HN: Zero Slop – Open-source skill that finds and fixes AI slop in writing",
-      "author": "mmishra7",
-      "publishedAt": "2026-10-02T00:04:16Z",
-      "points": 2,
-      "comments": 1,
-      "checkedAt": "2026-10-05T06:37:49.070Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49928417",
-      "full": "Ace7-coder/aws-finops-auditor",
-      "url": "https://news.ycombinator.com/item?id=49928417",
-      "title": "A lightweight Python CLI to audit and detect orphaned AWS resources",
-      "author": "Ace7-coder",
-      "publishedAt": "2026-10-02T00:02:00Z",
-      "points": 1,
-      "comments": 0,
-      "checkedAt": "2026-10-05T05:50:00.656Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49928412",
-      "full": "qiangli/bashy",
-      "url": "https://news.ycombinator.com/item?id=49928412",
-      "title": "Bashy: A pure-Go Bash 5.3 for Linux, macOS and Windows that also speaks Bash",
-      "author": "thunderbong",
-      "publishedAt": "2026-10-02T00:00:49Z",
-      "points": 2,
-      "comments": 0,
-      "checkedAt": "2026-10-05T05:50:00.656Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49928398",
-      "full": "joeycumines/bun-install",
-      "url": "https://news.ycombinator.com/item?id=49928398",
-      "title": "Show HN: Bun-install – Global CLI installer for Bun with local monorepo support",
-      "author": "joeycumines",
-      "publishedAt": "2026-10-01T23:57:50Z",
-      "points": 3,
-      "comments": 0,
-      "checkedAt": "2026-10-05T05:09:47.709Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49928361",
-      "full": "andreasfertig/cppinsights",
-      "url": "https://news.ycombinator.com/item?id=49928361",
-      "title": "C++ Insights – See your source code with the eyes of a Compiler",
-      "author": "rramadass",
-      "publishedAt": "2026-10-01T23:53:36Z",
-      "points": 171,
-      "comments": 36,
-      "checkedAt": "2026-10-05T01:00:31.920Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49928215",
-      "full": "kitao/pyxel",
-      "url": "https://news.ycombinator.com/item?id=49928215",
-      "title": "Show HN: Pyxel – A Python retro game engine with built-in art and sound editors",
-      "author": "kitao",
-      "publishedAt": "2026-10-01T23:26:35Z",
-      "points": 98,
-      "comments": 8,
-      "checkedAt": "2026-10-05T01:00:31.920Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49928126",
-      "full": "DragonMinded/libdragon",
-      "url": "https://news.ycombinator.com/item?id=49928126",
-      "title": "LibDragon (N64): Explicit Anti-AI Contributor Stance (GitHub Issue)",
-      "author": "some-guy",
-      "publishedAt": "2026-10-01T23:11:41Z",
-      "points": 5,
-      "comments": 1,
-      "checkedAt": "2026-10-05T01:00:31.920Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49928116",
-      "full": "ninjahawk/livenerf",
-      "url": "https://news.ycombinator.com/item?id=49928116",
-      "title": "LiveNerf Adopts MIT License",
-      "author": "ninjahawk1",
-      "publishedAt": "2026-10-01T23:10:12Z",
-      "points": 2,
-      "comments": 0,
-      "checkedAt": "2026-10-05T01:00:31.920Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49928096",
-      "full": "munvard/dockterm",
-      "url": "https://news.ycombinator.com/item?id=49928096",
-      "title": "DockTerm: A notch mascot that tells you when Claude Code needs you",
-      "author": "moonlabs",
-      "publishedAt": "2026-10-01T23:06:30Z",
-      "points": 1,
-      "comments": 0,
-      "checkedAt": "2026-10-05T01:00:31.920Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49928076",
-      "full": "sampsn/pair.nvim",
-      "url": "https://news.ycombinator.com/item?id=49928076",
-      "title": "Show HN: Pair.nvim – Agent assistance while staying in the codebase",
-      "author": "sampsn",
-      "publishedAt": "2026-10-01T23:04:12Z",
-      "points": 1,
-      "comments": 0,
-      "checkedAt": "2026-10-05T01:00:31.920Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49928073",
-      "full": "proteus-evolve/Proteus",
-      "url": "https://news.ycombinator.com/item?id=49928073",
-      "title": "Show HN: Proteus – A framework for harnesses that evolve their own source",
-      "author": "easonlu1017",
-      "publishedAt": "2026-10-01T23:03:36Z",
-      "points": 1,
-      "comments": 0,
-      "checkedAt": "2026-10-05T01:00:31.920Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49928011",
-      "full": "PhreshOS/system",
-      "url": "https://news.ycombinator.com/item?id=49928011",
-      "title": "Show HN: PhreshOS – OS for Web Apps",
-      "author": "zouhirdx",
-      "publishedAt": "2026-10-01T22:55:02Z",
-      "points": 10,
-      "comments": 5,
-      "checkedAt": "2026-10-05T01:00:31.920Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49927912",
-      "full": "saintparish4/opal",
-      "url": "https://news.ycombinator.com/item?id=49927912",
-      "title": "Opal: NPM-compatible package manager in Rust with crash-safe installs",
-      "author": "sparish4",
-      "publishedAt": "2026-10-01T22:41:29Z",
-      "points": 2,
-      "comments": 0,
-      "checkedAt": "2026-10-05T01:00:31.920Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49927682",
-      "full": "earendil-works/pi",
-      "url": "https://news.ycombinator.com/item?id=49927682",
-      "title": "Pi v1.0.0",
-      "author": "bjornroberg",
-      "publishedAt": "2026-10-01T22:15:01Z",
-      "points": 12,
-      "comments": 2,
-      "checkedAt": "2026-10-05T01:00:31.920Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49927599",
-      "full": "bn-l/claude-autoresearch-mod",
-      "url": "https://news.ycombinator.com/item?id=49927599",
-      "title": "Pi-autoresearch ported to Claude Code 1:1 using the new mods API",
-      "author": "b--l",
-      "publishedAt": "2026-10-01T22:03:50Z",
-      "points": 2,
-      "comments": 0,
-      "checkedAt": "2026-10-04T21:49:34.112Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49927585",
-      "full": "samuelrojas-dev/agent-cost-bench",
-      "url": "https://news.ycombinator.com/item?id=49927585",
-      "title": "Scan your LLM agent's tools for cost-amplification bugs (no API key)",
-      "author": "sarojas123",
-      "publishedAt": "2026-10-01T22:02:21Z",
-      "points": 1,
-      "comments": 0,
-      "checkedAt": "2026-10-04T21:49:34.112Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49927552",
-      "full": "yogthos/Matryoshka",
-      "url": "https://news.ycombinator.com/item?id=49927552",
-      "title": "Matryoshka: MCP for token-efficient large document analysis via REPL",
-      "author": "simonpure",
-      "publishedAt": "2026-10-01T21:58:38Z",
-      "points": 1,
-      "comments": 0,
-      "checkedAt": "2026-10-04T21:49:34.112Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49927514",
-      "full": "google/mozc-devices",
-      "url": "https://news.ycombinator.com/item?id=49927514",
-      "title": "Gboard Conveyor Belt Version",
-      "author": "xnx",
-      "publishedAt": "2026-10-01T21:54:26Z",
-      "points": 36,
-      "comments": 5,
-      "checkedAt": "2026-10-04T21:49:34.112Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49927472",
-      "full": "lzprograma/H-HPU",
-      "url": "https://news.ycombinator.com/item?id=49927472",
-      "title": "H-HPU: Hexagonal NoC and Closed-Loop Control for Relational AI",
-      "author": "Engineercom",
-      "publishedAt": "2026-10-01T21:50:07Z",
-      "points": 1,
-      "comments": 0,
-      "checkedAt": "2026-10-04T21:49:34.112Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49927295",
-      "full": "graphene-data/graphene",
-      "url": "https://news.ycombinator.com/item?id=49927295",
-      "title": "Show HN: Graphene – Data analysis toolkit for your coding agent",
-      "author": "kcmarr",
-      "publishedAt": "2026-10-01T21:29:52Z",
-      "points": 32,
-      "comments": 9,
-      "checkedAt": "2026-10-04T21:49:34.112Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49927273",
-      "full": "crafting-dev/express",
-      "url": "https://news.ycombinator.com/item?id=49927273",
-      "title": "Crafting Express – isolated local environments for AI coding agents",
-      "author": "neham25",
-      "publishedAt": "2026-10-01T21:27:36Z",
-      "points": 2,
-      "comments": 0,
-      "checkedAt": "2026-10-04T21:49:34.112Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49927211",
-      "full": "intellectronica/hermes-chatgpt-extension",
-      "url": "https://news.ycombinator.com/item?id=49927211",
-      "title": "Hermes ChatGPT Extension – Your Hermes Agents Inside Codex/ChatGPT",
-      "author": "intellectronica",
-      "publishedAt": "2026-10-01T21:20:36Z",
-      "points": 3,
-      "comments": 0,
-      "checkedAt": "2026-10-04T21:33:44.556Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49926823",
-      "full": "nestedmind/larceny",
-      "url": "https://news.ycombinator.com/item?id=49926823",
-      "title": "Larceny – a Claude Code plugin that runs a team of agents on GitHub",
-      "author": "nestedmind",
-      "publishedAt": "2026-10-01T20:40:25Z",
-      "points": 1,
-      "comments": 0,
-      "checkedAt": "2026-10-04T19:20:02.365Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49926773",
-      "full": "Vibra-Ingenn/Janus",
-      "url": "https://news.ycombinator.com/item?id=49926773",
-      "title": "Show HN: Janus – Go binary that runs GGUF models via Vulkan on AMD/Intel/Nvidia",
-      "author": "Maverick617",
-      "publishedAt": "2026-10-01T20:36:47Z",
-      "points": 104,
-      "comments": 19,
-      "checkedAt": "2026-10-04T19:20:02.365Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49926725",
-      "full": "tester-army/e2e",
-      "url": "https://news.ycombinator.com/item?id=49926725",
-      "title": "E2E: Next generation E2E testing framework for web and mobile apps",
-      "author": "handfuloflight",
-      "publishedAt": "2026-10-01T20:32:15Z",
-      "points": 1,
-      "comments": 0,
-      "checkedAt": "2026-10-04T19:20:02.365Z"
-    },
-    {
-      "source": "hackernews",
-      "id": "49926707",
-      "full": "PunkiePal/HeadWater-AI-Digital-Products",
-      "url": "https://news.ycombinator.com/item?id=49926707",
-      "title": "Show HN: HeadWater Volume Ingestion Matrix – a production shortcut",
-      "author": "PunkiePal",
-      "publishedAt": "2026-10-01T20:30:39Z",
-      "points": 1,
-      "comments": 0,
-      "checkedAt": "2026-10-04T19:20:02.365Z"
     }
   ]
 }
