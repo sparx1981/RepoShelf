@@ -3,17 +3,17 @@
 <section id="admin-workspace" hidden>
 <div class="admin-title"><h1>Administration</h1><button class="button outline" id="admin-signout">Sign out</button></div>
 <nav class="admin-tabs" aria-label="Administration sections">
-<button class="active" data-admin-tab="editorial" aria-current="page" aria-controls="editorial-panel">Storefront editor</button>
+<button class="active" data-admin-tab="sync" aria-current="page" aria-controls="sync-panel">Sync log<span class="tab-flag" data-flag="sync" hidden></span></button>
+<button data-admin-tab="editorial" aria-controls="editorial-panel">Storefront editor</button>
 <a class="admin-promotions" href="/promotions.html?manage=1">Promotions<svg class="link-out" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l6-6M4 3h5v5"/></svg></a><a class="admin-promotions" href="/admin-viewer.html">Demo viewer<svg class="link-out" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l6-6M4 3h5v5"/></svg></a>
 <button data-admin-tab="quality" aria-controls="quality-panel">Catalogue quality<span class="tab-flag" data-flag="quality" hidden></span></button>
 <button data-admin-tab="reports" aria-controls="reports-panel">Reports<span class="tab-flag" data-flag="reports" hidden></span></button>
 <button data-admin-tab="analytics" aria-controls="analytics-panel">Analytics</button>
-<button data-admin-tab="sync" aria-controls="sync-panel">Sync log<span class="tab-flag" data-flag="sync" hidden></span></button>
 <button data-admin-tab="users" aria-controls="users-panel">Users &amp; roles</button>
 <button data-admin-tab="help" aria-controls="help-panel">Help</button>
 </nav>
 <p id="admin-message" role="status"></p>
-<section id="editorial-panel" aria-labelledby="editorial-heading">
+<section id="editorial-panel" aria-labelledby="editorial-heading" hidden>
 <h2 id="editorial-heading" class="sr-only" tabindex="-1">Storefront editor</h2>
 <div class="editor-layout">
 <aside class="row-library">
@@ -63,7 +63,7 @@
 <div class="panel-heading"><div><h2 id="analytics-heading" tabindex="-1">Analytics</h2><p class="small">Visitor activity and catalogue growth. Refreshes every minute.</p></div><div class="panel-controls"><span id="analytics-updated" class="update-stamp"></span><button id="refresh-analytics" class="button outline" type="button">Refresh</button><select id="analytics-range" aria-label="Analytics date range"><option value="7">Last 7 days</option><option value="30" selected>Last 30 days</option><option value="90">Last 90 days</option></select></div></div>
 <div id="analytics-content" aria-live="polite"></div>
 </section>
-<section id="sync-panel" aria-labelledby="sync-heading" hidden>
+<section id="sync-panel" aria-labelledby="sync-heading">
 <div class="panel-heading"><div><h2 id="sync-heading" tabindex="-1">Sync log</h2><p class="small">Scheduled discovery, record changes and stage results.</p></div><div class="panel-controls"><span id="sync-updated" class="update-stamp"></span><button id="refresh-sync" class="button outline" type="button">Refresh</button></div></div>
 <div id="sync-content" aria-live="polite"></div>
 <div class="account-actions"><button id="sync-prev" class="button outline" hidden>Newer runs</button><button id="sync-next" class="button outline" hidden>Older runs</button></div>

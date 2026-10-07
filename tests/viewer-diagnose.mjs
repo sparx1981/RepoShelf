@@ -21,7 +21,12 @@ const s=summarize([{outcome:'works',group:'a.io',notes:[]},{outcome:'blocked_by_
 assert.equal(s.measured,2);assert.equal(s.worksPercent,50);assert.equal(s.notes.wants_popups,1);
 
 // Real browser, fixture pages served through route interception (no network): each behaviour is detected as itself.
-const playwright=createRequire(import.meta.url)('playwright'),browser=await playwright.chromium.launch();
+// Playwright is not installed where only the logic suites run (the sync's prepare job, the "Validate application" step), so the
+// real-browser half skips itself there and runs in the "Verify catalog search..." step, which installs the browser first.
+const playwright=(()=>{try{return createRequire(import.meta.url)('playwright')}catch(e){if(e.code==='MODULE_NOT_FOUND')return null;throw e}})();
+if(!playwright)console.log('PASS (logic only): viewer outcomes classify correctly; the real-browser fixtures were skipped because playwright is not installed here.');
+else{
+const browser=await playwright.chromium.launch();
 try{
  const page=(body,extra={})=>({status:200,contentType:'text/html',body:'<!doctype html><meta charset=utf-8>'+body,...extra});
  const fixtures={
@@ -43,3 +48,4 @@ try{
  assert.equal((await diagnoseDemo(browser,{id:'x',target:'https://www.reposhelf.co.uk/x',source:'t'},{guard:async()=>true})).outcome,'connection_error','RepoShelf is never a demo');
 }finally{await browser.close()}
 console.log('PASS: viewer diagnosis classifies blocked, down, challenge, sleeping, blank, frame-busting and working demos in the real viewer.');
+}
