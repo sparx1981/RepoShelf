@@ -1,2 +1,14 @@
 .viewer-dialog{position:fixed;inset:0;z-index:90;display:flex;flex-direction:column;background:var(--bg)}.viewer-bar{display:flex;align-items:center;gap:8px;padding:8px 16px;border-bottom:1px solid var(--line);background:var(--surface)}.viewer-logo{flex:none;display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;margin-right:auto;border-radius:9px;background:var(--lime);color:var(--on-accent);font-family:Manrope,sans-serif;font-weight:800;font-size:29px;line-height:29px;letter-spacing:-4px;padding-right:4px;box-sizing:border-box;user-select:none}.viewer-bar .button{min-height:44px;padding:10px 16px}.viewer-bar .viewer-icon-button{flex:none;display:inline-flex;align-items:center;justify-content:center;width:44px;min-width:44px;padding:0}.viewer-frame{flex:1;width:100%;border:0;background:#fff}body.viewer-open{overflow:hidden}
 #vw-workspace pre{white-space:pre-wrap;overflow-wrap:anywhere}#vw-workspace input[type=url],#vw-workspace input:not([type=checkbox]),#vw-workspace textarea{width:100%;max-width:100%;box-sizing:border-box;background:var(--surface-recessed);border:1px solid var(--line-strong);padding:12px;border-radius:6px;color:var(--text);font:inherit;margin:6px 0 14px}#vw-workspace textarea{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px}#vw-list li span:first-child{min-width:0}
+
+/* Administration > Demo viewer: the pilot tools sit in one closed card. */
+.vw-pilot>summary{list-style:none;cursor:pointer;display:flex;flex-direction:column;gap:4px;position:relative;padding-right:32px}
+.vw-pilot>summary::-webkit-details-marker{display:none}
+.vw-pilot>summary::after{content:"";position:absolute;right:6px;top:8px;width:8px;height:8px;border-right:2px solid var(--muted,#8a8a93);border-bottom:2px solid var(--muted,#8a8a93);transform:rotate(45deg)}
+.vw-pilot[open]>summary::after{transform:translateY(4px) rotate(-135deg)}
+.vw-pilot>summary:focus-visible{outline:2px solid var(--lime,#d9ff6a);outline-offset:4px;border-radius:6px}
+.vw-pilot-title{font-size:20px;font-weight:700;letter-spacing:-.4px}
+.vw-pilot-note{font-size:14px;color:var(--text-secondary,#b5b5bd)}
+.vw-pilot[open]>summary{margin-bottom:8px}
+.vw-part{border-top:1px solid var(--line,#2a2a31);margin-top:20px;padding-top:4px}
+.vw-part h3{font-size:17px;letter-spacing:-.3px;margin:20px 0 10px}

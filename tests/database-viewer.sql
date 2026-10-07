@@ -85,4 +85,17 @@ begin
  if has_function_privilege('anon','public.reposhelf_viewer_pref_get(uuid)','execute') or has_function_privilege('authenticated','public.reposhelf_viewer_pref_set(uuid,boolean)','execute') then raise exception 'clients must not call the preference functions';end if;
  if not has_function_privilege('service_role','public.reposhelf_viewer_pref_set(uuid,boolean)','execute') then raise exception 'the server must be able to set the preference';end if;
 end$$;
+-- site-wide switch: off by default, one row, server-only
+do $$
+begin
+ if public.reposhelf_viewer_site_get() then raise exception 'the all-users switch must start off';end if;
+ if not public.reposhelf_viewer_site_set('00000000-0000-0000-0000-000000000001',true) then raise exception 'switch not saved';end if;
+ if not public.reposhelf_viewer_site_get() then raise exception 'switch not read back';end if;
+ if public.reposhelf_viewer_site_set(null,false) then raise exception 'switch not turned off';end if;
+ if public.reposhelf_viewer_site_get() then raise exception 'switch should be off again';end if;
+ if (select count(*) from public.viewer_site_prefs)<>1 then raise exception 'there must be exactly one settings row';end if;
+ if has_function_privilege('anon','public.reposhelf_viewer_site_get()','execute') or has_function_privilege('authenticated','public.reposhelf_viewer_site_set(uuid,boolean)','execute') then raise exception 'visitors must not reach the switch functions';end if;
+ if has_table_privilege('anon','public.viewer_site_prefs','select') or has_table_privilege('authenticated','public.viewer_site_prefs','select') then raise exception 'visitors must not read the settings table';end if;
+ if not has_function_privilege('service_role','public.reposhelf_viewer_site_set(uuid,boolean)','execute') then raise exception 'the server must be able to set the switch';end if;
+end$$;
 rollback;

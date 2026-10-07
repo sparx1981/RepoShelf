@@ -1,17 +1,23 @@
 (()=>{'use strict';
-// Administrator-only: when an administrator has switched on "open demos in the viewer" (Administration > Demo viewer),
-// the storefront's Try demo links open the demo inside the viewer as an unqualified preview (after the server confirms
-// from its response headers that it can be framed; otherwise it opens in a new tab). Visitors and
-// administrators with the setting off never load the viewer and keep the normal new-tab link.
+// Opens the storefront's Try demo links inside the viewer as an unqualified preview (after the server confirms from the
+// demo's response headers that it can be framed; otherwise it opens in a new tab). It applies to an administrator who has
+// switched it on for their own account, and to every visitor while an administrator has switched on the all-users setting
+// (Administration > Demo viewer). Otherwise the viewer code is never downloaded and the normal new-tab link is kept.
 const A=globalThis.RepoAccount;if(!A)return;
-let on=false,asked=false,viewer=null,loading=null;
+let on=false,askedFor=null,viewer=null,loading=null;
 const load=src=>new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=()=>reject(Error('load failed'));document.head.append(s)});
 function ensureViewer(){return loading||(loading=(async()=>{const css=document.createElement('link');css.rel='stylesheet';css.href='/viewer.css';document.head.append(css);await load('/viewer-config.js');await load('/viewer.js');viewer=globalThis.RepoViewer.create({fetchEligibility:async()=>({eligible:false}),onClose:restoreListing})})().catch(()=>{loading=null}))}
+// The all-users setting is the same for everyone, so the server lets the CDN reuse the answer for a short while.
+// Nothing is stored in the visitor's browser.
+async function allUsers(){try{return (await A.request('/api/viewer?action=public-preview'))?.allUsers===true}catch{return false}}
 async function refresh(){
  if(!A.ready)return;
- if(!A.user?.admin){on=false;asked=false;return}
- if(asked)return;asked=true;
- try{const result=await A.request('/api/viewer?action=my-preview');on=result?.preview===true}catch{on=false}
+ const who=A.user?.id||'visitor';if(askedFor===who)return;askedFor=who;
+ let mine=false;
+ if(A.user?.admin){try{mine=(await A.request('/api/viewer?action=my-preview'))?.preview===true}catch{}}
+ const everyone=mine?false:await allUsers();
+ if(askedFor!==who)return;
+ on=mine||everyone;
  if(on)void ensureViewer();
 }
 window.addEventListener('reposhelf-account',()=>void refresh());void refresh();
