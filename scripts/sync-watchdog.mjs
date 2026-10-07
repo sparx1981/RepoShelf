@@ -3,19 +3,24 @@ import {pathToFileURL} from 'node:url';
 
 const repository = 'sparx1981/RepoShelf';
 const workflow = 'catalog.yml';
-const graceMs = 3 * 3600000;
-const cooldownMs = 3 * 3600000;
+// The two-hour rhythm is measured from when runs start, not when they finish, so a 50-minute run
+// does not stretch the cycle to three hours.
+const graceMs = 2 * 3600000;
+const cooldownMs = 2 * 3600000;
 const failedRetryMs = 30 * 60000;
 
 export function recoveryDecision(runs, now = Date.now()) {
   if (!Array.isArray(runs)) throw Error('Invalid maintenance run history.');
   const active = runs.find(run => run.status !== 'completed');
+  const started = run => Date.parse(run.run_started_at || run.created_at || run.updated_at);
   const successful = runs.filter(run => run.status === 'completed' && run.conclusion === 'success')
-    .map(run => Date.parse(run.updated_at)).filter(Number.isFinite);
+    .map(started).filter(Number.isFinite);
   const lastSuccess = successful.length ? Math.max(...successful) : null;
   const attempts = runs.map(run => Date.parse(run.updated_at || run.run_started_at || run.created_at))
     .filter(Number.isFinite);
   const lastAttempt = attempts.length ? Math.max(...attempts) : null;
+  const starts = runs.map(started).filter(Number.isFinite);
+  const lastStart = starts.length ? Math.max(...starts) : null;
   const details = {
     checkedAt: new Date(now).toISOString(),
     lastSuccessAt: lastSuccess === null ? null : new Date(lastSuccess).toISOString(),
@@ -38,11 +43,11 @@ export function recoveryDecision(runs, now = Date.now()) {
       reason: 'The latest sync failed, its retry backoff elapsed, and no catalogue run is active.'};
   }
   if (lastSuccess !== null && now - lastSuccess <= graceMs)
-    return {...details, action: 'wait', reason: 'A successful sync is within the three-hour allowance.'};
-  if (lastAttempt !== null && now - lastAttempt < cooldownMs)
-    return {...details, action: 'wait', reason: 'A recent attempt is within the three-hour retry cooldown.',
-      retryAfter: new Date(lastAttempt + cooldownMs).toISOString()};
-  return {...details, action: 'dispatch', reason: 'No successful sync within three hours and no active or recent attempt.'};
+    return {...details, action: 'wait', reason: 'A successful sync started within the last two hours.'};
+  if (lastStart !== null && now - lastStart < cooldownMs)
+    return {...details, action: 'wait', reason: 'A recent attempt is within the two-hour retry cooldown.',
+      retryAfter: new Date(lastStart + cooldownMs).toISOString()};
+  return {...details, action: 'dispatch', reason: 'No successful sync started within two hours and no active or recent attempt.'};
 }
 
 export async function recoverSync({fetcher = fetch, token = process.env.GITHUB_TOKEN, now = Date.now()} = {}) {
@@ -77,7 +82,7 @@ export async function recoverSync({fetcher = fetch, token = process.env.GITHUB_T
   const summary = '## Catalogue sync watchdog\n\n' + decision.reason + '\n\n'
     + 'Last success: ' + (decision.lastSuccessAt || 'none recorded') + '\n'
     + (decision.retryAfter ? '\nRetry permitted after: ' + decision.retryAfter + '\n' : '')
-    + '\nMissed schedules recover after three hours. Failed runs retry after 30 minutes, then back off to at most three hours. Active or queued catalogue runs prevent recovery.\n';
+    + '\nMissed schedules recover after two hours. Failed runs retry after 30 minutes, then back off to at most two hours. Active or queued catalogue runs prevent recovery.\n';
   if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
   console.log(JSON.stringify(decision));
   return decision;

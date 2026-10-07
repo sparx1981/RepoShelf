@@ -8,8 +8,11 @@ const success = {id: 1, status: 'completed', conclusion: 'success', updated_at: 
 const failed = {id: 2, status: 'completed', conclusion: 'failure', updated_at: ago(1)};
 
 assert.equal(recoveryDecision([success], now).action, 'dispatch');
-assert.equal(recoveryDecision([{...success, updated_at: ago(3)}], now).action, 'wait');
+assert.equal(recoveryDecision([{...success, updated_at: ago(2.01)}], now).action, 'dispatch', 'A sync that started over two hours ago is due');
 assert.equal(recoveryDecision([{...success, updated_at: ago(2)}], now).action, 'wait');
+assert.equal(recoveryDecision([{...success, updated_at: ago(1.9)}], now).action, 'wait');
+assert.equal(recoveryDecision([{...success, run_started_at: ago(2.2), updated_at: ago(1.4)}], now).action, 'dispatch', 'The rhythm counts from the start of the last run, not its finish');
+assert.equal(recoveryDecision([{...success, run_started_at: ago(1.9), updated_at: ago(1.2)}], now).action, 'wait');
 for (const status of ['queued', 'in_progress', 'waiting', 'requested', 'pending'])
   assert.equal(recoveryDecision([success, {id: 3, status}], now).activeRunId, 3);
 assert.equal(recoveryDecision([success, failed], now).action, 'dispatch');
@@ -21,7 +24,7 @@ assert.throws(() => recoveryDecision(null, now));
 assert.equal(recoveryDecision([success, {...failed, updated_at: ago(0.49)}], now).action, 'wait');
 assert.equal(recoveryDecision([success, {...failed, updated_at: ago(0.5)}], now).action, 'dispatch');
 assert.equal(recoveryDecision([{...success, updated_at: ago(2)}, failed], now).action, 'dispatch', 'A newer failure is retried even after a recent success');
-for (const [count, hours] of [[2, 1], [3, 2], [4, 3], [8, 3]]) {
+for (const [count, hours] of [[2, 1], [3, 2], [4, 2], [8, 2]]) {
   const failures = Array.from({length: count}, (_, index) => ({...failed, id: 20 + index, updated_at: ago(hours - 0.01 + index * 0.01)}));
   assert.equal(recoveryDecision(failures, now).action, 'wait');
   assert.equal(recoveryDecision(failures, now + 60000).action, 'dispatch');

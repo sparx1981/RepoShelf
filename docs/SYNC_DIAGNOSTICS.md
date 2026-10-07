@@ -52,9 +52,9 @@ Maintenance and submission scans now save generated changes to the checkpoint br
 
 ## Failed-run recovery
 
-The watchdog requests the first retry of a failed or timed-out workflow after 30 minutes, even if an earlier successful run is still recent. Consecutive failures back off to 60, 120, then 180 minutes; successful runs reset this sequence. Active or queued catalogue jobs prevent another request, and history is checked again immediately before dispatch. Cancelled runs retain the three-hour cooldown.
+The watchdog requests the first retry of a failed or timed-out workflow after 30 minutes, even if an earlier successful run is still recent. Consecutive failures back off to 60, then 120 minutes; successful runs reset this sequence. Active or queued catalogue jobs prevent another request, and history is checked again immediately before dispatch. Cancelled runs retain a two-hour cooldown, counted from the start of the run.
 
-Missed schedules still use the three-hour allowance. The watchdog itself runs on GitHub Actions, so a delayed GitHub scheduler can delay both maintenance and recovery. This is not an independent availability guarantee.
+Missed schedules are recovered once two hours have passed since the last successful run started, so the effective rhythm is two hours plus up to the timer interval (30 minutes). The watchdog itself runs on GitHub Actions, so a delayed GitHub scheduler can delay both maintenance and recovery. This is not an independent availability guarantee.
 
 “Checks awaiting retry” counts individual inconclusive demo, screenshot or source checks. It does not represent a failed workflow or failed publication. Consult the run status and stage results for those failures.
 
