@@ -13,7 +13,7 @@ The in-page demo viewer began as an **administrator-only pilot**. It now reaches
 | Database: global switch and required profiles, approved demos, scenario history, evidence per browser profile | `supabase/migrations/202610060021_demo_viewer.sql` and `…0022_demo_viewer_v2.sql`, `tests/database-viewer.sql` |
 | Qualification tool | `scripts/viewer-qualify.mjs` |
 | Daily qualification job (one run per browser profile) | `.github/workflows/viewer-qualification.yml` |
-| Administrator page | `/admin-viewer.html` (link on the Administration tabs). The approval and qualification tools (Global switch, Add or update a demo, Pilot demos, Qualifying) sit in a **Pilot tools** section that is closed by default. |
+| Administrator page | the **Demo viewer** tab of Administration (`/admin.html?tab=viewer`; `/admin-viewer.html` redirects there). The approval and qualification tools (Global switch, Add or update a demo, Pilot demos, Qualifying) sit in a **Pilot tools** section that is closed by default. |
 
 ## Setting it up
 

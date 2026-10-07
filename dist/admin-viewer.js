@@ -36,5 +36,7 @@ $('#vw-enabled').onchange=async e=>{const box=e.target;await post('settings',{en
 $('#vw-form').onsubmit=async e=>{e.preventDefault();let scenario;try{scenario=JSON.parse($('#vw-scenario').value)}catch{$('#vw-form-status').textContent='The scenario is not valid JSON.';return}
  await post('save',{project:$('#vw-project').value.trim(),demoUrl:$('#vw-url').value.trim(),scenario,allowPopups:$('#vw-popups').checked,allowDownloads:$('#vw-downloads').checked,approved:$('#vw-approved').checked,notes:$('#vw-notes').value},'#vw-form-status')};
 function refresh(){if(!A.ready)return;if(!A.user){$('#vw-gate').hidden=false;$('#vw-gate').textContent='Sign in as an administrator to use this page.';$('#vw-workspace').hidden=true;return}if(!A.user.admin){$('#vw-gate').hidden=false;$('#vw-gate').textContent='Administrator access is required.';$('#vw-workspace').hidden=true;return}void load()}
-window.addEventListener('reposhelf-account',refresh);refresh();
+// The Demo viewer tab of Administration starts this when it is first opened, and again on every later visit to refresh.
+let started=false;
+window.RepoAdminViewer={start(){if(started){void load();return}started=true;window.addEventListener('reposhelf-account',refresh);refresh()}};
 })();

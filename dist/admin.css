@@ -346,3 +346,7 @@
 .pick-status.is-hidden{color:var(--status-warning-text,#f0c36a)}
 .pick-note{margin:0 0 10px}
 .sync-progress-line{margin:0 0 12px;padding:10px 14px;border:1px solid var(--line);border-radius:10px;background:var(--surface-raised);font-size:14px;line-height:1.6}
+/* Demo viewer and Promotions are tabs of this page. They reuse the styles of the pages they replaced, without those pages' own width and padding. */
+.admin-embed.legal-main{max-width:none;padding:8px 0 24px;margin:0}
+.promotion-embed{max-width:none}
+.promotion-embed .promotion-record{margin:14px 0}
