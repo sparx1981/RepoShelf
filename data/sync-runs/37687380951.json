@@ -1,7 +1,98 @@
 {
   "schema": 4,
   "work": {
-    "discovery": null,
+    "discovery": {
+      "admissionPolicy": "validated-demo-v1",
+      "publication": {
+        "published": 16937,
+        "pending": 1058,
+        "quarantined": 1403,
+        "unavailable": 966
+      },
+      "workingDemos": 17206,
+      "browserBacklog": {
+        "demo": {
+          "never": 0,
+          "retry": 709,
+          "repeated": 1379,
+          "complete": 18266
+        },
+        "screenshot": {
+          "never": 0,
+          "retry": 807,
+          "repeated": 1401,
+          "complete": 17190
+        },
+        "reviewCount": 1431,
+        "reviewReasons": {
+          "empty_page": 412,
+          "http_401": 15,
+          "network_or_timeout": 163,
+          "access_restricted": 59,
+          "challenge": 120,
+          "dns_not_found": 120,
+          "tls_error": 26,
+          "http_412": 10,
+          "http_402": 34,
+          "http_503": 173,
+          "login_wall": 50,
+          "connection_refused": 10,
+          "dns_unresolved": 9,
+          "unsafe_target": 15,
+          "rate_limit": 26,
+          "probe_timeout": 9,
+          "application_error": 5,
+          "uniform_image": 15,
+          "http_522": 3,
+          "http_400": 10,
+          "http_502": 19,
+          "http_526": 1,
+          "http_500": 30,
+          "dns_timeout": 19,
+          "http_523": 2,
+          "http_530": 8,
+          "http_404": 16,
+          "http_508": 1,
+          "screenshot_error": 13,
+          "http_451": 20,
+          "probe_invalid_output": 1,
+          "http_454": 1,
+          "http_567": 1,
+          "http_525": 2,
+          "http_521": 5,
+          "http_520": 1,
+          "http_405": 1,
+          "http_999": 2,
+          "page_unavailable": 1,
+          "http_504": 1,
+          "space_app_not_loaded": 2
+        }
+      },
+      "targets": {
+        "repositoryChecks": 19337,
+        "demoChecks": 19337,
+        "screenshots": 17459
+      },
+      "reasons": [
+        "Demo validation is below 95%.",
+        "Screenshot coverage is below 90%."
+      ],
+      "pending": {
+        "repositoryChecks": 1,
+        "demoChecks": 2072,
+        "screenshots": 2208
+      },
+      "available": 20354,
+      "visible": 19398,
+      "repositoryChecks": 20353,
+      "demoChecks": 18282,
+      "screenshots": 17190,
+      "ready": true,
+      "githubBatch": 1500,
+      "spacesBatch": 350,
+      "curatedBatch": 40,
+      "communityBatch": 20
+    },
     "browser": null,
     "coverageBefore": {
       "admissionPolicy": "validated-demo-v1",
@@ -98,24 +189,24 @@
     "coverageAfter": {
       "admissionPolicy": "validated-demo-v1",
       "publication": {
-        "published": 16936,
-        "pending": 1058,
+        "published": 17082,
+        "pending": 1843,
         "quarantined": 1403,
         "unavailable": 966
       },
-      "workingDemos": 17205,
+      "workingDemos": 17204,
       "browserBacklog": {
         "demo": {
-          "never": 0,
+          "never": 932,
           "retry": 709,
           "repeated": 1379,
-          "complete": 18265
+          "complete": 18264
         },
         "screenshot": {
-          "never": 0,
+          "never": 932,
           "retry": 807,
           "repeated": 1401,
-          "complete": 17189
+          "complete": 17188
         },
         "reviewCount": 1431,
         "reviewReasons": {
@@ -163,9 +254,9 @@
         }
       },
       "targets": {
-        "repositoryChecks": 19336,
-        "demoChecks": 19336,
-        "screenshots": 17458
+        "repositoryChecks": 20220,
+        "demoChecks": 20220,
+        "screenshots": 18296
       },
       "reasons": [
         "Demo validation is below 95%.",
@@ -173,14 +264,14 @@
       ],
       "pending": {
         "repositoryChecks": 1,
-        "demoChecks": 2072,
-        "screenshots": 2208
+        "demoChecks": 3004,
+        "screenshots": 3140
       },
-      "available": 20353,
-      "visible": 19397,
-      "repositoryChecks": 20352,
-      "demoChecks": 18281,
-      "screenshots": 17189,
+      "available": 21284,
+      "visible": 20328,
+      "repositoryChecks": 21283,
+      "demoChecks": 18280,
+      "screenshots": 17188,
       "ready": true,
       "githubBatch": 1500,
       "spacesBatch": 350,
@@ -188,30 +279,100 @@
       "communityBatch": 20
     },
     "qualityGains": {
-      "demoChecks": 0,
-      "screenshots": 0,
-      "workingDemos": 0,
-      "published": 0
+      "demoChecks": -1,
+      "screenshots": -1,
+      "workingDemos": -1,
+      "published": 146
     }
   },
-  "phase": "cleanup",
+  "phase": "discovery",
   "publication": "checkpoint_saved",
   "id": "37687380951",
   "attempt": 1,
   "startedAt": "2026-10-07T21:18:24.018Z",
-  "recordedAt": "2026-10-07T21:20:40.306Z",
+  "recordedAt": "2026-10-07T21:26:52.351Z",
   "trigger": "workflow_dispatch",
   "status": "success",
   "counts": {
     "before": 20363,
-    "after": 20363,
-    "added": 0,
-    "updated": 645,
+    "after": 21294,
+    "added": 931,
+    "updated": 1018,
     "removed": 0,
-    "withDemo": 19397
+    "withDemo": 20328
   },
-  "temporaryFailures": 0,
+  "temporaryFailures": 2,
   "stages": [
+    {
+      "id": "taxonomy",
+      "name": "Category and subject refresh",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "version": 3,
+        "checked": 21295,
+        "changed": 934,
+        "reviewRequired": 13418,
+        "subjects": {
+          "Self-hosted apps": 379,
+          "MCP servers & agents": 882,
+          "Streaming": 92,
+          "Photography": 50,
+          "Mobile": 540,
+          "Templates & UI components": 947,
+          "Automation & workflows": 428,
+          "Home automation": 30,
+          "Privacy & security": 290,
+          "Writing & documents": 332,
+          "Data & dashboards": 860,
+          "Android": 186,
+          "Apple": 218,
+          "Chatbots & assistants": 348,
+          "Browser extensions & PWAs": 475,
+          "Simulation & physics": 188,
+          "Science": 378,
+          "Image, audio & video AI": 744,
+          "Animation & motion": 203,
+          "Maths & algorithms": 410,
+          "Music & audio": 331,
+          "3D & graphics": 758,
+          "Portfolios & personal sites": 652,
+          "Games & game development": 444,
+          "Crypto & blockchain": 184,
+          "Architecture & building design": 41,
+          "Maps & geospatial": 109,
+          "Travel": 59,
+          "Fashion": 59,
+          "Automotive": 67,
+          "Health & fitness": 46,
+          "Food & cooking": 99,
+          "Kids": 9
+        },
+        "platforms": {
+          "Android": 186,
+          "iOS & iPadOS": 137,
+          "macOS": 96,
+          "Mobile web": 38
+        },
+        "attempted": 21295,
+        "temporaryFailures": 0
+      },
+      "checked": 21295,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "cleanup_publish",
+      "name": "Demo-only cleanup checkpoint",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
     {
       "id": "cleanup",
       "name": "Demo-only library cleanup",
@@ -235,6 +396,343 @@
       "warnings": 0
     },
     {
+      "id": "sources",
+      "name": "Spaces and curated lists",
+      "status": "success",
+      "temporaryFailures": 2,
+      "details": {
+        "attempted": 533,
+        "sourceYield": {
+          "spaces": {
+            "inspected": 348,
+            "added": 202,
+            "found": 202,
+            "skipped": 0,
+            "pages": 4,
+            "errors": 2,
+            "stopped": "rate_limit"
+          },
+          "curated": {
+            "inspected": 35,
+            "found": 9,
+            "added": 4
+          }
+        },
+        "spacesChecked": 498,
+        "spacesFound": 202,
+        "temporaryFailures": 2
+      },
+      "checked": 533,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 2,
+      "warnings": 0
+    },
+    {
+      "id": "community",
+      "name": "Community discoveries",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "catalog",
+      "name": "GitHub discovery and revalidation",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "repositoryChecks": 0,
+        "repositoryNotModified": 0,
+        "repositoryPaused": false,
+        "repositoryPlan": {
+          "limit": 750,
+          "desired": 1583,
+          "allowance": 4800,
+          "reserve": 200,
+          "remaining": 5000,
+          "checksPerDay": 9000,
+          "dailyCapacitySufficient": false,
+          "intervalHours": 48
+        },
+        "repositoryDue": 0,
+        "repositorySelected": 0,
+        "repositoryRemainingDue": 0,
+        "repositoryStopReason": null,
+        "repositoryObserved48h": 16543,
+        "repositoryObserved24h": 6224,
+        "candidateLimit": 1500,
+        "candidatesChecked": 1500,
+        "demosFound": 725,
+        "cacheHits": 155,
+        "queryYield": [
+          {
+            "query": "\"live preview\" in:readme stars:<100 created:2020-01-01..2020-12-31 is:public archived:false fork:false",
+            "page": 1,
+            "inspected": 77,
+            "found": 31,
+            "added": 31,
+            "cacheHits": 23,
+            "errors": 0
+          },
+          {
+            "query": "\"live preview\" in:readme stars:<100 created:2020-01-01..2020-12-31 is:public archived:false fork:false",
+            "page": 2,
+            "inspected": 94,
+            "found": 47,
+            "added": 47,
+            "cacheHits": 6,
+            "errors": 0
+          },
+          {
+            "query": "\"live preview\" in:readme stars:<100 created:2020-01-01..2020-12-31 is:public archived:false fork:false",
+            "page": 3,
+            "inspected": 74,
+            "found": 31,
+            "added": 31,
+            "cacheHits": 26,
+            "errors": 0
+          },
+          {
+            "query": "\"live preview\" in:readme stars:<100 created:2020-01-01..2020-12-31 is:public archived:false fork:false",
+            "page": 4,
+            "inspected": 100,
+            "found": 52,
+            "added": 52,
+            "cacheHits": 0,
+            "errors": 0
+          },
+          {
+            "query": "\"live preview\" in:readme stars:<100 created:2020-01-01..2020-12-31 is:public archived:false fork:false",
+            "page": 5,
+            "inspected": 100,
+            "found": 61,
+            "added": 61,
+            "cacheHits": 0,
+            "errors": 0
+          },
+          {
+            "query": "\"live preview\" in:readme stars:<100 created:2020-01-01..2020-12-31 is:public archived:false fork:false",
+            "page": 6,
+            "inspected": 100,
+            "found": 58,
+            "added": 58,
+            "cacheHits": 0,
+            "errors": 0
+          },
+          {
+            "query": "\"live preview\" in:readme stars:<100 created:2020-01-01..2020-12-31 is:public archived:false fork:false",
+            "page": 7,
+            "inspected": 100,
+            "found": 71,
+            "added": 71,
+            "cacheHits": 0,
+            "errors": 0
+          },
+          {
+            "query": "\"live preview\" in:readme stars:<100 created:2020-01-01..2020-12-31 is:public archived:false fork:false",
+            "page": 8,
+            "inspected": 100,
+            "found": 65,
+            "added": 65,
+            "cacheHits": 0,
+            "errors": 0
+          },
+          {
+            "query": "\"live preview\" in:readme stars:<100 created:2020-01-01..2020-12-31 is:public archived:false fork:false",
+            "page": 9,
+            "inspected": 100,
+            "found": 49,
+            "added": 49,
+            "cacheHits": 0,
+            "errors": 0
+          },
+          {
+            "query": "\"live preview\" in:readme stars:<100 created:2020-01-01..2020-12-31 is:public archived:false fork:false",
+            "page": 10,
+            "inspected": 100,
+            "found": 62,
+            "added": 62,
+            "cacheHits": 0,
+            "errors": 0
+          },
+          {
+            "query": "\"try online\" in:readme stars:<100 created:2020-01-01..2020-12-31 is:public archived:false fork:false",
+            "page": 1,
+            "inspected": 51,
+            "found": 35,
+            "added": 35,
+            "cacheHits": 49,
+            "errors": 0
+          },
+          {
+            "query": "\"try online\" in:readme stars:<100 created:2020-01-01..2020-12-31 is:public archived:false fork:false",
+            "page": 2,
+            "inspected": 33,
+            "found": 19,
+            "added": 19,
+            "cacheHits": 0,
+            "errors": 0
+          },
+          {
+            "query": "topic:live-demo stars:<100 created:2020-01-01..2020-12-31 is:public archived:false fork:false",
+            "page": 1,
+            "inspected": 0,
+            "found": 0,
+            "added": 0,
+            "cacheHits": 0,
+            "errors": 0
+          },
+          {
+            "query": "demo in:readme stars:<100 created:2021-01-01..2021-12-31 is:public archived:false fork:false",
+            "page": 1,
+            "inspected": 77,
+            "found": 18,
+            "added": 18,
+            "cacheHits": 23,
+            "errors": 0
+          },
+          {
+            "query": "demo in:readme stars:<100 created:2021-01-01..2021-12-31 is:public archived:false fork:false",
+            "page": 2,
+            "inspected": 94,
+            "found": 32,
+            "added": 32,
+            "cacheHits": 6,
+            "errors": 0
+          },
+          {
+            "query": "demo in:readme stars:<100 created:2021-01-01..2021-12-31 is:public archived:false fork:false",
+            "page": 3,
+            "inspected": 94,
+            "found": 26,
+            "added": 26,
+            "cacheHits": 6,
+            "errors": 0
+          },
+          {
+            "query": "demo in:readme stars:<100 created:2021-01-01..2021-12-31 is:public archived:false fork:false",
+            "page": 4,
+            "inspected": 93,
+            "found": 38,
+            "added": 37,
+            "cacheHits": 7,
+            "errors": 0
+          },
+          {
+            "query": "demo in:readme stars:<100 created:2021-01-01..2021-12-31 is:public archived:false fork:false",
+            "page": 5,
+            "inspected": 94,
+            "found": 24,
+            "added": 24,
+            "cacheHits": 6,
+            "errors": 0
+          },
+          {
+            "query": "demo in:readme stars:<100 created:2021-01-01..2021-12-31 is:public archived:false fork:false",
+            "page": 6,
+            "inspected": 18,
+            "found": 5,
+            "added": 5,
+            "cacheHits": 1,
+            "errors": 0
+          },
+          {
+            "query": "playground in:readme stars:<100 created:2021-01-01..2021-12-31 is:public archived:false fork:false",
+            "page": 1,
+            "inspected": 0,
+            "found": 0,
+            "added": 0,
+            "cacheHits": 1,
+            "errors": 0
+          },
+          {
+            "query": "\"live preview\" in:readme stars:<100 created:2021-01-01..2021-12-31 is:public archived:false fork:false",
+            "page": 1,
+            "inspected": 0,
+            "found": 0,
+            "added": 0,
+            "cacheHits": 1,
+            "errors": 0
+          },
+          {
+            "query": "\"try online\" in:readme stars:<100 created:2021-01-01..2021-12-31 is:public archived:false fork:false",
+            "page": 1,
+            "inspected": 1,
+            "found": 1,
+            "added": 0,
+            "cacheHits": 0,
+            "errors": 0
+          }
+        ],
+        "sourceYield": {
+          "github": {
+            "inspected": 1500,
+            "found": 725,
+            "added": 723,
+            "errors": 0
+          }
+        },
+        "searchQueries": 22,
+        "searchQueryLimit": 40,
+        "searchSpacingMs": 4500,
+        "searchCursor": 134,
+        "searchPaused": null,
+        "temporaryFailures": 0,
+        "durationMs": 135723
+      },
+      "checked": 1500,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "enrich",
+      "name": "Releases and technologies",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "overviews",
+      "name": "README overviews",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "context",
+      "name": "Supporting documents",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "ai",
+      "name": "Optional AI overviews",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
       "id": "validate",
       "name": "Application checks",
       "status": "success",
@@ -251,6 +749,108 @@
       "status": "success",
       "temporaryFailures": 0,
       "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "priority",
+      "name": "Discovery quality gate",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "admissionPolicy": "validated-demo-v1",
+        "publication": {
+          "published": 16937,
+          "pending": 1058,
+          "quarantined": 1403,
+          "unavailable": 966
+        },
+        "workingDemos": 17206,
+        "browserBacklog": {
+          "demo": {
+            "never": 0,
+            "retry": 709,
+            "repeated": 1379,
+            "complete": 18266
+          },
+          "screenshot": {
+            "never": 0,
+            "retry": 807,
+            "repeated": 1401,
+            "complete": 17190
+          },
+          "reviewCount": 1431,
+          "reviewReasons": {
+            "empty_page": 412,
+            "http_401": 15,
+            "network_or_timeout": 163,
+            "access_restricted": 59,
+            "challenge": 120,
+            "dns_not_found": 120,
+            "tls_error": 26,
+            "http_412": 10,
+            "http_402": 34,
+            "http_503": 173,
+            "login_wall": 50,
+            "connection_refused": 10,
+            "dns_unresolved": 9,
+            "unsafe_target": 15,
+            "rate_limit": 26,
+            "probe_timeout": 9,
+            "application_error": 5,
+            "uniform_image": 15,
+            "http_522": 3,
+            "http_400": 10,
+            "http_502": 19,
+            "http_526": 1,
+            "http_500": 30,
+            "dns_timeout": 19,
+            "http_523": 2,
+            "http_530": 8,
+            "http_404": 16,
+            "http_508": 1,
+            "screenshot_error": 13,
+            "http_451": 20,
+            "probe_invalid_output": 1,
+            "http_454": 1,
+            "http_567": 1,
+            "http_525": 2,
+            "http_521": 5,
+            "http_520": 1,
+            "http_405": 1,
+            "http_999": 2,
+            "page_unavailable": 1,
+            "http_504": 1,
+            "space_app_not_loaded": 2
+          }
+        },
+        "targets": {
+          "repositoryChecks": 19337,
+          "demoChecks": 19337,
+          "screenshots": 17459
+        },
+        "reasons": [
+          "Demo validation is below 95%.",
+          "Screenshot coverage is below 90%."
+        ],
+        "pending": {
+          "repositoryChecks": 1,
+          "demoChecks": 2072,
+          "screenshots": 2208
+        },
+        "available": 20354,
+        "visible": 19398,
+        "repositoryChecks": 20353,
+        "demoChecks": 18282,
+        "screenshots": 17190,
+        "ready": true,
+        "githubBatch": 1500,
+        "spacesBatch": 350,
+        "curatedBatch": 40,
+        "communityBatch": 20
+      },
       "checked": 0,
       "unavailableResponses": 0,
       "inconclusiveChecks": 0,
