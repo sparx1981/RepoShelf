@@ -1,0 +1,51 @@
+name: Demo viewer diagnosis
+
+# Manual only. Loads a random sample of working catalogue demos in the real in-page viewer (same component, sandbox and
+# headers as visitors get) and reports why the ones that fail fail. Read-only: it saves a result file as a run artifact
+# and a summary on the run page. It does not change the catalogue, any setting or any qualification evidence.
+on:
+  workflow_dispatch:
+    inputs:
+      sample:
+        description: Number of demos to sample (Hugging Face Spaces are also checked at their app address)
+        default: '200'
+      seed:
+        description: Random seed (change it to sample different demos)
+        default: '1'
+      only:
+        description: Optional host suffix to focus on, for example streamlit.app
+        default: ''
+      variant:
+        description: Optional experiment, "embed" also tries Streamlit's ?embed=true
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reposhelf-viewer-diagnose
+  cancel-in-progress: false
+
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Unpack saved catalogue data
+        run: node scripts/data-packing.mjs unpack
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install Chromium
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
+      - name: Diagnose demos in the viewer
+        run: node scripts/viewer-diagnose.mjs --sample=${{ inputs.sample }} --seed=${{ inputs.seed }} ${{ inputs.only && format('--only={0}', inputs.only) || '' }} ${{ inputs.variant && format('--variant={0}', inputs.variant) || '' }} --minutes=28 --out=viewer-diagnosis.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: viewer-diagnosis
+          path: viewer-diagnosis.json
+          retention-days: 14

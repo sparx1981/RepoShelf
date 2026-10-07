@@ -78,6 +78,32 @@ Playwright WebKit and mobile emulation supplement, and do not replace, checks on
 
 **Alerting:** the workflow publishes a summary on the run page and **fails the job when any demo failed, could not be checked, or was left unchecked** (time budget or queue limit), because unchecked demos' evidence would silently expire, so GitHub's failed-run notification is the alert. The administrator page also warns when any approved demo's evidence is missing or older than 36 hours, which catches a missed run before the 48-hour limit.
 
+## Opening demos in the viewer from the storefront (administrators only)
+
+**Administration → Demo viewer → "Open demos in the viewer on RepoShelf"** is a per-account switch for hand-checking demos while browsing the storefront. It needs **migration 23**, `supabase/migrations/202610070023_viewer_admin_preview.sql`, applied in the Supabase SQL editor (safe to run twice). Until then the switch reports that it is unavailable and demos keep opening in a new tab.
+
+- **On:** every "Try demo" link opens that demo inside the viewer as an **unqualified preview**, whether or not it has passed qualification. The viewer bar says "Unqualified preview" so nobody mistakes it for what visitors get. "Open in new tab" and "Close" are always available.
+- **Off (the default), and for every visitor:** "Try demo" opens a new tab exactly as before. The viewer code is not even downloaded unless an administrator has the switch on.
+- The setting follows the account across devices and is read when a storefront page loads, so **reload the storefront after changing it**.
+- Anything the viewer refuses to frame (a non-https address, or a demo on RepoShelf itself) opens in a new tab. Some sites forbid being framed at all; the viewer then shows an empty or blocked frame, and "Open in new tab" is the way out. For Hugging Face Spaces the listing's demo address can be the Space page rather than its `appUrl`, which may refuse to be framed.
+- **Before opening, the server checks the demo** (`GET /api/viewer?action=frame-check`, administrators only) from its real response headers. A demo that forbids framing (`X-Frame-Options`, CSP `frame-ancestors`), cannot be reached, or is uncertain opens in a new tab with a short note. If the browser blocks that automatic tab, the note carries an "Open in new tab" link.
+- **Rewrites the check applies:** a Hugging Face Space opens at its own app address (looked up from Hugging Face's public API; the `huggingface.co/spaces/...` page can never be framed), `http://` addresses are tried at `https://`, and Streamlit apps (`*.streamlit.app`) get `?embed=true`, without which they loop through sign-in redirects inside a frame.
+
+### What the diagnosis found (run "Demo viewer diagnosis", 2026-10-07, 300 sampled working demos in the real viewer)
+
+| Cause | Share of sample | What the viewer does now |
+|---|---|---|
+| Hugging Face Space **page** (always blocked) | 30% (91 of 300) | Opens the Space's app address instead: 96.5% of those load |
+| Site forbids framing (Colab, python.org, arXiv, Discord, golang.org, DHTMLX and others) | about 6% of non-Hugging Face demos | Detected in advance, opens in a new tab |
+| `http://` demo address | about 4% | Tried at `https://` |
+| Streamlit redirect loop | about 3% | `?embed=true`; some of those apps are asleep and show Streamlit's own wake-up page |
+| Loads but shows nothing (Flutter web, WebGL games, a login page) | about 1% | Not detected in advance; "Open in new tab" is the way out |
+| Down, error page, slow | about 1% | Mostly detected by the header check |
+
+The diagnosis is repeatable: **Actions → Demo viewer diagnosis** (optional `only` host and `variant=embed` inputs). It runs in Chromium only; Safari and Firefox, and visitors who block third-party cookies, can differ.
+
+- This is **manual** checking. The automated check is the daily qualification job described above, which runs each approved demo's scenario in the viewer.
+
 ## The two preview modes
 
 On the administrator page each demo has two buttons:
