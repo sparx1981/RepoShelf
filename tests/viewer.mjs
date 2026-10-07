@@ -89,4 +89,24 @@ assert.equal((await call('GET','/api/viewer?action=my-preview',{admin:true})).da
 assert.equal((await call('GET','/api/viewer?id=team/a')).data.preview,undefined,'visitors are never told about administrator previews');
 failing=true;r=await call('GET','/api/viewer?action=my-preview',{admin:true});assert.deepEqual(r.data,{preview:false,available:false},'an unavailable store means off, so the demo opens in a new tab');failing=false;
 r=await call('POST','/api/viewer?action=my-preview',{body:{preview:false},admin:true});assert.equal(r.data.preview,false);
+// frame-check: can this demo be framed at all? Judged from real response headers; Hugging Face Spaces use their app address.
+{const probes=[],hfCalls=[];let probeResult={embeddable:true,reason:'no_restrictions',finalUrl:'https://demo.example/app'},hfBody={host:'https://o-s.hf.space/'},hfOk=true;
+ const frameProbe=async(url,options)=>{probes.push({url,options});if(probeResult instanceof Error)throw probeResult;return {url,...probeResult}};
+ const fetcher=async url=>{hfCalls.push(url);return hfOk?Response.json(hfBody):new Response('',{status:404})};
+ const h=createViewerHandler({accounts,key,now:()=>now,frameProbe,fetcher});
+ const ask=async(id,url,admin=true)=>{const res={status:0,headers:{},body:'',setHeader(){},writeHead(st){this.status=st},end(b){this.body=b}};try{await h({method:'GET',url:'/api/viewer?action=frame-check&id='+encodeURIComponent(id)+'&url='+encodeURIComponent(url),headers:{origin:'https://www.reposhelf.co.uk'},admin},res)}catch(e){return {status:e.status,code:e.code}}return {status:res.status,data:JSON.parse(res.body)}};
+ assert.equal((await ask('team/a','https://demo.example/app',false)).code,'forbidden','administrators only');
+ assert.equal((await ask('nope','https://demo.example/app')).code,'invalid_demo');assert.equal((await ask('team/a','http://demo.example/app')).code,'invalid_demo','https only');
+ assert.deepEqual((await ask('team/own','https://www.reposhelf.co.uk/x')).data,{embeddable:false,reason:'own_origin',url:'https://www.reposhelf.co.uk/x'});assert.equal(probes.length,0,'RepoShelf is never even probed');
+ let r=await ask('team/a','https://demo.example/app');assert.deepEqual(r.data,{embeddable:true,reason:'no_restrictions',url:'https://demo.example/app'});assert.equal(probes.length,1);
+ await ask('team/a','https://demo.example/app');assert.equal(probes.length,1,'a recent answer is reused');
+ probeResult={embeddable:false,reason:'x_frame_options_deny'};r=await ask('team/b','https://deny.example/');assert.deepEqual(r.data,{embeddable:false,reason:'x_frame_options_deny',url:'https://deny.example/'});
+ probeResult={embeddable:null,reason:'timeout'};r=await ask('team/c','https://slow.example/');assert.equal(r.data.embeddable,false,'unreachable or unknown never opens a frame');
+ probeResult=Error('boom');r=await ask('team/d','https://boom.example/');assert.deepEqual(r.data,{embeddable:false,reason:'check_failed',url:'https://boom.example/'});
+ probeResult={embeddable:true,reason:'no_restrictions',finalUrl:'https://www.reposhelf.co.uk/landing'};r=await ask('team/e','https://redirects.example/');assert.equal(r.data.embeddable,false);assert.equal(r.data.reason,'own_origin','a redirect to RepoShelf is refused');
+ probeResult={embeddable:true,reason:'no_restrictions'};probes.length=0;
+ r=await ask('hf:o/s','https://huggingface.co/spaces/o/s');assert.equal(hfCalls.at(-1),'https://huggingface.co/api/spaces/o/s');assert.equal(probes.at(-1).url,'https://o-s.hf.space/','the Space app address is probed, not the Space page');assert.equal(r.data.url,'https://o-s.hf.space/');assert.equal(r.data.embeddable,true);
+ for(const bad of [{host:'https://evil.example/'},{host:'http://o-s.hf.space/'},{host:'https://user:pw@o-s.hf.space/'},{host:'https://o-s.hf.space:8443/'},{}]){hfBody=bad;probes.length=0;r=await ask('hf:o/s'+probes.length+Math.random().toString(36).slice(2,5),'https://huggingface.co/spaces/o/s');assert.equal(r.data.reason,'no_app_address',JSON.stringify(bad));assert.equal(probes.length,0)}
+ hfOk=false;r=await ask('hf:o/other','https://huggingface.co/spaces/o/other');assert.deepEqual(r.data,{embeddable:false,reason:'no_app_address',url:'https://huggingface.co/spaces/o/other'},'a lookup failure means a new tab');
+}
 console.log('PASS: demo viewer eligibility is per browser profile and needs fresh evidence for the saved scenario and address, RepoShelf is never a demo, scenarios must show a result after their last action and keep credentials out, and the endpoint is uncached, admin-only or worker-only with safe failure.');
