@@ -109,9 +109,11 @@ async function main(){
  // The address the viewer would be given: the storefront links Spaces to their huggingface.co page, which can never be
  // framed, so measure both what the storefront links to today and (for Spaces) the Space's own app address.
  const all=[...catalog.repositories,...(spaces.repositories||[])].filter(r=>r.demo&&r.demoHealth?.status==='working'&&r.availability!=='unavailable');
+ // Optional focus on one host family, and an experiment that also tries Streamlit's documented embed mode (?embed=true).
+ const only=args.get('only'),pool=only?all.filter(r=>{try{return new URL(r.source==='huggingface'?(r.appUrl||r.demo):r.demo).hostname.endsWith(only)}catch{return false}}):all;
  let seed=Number(args.get('seed')||1);const random=()=>{seed=(seed*16807)%2147483647;return seed/2147483647};
- const chosen=all.map(r=>[random(),r]).sort((a,b)=>a[0]-b[0]).slice(0,sample).map(x=>x[1]);
- const jobs=[];for(const r of chosen){jobs.push({id:r.full,target:r.demo,source:r.source||'github'});if(r.source==='huggingface'&&r.appUrl&&r.appUrl!==r.demo)jobs.push({id:r.full+' (app address)',target:r.appUrl,source:'huggingface-app'})}
+ const chosen=pool.map(r=>[random(),r]).sort((a,b)=>a[0]-b[0]).slice(0,sample).map(x=>x[1]);
+ const jobs=[];for(const r of chosen){jobs.push({id:r.full,target:r.demo,source:r.source||'github'});if(args.get('variant')==='embed'){try{const u=new URL(r.demo);if(u.hostname.endsWith('.streamlit.app')){u.searchParams.set('embed','true');jobs.push({id:r.full+' (?embed=true)',target:u.href,source:'streamlit-embed'})}}catch{}}if(r.source==='huggingface'&&r.appUrl&&r.appUrl!==r.demo)jobs.push({id:r.full+' (app address)',target:r.appUrl,source:'huggingface-app'})}
  const playwright=require('playwright'),browser=await playwright.chromium.launch(),results=[],guard=publicUrlGuard(),deadline=Date.now()+minutes*60000;let next=0;
  try{await Promise.all(Array.from({length:concurrency},async()=>{while(next<jobs.length&&Date.now()<deadline){const job=jobs[next++];results.push(await diagnoseDemo(browser,job,{guard}));if(results.length%20===0)console.log(`${results.length}/${jobs.length} checked`)}}))}finally{await browser.close()}
  const summary=summarize(results),text=markdown(summary,results);

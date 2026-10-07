@@ -96,9 +96,10 @@ r=await call('POST','/api/viewer?action=my-preview',{body:{preview:false},admin:
  const h=createViewerHandler({accounts,key,now:()=>now,frameProbe,fetcher});
  const ask=async(id,url,admin=true)=>{const res={status:0,headers:{},body:'',setHeader(){},writeHead(st){this.status=st},end(b){this.body=b}};try{await h({method:'GET',url:'/api/viewer?action=frame-check&id='+encodeURIComponent(id)+'&url='+encodeURIComponent(url),headers:{origin:'https://www.reposhelf.co.uk'},admin},res)}catch(e){return {status:e.status,code:e.code}}return {status:res.status,data:JSON.parse(res.body)}};
  assert.equal((await ask('team/a','https://demo.example/app',false)).code,'forbidden','administrators only');
- assert.equal((await ask('nope','https://demo.example/app')).code,'invalid_demo');assert.equal((await ask('team/a','http://demo.example/app')).code,'invalid_demo','https only');
+ assert.equal((await ask('nope','https://demo.example/app')).code,'invalid_demo');assert.equal((await ask('team/a','ftp://demo.example/app')).code,'invalid_demo','only http and https addresses are looked at');assert.equal((await ask('team/a','not a url')).code,'invalid_demo');
  assert.deepEqual((await ask('team/own','https://www.reposhelf.co.uk/x')).data,{embeddable:false,reason:'own_origin',url:'https://www.reposhelf.co.uk/x'});assert.equal(probes.length,0,'RepoShelf is never even probed');
- let r=await ask('team/a','https://demo.example/app');assert.deepEqual(r.data,{embeddable:true,reason:'no_restrictions',url:'https://demo.example/app'});assert.equal(probes.length,1);
+ probes.length=0;let r=await ask('team/up','http://demo.example/plain');assert.equal(probes.at(-1).url,'https://demo.example/plain','an http address is probed at https');assert.equal(r.data.url,'https://demo.example/plain');assert.equal(r.data.embeddable,true);probes.length=0;
+ r=await ask('team/a','https://demo.example/app');assert.deepEqual(r.data,{embeddable:true,reason:'no_restrictions',url:'https://demo.example/app'});assert.equal(probes.length,1);
  await ask('team/a','https://demo.example/app');assert.equal(probes.length,1,'a recent answer is reused');
  probeResult={embeddable:false,reason:'x_frame_options_deny'};r=await ask('team/b','https://deny.example/');assert.deepEqual(r.data,{embeddable:false,reason:'x_frame_options_deny',url:'https://deny.example/'});
  probeResult={embeddable:null,reason:'timeout'};r=await ask('team/c','https://slow.example/');assert.equal(r.data.embeddable,false,'unreachable or unknown never opens a frame');
