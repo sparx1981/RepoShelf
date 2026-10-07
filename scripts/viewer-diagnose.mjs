@@ -36,7 +36,7 @@ export const OUTCOMES={
 // Pure: turn what was observed into one outcome. Order matters: the most specific, most certain cause wins.
 export function classifyOutcome(f){
  if(f.harnessError)return {outcome:'harness_error',detail:f.harnessError};
- if(f.refused){const header=f.headerVerdict&&f.headerVerdict.embeddable===false?f.headerVerdict.reason:null;return header?{outcome:'blocked_by_site',detail:header}:{outcome:'connection_error',detail:f.refusedDetail||'refused'}}
+ if(f.refused){const header=f.headerVerdict&&f.headerVerdict.embeddable===false?f.headerVerdict.reason:null;if(header)return {outcome:'blocked_by_site',detail:header};if(/ERR_BLOCKED_BY_RESPONSE|ERR_BLOCKED_BY_CSP|ERR_BLOCKED_BY_XSS/.test(f.failure||''))return {outcome:'blocked_by_site',detail:f.failure};return {outcome:'connection_error',detail:f.failure||f.refusedDetail||'refused'}}
  if(f.timedOut)return {outcome:'timeout'};
  if(f.status>=400)return {outcome:'http_error',detail:'HTTP '+f.status};
  if(f.topNavigationAttempted)return {outcome:'frame_buster'};
@@ -52,7 +52,7 @@ export function classifyOutcome(f){
 export function notesFor(f){const notes=[];if(f.blockedPopups)notes.push('wants_popups');if(f.blockedDownloads)notes.push('wants_downloads');if(f.storageErrors)notes.push('storage_errors');if(f.consoleErrors>10)notes.push('many_console_errors');return notes}
 
 export async function diagnoseDemo(browser,{id,target,source},{guard=publicUrlGuard(),loadTimeoutMs=25000,settleMs=2500,setup}={}){
- const facts={id,target,source,text:'',visualElements:0,status:null,headerVerdict:null,refused:false,timedOut:false,topNavigationAttempted:false,blockedPopups:0,blockedDownloads:0,storageErrors:0,consoleErrors:0,consoleSamples:[]};
+ const facts={id,target,source,hops:0,failure:null,text:'',visualElements:0,status:null,headerVerdict:null,refused:false,timedOut:false,topNavigationAttempted:false,blockedPopups:0,blockedDownloads:0,storageErrors:0,consoleErrors:0,consoleSamples:[]};
  const base={id,target,source,group:hostGroup(target)};
  if(!C.originOf(target))return {...base,outcome:'connection_error',detail:'not https',notes:[]};
  if(C.isOwnOrigin(target))return {...base,outcome:'connection_error',detail:'own origin',notes:[]};
@@ -66,7 +66,10 @@ export async function diagnoseDemo(browser,{id,target,source},{guard=publicUrlGu
   await context.route('**/*',async route=>{const url=route.request().url();if(url===harness)return route.fallback();if(C.isOwnOrigin(url))return route.abort('blockedbyclient');if(!/^https?:/.test(url))return route.fallback();const host=new URL(url).hostname;if(!verdicts.has(host))verdicts.set(host,Promise.resolve(guard(url)).catch(()=>false));return await verdicts.get(host)?route.fallback():route.abort('blockedbyclient')});
   page.on('console',m=>{const t=m.text();if(m.type()==='error'){facts.consoleErrors++;if(facts.consoleSamples.length<3)facts.consoleSamples.push(t.slice(0,160))}if(/allow-top-navigation|top-level window is sandboxed|Unsafe attempt to initiate navigation/i.test(t))facts.topNavigationAttempted=true;if(/Blocked opening .* in a sandboxed frame|allow-popups/i.test(t))facts.blockedPopups++;if(/Download is disallowed|allow-downloads/i.test(t))facts.blockedDownloads++;if(/storage|cookie|indexeddb|localstorage|sessionstorage/i.test(t)&&/denied|not allowed|blocked|insecure|SecurityError/i.test(t))facts.storageErrors++});
   page.on('framenavigated',f=>{if(f===page.mainFrame()&&f.url()!==harness&&f.url()!=='about:blank')facts.topNavigationAttempted=true});
-  page.on('response',r=>{const req=r.request();if(req.isNavigationRequest()&&req.frame()!==page.mainFrame()&&facts.status===null){facts.status=r.status();facts.headerVerdict=classifyFraming(r.headers())}});
+  // Judge the LAST response in the frame, not the first: many demos redirect (for example Streamlit's sign-in hop), and the
+  // restrictive headers arrive on the final response.
+  page.on('response',r=>{const req=r.request();if(req.isNavigationRequest()&&req.frame()!==page.mainFrame()){facts.hops++;if(![301,302,303,307,308].includes(r.status())){facts.status=r.status();facts.headerVerdict=classifyFraming(r.headers())}}});
+  page.on('requestfailed',r=>{if(r.isNavigationRequest()&&r.frame()!==page.mainFrame())facts.failure=String(r.failure()?.errorText||'').slice(0,80)});
   try{await page.goto(harness,{timeout:loadTimeoutMs,waitUntil:'domcontentloaded'})}catch(e){facts.harnessError='harness load failed';return {...base,...classifyOutcome(facts),notes:[]}}
   const element=await page.waitForSelector('.viewer-frame',{timeout:5000}),frame=await element.contentFrame();
   const until=Date.now()+loadTimeoutMs;while(frame.url()==='about:blank'&&Date.now()<until)await wait(100);
@@ -79,7 +82,7 @@ export async function diagnoseDemo(browser,{id,target,source},{guard=publicUrlGu
    else try{const seen=await frame.evaluate(()=>({text:(document.body?.innerText||'').slice(0,2000),visual:document.querySelectorAll('canvas,img,video,svg,iframe,picture').length}));facts.text=seen.text;facts.visualElements=seen.visual}catch{}
   }
   const result=classifyOutcome(facts);
-  return {...base,...result,finalUrl:(()=>{try{return frame.url().slice(0,200)}catch{return null}})(),status:facts.status,notes:notesFor(facts),...(result.outcome!=='works'?{consoleSamples:facts.consoleSamples}:{})};
+  return {...base,...result,hops:facts.hops,finalUrl:(()=>{try{return frame.url().slice(0,200)}catch{return null}})(),status:facts.status,notes:notesFor(facts),...(result.outcome!=='works'?{consoleSamples:facts.consoleSamples}:{})};
  }catch(e){return {...base,outcome:'harness_error',detail:String(e.message).split('\n')[0].slice(0,160),notes:[]}}
  finally{try{await context?.close()}catch{}}
 }
@@ -113,6 +116,7 @@ async function main(){
  try{await Promise.all(Array.from({length:concurrency},async()=>{while(next<jobs.length&&Date.now()<deadline){const job=jobs[next++];results.push(await diagnoseDemo(browser,job,{guard}));if(results.length%20===0)console.log(`${results.length}/${jobs.length} checked`)}}))}finally{await browser.close()}
  const summary=summarize(results),text=markdown(summary,results);
  await mkdir(dirname(new URL('../'+out,import.meta.url).pathname),{recursive:true});await writeFile(new URL('../'+out,import.meta.url),JSON.stringify({at:new Date().toISOString(),sampled:chosen.length,skippedForTime:Math.max(0,jobs.length-results.length),summary,results},null,1));
+ for(const r of results.filter(x=>x.outcome!=='works'))console.log('NOT-WORKING '+[r.outcome,r.detail||'',r.id,r.target,'hops='+(r.hops??''),r.finalUrl||''].join(' | '));
  console.log(text);if(process.env.GITHUB_STEP_SUMMARY)await writeFile(process.env.GITHUB_STEP_SUMMARY,text,{flag:'a'});
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)await main();

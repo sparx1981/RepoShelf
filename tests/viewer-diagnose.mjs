@@ -4,6 +4,8 @@ const base={text:'Hello demo, this page has plenty of readable content.',visualE
 const out=f=>classifyOutcome({...base,...f}).outcome;
 assert.equal(out({}),'works');
 assert.equal(out({refused:true,headerVerdict:{embeddable:false,reason:'x_frame_options_deny'}}),'blocked_by_site');
+assert.equal(out({refused:true,headerVerdict:null,failure:'net::ERR_BLOCKED_BY_RESPONSE.NotSameOrigin'}),'blocked_by_site','the browser itself says the response blocked framing');
+assert.equal(out({refused:true,headerVerdict:null,failure:'net::ERR_NAME_NOT_RESOLVED'}),'connection_error');
 assert.equal(out({refused:true,headerVerdict:null}),'connection_error','a refusal with no restrictive header is a connection problem, not a policy');
 assert.equal(out({timedOut:true}),'timeout');assert.equal(out({status:503}),'http_error');assert.equal(out({status:404}),'http_error');
 assert.equal(out({topNavigationAttempted:true}),'frame_buster');
