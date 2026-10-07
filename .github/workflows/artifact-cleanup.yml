@@ -1,0 +1,47 @@
+name: Clean up workflow artifacts
+# A private repository has a fixed GitHub Actions storage allowance, and each sync hands about 200 MB to its browser runners as
+# an artifact (kept for three days). Twelve syncs a day fill the allowance, after which every upload fails with "Artifact storage
+# quota has been hit" and the browser checks (demo health and screenshots) cannot run. This removes artifacts that nothing needs
+# any more. GitHub recalculates storage usage every 6 to 12 hours, so space freed here appears after that delay.
+on:
+  workflow_dispatch:
+    inputs:
+      keep_hours:
+        description: Keep artifacts created in the last this-many hours (a running sync's artifacts are always newer than 3)
+        default: '3'
+        required: true
+  schedule:
+    - cron: '23 */3 * * *'
+permissions:
+  actions: write
+  contents: read
+concurrency:
+  group: reposhelf-artifact-cleanup
+  cancel-in-progress: false
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Delete old artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          KEEP_HOURS: ${{ inputs.keep_hours || '3' }}
+        run: |
+          set -euo pipefail
+          [[ "$KEEP_HOURS" =~ ^[0-9]+$ ]] || { echo "keep_hours must be a whole number"; exit 1; }
+          cutoff=$(date -u -d "$KEEP_HOURS hours ago" +%Y-%m-%dT%H:%M:%SZ)
+          gh api --paginate "repos/$REPO/actions/artifacts?per_page=100" \
+            --jq '.artifacts[] | select(.expired==false) | [.id,.created_at,.size_in_bytes,.name] | @tsv' > artifacts.tsv
+          total=$(awk -F'\t' '{s+=$3} END {printf "%d", s/1048576}' artifacts.tsv)
+          echo "Found $(wc -l < artifacts.tsv) artifacts, about ${total} MB, before cleaning."
+          deleted=0; freed=0
+          while IFS=$'\t' read -r id created size name; do
+            if [[ "$created" < "$cutoff" ]]; then
+              if gh api -X DELETE "repos/$REPO/actions/artifacts/$id" --silent; then deleted=$((deleted+1)); freed=$((freed+size)); fi
+            fi
+          done < artifacts.tsv
+          echo "Deleted $deleted artifacts created before $cutoff, about $((freed/1048576)) MB."
+          echo "### Artifact cleanup" >> "$GITHUB_STEP_SUMMARY"
+          echo "Deleted **$deleted** artifacts (about $((freed/1048576)) MB) created before $cutoff. GitHub recalculates storage usage every 6 to 12 hours." >> "$GITHUB_STEP_SUMMARY"
