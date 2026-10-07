@@ -367,7 +367,9 @@ jobs:
     env:
       WATCHDOG_RECOVERY: ${{ inputs.watchdog_recovery }}
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Restoring the saved checkpoint alone takes about 12 minutes and grows with the screenshot library, so 15 minutes
+    # was ending the job (shown as "cancelled") right after its last step. The limit is a safety net, not a budget.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:

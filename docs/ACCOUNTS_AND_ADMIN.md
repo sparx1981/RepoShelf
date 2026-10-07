@@ -174,3 +174,14 @@ Merges are refused when both accounts use the same sign-in method (for example t
 ## Repository details for signed-out visitors
 
 Signed-out visitors can browse and open demos. The repository owner and name line, the Repository and fork buttons, release and source links, and the "also on Hugging Face" and "discovered via" notes are hidden or shown as inert buttons until sign-in; clicking an inert button opens sign-in. This is a presentation rule: repository identifiers still exist in the catalogue, the published catalogue files and the browse responses; the MCP connector and the REST API need a key, so the lock reduces casual discovery and does not make details secret.
+
+## Storefront rows: what each row shows, and shuffling
+
+Every storefront row is built the same way: choose the listings (your selection, or a ranking such as Popular or Trending), keep only those that pass the row's checks, take the top few, then order them. A visitor's own filters (search, category, demos only) apply on top.
+
+- **Size:** the spotlight shows at most 5 listings, every other automatic row 12, and a "My selection" row up to 120.
+- **Spotlight and Editor's picks** also require a working demo, a screenshot of that demo, a listing that is not hidden or unavailable, and checks that are not too old. For listings you chose by hand a *missed or failed check never removes them* (for example during a sync outage); only a real problem does (hidden, repository unavailable, demo not working, no screenshot) or evidence more than 60 days old. The editor shows **Showing** or **Hidden: <reason>** beside each chosen listing, so you can see why one is missing.
+- **Spotlight fill-ins:** when chosen spotlight listings are hidden, the best-ranked listings that pass the strict check (repository checked within 2 days, demo within 7, clean latest check) take their places, never exceeding the number you chose. Editor's picks never fill in.
+- **Order (shuffle):** each row has an **Order** setting: *No shuffle*, *Random each page load* or *Daily shuffle (UTC)*. Shuffle only changes the order, never which listings appear. A ranked row picks its top listings first and then shuffles those same listings; a "My selection" row shuffles all of its picks (so a different few can lead each time). A random order is stable while one page is open; the daily order is the same for everyone and changes at midnight UTC. Needs **migration 25**, `supabase/migrations/202610070025_row_shuffle.sql`; without it rows keep working unshuffled and saving a shuffle explains what is missing.
+- **Older sources:** "Random each page load" and "Daily shuffle" are still offered under *Shuffled from every listing (older option)*. They draw from every matching listing, not from a ranked top, so the Order setting does not apply to them. To use Order, switch the row to a ranking such as Popular.
+

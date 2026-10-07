@@ -33,10 +33,12 @@
 <optgroup label="You choose"><option value="manual">My selection</option></optgroup>
 <optgroup label="Ranked automatically"><option value="popular">Popular</option><option value="reposhelf">Popular on RepoShelf</option><option value="trending">Trending</option><option value="newest">Newest</option></optgroup>
 <optgroup label="From the community"><option value="community">Community interest</option><option value="releases">Recent releases</option></optgroup>
-<optgroup label="Shuffled"><option value="random">Random each page load</option><option value="daily">Daily shuffle (UTC)</option></optgroup>
+<optgroup label="Shuffled from every listing (older option)"><option value="random">Random each page load</option><option value="daily">Daily shuffle (UTC)</option></optgroup>
 </select></label>
 </div>
 <p class="field-hint" id="mode-hint"></p>
+<label>Order<select id="row-shuffle"><option value="off">No shuffle</option><option value="load">Random each page load</option><option value="daily">Daily shuffle (UTC)</option></select></label>
+<p class="field-hint" id="shuffle-hint"></p>
 <label class="publish-control"><input type="checkbox" id="row-enabled"> Published on the storefront<span class="small">Applied when you save</span></label>
 <div id="manual-selection">
 <div class="panel-heading"><h3>Selected projects</h3><span id="selection-count"></span></div>
