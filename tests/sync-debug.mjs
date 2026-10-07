@@ -6,7 +6,7 @@ import {probeMetrics,recordStageMetrics,readStageMetrics} from '../scripts/sync-
 import {qualityPlan} from '../scripts/catalog-priority.mjs';
 import {run} from '../scripts/sync-history.mjs';
 import {shouldBuild} from '../scripts/deployment-policy.mjs';
-import {diagnoseSync,deploymentStatus} from '../lib/sync-diagnostics.mjs';
+import {diagnoseSync,deploymentStatus,describeRun,runKind,runProgress,friendlyStep} from '../lib/sync-diagnostics.mjs';
 
 assert.equal(shouldBuild('Save catalogue recovery checkpoint',['data/sync-runs/1.json','dist/catalog.json']),false);
 assert.equal(shouldBuild('Sync progress [skip ci]',['data/sync-progress.json'],'reposhelf-progress'),false);
@@ -30,6 +30,26 @@ assert.equal(deploymentStatus({statuses:[]}).state,'unknown');
  assert.equal(deploymentStatus(null,now,{liveSha:null,head:{sha:newer,at:at(5)}}).state,'unknown','without the running commit nothing is claimed');
  assert.equal(deploymentStatus(null,now,{liveSha:'main',head:{sha:'zz',at:at(5)}}).state,'unknown','malformed commit ids are ignored');
  assert.equal(deploymentStatus({statuses:[{context:'Vercel',state:'failure',description:'x'}]},now,{liveSha:live,head:{sha:live,at:at(5)}}).state,'blocked','Vercel\'s own failure still wins when it can be read');
+}
+{// plain-language run labels
+ const run=(over={})=>({id:1,name:'Refresh demo catalog',display_title:'Refresh demo catalog',path:'.github/workflows/catalog.yml',event:'schedule',status:'completed',actor:{login:'owner'},triggering_actor:{login:'owner'},...over});
+ assert.deepEqual([describeRun(run()).label,describeRun(run()).startedBy,describeRun(run()).hasCounts],['Catalogue sync','on its schedule',true]);
+ assert.equal(describeRun(run({event:'workflow_dispatch'})).startedBy,'by an administrator');
+ assert.equal(describeRun(run({event:'workflow_dispatch',triggering_actor:{login:'github-actions[bot]'},display_title:'Automatic catch-up sync',name:'Automatic catch-up sync'})).label,'Catch-up sync');
+ assert.equal(describeRun(run({event:'workflow_dispatch',triggering_actor:{login:'github-actions[bot]'},display_title:'Automatic catch-up sync'})).startedBy,'automatically');
+ assert.equal(describeRun(run({event:'push'})).startedBy,'after a change to the website code');
+ for(const [file,kind,label,counts] of [['publication.yml','publish','Website publication',false],['submissions.yml','submissions','Submitted repositories check',false],['launch-acceleration.yml','launch','Launch pacing check',false],['recovery.yml','recovery','Listing repair',true]]){const d=describeRun(run({path:'.github/workflows/'+file}));assert.deepEqual([d.kind,d.label,d.hasCounts],[kind,label,counts],file);assert(d.what.length>20,'every kind explains itself')}
+ assert.equal(runKind({name:'Publish saved catalogue'}),'publish','kind falls back to the workflow name');assert.equal(runKind({name:'Scan submitted repositories'}),'submissions');assert.equal(runKind({}),'catalogue');
+ assert.equal(friendlyStep('Restore unpublished generated checkpoint data'),'Restoring saved catalogue data (takes about 12 minutes)');assert.equal(friendlyStep('Some new step'),'Some new step');
+ const steps=names=>names.map((n,i)=>({name:n,status:i<3?'completed':i===3?'in_progress':'pending'}));
+ const prepare={name:'prepare',status:'in_progress',steps:steps(['Set up job','Run actions/checkout@v4','Unpack saved catalogue data','Restore unpublished generated checkpoint data','Validate catalog logic','Post Run actions/checkout@v4','Complete job'])};
+ const p=runProgress([prepare]);assert.deepEqual([p.phase,p.phases,p.title],[1,3,'Finding and saving listings']);assert.match(p.detail,/^Step 3 of 4: Restoring saved catalogue data/,'set-up and clean-up steps are not counted');
+ const browsers=[0,1,2,3].map(i=>({name:'browser ('+i+')',status:i<2?'completed':'in_progress',steps:[]}));const q=runProgress([{name:'prepare',status:'completed',steps:[]},...browsers]);assert.deepEqual([q.phase,q.detail],[2,'2 of 4 browser runners finished']);
+ assert.equal(runProgress([]),null);assert.equal(runProgress([{name:'mystery',status:'in_progress',steps:[]}]),null,'unknown jobs claim no progress');
+ assert.equal(describeRun(run({status:'in_progress'}),[prepare]).progress.phase,1);assert.equal(describeRun(run({status:'completed'}),[prepare]).progress,null,'finished runs show no progress');assert.equal(describeRun(run({path:'.github/workflows/publication.yml',status:'in_progress'}),[prepare]).progress,null);
+ // a job that reaches its time limit is shown as cancelled by GitHub; say so
+ const limited=diagnoseSync({status:'completed',conclusion:'cancelled',name:'Publish saved catalogue'},[{conclusion:'cancelled',started_at:'2026-10-07T10:00:00Z',completed_at:'2026-10-07T10:15:05Z',steps:[]}],null);assert.match(limited.message,/time limit for its job \(about 15 minutes\)/);
+ const person=diagnoseSync({status:'completed',conclusion:'cancelled',name:'Refresh demo catalog'},[{conclusion:'cancelled',started_at:'2026-10-07T10:00:00Z',completed_at:'2026-10-07T10:07:00Z',steps:[]}],null);assert.doesNotMatch(person.message,/time limit/);
 }
 const telemetry=probeMetrics({due:10,selected:4,limit:4});
 telemetry.record('team/one',{kind:'working'},true);

@@ -19,7 +19,9 @@ concurrency:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    # Restoring the saved checkpoint takes about 12 minutes before anything is published, so 15 minutes cancelled every
+    # publication (including Publish now). The limit is a safety net, not a budget.
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:

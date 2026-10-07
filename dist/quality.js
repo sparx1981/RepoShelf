@@ -10,7 +10,26 @@ function setEvidenceTime(updatedAt){evidenceAt=updatedAt||null}
 const clock=()=>evidenceAt?evidenceTime(evidenceAt):Date.now();
 function demoState(r){return r.demoHealth?.url===r.demo?r.demoHealth:null}
 function hasLiveDemo(r){return Boolean(r.demo)&&demoState(r)?.status!=='unavailable'}
-function featuredEligible(r,now=clock()){const h=demoState(r);return publishedEligible(r,now)&&(!r.listingControl||r.listingControl==='visible')&&r.availability==='available'&&h?.status==='working'&&!h.error&&Number.isFinite(Date.parse(h.checkedAt))&&now-Date.parse(h.checkedAt)<=7*86400000&&(r.screenshots||[]).some(s=>typeof s.src==='string'&&(/^(?:\/?previews\/[a-f0-9]{24}(?:-provider)?\.jpg|https?:\/\/)/.test(s.src))&&(!s.url||s.url===r.demo))}
+// Why a listing cannot be featured (the spotlight and Editor's picks), as plain reason codes; empty means it can be.
+// Strict (automatic fill-ins): the repository was checked within 2 days and the demo within 7, with a clean latest check.
+// Lenient (listings an administrator chose by hand): a missed or failed check, for example during a sync outage, never
+// removes a pick on its own. Only a real problem does (hidden, unavailable, demo not working, no screenshot), or
+// evidence older than 60 days, so an abandoned listing cannot stay forever.
+const LENIENT_DAYS=60;
+function featuredIssues(r,now=clock(),{lenient=false}={}){
+ if(!r)return ['not_in_catalogue'];
+ const issues=[],h=demoState(r),day=86400000,age=t=>Number.isFinite(Date.parse(t))?(now-Date.parse(t))/day:Infinity;
+ if(r.listingControl&&r.listingControl!=='visible')issues.push('hidden');
+ if(r.availability!=='available')issues.push('unavailable');
+ if(!r.demo)issues.push('no_demo');else if(!h)issues.push('demo_unchecked');else if(h.status!=='working')issues.push('demo_not_working');else if(!lenient&&h.error)issues.push('demo_check_failed');
+ if(!(r.screenshots||[]).some(s=>s.kind==='demo'&&typeof s.src==='string'&&/^(?:\/?previews\/[a-f0-9]{24}(?:-provider)?\.jpg|https?:\/\/)/.test(s.src)&&(!s.url||s.url===r.demo)))issues.push('no_screenshot');
+ const repoMax=lenient?LENIENT_DAYS:2,demoMax=lenient?LENIENT_DAYS:7;
+ if(!r.lastCheckedAt||age(r.lastCheckedAt)>repoMax)issues.push('repository_check_old');
+ if(h?.status==='working'&&(!h.checkedAt||age(h.checkedAt)>demoMax))issues.push('demo_check_old');
+ return issues;
+}
+function featuredEligible(r,now=clock(),options){return featuredIssues(r,now,options).length===0}
+const issueText={not_in_catalogue:'Not in the catalogue',hidden:'Hidden by an administrator',unavailable:'Repository unavailable',no_demo:'No demo link',demo_unchecked:'Demo not checked yet',demo_not_working:'Demo is not working',demo_check_failed:'Latest demo check failed',no_screenshot:'No demo screenshot',repository_check_old:'Repository not checked recently',demo_check_old:'Demo not checked recently'};
 function capturedDemo(r){return (r.screenshots||[]).some(s=>s.kind==='demo'&&typeof s.src==='string'&&/^(?:\/?previews\/[a-f0-9]{24}(?:-provider)?\.jpg|https?:\/\/)/.test(s.src)&&(!s.url||s.url===r.demo))}
 function publishedEligible(r,now=clock()){const h=demoState(r);return (!r.listingControl||r.listingControl==='visible')&&r.availability==='available'&&Boolean(r.lastCheckedAt)&&now-Date.parse(r.lastCheckedAt)<=2*86400000&&h?.status==='working'&&Boolean(h.checkedAt)&&now-Date.parse(h.checkedAt)<=7*86400000&&capturedDemo(r)}
 function catalogueState(r,now=clock()){if(r.availability==='unavailable'||demoState(r)?.status==='unavailable')return 'unavailable';if(publishedEligible(r,now))return 'published';const h=demoState(r),p=r.previewCheck?.url===r.demo?r.previewCheck:null;return (h?.consecutiveTemporaryFailures||0)>=3||(p?.consecutiveFailures||0)>=3?'quarantined':'pending'}
@@ -23,5 +42,5 @@ if(/^LGPL-/.test(id))return {id,url:official,title:'Library copyleft licence',te
 if(id==='MPL-2.0')return {id,url:official,title:'File-level copyleft licence',text:'Distributed changes to covered files must stay under this licence. Other files can use different licences.'};
 if(/(?:^|-)NC(?:-|$)|non.?commercial/i.test(id))return {id,url:official,title:'Non-commercial terms',text:'Commercial use is restricted. Check the full licence and which parts of the project it covers.'};
 return {id,url:official,title:'Review licence terms',text:'Review the declared licence and what it covers before modifying, hosting, or distributing this project.'}}
-return {demoState,hasLiveDemo,demoLabel,licenseInfo,featuredEligible,capturedDemo,publishedEligible,catalogueState,evidenceTime,setEvidenceTime};
+return {demoState,hasLiveDemo,demoLabel,licenseInfo,featuredEligible,featuredIssues,issueText,LENIENT_DAYS,capturedDemo,publishedEligible,catalogueState,evidenceTime,setEvidenceTime};
 });

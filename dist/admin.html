@@ -1,11 +1,12 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png"><meta name="robots" content="noindex,nofollow"><title>Administration — RepoShelf</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400..700&family=Manrope:wght@400..800&display=swap"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/admin.css"><link rel="prefetch" href="/admin-help.js" as="script"></head><body class="admin-page"><header><a class="brand" href="/" aria-label="RepoShelf home"><span class="brand-icon">r.</span></a><nav aria-label="Main navigation"><a class="nav" href="/">Home</a></nav></header><main class="admin-main" id="main">
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png"><meta name="robots" content="noindex,nofollow"><title>Administration — RepoShelf</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400..700&family=Manrope:wght@400..800&display=swap"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/admin.css"><link rel="stylesheet" href="/legal.css"><link rel="stylesheet" href="/promotions.css"><link rel="stylesheet" href="/viewer.css"><link rel="prefetch" href="/admin-help.js" as="script"></head><body class="admin-page"><header><a class="brand" href="/" aria-label="RepoShelf home"><span class="brand-icon">r.</span></a><nav aria-label="Main navigation"><a class="nav" href="/">Home</a></nav></header><main class="admin-main" id="main">
 <section id="admin-gate" class="admin-gate admin-gate-loading" role="status"><span class="rs-loader rs-loader-xl" aria-hidden="true"></span><p class="boot-loader-text">Checking the guest list…</p></section>
 <section id="admin-workspace" hidden>
 <div class="admin-title"><h1>Administration</h1><button class="button outline" id="admin-signout">Sign out</button></div>
 <nav class="admin-tabs" aria-label="Administration sections">
 <button class="active" data-admin-tab="sync" aria-current="page" aria-controls="sync-panel">Sync log<span class="tab-flag" data-flag="sync" hidden></span></button>
 <button data-admin-tab="editorial" aria-controls="editorial-panel">Storefront editor</button>
-<a class="admin-promotions" href="/promotions.html?manage=1">Promotions<svg class="link-out" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l6-6M4 3h5v5"/></svg></a><a class="admin-promotions" href="/admin-viewer.html">Demo viewer<svg class="link-out" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l6-6M4 3h5v5"/></svg></a>
+<button data-admin-tab="promotions" aria-controls="promotions-panel">Promotions</button>
+<button data-admin-tab="viewer" aria-controls="viewer-panel">Demo viewer</button>
 <button data-admin-tab="quality" aria-controls="quality-panel">Catalogue quality<span class="tab-flag" data-flag="quality" hidden></span></button>
 <button data-admin-tab="reports" aria-controls="reports-panel">Reports<span class="tab-flag" data-flag="reports" hidden></span></button>
 <button data-admin-tab="analytics" aria-controls="analytics-panel">Analytics</button>
@@ -33,10 +34,12 @@
 <optgroup label="You choose"><option value="manual">My selection</option></optgroup>
 <optgroup label="Ranked automatically"><option value="popular">Popular</option><option value="reposhelf">Popular on RepoShelf</option><option value="trending">Trending</option><option value="newest">Newest</option></optgroup>
 <optgroup label="From the community"><option value="community">Community interest</option><option value="releases">Recent releases</option></optgroup>
-<optgroup label="Shuffled"><option value="random">Random each page load</option><option value="daily">Daily shuffle (UTC)</option></optgroup>
+<optgroup label="Shuffled from every listing (older option)"><option value="random">Random each page load</option><option value="daily">Daily shuffle (UTC)</option></optgroup>
 </select></label>
 </div>
 <p class="field-hint" id="mode-hint"></p>
+<label>Order<select id="row-shuffle"><option value="off">No shuffle</option><option value="load">Random each page load</option><option value="daily">Daily shuffle (UTC)</option></select></label>
+<p class="field-hint" id="shuffle-hint"></p>
 <label class="publish-control"><input type="checkbox" id="row-enabled"> Published on the storefront<span class="small">Applied when you save</span></label>
 <div id="manual-selection">
 <div class="panel-heading"><h3>Selected projects</h3><span id="selection-count"></span></div>
@@ -74,6 +77,41 @@
 <div id="users-content" aria-live="polite"></div>
 <button class="button outline" id="more-users" hidden>Load more users</button>
 </section>
+<section id="promotions-panel" aria-labelledby="promotions-heading" hidden>
+<h2 id="promotions-heading" class="sr-only" tabindex="-1">Promotions</h2>
+<div class="promotion-embed">
+<div class="panel-heading"><h3>Promotion requests</h3><div class="row-tile-actions"><button class="button outline" id="refresh-promotions" type="button">Refresh</button><button class="button outline" id="sync-promotions" type="button">Check availability</button></div></div>
+<p class="small">Review requests for the Sponsored section. This is a test programme: £15 for 30 active days, five rotating places, with your approval before checkout. Owners request a promotion on <a href="/promotions.html">their own Promotions page</a>.</p>
+<p id="promotion-setup" class="promotion-notice" hidden></p>
+<p id="promotion-message" role="status"></p>
+<div id="promotion-list"></div>
+<button class="button outline" id="promotion-more" type="button" hidden>Load more</button>
+</div>
+</section>
+<section id="viewer-panel" aria-labelledby="viewer-heading" hidden>
+<h2 id="viewer-heading" class="sr-only" tabindex="-1">Demo viewer</h2>
+<div class="legal-main admin-embed">
+<p>The in-page demo viewer. Switch it on for your own account to check demos by hand, or for everyone once you are happy with it. The pilot tools for approving and qualifying individual demos are kept below, closed, because the viewer no longer depends on them.</p>
+<p id="vw-gate" role="status" hidden></p>
+<div id="vw-workspace" hidden>
+<section class="legal-form" aria-labelledby="vw-mine-title"><h2 id="vw-mine-title">Open demos in the viewer on RepoShelf</h2><label class="legal-check"><input type="checkbox" id="vw-my-preview"><span>When I am signed in, “Try demo” opens demos inside the viewer as an unqualified preview.</span></label><p class="small">This applies to your account only. Visitors, and you with this switched off, still get demos in a new tab. Every demo opens this way, whether or not it has passed qualification, and the viewer labels it “Unqualified preview”. Use it to check demos by hand; the daily qualification job is the automated check. Demos that cannot be framed, or that are on RepoShelf itself, open in a new tab.</p><p id="vw-my-preview-status" class="legal-feedback" role="status"></p></section>
+<section class="legal-form" aria-labelledby="vw-all-title"><h2 id="vw-all-title">Open demos in the viewer for everyone</h2><label class="legal-check"><input type="checkbox" id="vw-all-users"><span>When anyone clicks “Try demo”, open the demo inside the viewer.</span></label><p class="small">This applies to every visitor, signed in or not, and works the way your own switch above does: every demo that can be framed opens in the viewer as an unqualified preview. Demos that forbid framing, cannot be reached, or are on RepoShelf itself open in a new tab. “Open in new tab” and Close are always available in the viewer. Switch it off and every “Try demo” opens in a new tab again. Visitors pick up a change within about a minute.</p><p id="vw-all-users-status" class="legal-feedback" role="status"></p></section>
+<details class="legal-form vw-pilot" id="vw-pilot"><summary class="vw-pilot-summary"><span class="vw-pilot-title">Pilot tools</span><span class="vw-pilot-note">Global switch, approving demos, pilot demos and qualification</span></summary>
+<section class="vw-part" aria-labelledby="vw-switch-title"><h3 id="vw-switch-title">Global switch</h3><label class="legal-check"><input type="checkbox" id="vw-enabled"><span>Allow qualified demos to open in the viewer.</span></label><p class="small" id="vw-switch-note">While off, every demo opens in a new tab. A change reaches an open viewer within about a minute.</p><label for="vw-profiles">Browser profiles that must pass before a demo opens in the viewer</label><input id="vw-profiles" maxlength="200" autocomplete="off" placeholder="chromium, webkit, firefox"><button class="button outline" type="button" id="vw-profiles-save">Save profiles</button><p class="small">Choose from chromium, chromium-mobile, webkit, webkit-mobile and firefox (Firefox has no mobile emulation). Any profile that has failed keeps a demo external until it passes again or you clear it.</p><p id="vw-config" class="small"></p><p id="vw-expiry" class="legal-feedback" role="status"></p><p id="vw-switch-status" class="legal-feedback" role="status"></p></section>
+<section class="vw-part" aria-labelledby="vw-form-title"><h3 id="vw-form-title">Add or update a demo</h3><form id="vw-form"><label for="vw-project">Listing id</label><input id="vw-project" required maxlength="220" placeholder="owner/repository or hf:owner/space" autocomplete="off"><label for="vw-url">Demo address (https only)</label><input id="vw-url" type="url" required maxlength="2048" placeholder="https://" autocomplete="off"><label for="vw-scenario">Scenario (JSON)</label><textarea id="vw-scenario" rows="9" spellcheck="false" required>{
+  "summary": "Adding a task shows it in the list",
+  "steps": [
+    {"action": "fill", "selector": "#new-task", "value": "Buy milk"},
+    {"action": "click", "selector": "#add"},
+    {"action": "expectText", "selector": "#list", "text": "Buy milk"}
+  ]
+}</textarea><p class="small">Actions: click, fill, press, waitFor, expectVisible, expectText, expectPopup, expectDownload. A scenario needs at least one interaction and one expected result. Loading the page is not enough. The result must be checked after the last interaction.</p><label class="legal-check"><input type="checkbox" id="vw-popups"><span>Allow popups for this demo (for example documentation windows). Qualification inspects the popup destination. Provider logins cannot be qualified, so those demos stay external.</span></label><label class="legal-check"><input type="checkbox" id="vw-downloads"><span>Allow downloads for this demo. Qualification saves the file and checks that it arrived.</span></label><label class="legal-check"><input type="checkbox" id="vw-approved"><span>Approved for the pilot.</span></label><label for="vw-notes">Notes</label><input id="vw-notes" maxlength="1000" autocomplete="off"><div class="account-actions"><button class="button lime" id="vw-save">Save demo</button></div><p id="vw-form-status" class="legal-feedback" role="status"></p></form></section>
+<section class="vw-part" aria-labelledby="vw-list-title"><h3 id="vw-list-title">Pilot demos</h3><p class="small">A demo opens in the viewer only when it is approved, not disabled, and its latest qualification passed within 48 hours for its current address and settings. Anything else opens in a new tab.</p><ul id="vw-list" class="key-list"></ul><p id="vw-list-status" class="legal-feedback" role="status"></p></section>
+<section class="vw-part" aria-labelledby="vw-how-title"><h3 id="vw-how-title">Qualifying</h3><p>A scheduled job qualifies the approved list every day, once for each profile. Scenarios are stored with a revision history, and editing a scenario or address makes earlier results stop counting. Keep passwords and tokens out of scenarios. Demos that need a provider login stay external. To try one demo from a terminal:</p><pre><code>node scripts/viewer-qualify.mjs --url=https://demo.example/ --scenario=scenario.json [--popups] [--downloads] [--browser=chromium|webkit|firefox] [--mobile]</code></pre><p class="small">Repeat manual checks on real Safari and real devices after significant demo or viewer changes. Qualification shows a demo can work; it cannot guarantee every visitor's session.</p></section>
+</details>
+</div>
+</div>
+</section>
 <section id="help-panel" aria-labelledby="help-heading" hidden>
 <div class="panel-heading"><div><h2 id="help-heading" tabindex="-1">Help</h2><p class="small">Setup, how listings are ranked, and troubleshooting.</p></div></div>
 <div id="help-content" aria-live="polite"></div>
@@ -93,4 +131,4 @@
 <div class="dialog-actions"><button type="button" class="button outline" id="moderation-cancel">Cancel</button><button class="button lime" id="moderation-save">Save changes</button></div>
 </form>
 <details><summary>Moderation history</summary><div id="moderation-audit"></div></details></dialog>
-<div id="toast" role="status"></div><script src="/discovery.js"></script><script src="/storefront.js"></script><script src="/taxonomy.js"></script><script src="/editorial.js"></script><script src="/quality.js"></script><script src="/providers.js"></script><script src="/account.js"></script><script src="/admin-ui.js"></script><script src="/admin-growth.js"></script><script src="/admin-sync-progress.js"></script><script src="/admin.js"></script><script src="/admin-launch.js"></script><script src="/admin-capture.js"></script><script src="/outgoing-links.js"></script></body></html>
+<div id="toast" role="status"></div><script src="/discovery.js"></script><script src="/storefront.js"></script><script src="/taxonomy.js"></script><script src="/editorial.js"></script><script src="/quality.js"></script><script src="/providers.js"></script><script src="/account.js"></script><script src="/admin-ui.js"></script><script src="/admin-growth.js"></script><script src="/admin-sync-progress.js"></script><script src="/admin.js"></script><script src="/admin-launch.js"></script><script src="/admin-capture.js"></script><script src="/admin-promotions.js"></script><script src="/viewer-config.js"></script><script src="/viewer.js"></script><script src="/admin-viewer.js"></script><script src="/outgoing-links.js"></script></body></html>

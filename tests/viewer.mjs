@@ -137,7 +137,7 @@ r=await call('POST','/api/viewer?action=my-preview',{body:{preview:false},admin:
  site=false;
 }
 // Administration page: the pilot tools share one closed section; the two "open in the viewer" switches stay outside it.
-{const {readFile}=await import('node:fs/promises');const html=await readFile(new URL('../dist/admin-viewer.html',import.meta.url),'utf8');
+{const {readFile}=await import('node:fs/promises');const html=await readFile(new URL('../dist/admin.html',import.meta.url),'utf8');
  const open=/<details\b[^>]*\bid="vw-pilot"[^>]*>/.exec(html);assert(open,'the pilot section exists');assert(!/\bopen\b/.test(open[0]),'the pilot section is collapsed by default');
  const inside=html.slice(open.index,html.indexOf('</details>',open.index));
  for(const id of ['vw-enabled','vw-profiles-save','vw-form','vw-list','vw-how-title'])assert(inside.includes('id="'+id+'"'),id+' is inside the pilot section');
