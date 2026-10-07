@@ -17,7 +17,7 @@ In **Administration → Sync log**, use **Publish now**. This requests a publica
 ## Enable the in-app button
 
 1. In GitHub Settings → Developer settings → Personal access tokens → Fine-grained tokens, create a token restricted to **sparx1981/RepoShelf**.
-2. Grant **Actions: read and write** (Metadata read is automatic). No Contents write permission is required: the dispatched workflows use their own scoped Actions tokens to save data.
+2. Grant **Actions: read and write** and **Contents: Read-only** (Metadata read is automatic). No Contents write permission is required: the dispatched workflows use their own scoped Actions tokens to save data. Contents read matters because the repository is private: without it the Sync log cannot read the saved sync reports and shows no record counts (it says so), and cannot find the newest commit to compare with the live website. Optionally add **Commit statuses: Read-only** so the website-update card can show Vercel's own failure reason.
 3. In Vercel → RepoShelf → Settings → Environment Variables, add `REPOSHELF_ACTIONS_TOKEN` to Production. The existing `REPOSHELF_SUBMISSION_WORKFLOW_TOKEN`, if configured with these permissions, is also supported.
 4. Redeploy once to apply environment changes. Keep the token private and note its expiry date; replace it before expiry.
 
