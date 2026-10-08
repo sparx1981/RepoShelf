@@ -26,7 +26,7 @@ function blobBytes(root,ref,path){
 }
 function publicJson(path,text){const value=JSON.parse(text);if(path==='dist/catalog.json'||path==='dist/spaces.json'){delete value.updatedAt;delete value.revalidation;delete value.discovery;value.repositories=(value.repositories||[]).map(r=>{const row={...r};for(const key of ['enrichmentAttemptAt','overviewAttemptAt','agentContextAttemptAt','aiOverviewAttemptAt'])delete row[key];return row}).sort((a,b)=>a.full.localeCompare(b.full))}else if(path==='dist/community.json')delete value.updatedAt;return JSON.stringify(value)}
 const internalFile=raw=>{const path=logicalName(raw);return internalLogical(path)};
-const internalLogical=path=>path.startsWith('data/sync-runs/')||path.startsWith('data/browse/')||path==='data/catalogue-quality.json'||path==='data/publication.json'||path==='data/recovery-results.json'||path==='data/discovery-search.json'||path==='data/capture-providers.json'||path==='data/browser-cycle.json'||path==='data/launch-cadence.json'||path==='data/ai-overview-usage.json'||path==='dist/growth.json';
+const internalLogical=path=>path.startsWith('data/sync-runs/')||path.startsWith('data/browse/')||path==='data/catalogue-quality.json'||path==='data/admin-summary.json'||path==='data/publication.json'||path==='data/recovery-results.json'||path==='data/discovery-search.json'||path==='data/capture-providers.json'||path==='data/browser-cycle.json'||path==='data/launch-cadence.json'||path==='data/ai-overview-usage.json'||path==='dist/growth.json';
 export function publicFileChanged(path,before,after){
  if(internalFile(path))return false;
  if(/^dist\/(catalog|spaces|community)\.json$/.test(path)&&before!==null&&after!==null){try{return publicJson(path,before)!==publicJson(path,after)}catch{return true}}
