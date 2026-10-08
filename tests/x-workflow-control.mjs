@@ -1,0 +1,23 @@
+import assert from 'node:assert/strict';
+import {createXWorkflowControl} from '../lib/x-workflow-control.mjs';
+import {xCollectionSettings} from '../lib/x-collection-settings.mjs';
+import {Readable} from 'node:stream';
+let runs=[],sent=[];
+const control=createXWorkflowControl({token:'test-token',fetcher:async(url,options)=>{sent.push({url,options});return url.endsWith('/dispatches')?new Response(null,{status:204}):Response.json({workflow_runs:runs});}});
+await assert.rejects(createXWorkflowControl({token:''}).scan(),{code:'x_actions_token_required'});
+runs=[{id:9,status:'queued'}];assert.equal((await control.scan()).activeRunId,9);assert.equal(sent.length,1);
+runs=[{id:8,status:'completed'}];assert.equal((await control.scan()).requested,true);
+assert.deepEqual(JSON.parse(sent.at(-1).options.body),{ref:'main',inputs:{search:true}});
+assert.equal(sent.at(-1).options.redirect,'error');assert.equal(sent.at(-1).options.headers.Authorization,'Bearer test-token');
+await assert.rejects(createXWorkflowControl({token:'test',fetcher:async()=>new Response(null,{status:403})}).scan(),{code:'x_workflow_unavailable'});
+await assert.rejects(createXWorkflowControl({token:'test',fetcher:async url=>{if(url.endsWith('/dispatches'))throw Error('timeout');return Response.json({workflow_runs:[]});}}).scan(),{code:'x_dispatch_unconfirmed'});
+let release;const busy=createXWorkflowControl({token:'test',fetcher:()=>new Promise(resolve=>{release=()=>resolve(Response.json({workflow_runs:[{id:1,status:'in_progress'}]}));})});
+const first=busy.scan();assert.equal((await busy.scan()).requested,false);release();await first;
+let enabled=false,dispatches=0,admin=true;
+const accounts={origin(req){if(req.headers.origin!=='https://reposhelf.test')throw Object.assign(Error('origin'),{status:403});},async admin(){if(!admin)throw Object.assign(Error('admin'),{status:403});return {token:'private'};},async request(){return [{enabled,revision:1}];}};
+async function call(method='POST',origin='https://reposhelf.test') {const req=Readable.from(['{}']);Object.assign(req,{method,headers:{origin}});let result;await xCollectionSettings(req,{writeHead(status){result={status};},end(body){result.data=JSON.parse(body);}},{accounts,action:'x-scan',control:{scan:async()=>{dispatches++;return {requested:true};}}});return result;}
+await assert.rejects(call('GET'),{status:405});await assert.rejects(call('POST','https://evil.test'),{status:403});
+admin=false;await assert.rejects(call(),{status:403});admin=true;
+await assert.rejects(call(),{code:'x_scanning_disabled'});assert.equal(dispatches,0);
+enabled=true;assert.equal((await call()).status,202);assert.equal(dispatches,1);
+console.log('PASS: administrator/origin/off gates, immediate search dispatch, queued-run protection, missing credentials and ambiguous dispatch errors.');
