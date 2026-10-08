@@ -1,0 +1,18 @@
+# Resource and storefront optimization
+
+The application previously included nearly the same complete catalogue/documents in all 12 functions and rendered every storefront shelf on arrival. This change retains all source data and features while reducing packaged copies, repeat work and initial browser content.
+
+1. Each function includes its required data. Build-only index generation is isolated from runtime readers. Analytics, collections and promotions use generated identity/metadata projections; details read a small identity index and the requested complete compressed record.
+2. The first storefront response contains the hero, facets, row descriptors and three initial shelves. Further rows load near the viewport in batches of at most six, with retry controls. Search and filtered browsing still access the complete catalogue. Manual rows, spotlight fallback, seeded/daily shuffle and private random selections retain their existing behavior.
+3. A public GET supplies shared pools with at most five seconds of CDN caching, shortened at evidence expiry. Moderation and editorial changes delete its cache tag. Every shared cache miss reads fresh moderation controls; database failure cannot refresh a stale cached moderation result. Private/personalized searches stay private. Warm instances memoize shared ranking pools; initial cold ranking still costs CPU.
+4. Unchanged shelf/card markup and technology controls retain their nodes, scroll and focus. Promotion feed requests deduplicate in flight. Early browse, debounced search and existing consent/privacy controls remain.
+5. Builds create responsive WebP variants for the default storefront selection and minified, fingerprinted public assets. Original images are kept and other images retain their existing fallback. Image conversion never runs in a function. Source HTML is restored before each build and only generated deployment output references fingerprints.
+6. Sync logs read one generated report index retaining every original field and report, instead of opening dozens of files per request. Bundle budgets, lossless-record verification and progressive browser regression checks run in CI.
+
+Run `npm test`, `npm run test:mcp`, `npm run build`, `npm run verify:bundles`, and `node scripts/verify-runtime-data.mjs`. Browser regression requires Playwright Chromium; run `node scripts/verify-progressive-ui.mjs`. `node scripts/benchmark-storefront.mjs` writes a same-catalogue local service benchmark to `artifacts/`; this excludes live database, CDN and network time.
+
+Local checks on 8 October 2026 preserved both full catalogues, all 25,205 complete project records and 88 full sync reports. Initial real-catalogue rendering used 25 cards and approximately 1,300 DOM elements; later shelves loaded on scroll. A same-catalogue local benchmark reduced the initial decoded service response from 845,630 to 63,158 bytes. Warm shared selection completed in approximately 1 ms; cold selection remained approximately 1.8 seconds and must be monitored in production.
+
+The local file trace estimates approximately 484 MiB combined across all 12 functions, compared with approximately 3.2 GB of earlier deployed packages. Trace estimates are not billed Function Storage or final deployment package measurements. After deployment, verify Resources sizes, public cache HITs, authenticated/private headers, moderation removal and per-route Active CPU. Monitor real LCP, INP and CLS; no field Web Vitals improvement is asserted by the local checks. Retained old deployments and already accumulated storage/CPU usage remain until normal cleanup or reset.
+
+No database migration, paid service or Blob changes are required. Catalogue publications regenerate all projections during builds.

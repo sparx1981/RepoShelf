@@ -1,0 +1,8 @@
+import {createBrowseService} from '../lib/browse-service.mjs';
+import {writeFile,mkdir} from 'node:fs/promises';
+const options={q:'',category:'All projects',technology:'All technologies',source:'all',sort:'popular',demos:true,storefront:true,seed:'benchmark',ranks:{},exclude:[],limit:48},editorial={rows:[]};
+async function measure(label,service,input){const start=performance.now(),cpu=process.cpuUsage(),result=await service.search(input,editorial),body=JSON.stringify(result),used=process.cpuUsage(cpu);return {label,elapsedMs:Math.round(performance.now()-start),cpuMs:Math.round((used.user+used.system)/1000),decodedBytes:Buffer.byteLength(body),projects:result.shelfItems.length,result}}
+const legacy=createBrowseService({controls:async()=>[]}),staged=createBrowseService({controls:async()=>[]}),report=[];
+report.push(await measure('Full storefront cold',legacy,options));report.push(await measure('Staged storefront cold',staged,{...options,seed:'',staged:true,shelfLimit:3,publicPools:true}));report.push(await measure('Staged storefront warm',staged,{...options,seed:'',staged:true,shelfLimit:3,publicPools:true}));
+const ids=report[1].result.shelfRows.filter(r=>r.builtin_key!=='hero').slice(3,6).map(r=>r.id);report.push(await measure('Next three shelves warm',staged,{...options,seed:'',staged:true,shelfLimit:3,shelfIds:ids,publicPools:true}));
+for(const r of report)delete r.result;await mkdir('artifacts',{recursive:true});await writeFile('artifacts/storefront-benchmark.json',JSON.stringify({note:'Local service measurements on the same catalogue; excludes live database/network, CDN and browser. Cold means a new service instance.',report},null,2));console.log(JSON.stringify(report,null,2));
