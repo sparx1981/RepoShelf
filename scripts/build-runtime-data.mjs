@@ -14,7 +14,7 @@ export async function generateRuntimeData(root=new URL('../',import.meta.url),ge
  await mkdir(new URL('data/runtime/browse-projects/',root),{recursive:true});
  const projects=generated?.projects||await Promise.all((await readdir(new URL('data/browse/projects/',root))).filter(n=>n.endsWith('.json')).map(n=>read('data/browse/projects/'+n)));
  let position=0;await Promise.all(Array.from({length:8},async()=>{while(position<projects.length){const r=projects[position++];await writeFile(new URL('data/runtime/browse-projects/'+projectKey(r.full)+'.json.gz',root),gzipSync(JSON.stringify(r),{level:6}))}}));
- 
+
  await writeFile(new URL('data/runtime/projects.json',root),JSON.stringify({schema:1,version:index.version,snapshots:index.snapshots,entries}));
  await writeFile(new URL('data/runtime/identities.json',root),JSON.stringify({schema:1,version:index.version,entries:Object.fromEntries(Object.values(entries).map(r=>[r.full.toLowerCase(),{full:r.full,availability:r.availability}]))}));
  await writeFile(new URL('data/browse/identities.json',root),JSON.stringify({schema:1,version:index.version,snapshots:index.snapshots,entries:Object.fromEntries(index.repositories.map(r=>[r.full.toLowerCase(),r.full]))}));
