@@ -39,4 +39,6 @@ function refresh(){if(!A.ready)return;if(!A.user){$('#vw-gate').hidden=false;$('
 // The Demo viewer tab of Administration starts this when it is first opened, and again on every later visit to refresh.
 let started=false;
 window.RepoAdminViewer={start(){if(started){void load();return}started=true;window.addEventListener('reposhelf-account',refresh);refresh()}};
+// Cached authentication can finish before this tab script loads. Start it here too.
+if(A.ready&&A.user?.admin&&!$('#viewer-panel')?.hidden)window.RepoAdminViewer.start();
 })();
