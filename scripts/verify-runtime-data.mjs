@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import {readFile,readdir} from 'node:fs/promises';
+import {gunzipSync} from 'node:zlib';
+const root=new URL('../',import.meta.url),read=async path=>JSON.parse(await readFile(new URL(path,root),'utf8'));
+for(const name of ['catalog','spaces'])assert.deepEqual(JSON.parse(gunzipSync(await readFile(new URL('data/runtime/'+name+'.json.gz',root)))),await read('dist/'+name+'.json'),name+' must remain lossless');
+const names=(await readdir(new URL('data/browse/projects/',root))).filter(name=>name.endsWith('.json'));let i=0;
+await Promise.all(Array.from({length:8},async()=>{while(i<names.length){const name=names[i++];assert.deepEqual(JSON.parse(gunzipSync(await readFile(new URL('data/runtime/browse-projects/'+name+'.gz',root)))),await read('data/browse/projects/'+name),name+' must preserve the complete record')}}));
+const reports=await read('data/runtime/sync-runs.json'),originals=await Promise.all((await readdir(new URL('data/sync-runs/',root))).filter(name=>/^\d+\.json$/.test(name)).map(name=>read('data/sync-runs/'+name)));
+assert.deepEqual(reports,originals.sort((a,b)=>Date.parse(b.startedAt)-Date.parse(a.startedAt)));
+console.log('PASS: both complete catalogues, '+names.length+' complete project records and '+reports.length+' full sync reports preserved.');

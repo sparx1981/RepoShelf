@@ -55,19 +55,76 @@
           "value": "no-cache"
         }
       ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     }
   ],
   "functions": {
-    "api/promotions.mjs": {
-      "includeFiles": "{dist/*.json,dist/*.js,data/browse/**,data/readmes/**,data/context/**,data/sync-runs/**}",
-      "maxDuration": 60
-    },
-    "api/analytics.mjs": {
-      "includeFiles": "{dist/*.json,dist/*.js,data/browse/**,data/readmes/**,data/context/**,data/sync-runs/**,data/admin-summary.json}",
+    "api/auth.mjs": {
+      "includeFiles": "{dist/{taxonomy,providers,quality,community,editorial,storefront,discovery,picks,viewer-config}.js,data/listing-controls.json}",
+      "excludeFiles": "{scripts/**,tests/**,node_modules/{sharp,@img,esbuild,@esbuild,@vercel/nft}/**,dist/{catalog,spaces}.json,data/{readmes,context}/**,data/browse/**,data/sync-runs/**,dist/{catalog,spaces}.json.gz,dist/{assets,.asset-html,previews}/**,data/runtime/{catalog,spaces}.json.gz,data/runtime/browse-projects/**,data/runtime/{identities,projects,sync-runs}.json}",
       "maxDuration": 30
     },
-    "api/*.mjs": {
-      "includeFiles": "{dist/*.json,dist/*.js,data/browse/**,data/readmes/**,data/context/**,data/sync-runs/**}",
+    "api/admin-users.mjs": {
+      "includeFiles": "{dist/{taxonomy,providers,quality,community,editorial,storefront,discovery,picks,viewer-config}.js,data/listing-controls.json}",
+      "excludeFiles": "{scripts/**,tests/**,node_modules/{sharp,@img,esbuild,@esbuild,@vercel/nft}/**,dist/{catalog,spaces}.json,data/{readmes,context}/**,data/browse/**,data/sync-runs/**,dist/{catalog,spaces}.json.gz,dist/{assets,.asset-html,previews}/**,data/runtime/{catalog,spaces}.json.gz,data/runtime/browse-projects/**,data/runtime/{identities,projects,sync-runs}.json}",
+      "maxDuration": 30
+    },
+    "api/forks.mjs": {
+      "includeFiles": "{dist/{taxonomy,providers,quality,community,editorial,storefront,discovery,picks,viewer-config}.js,data/listing-controls.json}",
+      "excludeFiles": "{scripts/**,tests/**,node_modules/{sharp,@img,esbuild,@esbuild,@vercel/nft}/**,dist/{catalog,spaces}.json,data/{readmes,context}/**,data/browse/**,data/sync-runs/**,dist/{catalog,spaces}.json.gz,dist/{assets,.asset-html,previews}/**,data/runtime/{catalog,spaces}.json.gz,data/runtime/browse-projects/**,data/runtime/{identities,projects,sync-runs}.json}",
+      "maxDuration": 30
+    },
+    "api/open.mjs": {
+      "includeFiles": "{dist/{taxonomy,providers,quality,community,editorial,storefront,discovery,picks,viewer-config}.js,data/listing-controls.json}",
+      "excludeFiles": "{scripts/**,tests/**,node_modules/{sharp,@img,esbuild,@esbuild,@vercel/nft}/**,dist/{catalog,spaces}.json,data/{readmes,context}/**,data/browse/**,data/sync-runs/**,dist/{catalog,spaces}.json.gz,dist/{assets,.asset-html,previews}/**,data/runtime/{catalog,spaces}.json.gz,data/runtime/browse-projects/**,data/runtime/{identities,projects,sync-runs}.json}",
+      "maxDuration": 30
+    },
+    "api/submissions.mjs": {
+      "includeFiles": "{dist/{taxonomy,providers,quality,community,editorial,storefront,discovery,picks,viewer-config}.js,data/listing-controls.json}",
+      "excludeFiles": "{scripts/**,tests/**,node_modules/{sharp,@img,esbuild,@esbuild,@vercel/nft}/**,dist/{catalog,spaces}.json,data/{readmes,context}/**,data/browse/**,data/sync-runs/**,dist/{catalog,spaces}.json.gz,dist/{assets,.asset-html,previews}/**,data/runtime/{catalog,spaces}.json.gz,data/runtime/browse-projects/**,data/runtime/{identities,projects,sync-runs}.json}",
+      "maxDuration": 30
+    },
+    "api/collection.mjs": {
+      "includeFiles": "{dist/{taxonomy,providers,quality,community,editorial,storefront,discovery,picks,viewer-config}.js,data/listing-controls.json,data/runtime/projects.json}",
+      "excludeFiles": "{scripts/**,tests/**,node_modules/{sharp,@img,esbuild,@esbuild,@vercel/nft}/**,dist/{catalog,spaces}.json,data/{readmes,context}/**,data/browse/**,data/sync-runs/**,dist/{catalog,spaces}.json.gz,dist/{assets,.asset-html,previews}/**,data/runtime/{catalog,spaces}.json.gz,data/runtime/browse-projects/**,data/runtime/{identities,sync-runs}.json}",
+      "maxDuration": 30
+    },
+    "api/analytics.mjs": {
+      "includeFiles": "{dist/{taxonomy,providers,quality,community,editorial,storefront,discovery,picks,viewer-config}.js,data/listing-controls.json,data/runtime/identities.json,data/admin-summary.json,dist/growth.json}",
+      "excludeFiles": "{scripts/**,tests/**,node_modules/{sharp,@img,esbuild,@esbuild,@vercel/nft}/**,dist/{catalog,spaces}.json,data/{readmes,context}/**,data/browse/**,data/sync-runs/**,dist/{catalog,spaces}.json.gz,dist/{assets,.asset-html,previews}/**,data/runtime/{catalog,spaces}.json.gz,data/runtime/browse-projects/**,data/runtime/{projects,sync-runs}.json}",
+      "maxDuration": 30
+    },
+    "api/promotions.mjs": {
+      "includeFiles": "{dist/{taxonomy,providers,quality,community,editorial,storefront,discovery,picks,viewer-config}.js,data/listing-controls.json,data/runtime/projects.json}",
+      "excludeFiles": "{scripts/**,tests/**,node_modules/{sharp,@img,esbuild,@esbuild,@vercel/nft}/**,dist/{catalog,spaces}.json,data/{readmes,context}/**,data/browse/**,data/sync-runs/**,dist/{catalog,spaces}.json.gz,dist/{assets,.asset-html,previews}/**,data/runtime/{catalog,spaces}.json.gz,data/runtime/browse-projects/**,data/runtime/{identities,sync-runs}.json}",
+      "maxDuration": 60
+    },
+    "api/sync-log.mjs": {
+      "includeFiles": "{dist/{taxonomy,providers,quality,community,editorial,storefront,discovery,picks,viewer-config}.js,data/listing-controls.json,data/runtime/sync-runs.json,data/{publication,launch-cadence}.json}",
+      "excludeFiles": "{scripts/**,tests/**,node_modules/{sharp,@img,esbuild,@esbuild,@vercel/nft}/**,dist/{catalog,spaces}.json,data/{readmes,context}/**,data/browse/**,data/sync-runs/**,dist/{catalog,spaces}.json.gz,dist/{assets,.asset-html,previews}/**,data/runtime/{catalog,spaces}.json.gz,data/runtime/browse-projects/**,data/runtime/{identities,projects}.json}",
+      "maxDuration": 30
+    },
+    "api/editorial.mjs": {
+      "includeFiles": "{dist/{taxonomy,providers,quality,community,editorial,storefront,discovery,picks,viewer-config}.js,data/listing-controls.json,data/browse/{index,search,community,identities}.json,data/runtime/browse-projects/**,dist/growth.json}",
+      "excludeFiles": "{data/browse/projects/**,scripts/**,tests/**,node_modules/{sharp,@img,esbuild,@esbuild,@vercel/nft}/**,dist/{catalog,spaces}.json,data/{readmes,context}/**,data/sync-runs/**,dist/{catalog,spaces}.json.gz,dist/{assets,.asset-html,previews}/**,data/runtime/{catalog,spaces}.json.gz,data/runtime/{identities,projects,sync-runs}.json}",
+      "maxDuration": 30
+    },
+    "api/agent.mjs": {
+      "includeFiles": "{dist/{taxonomy,providers,quality,community,editorial,storefront,discovery,picks,viewer-config}.js,data/listing-controls.json,data/runtime/{catalog,spaces}.json.gz,dist/community.json,data/readmes/**,data/context/**}",
+      "excludeFiles": "{dist/{catalog,spaces}.json,scripts/**,tests/**,node_modules/{sharp,@img,esbuild,@esbuild,@vercel/nft}/**,data/browse/**,data/sync-runs/**,dist/{catalog,spaces}.json.gz,dist/{assets,.asset-html,previews}/**,data/runtime/browse-projects/**,data/runtime/{identities,projects,sync-runs}.json}",
+      "maxDuration": 30
+    },
+    "api/mcp.mjs": {
+      "includeFiles": "{dist/{taxonomy,providers,quality,community,editorial,storefront,discovery,picks,viewer-config}.js,data/listing-controls.json,data/runtime/{catalog,spaces}.json.gz,dist/community.json,data/readmes/**,data/context/**}",
+      "excludeFiles": "{dist/{catalog,spaces}.json,scripts/**,tests/**,node_modules/{sharp,@img,esbuild,@esbuild,@vercel/nft}/**,data/browse/**,data/sync-runs/**,dist/{catalog,spaces}.json.gz,dist/{assets,.asset-html,previews}/**,data/runtime/browse-projects/**,data/runtime/{identities,projects,sync-runs}.json}",
       "maxDuration": 30
     }
   },

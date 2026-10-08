@@ -1,11 +1,11 @@
 import {createHash,timingSafeEqual} from 'node:crypto';
 import {createAccounts,respond,accountFailure,readBody,only,fail} from '../lib/accounts.mjs';
-import {requireLegal} from '../lib/legal.mjs';import {createCatalogService} from '../lib/catalog-service.mjs';
+import {requireLegal} from '../lib/legal.mjs';import {createProjectStore} from '../lib/project-store.mjs';
 import {OFFER,paymentConfig,requireTest,verifyEvent,createPayments} from '../lib/promotion-payments.mjs';import {demoAvailable} from '../lib/promotion-health.mjs';
 export const config={api:{bodyParser:false}};
 const valid=s=>typeof s==='string'&&/^[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+$/.test(s)&&s.length<=220,uuid=s=>typeof s==='string'&&/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i.test(s);
 const safeEqual=(a,b)=>timingSafeEqual(createHash('sha256').update(a).digest(),createHash('sha256').update(b).digest());
-export function createPromotionHandler({accounts=createAccounts(),catalog=createCatalogService(),settings=paymentConfig(),fetcher=fetch,payments=createPayments(settings,{fetcher}),demoCheck=demoAvailable}={}){
+export function createPromotionHandler({accounts=createAccounts(),catalog=createProjectStore(),settings=paymentConfig(),fetcher=fetch,payments=createPayments(settings,{fetcher}),demoCheck=demoAvailable}={}){
 const write=(operation,payload)=>accounts.request('/rest/v1/rpc/reposhelf_promotion_write',{service:true,method:'POST',body:{operation,payload}});
 async function rows(query,token){return accounts.request('/rest/v1/promotions?select=*&'+query,{...(token?{token}:{service:true})})}
 async function github(id,person){if(!valid(id))fail(400,'invalid_repository','Choose a GitHub repository.');const headers={Accept:'application/vnd.github+json','User-Agent':'RepoShelf-promotions'};if(person?.githubToken)headers.Authorization='Bearer '+person.githubToken;let r;try{let target=new URL('https://api.github.com/repos/'+id);for(let hop=0;hop<3;hop++){r=await fetcher(target.href,{headers,signal:AbortSignal.timeout(4000),redirect:'manual'});if(![301,302,307,308].includes(r.status))break;const next=new URL(r.headers.get('location'),target);if(next.origin!=='https://api.github.com'||next.username||next.password||!/^\/(?:repos\/[a-zA-Z0-9_.-]+\/[a-zA-Z0-9_.-]+|repositories\/\d+)$/.test(next.pathname))throw Error('Invalid redirect');target=next}}catch{fail(503,'ownership_unavailable','GitHub ownership could not be checked. Try again later.')}if([404,410].includes(r.status))return null;if(!r.ok)fail(503,'ownership_unavailable','GitHub ownership could not be checked. Try again later.');return r.json()}
