@@ -65,6 +65,10 @@
     "api/*.mjs": {
       "includeFiles": "{dist/*.json,dist/*.js,data/browse/**,data/readmes/**,data/context/**,data/sync-runs/**}",
       "maxDuration": 30
+    },
+    "api/analytics.mjs": {
+      "includeFiles": "{dist/*.json,dist/*.js,data/browse/**,data/readmes/**,data/context/**,data/sync-runs/**,data/admin-summary.json}",
+      "maxDuration": 30
     }
   },
   "rewrites": [
