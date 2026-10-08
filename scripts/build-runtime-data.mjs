@@ -7,7 +7,7 @@ export async function generateRuntimeData(root=new URL('../',import.meta.url),ge
  const read=async p=>JSON.parse(await readFile(new URL(p,root),'utf8'));
  const [catalog,spaces,index]=await Promise.all([read('dist/catalog.json'),read('dist/spaces.json'),read('data/browse/index.json')]);
  const raw=[...(catalog.repositories||[]),...(spaces.repositories||[])],merged=P.mergeCatalog(catalog.repositories||[],spaces.repositories||[]),entries={};
- for(const r of [...raw,...merged]){const keys=['full','name','description','authorDescription','editorialDescription','category','subjects','platforms','language','demo','availability','lastCheckedAt','source','spaceId','githubFull','demoHealth'];entries[r.full.toLowerCase()]=Object.fromEntries(keys.filter(k=>r[k]!==undefined).map(k=>[k,k==='demoHealth'?{url:r.demoHealth.url,status:r.demoHealth.status,checkedAt:r.demoHealth.checkedAt}:r[k]]));}
+ for(const r of [...raw,...merged]){const keys=['full','name','description','authorDescription','editorialDescription','category','subjects','platforms','classification','language','demo','availability','lastCheckedAt','source','spaceId','githubFull','demoHealth'];entries[r.full.toLowerCase()]=Object.fromEntries(keys.filter(k=>r[k]!==undefined).map(k=>[k,k==='classification'?{version:r.classification.version}:k==='demoHealth'?{url:r.demoHealth.url,status:r.demoHealth.status,checkedAt:r.demoHealth.checkedAt}:r[k]]));}
  await mkdir(new URL('data/runtime/',root),{recursive:true});
  await writeFile(new URL('data/runtime/catalog.json.gz',root),gzipSync(JSON.stringify(catalog)));
  await writeFile(new URL('data/runtime/spaces.json.gz',root),gzipSync(JSON.stringify(spaces)));

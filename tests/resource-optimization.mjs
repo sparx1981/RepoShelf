@@ -4,6 +4,7 @@ import {tmpdir} from 'node:os';
 import {pathToFileURL} from 'node:url';
 import {createRequire} from 'node:module';
 import {createProjectStore} from '../lib/project-store.mjs';
+import {createCatalogService} from '../lib/catalog-service.mjs';
 import {createBrowseService} from '../lib/browse-service.mjs';
 import {generateBrowseIndex} from '../lib/browse-index.mjs';
 import {generateRuntimeData} from '../scripts/build-runtime-data.mjs';
@@ -24,6 +25,7 @@ assert(staged.shelfItems.length<full.shelfItems.length);assert.equal(staged.item
 const dir=await mkdtemp(tmpdir()+'/reposhelf-resource-'),root=pathToFileURL(dir+'/');try{
  await mkdir(new URL('dist/',root));await mkdir(new URL('data/sync-runs/',root),{recursive:true});for(const [name,data] of Object.entries({'catalog.json':{updatedAt:date,repositories:projects},'spaces.json':{repositories:[{...projects[0],full:'hf:team/linked',spaceId:'team/linked',source:'huggingface',githubFull:projects[0].full}]},'community.json':{mentions:[]}}))await writeFile(new URL('dist/'+name,root),JSON.stringify(data));
  await generateBrowseIndex(root);await generateRuntimeData(root);const controls=async()=>[],store=createProjectStore({root,controls}),identities=createProjectStore({root,controls,identity:true});assert.equal((await store.project({id:'TEAM/APP-1'})).project.id,'team/app-1');assert.equal((await identities.project({id:'hf:team/linked'})).project.id,'hf:team/linked');
+ const complete=createCatalogService({root,controls});for(const id of ['team/app-0','team/app-1','team/app-159','hf:team/linked']){const original=(await complete.project({id})).project,projected=(await store.project({id})).project;for(const key of ['id','name','description','category','language'])assert.deepEqual(projected[key],original[key],'Metadata retains original '+key);assert.equal(projected.demo?.url,original.demo?.url);assert.equal(projected.demo?.usable,original.demo?.usable);assert.equal(projected.demoHealth?.status,original.demoHealth?.status)}
  // The projection must work after the original catalogues have been removed from a packaged function.
  await rm(new URL('dist/catalog.json',root));await rm(new URL('dist/spaces.json',root));assert.equal((await store.project({id:'team/app-2'})).project.demo.url,projects[2].demo);
  const hidden=createProjectStore({root,controls:async()=>[{project_id:'team/app-1',visibility:'hidden'}]});await assert.rejects(hidden.project({id:'TEAM/APP-1'}),e=>e.status===404);await assert.rejects(store.project({id:'bad'}),e=>e.status===400);await assert.rejects(store.project({id:'team/missing'}),e=>e.status===404);
