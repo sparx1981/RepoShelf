@@ -5,24 +5,30 @@ const port=4412,base=`http://127.0.0.1:${port}`,server=spawn(process.execPath,['
 try{
   await new Promise((resolve,reject)=>{server.stdout.once('data',resolve);server.once('error',reject);});
   browser=await chromium.launch();const page=await browser.newPage({viewport:{width:390,height:844}});
-  await page.goto(base+'/admin.html');
-  await page.evaluate(()=>{
-    document.querySelector('#admin-workspace').hidden=false;
-    window.xTest={enabled:false,revision:1,writes:0};
-    RepoAccount.user={admin:true};
-    RepoAccount.request=async (url,options)=>{if(!url.includes('x-settings'))return {};if(options?.method==='POST'){const input=JSON.parse(options.body);if(input.revision!==xTest.revision)throw Error('Changed');xTest.enabled=input.enabled;xTest.revision++;xTest.writes++;}return {settings:{enabled:xTest.enabled,revision:xTest.revision}};};
-    window.dispatchEvent(new Event('reposhelf-account'));
+  let signedIn=true,enabled=false,revision=1,writes=0;
+  await page.route('**/api/**',async route=>{
+    const u=new URL(route.request().url());
+    if(u.pathname==='/api/auth')return route.fulfill({json:{enabled:true,user:signedIn?{id:'00000000-0000-0000-0000-000000000001',admin:true,githubConnected:true,name:'Owner'}:null}});
+    if(u.pathname==='/api/editorial'&&u.searchParams.get('action')==='x-settings'){
+      if(route.request().method()==='POST'){const input=route.request().postDataJSON();assert.equal(input.revision,revision);enabled=input.enabled;revision++;writes++;}
+      return route.fulfill({json:{settings:{enabled,revision}}});
+    }
+    if(u.pathname==='/api/editorial')return route.fulfill({json:{customRows:false,rows:[],builtinSetupRequired:false}});
+    if(u.pathname==='/api/sync-log')return route.fulfill({json:{runs:[],hasMore:false}});
+    return route.fulfill({json:{items:[]}});
   });
+  await page.goto(base+'/admin.html');
   await page.waitForSelector('#x-collection-enabled');
   assert.equal(await page.isChecked('#x-collection-enabled'),false);
   await page.check('#x-collection-enabled');await page.getByRole('button',{name:'Save X.com scanning',exact:true}).click();
   await page.waitForFunction(()=>document.querySelector('#x-collection-message')?.textContent.includes('enabled'));
-  assert.equal(await page.evaluate(()=>xTest.enabled),true);
+  assert.equal(enabled,true);
   await page.uncheck('#x-collection-enabled');await page.getByRole('button',{name:'Save X.com scanning',exact:true}).click();
   await page.waitForFunction(()=>document.querySelector('#x-collection-message')?.textContent.includes('disabled'));
-  assert.equal(await page.evaluate(()=>xTest.writes),2);
+  assert.equal(writes,2);
   assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
-  await page.evaluate(()=>{RepoAccount.user=null;window.dispatchEvent(new Event('reposhelf-account'));});
+  signedIn=false;
+  await page.evaluate(()=>RepoAccount.refresh());
   assert.equal(await page.locator('#x-collection-settings').textContent(),'');
   console.log('PASS: mobile administrator scanning toggle, enable/disable saves, schedule explanation and signout clearing.');
 }finally{await browser?.close();server.kill('SIGTERM');}
