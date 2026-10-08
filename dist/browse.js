@@ -54,7 +54,9 @@ function select(repositories,o={},editorial={rows:[]},mentions=[]){
  if(searching)out.searchGroups={best:matched.filter(r=>searchMatch(r,o.q).group==='best').length,other:matched.filter(r=>searchMatch(r,o.q).group==='other').length};
  if(!ranked.length&&!o.storefront)out.suggestions=suggestions(available.filter(r=>!exclude.has(r.full.toLowerCase())),o);
  if(o.storefront){const rows=E.resolve(editorial.rows,editorial.builtinSetupRequired!==false).filter(row=>row.enabled&&(row.builtin_key==='hero'||(editorial.customRows?!row.builtin_key?.startsWith('category:'):Boolean(row.builtin_key))));const map=new Map(repositories.map(r=>[r.full.toLowerCase(),r])),chosen=new Map();let community;
- for(const saved of rows){const row=saved.builtin_key?.startsWith('category:')&&['popular','trending'].includes(saved.mode)?{...saved,mode:o.ranks?.[saved.category]||saved.mode}:saved,featured=['hero','picks'].includes(row.builtin_key);let pool=row.mode==='manual'?row.items.map(id=>map.get(id.toLowerCase())).filter(Boolean):matched;
+ if(o.staged){out.shelfRows=rows;out.publicPools=o.publicPools===true;out.privateShelves=rows.filter(r=>r.mode==='random').map(r=>r.id);out.items=[]}
+ const wanted=o.staged?new Set(o.shelfIds||[...rows.filter(r=>r.builtin_key==='hero'),...rows.filter(r=>r.builtin_key!=='hero').slice(0,o.shelfLimit)].map(r=>r.id)):null;
+ for(const saved of rows){if(wanted&&!wanted.has(saved.id)||o.publicPools&&saved.mode==='random')continue;const row=saved.builtin_key?.startsWith('category:')&&['popular','trending'].includes(saved.mode)?{...saved,mode:o.ranks?.[saved.category]||saved.mode}:saved,featured=['hero','picks'].includes(row.builtin_key);let pool=row.mode==='manual'?row.items.map(id=>map.get(id.toLowerCase())).filter(Boolean):matched;
   // Hand-picked spotlight and Editor's picks stay unless something is really wrong with them, so a missed or failed check never empties them.
   pool=pool.filter(r=>(!featured||Q.featuredEligible(r,o.evidenceAt,{lenient:row.mode==='manual'}))&&matches(r,o,technologiesFor)&&!exclude.has(r.full.toLowerCase())&&(!row.category||E.matchesCategory(r,row.category)));
   if(row.mode==='community'){community??=C.attach(repositories,mentions);const posts=new Map(community.map(r=>[r.full.toLowerCase(),r.communityPosts]));pool=pool.map(r=>({...r,communityPosts:posts.get(r.full.toLowerCase())||[]}))}
@@ -62,7 +64,8 @@ function select(repositories,o={},editorial={rows:[]},mentions=[]){
   const cap=row.builtin_key==='hero'?5:row.mode==='manual'?120:12;
   // Where chosen spotlight listings have dropped out, the best listings that pass the strict check take their places (never more than were chosen).
   let fill=[];const want=Math.min(cap,row.items.length);if(row.builtin_key==='hero'&&row.mode==='manual'&&pool.length<want){const have=new Set(pool.map(r=>r.full.toLowerCase()));fill=order(matched,'popular').filter(r=>!have.has(r.full.toLowerCase())&&Q.featuredEligible(r,o.evidenceAt)).slice(0,want-pool.length)}
-  const selected=(row.mode==='manual'?[...E.arrange(pool,row,{seed:o.seed||'',manual:true}),...fill]:E.arrange(pool.slice(0,cap),row,{seed:o.seed||'',limit:cap})).slice(0,cap);
+  const selected=(row.mode==='manual'?[...E.arrange(pool,o.publicPools?{...row,shuffle:'off'}:row,{seed:o.seed||'',manual:true}),...fill]:E.arrange(pool.slice(0,cap),o.publicPools?{...row,shuffle:'off'}:row,{seed:o.seed||'',limit:cap})).slice(0,cap);
+  if(o.publicPools&&row.mode==='manual'&&row.builtin_key==='hero'){out.publicShuffleCounts||={};out.publicShuffleCounts[row.id]=pool.length;selected.splice(0,selected.length,...[...pool,...fill])}
   out.shelves[row.id]=selected.map(r=>r.full);for(const r of selected)chosen.set(r.full.toLowerCase(),{...chosen.get(r.full.toLowerCase()),...card(r)})}
  out.shelfItems=[...chosen.values()];}
  return out;

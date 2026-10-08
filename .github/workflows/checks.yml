@@ -45,7 +45,7 @@ jobs:
       - name: Install agent server dependencies
         run: npm install --package-lock=false
       - name: Validate application and source logic
-        run: npm test && npm run test:mcp && npm run build
+        run: npm test && npm run test:mcp && npm run build && npm run verify:bundles && node scripts/verify-runtime-data.mjs
       - name: Verify database migration and permissions
         env:
           PGPASSWORD: local-ci-password
@@ -114,7 +114,7 @@ jobs:
           npm install --no-save --package-lock=false playwright@1.56.1
           npx playwright install --with-deps chromium
       - name: Verify catalog search, sources, tracking, and responsive layout
-        run: node scripts/verify-taxonomy-ui.mjs && node scripts/verify-browser-pool.mjs && node scripts/verify-public-launch-ui.mjs && node scripts/verify-launch-ui.mjs && node scripts/verify-pwa-ui.mjs && node scripts/verify-browsing-ui.mjs && node scripts/verify-ui.mjs && node scripts/verify-accounts-ui.mjs && node scripts/verify-legal-ui.mjs && node scripts/verify-promotions-ui.mjs && node scripts/verify-submissions-ui.mjs && node scripts/verify-qa-ui.mjs && node scripts/verify-x-collection-ui.mjs && node scripts/verify-journey-ui.mjs && node scripts/verify-merge-ui.mjs && node scripts/verify-connector-ui.mjs && node scripts/verify-viewer-qualify.mjs && node scripts/verify-viewer-ui.mjs && node tests/viewer-diagnose.mjs
+        run: node scripts/verify-taxonomy-ui.mjs && node scripts/verify-browser-pool.mjs && node scripts/verify-public-launch-ui.mjs && node scripts/verify-launch-ui.mjs && node scripts/verify-pwa-ui.mjs && node scripts/verify-browsing-ui.mjs && node scripts/verify-ui.mjs && node scripts/verify-progressive-ui.mjs && node scripts/verify-accounts-ui.mjs && node scripts/verify-legal-ui.mjs && node scripts/verify-promotions-ui.mjs && node scripts/verify-submissions-ui.mjs && node scripts/verify-qa-ui.mjs && node scripts/verify-x-collection-ui.mjs && node scripts/verify-journey-ui.mjs && node scripts/verify-merge-ui.mjs && node scripts/verify-connector-ui.mjs && node scripts/verify-viewer-qualify.mjs && node scripts/verify-viewer-ui.mjs && node tests/viewer-diagnose.mjs
       - name: Verify deployed agent routes
         if: github.event_name == 'push'
         run: node scripts/verify-deployed-api.mjs && REPOSHELF_VERIFY_LIVE_ADMIN=true node scripts/verify-accounts-ui.mjs

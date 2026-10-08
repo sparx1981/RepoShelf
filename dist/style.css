@@ -148,3 +148,6 @@ a.nav:hover{color:var(--text)}
 @keyframes cat-rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 /* Rows below the first two are laid out and painted only when they approach the viewport. The track already clips its own overflow, so containment hides nothing. */
 #ribbons>.ribbon:nth-child(n+3){content-visibility:auto;contain-intrinsic-size:auto 380px}
+
+/* Loading never obscures usable navigation or already loaded shelves. */
+.boot-loader.boot-inline{position:static;inset:auto;min-height:0;height:auto;padding:12px;display:flex;flex-direction:row;justify-content:center;gap:12px;background:var(--surface);z-index:auto}.boot-inline .rs-loader{width:22px;height:22px}.boot-inline .boot-loader-text{margin:0}.shelf-loading{min-height:330px;border:1px dashed var(--line);border-radius:8px;padding:24px;color:var(--text-secondary)}.shelf-placeholder{contain-intrinsic-size:auto 380px}
