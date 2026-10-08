@@ -1,7 +1,99 @@
 {
   "schema": 4,
   "work": {
-    "discovery": null,
+    "discovery": {
+      "admissionPolicy": "validated-demo-v1",
+      "publication": {
+        "published": 23813,
+        "pending": 4536,
+        "quarantined": 2238,
+        "unavailable": 1665
+      },
+      "workingDemos": 26806,
+      "browserBacklog": {
+        "demo": {
+          "never": 0,
+          "retry": 1399,
+          "repeated": 2198,
+          "complete": 28634
+        },
+        "screenshot": {
+          "never": 0,
+          "retry": 1578,
+          "repeated": 2235,
+          "complete": 26774
+        },
+        "reviewCount": 2272,
+        "reviewReasons": {
+          "login_wall": 83,
+          "empty_page": 716,
+          "http_401": 26,
+          "network_or_timeout": 248,
+          "access_restricted": 109,
+          "challenge": 120,
+          "screenshot_error": 15,
+          "dns_not_found": 120,
+          "tls_error": 26,
+          "http_412": 18,
+          "http_402": 39,
+          "http_503": 372,
+          "connection_refused": 22,
+          "dns_unresolved": 13,
+          "unsafe_target": 24,
+          "rate_limit": 40,
+          "application_error": 9,
+          "uniform_image": 29,
+          "http_404": 22,
+          "http_502": 25,
+          "http_522": 7,
+          "http_400": 14,
+          "http_526": 2,
+          "http_500": 50,
+          "dns_timeout": 35,
+          "http_523": 3,
+          "http_530": 13,
+          "probe_timeout": 10,
+          "http_508": 1,
+          "http_451": 25,
+          "probe_invalid_output": 1,
+          "http_454": 4,
+          "http_567": 1,
+          "http_525": 3,
+          "http_521": 11,
+          "http_520": 1,
+          "http_504": 4,
+          "http_405": 1,
+          "probe_failed": 1,
+          "http_999": 2,
+          "page_unavailable": 1,
+          "space_app_not_loaded": 6
+        }
+      },
+      "targets": {
+        "repositoryChecks": 30620,
+        "demoChecks": 30620,
+        "screenshots": 27529
+      },
+      "reasons": [
+        "Demo validation is below 95%.",
+        "Screenshot coverage is below 90%."
+      ],
+      "pending": {
+        "repositoryChecks": 4,
+        "demoChecks": 3576,
+        "screenshots": 3813
+      },
+      "available": 32231,
+      "visible": 30587,
+      "repositoryChecks": 32227,
+      "demoChecks": 28655,
+      "screenshots": 26774,
+      "ready": true,
+      "githubBatch": 1500,
+      "spacesBatch": 350,
+      "curatedBatch": 40,
+      "communityBatch": 20
+    },
     "browser": null,
     "coverageBefore": {
       "admissionPolicy": "validated-demo-v1",
@@ -99,21 +191,21 @@
     "coverageAfter": {
       "admissionPolicy": "validated-demo-v1",
       "publication": {
-        "published": 23812,
-        "pending": 4536,
+        "published": 24535,
+        "pending": 4998,
         "quarantined": 2237,
         "unavailable": 1665
       },
       "workingDemos": 26805,
       "browserBacklog": {
         "demo": {
-          "never": 0,
+          "never": 1185,
           "retry": 1399,
           "repeated": 2197,
           "complete": 28633
         },
         "screenshot": {
-          "never": 0,
+          "never": 1185,
           "retry": 1578,
           "repeated": 2234,
           "complete": 26773
@@ -165,9 +257,9 @@
         }
       },
       "targets": {
-        "repositoryChecks": 30618,
-        "demoChecks": 30618,
-        "screenshots": 27527
+        "repositoryChecks": 31744,
+        "demoChecks": 31744,
+        "screenshots": 28593
       },
       "reasons": [
         "Demo validation is below 95%.",
@@ -175,12 +267,12 @@
       ],
       "pending": {
         "repositoryChecks": 4,
-        "demoChecks": 3575,
-        "screenshots": 3812
+        "demoChecks": 4760,
+        "screenshots": 4997
       },
-      "available": 32229,
-      "visible": 30585,
-      "repositoryChecks": 32225,
+      "available": 33414,
+      "visible": 31770,
+      "repositoryChecks": 33410,
       "demoChecks": 28654,
       "screenshots": 26773,
       "ready": true,
@@ -193,27 +285,97 @@
       "demoChecks": 0,
       "screenshots": 0,
       "workingDemos": 0,
-      "published": 0
+      "published": 723
     }
   },
-  "phase": "cleanup",
+  "phase": "discovery",
   "publication": "checkpoint_saved",
   "id": "37852167043",
   "attempt": 1,
   "startedAt": "2026-10-08T23:33:30.982Z",
-  "recordedAt": "2026-10-08T23:36:44.346Z",
+  "recordedAt": "2026-10-08T23:46:18.783Z",
   "trigger": "push",
   "status": "success",
   "counts": {
     "before": 32250,
-    "after": 32250,
-    "added": 0,
-    "updated": 1875,
+    "after": 33435,
+    "added": 1185,
+    "updated": 2987,
     "removed": 0,
-    "withDemo": 30585
+    "withDemo": 31770
   },
   "temporaryFailures": 0,
   "stages": [
+    {
+      "id": "taxonomy",
+      "name": "Category and subject refresh",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "version": 3,
+        "checked": 33437,
+        "changed": 1215,
+        "reviewRequired": 20881,
+        "subjects": {
+          "Self-hosted apps": 459,
+          "MCP servers & agents": 1261,
+          "Streaming": 136,
+          "Photography": 77,
+          "Mobile": 854,
+          "Templates & UI components": 1443,
+          "Automation & workflows": 659,
+          "Home automation": 39,
+          "Privacy & security": 417,
+          "Writing & documents": 468,
+          "Data & dashboards": 1320,
+          "Android": 274,
+          "Apple": 330,
+          "Chatbots & assistants": 535,
+          "Browser extensions & PWAs": 891,
+          "Simulation & physics": 284,
+          "Science": 507,
+          "Image, audio & video AI": 1085,
+          "Animation & motion": 325,
+          "Maths & algorithms": 475,
+          "Music & audio": 496,
+          "3D & graphics": 1037,
+          "Portfolios & personal sites": 1431,
+          "Games & game development": 783,
+          "Crypto & blockchain": 261,
+          "Architecture & building design": 56,
+          "Maps & geospatial": 154,
+          "Travel": 117,
+          "Fashion": 96,
+          "Automotive": 120,
+          "Health & fitness": 99,
+          "Food & cooking": 198,
+          "Kids": 21
+        },
+        "platforms": {
+          "Android": 274,
+          "iOS & iPadOS": 208,
+          "macOS": 138,
+          "Mobile web": 71
+        },
+        "attempted": 33437,
+        "temporaryFailures": 0
+      },
+      "checked": 33437,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "cleanup_publish",
+      "name": "Demo-only cleanup checkpoint",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
     {
       "id": "cleanup",
       "name": "Demo-only library cleanup",
@@ -237,6 +399,289 @@
       "warnings": 0
     },
     {
+      "id": "sources",
+      "name": "Spaces and curated lists",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "attempted": 535,
+        "sourceYield": {
+          "spaces": {
+            "inspected": 350,
+            "added": 34,
+            "found": 34,
+            "skipped": 0,
+            "pages": 5,
+            "errors": 0,
+            "stopped": null
+          },
+          "curated": {
+            "inspected": 35,
+            "found": 12,
+            "added": 7
+          }
+        },
+        "spacesChecked": 500,
+        "spacesFound": 34,
+        "temporaryFailures": 0
+      },
+      "checked": 535,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 1
+    },
+    {
+      "id": "community",
+      "name": "Community discoveries",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "catalog",
+      "name": "GitHub discovery and revalidation",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "repositoryChecks": 750,
+        "repositoryNotModified": 0,
+        "repositoryPaused": false,
+        "repositoryPlan": {
+          "limit": 750,
+          "desired": 2513,
+          "allowance": 4800,
+          "reserve": 200,
+          "remaining": 5000,
+          "checksPerDay": 9000,
+          "dailyCapacitySufficient": false,
+          "intervalHours": 48
+        },
+        "repositoryDue": 2901,
+        "repositorySelected": 750,
+        "repositoryRemainingDue": 2147,
+        "repositoryStopReason": null,
+        "repositoryObserved48h": 24114,
+        "repositoryObserved24h": 17860,
+        "candidateLimit": 1500,
+        "candidatesChecked": 1500,
+        "demosFound": 1183,
+        "cacheHits": 3,
+        "queryYield": [
+          {
+            "query": "\"vercel.app\" in:readme stars:1..9 is:public archived:false fork:false",
+            "page": 1,
+            "inspected": 100,
+            "found": 77,
+            "added": 75,
+            "cacheHits": 0,
+            "errors": 0
+          },
+          {
+            "query": "\"vercel.app\" in:readme stars:1..9 is:public archived:false fork:false",
+            "page": 2,
+            "inspected": 100,
+            "found": 68,
+            "added": 65,
+            "cacheHits": 0,
+            "errors": 0
+          },
+          {
+            "query": "\"vercel.app\" in:readme stars:1..9 is:public archived:false fork:false",
+            "page": 3,
+            "inspected": 99,
+            "found": 79,
+            "added": 77,
+            "cacheHits": 0,
+            "errors": 0
+          },
+          {
+            "query": "\"vercel.app\" in:readme stars:1..9 is:public archived:false fork:false",
+            "page": 4,
+            "inspected": 100,
+            "found": 85,
+            "added": 83,
+            "cacheHits": 0,
+            "errors": 0
+          },
+          {
+            "query": "\"vercel.app\" in:readme stars:1..9 is:public archived:false fork:false",
+            "page": 5,
+            "inspected": 99,
+            "found": 82,
+            "added": 78,
+            "cacheHits": 0,
+            "errors": 0
+          },
+          {
+            "query": "\"vercel.app\" in:readme stars:1..9 is:public archived:false fork:false",
+            "page": 6,
+            "inspected": 100,
+            "found": 83,
+            "added": 79,
+            "cacheHits": 0,
+            "errors": 0
+          },
+          {
+            "query": "\"vercel.app\" in:readme stars:1..9 is:public archived:false fork:false",
+            "page": 7,
+            "inspected": 98,
+            "found": 75,
+            "added": 74,
+            "cacheHits": 1,
+            "errors": 0
+          },
+          {
+            "query": "\"vercel.app\" in:readme stars:1..9 is:public archived:false fork:false",
+            "page": 8,
+            "inspected": 99,
+            "found": 76,
+            "added": 72,
+            "cacheHits": 1,
+            "errors": 0
+          },
+          {
+            "query": "\"vercel.app\" in:readme stars:1..9 is:public archived:false fork:false",
+            "page": 9,
+            "inspected": 100,
+            "found": 77,
+            "added": 75,
+            "cacheHits": 0,
+            "errors": 0
+          },
+          {
+            "query": "\"vercel.app\" in:readme stars:1..9 is:public archived:false fork:false",
+            "page": 10,
+            "inspected": 99,
+            "found": 80,
+            "added": 77,
+            "cacheHits": 1,
+            "errors": 0
+          },
+          {
+            "query": "\"vercel.app\" in:readme stars:0 is:public archived:false fork:false",
+            "page": 1,
+            "inspected": 100,
+            "found": 80,
+            "added": 78,
+            "cacheHits": 0,
+            "errors": 0
+          },
+          {
+            "query": "\"vercel.app\" in:readme stars:0 is:public archived:false fork:false",
+            "page": 2,
+            "inspected": 97,
+            "found": 73,
+            "added": 70,
+            "cacheHits": 0,
+            "errors": 0
+          },
+          {
+            "query": "\"vercel.app\" in:readme stars:0 is:public archived:false fork:false",
+            "page": 3,
+            "inspected": 98,
+            "found": 83,
+            "added": 80,
+            "cacheHits": 0,
+            "errors": 0
+          },
+          {
+            "query": "\"vercel.app\" in:readme stars:0 is:public archived:false fork:false",
+            "page": 4,
+            "inspected": 100,
+            "found": 77,
+            "added": 75,
+            "cacheHits": 0,
+            "errors": 0
+          },
+          {
+            "query": "\"vercel.app\" in:readme stars:0 is:public archived:false fork:false",
+            "page": 5,
+            "inspected": 100,
+            "found": 78,
+            "added": 76,
+            "cacheHits": 0,
+            "errors": 0
+          },
+          {
+            "query": "\"vercel.app\" in:readme stars:0 is:public archived:false fork:false",
+            "page": 6,
+            "inspected": 11,
+            "found": 10,
+            "added": 10,
+            "cacheHits": 0,
+            "errors": 0
+          }
+        ],
+        "sourceYield": {
+          "github": {
+            "inspected": 1500,
+            "found": 1183,
+            "added": 1144,
+            "errors": 0
+          }
+        },
+        "searchQueries": 16,
+        "searchQueryLimit": 40,
+        "searchSpacingMs": 4500,
+        "searchCursor": 104,
+        "searchPaused": null,
+        "temporaryFailures": 0,
+        "durationMs": 291309
+      },
+      "checked": 2250,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "enrich",
+      "name": "Releases and technologies",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "overviews",
+      "name": "README overviews",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "context",
+      "name": "Supporting documents",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "ai",
+      "name": "Optional AI overviews",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
       "id": "validate",
       "name": "Application checks",
       "status": "success",
@@ -253,6 +698,109 @@
       "status": "success",
       "temporaryFailures": 0,
       "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "priority",
+      "name": "Discovery quality gate",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "admissionPolicy": "validated-demo-v1",
+        "publication": {
+          "published": 23813,
+          "pending": 4536,
+          "quarantined": 2238,
+          "unavailable": 1665
+        },
+        "workingDemos": 26806,
+        "browserBacklog": {
+          "demo": {
+            "never": 0,
+            "retry": 1399,
+            "repeated": 2198,
+            "complete": 28634
+          },
+          "screenshot": {
+            "never": 0,
+            "retry": 1578,
+            "repeated": 2235,
+            "complete": 26774
+          },
+          "reviewCount": 2272,
+          "reviewReasons": {
+            "login_wall": 83,
+            "empty_page": 716,
+            "http_401": 26,
+            "network_or_timeout": 248,
+            "access_restricted": 109,
+            "challenge": 120,
+            "screenshot_error": 15,
+            "dns_not_found": 120,
+            "tls_error": 26,
+            "http_412": 18,
+            "http_402": 39,
+            "http_503": 372,
+            "connection_refused": 22,
+            "dns_unresolved": 13,
+            "unsafe_target": 24,
+            "rate_limit": 40,
+            "application_error": 9,
+            "uniform_image": 29,
+            "http_404": 22,
+            "http_502": 25,
+            "http_522": 7,
+            "http_400": 14,
+            "http_526": 2,
+            "http_500": 50,
+            "dns_timeout": 35,
+            "http_523": 3,
+            "http_530": 13,
+            "probe_timeout": 10,
+            "http_508": 1,
+            "http_451": 25,
+            "probe_invalid_output": 1,
+            "http_454": 4,
+            "http_567": 1,
+            "http_525": 3,
+            "http_521": 11,
+            "http_520": 1,
+            "http_504": 4,
+            "http_405": 1,
+            "probe_failed": 1,
+            "http_999": 2,
+            "page_unavailable": 1,
+            "space_app_not_loaded": 6
+          }
+        },
+        "targets": {
+          "repositoryChecks": 30620,
+          "demoChecks": 30620,
+          "screenshots": 27529
+        },
+        "reasons": [
+          "Demo validation is below 95%.",
+          "Screenshot coverage is below 90%."
+        ],
+        "pending": {
+          "repositoryChecks": 4,
+          "demoChecks": 3576,
+          "screenshots": 3813
+        },
+        "available": 32231,
+        "visible": 30587,
+        "repositoryChecks": 32227,
+        "demoChecks": 28655,
+        "screenshots": 26774,
+        "ready": true,
+        "githubBatch": 1500,
+        "spacesBatch": 350,
+        "curatedBatch": 40,
+        "communityBatch": 20
+      },
       "checked": 0,
       "unavailableResponses": 0,
       "inconclusiveChecks": 0,
