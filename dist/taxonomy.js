@@ -38,8 +38,10 @@ const rules=[
  ['Self-hosted apps',/\b(self hosted|selfhosted|self host|homelab|home lab)\b/i],
  ['Privacy & security',/\b(password managers?|encrypt\w*|vpn|cyber ?security|pentest\w*|penetration testing|malware|vulnerabilit\w*|privacy (?:focused|first|friendly|preserving)|2fa|two factor|secrets? manager|zero knowledge|osint|ctf)\b/i]
 ];
-const subjects=rules.map(([name])=>name);
-function names(r){return [...new Set([r.category,...(r.subjects||[])].filter(x=>typeof x==='string'&&x))]}
+const xCategory='As Seen On X.com';
+const subjects=[...rules.map(([name])=>name),xCategory];
+function seenOnX(r){return (r.discoveredVia||[]).some(s=>s.kind==='x'&&typeof s.url==='string'&&/^https:\/\/(?:x\.com|twitter\.com)\/(?:[^/?#]+\/status|i\/web\/status)\/\d+(?:[?#].*)?$/.test(s.url))}
+function names(r){return [...new Set([r.category,...(r.subjects||[]),...(seenOnX(r)?[xCategory]:[])].filter(x=>typeof x==='string'&&x))]}
 function matches(r,category){return !category||['All','All projects'].includes(category)||names(r).some(x=>x.toLowerCase()===String(category).toLowerCase())}
 function broad(r){if(r.source==='huggingface'||String(r.full||'').startsWith('hf:'))return 'AI & machine learning';const t=[r.name,r.description,...(r.topics||[])].join(' ');return /design|canvas|draw|ui-library|whiteboard|portfolio|animation|css/i.test(t)?'Design':/budget|finance|money|expense/i.test(t)?'Finance':/crm|business|ecommerce|scheduling|commerce/i.test(t)?'Business':/learn|education|typing|quiz/i.test(t)?'Education':/notes|markdown|productivity|task|resume|todo|calendar/i.test(t)?'Productivity':/\b(ai|llm|machine learning|artificial intelligence)\b/i.test(t)?'AI & machine learning':/developer|api|database|tool|editor|framework|code/i.test(t)?'Developer tools':'Other'}
 function annotate(r,{force=false}={}){
