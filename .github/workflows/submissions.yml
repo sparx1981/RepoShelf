@@ -1,11 +1,16 @@
 name: Scan submitted repositories
 on:
   workflow_dispatch:
+    inputs:
+      submission_id:
+        description: 'Optional single submission to check first'
+        required: false
+        type: string
   schedule:
     - cron: '*/15 * * * *'
   push:
     branches: [main]
-    paths: ['scripts/import-submissions.mjs', 'scripts/submission-imports.mjs', '.github/workflows/submissions.yml']
+    paths: ['scripts/import-submissions.mjs', 'scripts/submission-imports.mjs', 'scripts/submission-quality.mjs', '.github/workflows/submissions.yml']
 permissions:
   contents: write
   actions: read
@@ -44,6 +49,7 @@ jobs:
         env:
           REPOSHELF_SUBMISSION_SYNC_KEY: ${{ secrets.REPOSHELF_SUBMISSION_SYNC_KEY }}
           REPOSHELF_PUBLIC_URL: https://reposhelf.vercel.app
+          SUBMISSION_ID: ${{ inputs.submission_id }}
           CATALOGUE_READY: ${{ steps.check.outputs.ready }}
         run: |
           node --input-type=module <<'JS'
@@ -53,12 +59,13 @@ jobs:
           const origin=process.env.REPOSHELF_PUBLIC_URL||'https://reposhelf.vercel.app';
           let response,data;
           try{
-            response=await fetch(origin+'/api/submissions?action=pending',{method:'POST',headers:{Authorization:'Bearer '+process.env.REPOSHELF_SUBMISSION_SYNC_KEY,'Content-Type':'application/json'},body:'{}',signal:AbortSignal.timeout(20000)});
+            response=await fetch(origin+'/api/submissions?action=pending',{method:'POST',headers:{Authorization:'Bearer '+process.env.REPOSHELF_SUBMISSION_SYNC_KEY,'Content-Type':'application/json'},body:JSON.stringify({id:process.env.SUBMISSION_ID||null,requireVersion:2}),signal:AbortSignal.timeout(20000)});
             data=await response.json().catch(()=>({}));
           }catch{console.log('The website could not be reached; submissions stay queued for the next check.');out(false);process.exit(0)}
+          if(response.ok&&data.version!==2){console.log('The submission API update is not deployed yet; requests remain queued.');out(false);process.exit(0)}
           if(response.ok){console.log(data.pending?'Submissions are waiting; starting the scan.':'No submissions are due; nothing to scan.');out(data.pending===true);process.exit(0)}
           const code=data?.error?.code,message=data?.error?.message||'Request failed';
-          if(code==='migration_required'){console.log('::error::The submissions database tables are missing. Apply supabase/migrations/202610030007_repository_submissions.sql in the Supabase SQL editor, then run this check again.');out(false);process.exit(1)}
+          if(code==='migration_required'){console.log('::error::The submissions database tables are missing. Apply migrations 7 and 26 (supabase/migrations/202610080026_submission_quality_cancellation.sql) in the Supabase SQL editor, then run this check again.');out(false);process.exit(1)}
           if(response.status===401||response.status===403){console.log('::error::The website rejected REPOSHELF_SUBMISSION_SYNC_KEY. The value in GitHub Actions secrets must match the one in Vercel.');out(false);process.exit(1)}
           console.log('The submissions queue could not be read ('+response.status+': '+message+'); submissions stay queued for the next check.');out(false);
           JS
@@ -69,10 +76,11 @@ jobs:
       group: reposhelf-catalog
       cancel-in-progress: false
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     env:
       REPOSHELF_SUBMISSION_SYNC_KEY: ${{ secrets.REPOSHELF_SUBMISSION_SYNC_KEY }}
       GITHUB_TOKEN: ${{ github.token }}
+      SUBMISSION_ID: ${{ inputs.submission_id }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -82,11 +90,15 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Install submission validation browser
+        run: |
+          npm install --no-save --package-lock=false playwright@1.56.1
+          npx playwright install --with-deps chromium
       - name: Restore accumulated catalogue changes
         run: node scripts/publish-catalog.mjs restore
       - name: Refresh listing exclusions
         run: node scripts/sync-listing-controls.mjs
-      - name: Import submissions and save README context
+      - name: Validate submitted demos, capture screenshots and save README context
         run: node scripts/import-submissions.mjs
       - name: Save imported repositories for daily publication
         env:
