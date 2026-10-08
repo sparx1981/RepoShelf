@@ -21,7 +21,7 @@ function searchMatch(r,query){
  const result={score,group:broader?'other':'best',reason};searchCache.set(r,{q,result});return result;
 }
 
-function matches(r,o){return r.availability!=='unavailable'&&(!o.demos||Q.hasLiveDemo(r))&&P.matchesSource(r,o.source||'all')&&(!o.category||['All','All projects'].includes(o.category)||E.matchesCategory(r,o.category))&&(!o.technology||o.technology==='All technologies'||S.technologies(r).includes(o.technology))&&Boolean(searchMatch(r,o.q))}
+function matches(r,o,technologies=S.technologies){return r.availability!=='unavailable'&&(!o.demos||Q.hasLiveDemo(r))&&P.matchesSource(r,o.source||'all')&&(!o.category||['All','All projects'].includes(o.category)||E.matchesCategory(r,o.category))&&(!o.technology||o.technology==='All technologies'||technologies(r).includes(o.technology))&&Boolean(searchMatch(r,o.q))}
 function order(repos,sort='popular'){if(sort==='reposhelf')return repos.filter(r=>r.repoShelfClicks>0).sort((a,b)=>b.repoShelfClicks-a.repoShelfClicks||a.full.localeCompare(b.full));if(['popular','featured'].includes(sort))return P.popular(repos);if(sort==='trending')return S.sorted(repos.filter(r=>!P.isSpace(r)),'trending');if(sort==='community')return C.rank(repos);if(sort==='releases')return repos.filter(r=>S.recentRelease(r)).sort((a,b)=>Date.parse(b.latestRelease.publishedAt)-Date.parse(a.latestRelease.publishedAt)||a.full.localeCompare(b.full));const list=[...repos];list.sort((a,b)=>sort==='name'?a.name.localeCompare(b.name):['stars','forks'].includes(sort)?(b[sort]??-1)-(a[sort]??-1)||a.full.localeCompare(b.full):(Date.parse(b[sort==='newest'?'created':'updated'])||0)-(Date.parse(a[sort==='newest'?'created':'updated'])||0)||a.full.localeCompare(b.full));return list}
 function suggestions(repositories,o){
  const out=[],seen=new Set(),base={q:o.q||'',category:o.category||'',technology:o.technology||'',source:o.source||'all',sort:o.q?'relevance':'popular'};
@@ -40,21 +40,23 @@ function suggestions(repositories,o){
  return out.slice(0,4);
 }
 function select(repositories,o={},editorial={rows:[]},mentions=[]){
- const exclude=new Set((o.exclude||[]).map(id=>id.toLowerCase()));
- const available=repositories.filter(r=>r.availability!=='unavailable'),matched=available.filter(r=>matches(r,o)&&!exclude.has(r.full.toLowerCase()));
+ const exclude=new Set((o.exclude||[]).map(id=>id.toLowerCase())),technologyCache=new Map();
+ const technologiesFor=r=>{if(!technologyCache.has(r))technologyCache.set(r,S.technologies(r));return technologyCache.get(r)};
+ const available=repositories.filter(r=>r.availability!=='unavailable'),matched=available.filter(r=>matches(r,o,technologiesFor)&&!exclude.has(r.full.toLowerCase()));
  const searching=Boolean(String(o.q||'').trim()),relevance=searching&&(!o.sort||o.sort==='relevance');
  const popular=order(matched,'popular'),ties=new Map(popular.map((r,i)=>[r.full,i]));
- const ranked=relevance?[...matched].sort((a,b)=>{const x=searchMatch(a,o.q),y=searchMatch(b,o.q);return (x.group==='other')-(y.group==='other')||y.score-x.score||ties.get(a.full)-ties.get(b.full)}):order(matched,o.sort==='relevance'?'popular':o.sort),offset=o.offset||0,limit=o.limit||48;
+ const ranked=relevance?[...matched].sort((a,b)=>{const x=searchMatch(a,o.q),y=searchMatch(b,o.q);return (x.group==='other')-(y.group==='other')||y.score-x.score||ties.get(a.full)-ties.get(b.full)}):(!o.sort||['relevance','popular','featured'].includes(o.sort)?popular:order(matched,o.sort)),offset=o.offset||0,limit=o.limit||48;
  const categories={},technologies={},sources={github:0,huggingface:0};
  // Disjunctive facets: omit just that facet's active selection, retain the others.
- for(const r of available){if(exclude.has(r.full.toLowerCase()))continue;if(matches(r,{...o,category:''}))for(const category of E.categoryNames(r))categories[category]=(categories[category]||0)+1;if(matches(r,{...o,technology:''}))for(const t of S.technologies(r))technologies[t]=(technologies[t]||0)+1;if(matches(r,{...o,source:'all'})){if(P.matchesSource(r,'github'))sources.github++;if(P.matchesSource(r,'huggingface'))sources.huggingface++}}
+ const categoryFacet={...o,category:''},technologyFacet={...o,technology:''},sourceFacet={...o,source:'all'};
+ for(const r of available){if(exclude.has(r.full.toLowerCase()))continue;if(matches(r,categoryFacet,technologiesFor))for(const category of E.categoryNames(r))categories[category]=(categories[category]||0)+1;if(matches(r,technologyFacet,technologiesFor))for(const t of technologiesFor(r))technologies[t]=(technologies[t]||0)+1;if(matches(r,sourceFacet,technologiesFor)){if(P.matchesSource(r,'github'))sources.github++;if(P.matchesSource(r,'huggingface'))sources.huggingface++}}
  const out={total:ranked.length,indexed:available.length,items:ranked.slice(offset,offset+limit).map(r=>({...card(r),...(searching?{searchMatch:{group:searchMatch(r,o.q).group,reason:searchMatch(r,o.q).reason}}:{})})),nextOffset:offset+limit<ranked.length?offset+limit:null,facets:{categories,technologies,sources},shelves:{},shelfItems:[]};
  if(searching)out.searchGroups={best:matched.filter(r=>searchMatch(r,o.q).group==='best').length,other:matched.filter(r=>searchMatch(r,o.q).group==='other').length};
  if(!ranked.length&&!o.storefront)out.suggestions=suggestions(available.filter(r=>!exclude.has(r.full.toLowerCase())),o);
  if(o.storefront){const rows=E.resolve(editorial.rows,editorial.builtinSetupRequired!==false).filter(row=>row.enabled&&(row.builtin_key==='hero'||(editorial.customRows?!row.builtin_key?.startsWith('category:'):Boolean(row.builtin_key))));const map=new Map(repositories.map(r=>[r.full.toLowerCase(),r])),chosen=new Map();let community;
  for(const saved of rows){const row=saved.builtin_key?.startsWith('category:')&&['popular','trending'].includes(saved.mode)?{...saved,mode:o.ranks?.[saved.category]||saved.mode}:saved,featured=['hero','picks'].includes(row.builtin_key);let pool=row.mode==='manual'?row.items.map(id=>map.get(id.toLowerCase())).filter(Boolean):matched;
   // Hand-picked spotlight and Editor's picks stay unless something is really wrong with them, so a missed or failed check never empties them.
-  pool=pool.filter(r=>(!featured||Q.featuredEligible(r,o.evidenceAt,{lenient:row.mode==='manual'}))&&matches(r,o)&&!exclude.has(r.full.toLowerCase())&&(!row.category||E.matchesCategory(r,row.category)));
+  pool=pool.filter(r=>(!featured||Q.featuredEligible(r,o.evidenceAt,{lenient:row.mode==='manual'}))&&matches(r,o,technologiesFor)&&!exclude.has(r.full.toLowerCase())&&(!row.category||E.matchesCategory(r,row.category)));
   if(row.mode==='community'){community??=C.attach(repositories,mentions);const posts=new Map(community.map(r=>[r.full.toLowerCase(),r.communityPosts]));pool=pool.map(r=>({...r,communityPosts:posts.get(r.full.toLowerCase())||[]}))}
   if(['random','daily'].includes(row.mode))pool=E.shuffle(pool,{mode:row.mode,seed:o.seed||'',row:row.id});else if(row.mode!=='manual')pool=order(pool,row.mode);
   const cap=row.builtin_key==='hero'?5:row.mode==='manual'?120:12;
