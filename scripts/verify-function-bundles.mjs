@@ -7,7 +7,8 @@ import {pathToFileURL} from 'node:url';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url),nftRequire=createRequire(require.resolve('@vercel/nft')), {glob}=nftRequire('glob'),picomatch=nftRequire('picomatch');
 const config=JSON.parse(await readFile('vercel.json','utf8')),report=[];
-for(const [entry,options] of Object.entries(config.functions)){
+const selected=process.argv.slice(2);for(const entry of selected)if(!config.functions[entry])throw Error('Unknown function: '+entry);
+for(const [entry,options] of Object.entries(config.functions).filter(([entry])=>!selected.length||selected.includes(entry))){
  for(const field of ['includeFiles','excludeFiles'])if((options[field]||'').length>256)throw Error(entry+' '+field+' exceeds Vercel schema limit');
  const excluded=picomatch(options.excludeFiles||'__nothing__',{dot:true});
  const {fileList,warnings}=await nodeFileTrace([entry],{base:process.cwd(),ignore:path=>excluded(path.replaceAll('\\','/'))});

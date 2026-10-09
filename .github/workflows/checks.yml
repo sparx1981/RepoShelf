@@ -109,12 +109,15 @@ jobs:
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-submission-quality.sql
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610080027_x_collection_settings.sql
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-x-collection.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610090028_admin_analytics_overview.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610090028_admin_analytics_overview.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-admin-analytics.sql
       - name: Install browser
         run: |
           npm install --no-save --package-lock=false playwright@1.56.1
           npx playwright install --with-deps chromium
       - name: Verify catalog search, sources, tracking, and responsive layout
-        run: node scripts/verify-taxonomy-ui.mjs && node scripts/verify-browser-pool.mjs && node scripts/verify-public-launch-ui.mjs && node scripts/verify-launch-ui.mjs && node scripts/verify-pwa-ui.mjs && node scripts/verify-browsing-ui.mjs && node scripts/verify-ui.mjs && node scripts/verify-progressive-ui.mjs && node scripts/verify-accounts-ui.mjs && node scripts/verify-legal-ui.mjs && node scripts/verify-promotions-ui.mjs && node scripts/verify-submissions-ui.mjs && node scripts/verify-qa-ui.mjs && node scripts/verify-x-collection-ui.mjs && node scripts/verify-journey-ui.mjs && node scripts/verify-merge-ui.mjs && node scripts/verify-connector-ui.mjs && node scripts/verify-viewer-qualify.mjs && node scripts/verify-viewer-ui.mjs && node tests/viewer-diagnose.mjs
+        run: node scripts/verify-admin-analytics-ui.mjs && node scripts/verify-taxonomy-ui.mjs && node scripts/verify-browser-pool.mjs && node scripts/verify-public-launch-ui.mjs && node scripts/verify-launch-ui.mjs && node scripts/verify-pwa-ui.mjs && node scripts/verify-browsing-ui.mjs && node scripts/verify-ui.mjs && node scripts/verify-progressive-ui.mjs && node scripts/verify-accounts-ui.mjs && node scripts/verify-legal-ui.mjs && node scripts/verify-promotions-ui.mjs && node scripts/verify-submissions-ui.mjs && node scripts/verify-qa-ui.mjs && node scripts/verify-x-collection-ui.mjs && node scripts/verify-journey-ui.mjs && node scripts/verify-merge-ui.mjs && node scripts/verify-connector-ui.mjs && node scripts/verify-viewer-qualify.mjs && node scripts/verify-viewer-ui.mjs && node tests/viewer-diagnose.mjs
       - name: Verify deployed agent routes
         if: github.event_name == 'push'
         run: node scripts/verify-deployed-api.mjs && REPOSHELF_VERIFY_LIVE_ADMIN=true node scripts/verify-accounts-ui.mjs

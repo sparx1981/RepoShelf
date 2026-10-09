@@ -22,5 +22,7 @@ export async function generateRuntimeData(root=new URL('../',import.meta.url),ge
  for(const name of names)reports.push(await read('data/sync-runs/'+name));
  // Preserve every field and every report in one compact parse. No per-request file fan-out.
  await writeFile(new URL('data/runtime/sync-runs.json',root),JSON.stringify(reports.sort((a,b)=>Date.parse(b.startedAt)-Date.parse(a.startedAt))));
+ const latest=reports.filter(r=>r.status==='success').sort((a,b)=>Date.parse(b.recordedAt)-Date.parse(a.recordedAt))[0],before=latest?.work?.coverageBefore?.publication?.published,after=latest?.work?.coverageAfter?.publication?.published;
+ await writeFile(new URL('data/runtime/overview.json',root),JSON.stringify({lastSyncAt:latest?.recordedAt||null,lastSyncGrowth:Number.isFinite(before)&&Number.isFinite(after)?after-before:null}));
  console.log(`Runtime project metadata: ${Object.keys(entries).length} identities; ${reports.length} sync reports indexed.`);
 }
