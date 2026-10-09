@@ -113,7 +113,7 @@
       "maxDuration": 30
     },
     "api/editorial.mjs": {
-      "includeFiles": "{dist/{taxonomy,providers,quality,community,editorial,storefront,discovery,picks,viewer-config,browse}.js,data/listing-controls.json,data/browse/{index,search,community,identities}.json,data/runtime/browse-projects/**,dist/growth.json}",
+      "includeFiles": "{dist/{tax*,providers,quality,community,editorial,storefront,discovery,picks,viewer*,browse}.js,data/{listing-controls.json,browse/{index,community,identities,rankings}.json,browse/search.json.gz,runtime/browse-projects/**},dist/growth.json}",
       "excludeFiles": "{tests/**,node_modules/{sharp,@img,*esbuild*,@vercel/nft}/**,dist/{catalog*,spaces*,assets/**,.asset-html/**,previews/**},data/{browse/projects,readmes,context,sync-runs}/**,data/runtime/{*.gz,*.json}}",
       "maxDuration": 30
     },
@@ -121,14 +121,13 @@
       "includeFiles": "{dist/{taxonomy,providers,quality,community,editorial,storefront,discovery,picks,viewer-config}.js,data/listing-controls.json,data/runtime/{catalog,spaces}.json.gz,dist/community.json,data/readmes/**,data/context/**}",
       "excludeFiles": "{tests/**,node_modules/{sharp,@img,*esbuild*,@vercel/nft}/**,dist/{catalog*,spaces*,assets/**,.asset-html/**,previews/**},data/{browse,sync-runs}/**,data/runtime/{browse-projects/**,*.json}}",
       "maxDuration": 30
-    },
-    "api/mcp.mjs": {
-      "includeFiles": "{dist/{taxonomy,providers,quality,community,editorial,storefront,discovery,picks,viewer-config}.js,data/listing-controls.json,data/runtime/{catalog,spaces}.json.gz,dist/community.json,data/readmes/**,data/context/**}",
-      "excludeFiles": "{tests/**,node_modules/{sharp,@img,*esbuild*,@vercel/nft}/**,dist/{catalog*,spaces*,assets/**,.asset-html/**,previews/**},data/{browse,sync-runs}/**,data/runtime/{browse-projects/**,*.json}}",
-      "maxDuration": 30
     }
   },
   "rewrites": [
+    {
+      "source": "/api/mcp",
+      "destination": "/api/agent?protocol=mcp"
+    },
     {
       "source": "/api/v1/:path*",
       "destination": "/api/agent?path=:path*"

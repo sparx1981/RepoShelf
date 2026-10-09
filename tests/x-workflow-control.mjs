@@ -7,7 +7,8 @@ const control=createXWorkflowControl({token:'test-token',fetcher:async(url,optio
 await assert.rejects(createXWorkflowControl({token:''}).scan(),{code:'x_actions_token_required'});
 runs=[{id:9,status:'queued'}];assert.equal((await control.scan()).activeRunId,9);assert.equal(sent.length,1);
 runs=[{id:8,status:'completed'}];assert.equal((await control.scan()).requested,true);
-assert.deepEqual(JSON.parse(sent.at(-1).options.body),{ref:'main',inputs:{search:true}});
+assert.deepEqual(JSON.parse(sent.at(-2).options.body),{ref:'main',inputs:{search:true}});
+assert.equal(JSON.parse(sent.at(-1).options.body).ref,'main');assert(Number.isFinite(Date.parse(JSON.parse(sent.at(-1).options.body).inputs.not_before)));
 assert.equal(sent.at(-1).options.redirect,'error');assert.equal(sent.at(-1).options.headers.Authorization,'Bearer test-token');
 await assert.rejects(createXWorkflowControl({token:'test',fetcher:async()=>new Response(null,{status:403})}).scan(),{code:'x_workflow_unavailable'});
 await assert.rejects(createXWorkflowControl({token:'test',fetcher:async url=>{if(url.endsWith('/dispatches'))throw Error('timeout');return Response.json({workflow_runs:[]});}}).scan(),{code:'x_dispatch_unconfirmed'});

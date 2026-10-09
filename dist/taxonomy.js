@@ -1,7 +1,7 @@
 (function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory();else root.RepoTaxonomy=factory()})(globalThis,function(){
 'use strict';
 // Bump this version whenever rules change. Rules operate on data, never execute it.
-const version=3;
+const version=4;
 const broadCategories=['Design','Developer tools','Productivity','Business','Finance','Education','AI & machine learning','Other'];
 const rules=[
  ['Architecture & building design',/\b(architectural editor|architectural design|building design|interior design|floor[ -]?plans?|building information model(?:ling|ing)?|bim viewer|ifc viewer|cad viewer|text.to.cad|urban planning|building sunlight|bim|ifc|cad)\b/i],
@@ -43,7 +43,24 @@ const subjects=[...rules.map(([name])=>name),xCategory];
 function seenOnX(r){return (r.discoveredVia||[]).some(s=>s.kind==='x'&&typeof s.url==='string'&&/^https:\/\/(?:x\.com|twitter\.com)\/(?:[^/?#]+\/status|i\/web\/status)\/\d+(?:[?#].*)?$/.test(s.url))}
 function names(r){return [...new Set([r.category,...(r.subjects||[]),...(seenOnX(r)?[xCategory]:[])].filter(x=>typeof x==='string'&&x))]}
 function matches(r,category){return !category||['All','All projects'].includes(category)||names(r).some(x=>x.toLowerCase()===String(category).toLowerCase())}
-function broad(r){if(r.source==='huggingface'||String(r.full||'').startsWith('hf:'))return 'AI & machine learning';const t=[r.name,r.description,...(r.topics||[])].join(' ');return /design|canvas|draw|ui-library|whiteboard|portfolio|animation|css/i.test(t)?'Design':/budget|finance|money|expense/i.test(t)?'Finance':/crm|business|ecommerce|scheduling|commerce/i.test(t)?'Business':/learn|education|typing|quiz/i.test(t)?'Education':/notes|markdown|productivity|task|resume|todo|calendar/i.test(t)?'Productivity':/\b(ai|llm|machine learning|artificial intelligence)\b/i.test(t)?'AI & machine learning':/developer|api|database|tool|editor|framework|code/i.test(t)?'Developer tools':'Other'}
+function broad(r){
+ if(r.source==='huggingface'||String(r.full||'').startsWith('hf:'))return 'AI & machine learning';
+ const own=[r.name,r.authorDescription||r.description].join(' ').replace(/[_-]+/g,' ');
+ // Use purpose-bearing metadata, not README dependency mentions or substring matches such as "draw" in "withdraw".
+ const checks=[
+ ['Finance',/\b(budget(?:ing)?|finance|financial|expense(?:s)?|banking|accounting|investment|stock trading|trading platform|cryptocurrency|blockchain|bitcoin|ethereum|defi)\b/i],
+ ['AI & machine learning',/\b(ai|llms?|machine learning|artificial intelligence|swarm intelligence|deep learning|neural networks?|chatgpt|diffusion|text to speech|speech recognition|voice cloning|computer vision|ollama|langchain|rag|model context protocol|mcp)\b/i],
+ ['Design',/\b(design|canvas|drawing|whiteboard|portfolio|animation|css|ui (?:library|kit|components?)|component library|graphics|webgl|webgpu|threejs|three js|photo editor|image editor|video editor|audio editor|music production|font|typography)\b/i],
+ ['Business',/\b(crm|business|ecommerce|e commerce|commerce|inventory|invoicing|customer support|helpdesk|point of sale|erp|hr management|appointment scheduling)\b/i],
+ ['Education',/\b(learn(?:ing)?|education(?:al)?|teaching|tutorials?|courses?|quizzes?|flashcards?|typing practice|algorithm visualization)\b/i],
+ ['Productivity',/\b(notes?|note taking|markdown|productivity|task management|task manager|todo|to do|calendar|resume|home automation|home assistant|smart home|document (?:editor|viewer|management|converter)|pdf (?:reader|viewer|editor|tools?)|knowledge base|wiki|wikis|file manager|file sharing|bookmark manager|password manager|download manager|clipboard|personal dashboard)\b/i],
+ ['Developer tools',/\b(developer|development|api|database|tools?|editor|framework|code|coding|compiler|compiles?|programming|javascript|typescript|python|react|vue|angular|svelte|nodejs|node js|rust|golang|sdk|cli|command line|terminal|shell|debugger|debugging|testing|test runner|state management|package manager|build system|bundler|linter|formatter|fuzzy finder|web components?|full stack|fullstack|boilerplate|starter kit|self hosted|selfhosted|devops|kubernetes|docker)\b/i]
+ ];
+ const direct=checks.find(([,pattern])=>pattern.test(own));if(direct)return direct[0];
+ // A language/framework dependency tag alone does not turn an end-user application into a developer tool.
+ const topics=(r.topics||[]).filter(t=>!/^(javascript|typescript|python|react|vue|angular|svelte|nodejs|rust|golang|docker|self-hosted|selfhosted)$/i.test(t)).join(' ').replace(/[_-]+/g,' ');
+ return checks.find(([,pattern])=>pattern.test(topics))?.[0]||'Other';
+}
 function annotate(r,{force=false}={}){
  if(!force&&r.classification?.version===version)return r;
  const normalize=text=>String(text||'').replace(/[_-]+/g,' ').replace(/[’']/g,' ');

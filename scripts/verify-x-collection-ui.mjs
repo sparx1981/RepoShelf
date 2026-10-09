@@ -1,5 +1,6 @@
 import {spawn} from 'node:child_process';
 import assert from 'node:assert/strict';
+import {mkdir} from 'node:fs/promises';
 import {chromium} from 'playwright';
 const port=4412,base=`http://127.0.0.1:${port}`,server=spawn(process.execPath,['scripts/serve.mjs'],{env:{...process.env,PORT:String(port)},stdio:['ignore','pipe','inherit']});let browser;
 try{
@@ -13,8 +14,9 @@ try{
       if(route.request().method()==='POST'){const input=route.request().postDataJSON();assert.equal(input.revision,revision);enabled=input.enabled;revision++;writes++;}
       return route.fulfill({json:{settings:{enabled,revision}}});
     }
+    if(u.pathname==='/api/editorial'&&u.searchParams.get('action')==='x-progress')return route.fulfill({json:{countsCurrent:true,collection:{status:'completed',conclusion:'success',createdAt:'2026-10-09T01:54:00Z'},import:{status:'completed',conclusion:'success'},counts:{collection:{at:'2026-10-09T01:55:00Z',postsRead:50,newCandidates:6,candidateCount:79,stopped:null},validation:{at:'2026-10-09T01:56:00Z',qualityReady:8,checked:6}},intake:{checkedAt:'2026-10-09T02:00:00Z',accepted:8,held:0},publication:{status:'published',lastPublishedAt:'2026-10-09T02:05:00Z'}}});
     if(u.pathname==='/api/editorial'&&u.searchParams.get('action')==='x-scan'){assert(enabled);assert.equal(route.request().method(),'POST');scans++;return route.fulfill({status:202,json:{requested:true,reason:'Scan requested.'}});}
-    if(u.pathname==='/api/editorial')return route.fulfill({json:{customRows:false,rows:[],builtinSetupRequired:false}});
+    if(u.pathname==='/api/editorial')return route.fulfill({json:{customRows:false,rows:[],items:[],coverage:{},builtinSetupRequired:false}});
     if(u.pathname==='/api/sync-log')return route.fulfill({json:{runs:[],hasMore:false}});
     return route.fulfill({json:{items:[]}});
   });
@@ -27,6 +29,10 @@ try{
   await page.getByRole('button',{name:'Scan now',exact:true}).click();
   await page.waitForFunction(()=>document.querySelector('#x-collection-message')?.textContent==='Scan requested.');
   assert.equal(scans,1);assert(await page.locator('#x-scan-now').isDisabled());
+  await page.waitForFunction(()=>document.querySelector('#x-pipeline-progress')?.textContent.includes('8 imported or updated'));
+  assert((await page.locator('#x-pipeline-progress').textContent()).includes('50 posts read'));
+  await mkdir('artifacts',{recursive:true});await page.screenshot({path:'artifacts/x-scan-progress-mobile.png',fullPage:true});
+  await page.setViewportSize({width:1440,height:1000});await page.screenshot({path:'artifacts/x-scan-progress-desktop.png',fullPage:true});await page.setViewportSize({width:390,height:844});
   await page.uncheck('#x-collection-enabled');await page.getByRole('button',{name:'Save X.com scanning',exact:true}).click();
   await page.waitForFunction(()=>document.querySelector('#x-collection-message')?.textContent.includes('disabled'));
   assert.equal(writes,2);assert.equal(await page.locator('#x-scan-now').count(),0);

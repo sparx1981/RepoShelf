@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import {gunzipSync} from 'node:zlib';
 import {mkdtemp,mkdir,writeFile,readFile,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {pathToFileURL} from 'node:url';
@@ -18,8 +19,8 @@ const community={mentions:[{full:repos[1].full,source:'hackernews',id:'42',url:'
 try{
  await mkdir(new URL('dist/',root));for(const [name,data] of Object.entries({'catalog.json':{updatedAt:new Date(now).toISOString(),repositories:repos},'spaces.json':spaces,'community.json':community}))await writeFile(new URL('dist/'+name,root),JSON.stringify(data));
  const generated=await generateBrowseIndex(root),index=generated.index,service=createBrowseService({root});
- const onDisk=JSON.parse(await readFile(new URL('data/browse/index.json',root))),searchFile=JSON.parse(await readFile(new URL('data/browse/search.json',root)));
- assert.equal(onDisk.search,'search.json');assert(onDisk.repositories.every(r=>!('searchText' in r)&&!('searchReadme' in r)&&!('searchOverview' in r)),'Cold-start index carries no search text');assert.equal(searchFile.version,onDisk.version);assert(searchFile.entries[repos[1].full][0].includes('collaboration'),'Overview text moves to the search file');
+ const onDisk=JSON.parse(await readFile(new URL('data/browse/index.json',root))),searchFile=JSON.parse(gunzipSync(await readFile(new URL('data/browse/search.json.gz',root))).toString());
+ assert.equal(onDisk.search,'search.json.gz');assert(onDisk.repositories.every(r=>!('searchText' in r)&&!('searchReadme' in r)&&!('searchOverview' in r)),'Cold-start index carries no search text');assert.equal(searchFile.version,onDisk.version);assert(searchFile.entries[repos[1].full][0].includes('collaboration'),'Overview text moves to the search file');
  assert(index.repositories.length>=130,'No catalogue ceiling');assert(!index.repositories.some(r=>r.full==='hf:team/linked'),'Linked Spaces remain deduplicated');assert.equal(index.repositories.find(r=>r.full===repos[0].full).demo,spaces.repositories[0].demo);
  assert(index.repositories.every(r=>!r.overview&&!r.agentContext&&!r.metrics));assert.equal(index.repositories.find(r=>r.full===repos[1].full).screenshots.length,1);assert.deepEqual(S.trend(index.repositories.find(r=>r.full===repos[1].full)),S.trend(repos[1]));
  const first=await service.search({q:'collaboration',demos:false,sort:'name'});assert.equal(first.total,129);assert.equal(first.items.length,48);assert(!JSON.stringify(first.items).includes('searchText'));assert(!JSON.stringify(first.items).includes('paragraphs'));assert(!first.items.some(r=>r.availability==='unavailable'));assert.equal(first.facets.categories.Design,64);let ids=[...first.items.map(r=>r.full)],cursor=first.nextCursor;while(cursor){const page=await service.search({q:'collaboration',demos:false,sort:'name',cursor});ids.push(...page.items.map(r=>r.full));cursor=page.nextCursor}assert.equal(ids.length,129);assert.equal(new Set(ids).size,129);assert.equal(first.total,129);
