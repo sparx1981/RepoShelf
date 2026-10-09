@@ -34,6 +34,10 @@ export async function importXCandidates(manifest, catalog, {importer, capture, c
       const prior = entries.get(candidate.full.toLowerCase());
       // Keep fresh repository evidence, README context and current author-provided demo extraction.
       let entry = await importer(candidate.full, candidate.discoveredVia.find(xSource), prior);
+      // Trusted collector evidence can supply a demo absent from the README.
+      // Preserve any current repository-provided demo; changed demos remain held.
+      const evidence=candidate.demoEvidence;
+      if(entry&&!entry.demo&&evidence?.kind==='x_link'&&evidence.url===candidate.demo&&evidence.repository?.toLowerCase()===entry.full.toLowerCase()&&candidate.discoveredVia.some(s=>xSource(s)&&s.url===evidence.postUrl))entry={...entry,demo:candidate.demo,demoEvidence:evidence};
       if (!entry || entry.demo !== candidate.demo || entry.full.toLowerCase() !== candidate.full.toLowerCase()) { results.push({full: candidate.full, status: 'retry', reason: 'repository_or_demo_changed'}); continue; }
       const image = xScreenshot(candidate);
       entry = mergeXProvenance({...entry, demoHealth: candidate.demoHealth, previewCheck: candidate.previewCheck, screenshots: [image, ...(entry.screenshots || []).filter(s => s.kind !== 'demo')].slice(0, 6)}, candidate);

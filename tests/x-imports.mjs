@@ -38,4 +38,8 @@ const failedImage=await importXCandidates(manifest,{repositories:[]},{...options
 assert.equal(failedImage.catalog.repositories.length,0);
 const stale=await importXCandidates({schema:1,repositories:[{...row,lastCheckedAt:new Date(at-49*3600000).toISOString()}]},{repositories:[]},options);
 assert.equal(stale.results.length,0);
+const linked={...row,demoEvidence:{kind:'x_link',url:demo,repository:full,postUrl:source.url}};
+const postDemo=await importXCandidates({schema:1,repositories:[linked]},{repositories:[]},{...options,importer:async()=>({...row,demo:null})});assert.equal(postDemo.results[0].status,'imported');
+const unrelated=await importXCandidates({schema:1,repositories:[{...linked,demoEvidence:{...linked.demoEvidence,postUrl:'https://x.com/i/web/status/999'}}]},{repositories:[]},{...options,importer:async()=>({...row,demo:null})});assert.equal(unrelated.results[0].status,'retry');
+const changedLinked=await importXCandidates({schema:1,repositories:[linked]},{repositories:[]},{...options,importer:async()=>({...row,demo:'https://new.example.test'})});assert.equal(changedLinked.results[0].status,'retry');
 console.log('PASS X intake freshness, moderation, screenshot paths, canonical deduplication and additional category.');
