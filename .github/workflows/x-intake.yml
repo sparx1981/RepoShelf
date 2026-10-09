@@ -6,6 +6,11 @@ on:
         description: Collector request time; blank imports existing validated candidates
         type: string
         default: ''
+      limit:
+        description: Maximum validated repositories to import (normal daily limit is 50)
+        type: choice
+        options: ['50', '100']
+        default: '50'
   schedule:
     - cron: '20 6 * * *'
 permissions:
@@ -39,6 +44,7 @@ jobs:
       - name: Import fresh collector evidence and screenshots
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          X_IMPORT_LIMIT: ${{ inputs.limit || '50' }}
         run: node scripts/import-x.mjs
       - name: Publish imported X repositories
         run: node scripts/publish-catalog.mjs
