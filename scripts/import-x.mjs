@@ -26,6 +26,7 @@ const moderation = await savedListingControls();
 let offset=0;
 try{const prior=JSON.parse(await readFile(new URL('../data/x-intake.json',import.meta.url),'utf8'));if(Number.isSafeInteger(prior.nextOffset)&&prior.nextOffset>=0)offset=prior.nextOffset}catch(e){if(e.code!=='ENOENT')throw e}
 const result = await importXCandidates(manifest, catalog, {
+  limit: (()=>{const limit=Number(process.env.X_IMPORT_LIMIT||50);if(![50,100].includes(limit))throw Error('Invalid X import limit');return limit;})(),
   offset,
   controls: entries => applyListingControls(entries, moderation),
   importer: (full, provenance, prior) => importListCandidate(full, provenance, prior, {headers, requireDemo: false}),
