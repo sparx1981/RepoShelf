@@ -18,7 +18,7 @@ try{
     if(u.pathname==='/api/sync-log')return route.fulfill({json:{runs:[],hasMore:false}});
     return route.fulfill({json:{items:[]}});
   });
-  await page.goto(base+'/admin.html');
+  await page.goto(base+'/admin.html?tab=sync');
   await page.waitForSelector('#x-collection-enabled');
   assert.equal(await page.isChecked('#x-collection-enabled'),false);
   await page.check('#x-collection-enabled');await page.getByRole('button',{name:'Save X.com scanning',exact:true}).click();

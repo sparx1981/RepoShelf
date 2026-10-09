@@ -9,7 +9,7 @@ await context.route('**/*',async route=>{const u=new URL(route.request().url()),
   if(action==='merge-cancel'){cancelled++;return route.fulfill({json:{cancelled:true}})}
   return route.fulfill({json:{enabled:true,analyticsEnabled:true,googleEnabled:true,user:{id:'1',name:'owner',githubConnected:providers.includes('github'),providers,admin:false},legal:{active:false,required:false}}})}
  if(u.pathname==='/api/collection'||u.pathname==='/api/forks')return route.fulfill({json:{items:[],nextCursor:null,sync:{}}});return route.continue()});
-await page.addInitScript(()=>localStorage.setItem('reposhelf.analytics.consent.v1','no'));
+await page.addInitScript(()=>localStorage.setItem('reposhelf.analytics.consent.v2','no'));
 // the option to merge is offered for the sign-in method this account lacks
 await page.goto(base+'/account.html');await page.waitForSelector('#merge-accounts:not([hidden])');const starts=page.locator('#merge-starts a');assert.equal(await starts.count(),1);assert.match(await starts.first().textContent(),/separate Google account/);assert.equal(await starts.first().getAttribute('href'),'/api/auth?action=merge-start&provider=google');assert(await page.locator('#merge-panel').isHidden());
 // a signed-in-with-both account has nothing to merge
