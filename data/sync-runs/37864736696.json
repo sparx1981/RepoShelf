@@ -94,7 +94,16 @@
       "curatedBatch": 40,
       "communityBatch": 20
     },
-    "browser": null,
+    "browser": {
+      "due": true,
+      "eligibilityBased": true,
+      "demoDue": 1004,
+      "previewDue": 1026,
+      "lastCompletedAt": "2026-10-09T00:30:57.868Z",
+      "nextDueAt": null,
+      "forced": false,
+      "reason": "1026 screenshots and 1004 demo checks eligible; untouched backlog can run after a recent batch."
+    },
     "coverageBefore": {
       "admissionPolicy": "validated-demo-v1",
       "publication": {
@@ -191,48 +200,48 @@
     "coverageAfter": {
       "admissionPolicy": "validated-demo-v1",
       "publication": {
-        "published": 26314,
-        "pending": 3967,
-        "quarantined": 2274,
-        "unavailable": 1665
+        "published": 26985,
+        "pending": 3208,
+        "quarantined": 2343,
+        "unavailable": 1684
       },
-      "workingDemos": 27866,
+      "workingDemos": 28537,
       "browserBacklog": {
         "demo": {
-          "never": 786,
-          "retry": 1389,
-          "repeated": 2236,
-          "complete": 29788
+          "never": 0,
+          "retry": 1367,
+          "repeated": 2306,
+          "complete": 30526
         },
         "screenshot": {
-          "never": 786,
-          "retry": 1667,
-          "repeated": 2271,
-          "complete": 27831
+          "never": 0,
+          "retry": 1693,
+          "repeated": 2340,
+          "complete": 28503
         },
-        "reviewCount": 2310,
+        "reviewCount": 2383,
         "reviewReasons": {
-          "login_wall": 83,
-          "empty_page": 739,
+          "login_wall": 84,
+          "empty_page": 786,
           "http_401": 26,
-          "network_or_timeout": 254,
+          "network_or_timeout": 256,
           "access_restricted": 109,
           "challenge": 120,
-          "screenshot_error": 15,
+          "screenshot_error": 16,
           "dns_not_found": 121,
           "tls_error": 26,
           "http_412": 18,
           "http_402": 39,
-          "http_503": 380,
+          "http_503": 397,
           "connection_refused": 22,
           "dns_unresolved": 13,
           "unsafe_target": 24,
           "rate_limit": 40,
           "application_error": 9,
-          "uniform_image": 29,
-          "http_404": 22,
-          "http_502": 25,
-          "http_522": 7,
+          "uniform_image": 30,
+          "http_404": 23,
+          "http_502": 27,
+          "http_522": 8,
           "http_400": 14,
           "http_526": 2,
           "http_500": 50,
@@ -259,7 +268,7 @@
       "targets": {
         "repositoryChecks": 32490,
         "demoChecks": 32490,
-        "screenshots": 29300
+        "screenshots": 29283
       },
       "reasons": [
         "Demo validation is below 95%.",
@@ -267,14 +276,14 @@
       ],
       "pending": {
         "repositoryChecks": 4,
-        "demoChecks": 4388,
-        "screenshots": 4724
+        "demoChecks": 3647,
+        "screenshots": 4033
       },
       "available": 34199,
-      "visible": 32555,
+      "visible": 32536,
       "repositoryChecks": 34195,
-      "demoChecks": 29811,
-      "screenshots": 27831,
+      "demoChecks": 30552,
+      "screenshots": 28503,
       "ready": true,
       "githubBatch": 1500,
       "spacesBatch": 350,
@@ -282,29 +291,29 @@
       "communityBatch": 20
     },
     "qualityGains": {
-      "demoChecks": -1,
-      "screenshots": -1,
-      "workingDemos": -1,
-      "published": 721
+      "demoChecks": 740,
+      "screenshots": 671,
+      "workingDemos": 670,
+      "published": 1392
     }
   },
-  "phase": "discovery",
-  "publication": "checkpoint_saved",
+  "phase": "complete",
+  "publication": "awaiting_publication",
   "id": "37864736696",
   "attempt": 1,
   "startedAt": "2026-10-09T01:00:06.539Z",
-  "recordedAt": "2026-10-09T01:12:51.002Z",
+  "recordedAt": "2026-10-09T01:49:10.792Z",
   "trigger": "schedule",
   "status": "success",
   "counts": {
     "before": 33435,
     "after": 34220,
     "added": 787,
-    "updated": 2295,
+    "updated": 2516,
     "removed": 2,
-    "withDemo": 32555
+    "withDemo": 32536
   },
-  "temporaryFailures": 5,
+  "temporaryFailures": 251,
   "stages": [
     {
       "id": "taxonomy",
@@ -366,6 +375,53 @@
       "warnings": 0
     },
     {
+      "id": "capture_providers",
+      "name": "Optional screenshot providers",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "schema": 1,
+        "at": "2026-10-09T01:48:46.016Z",
+        "workerKeyConfigured": true,
+        "ready": {
+          "screenshotone": false,
+          "thumio": true,
+          "cloudflare": false
+        },
+        "attempted": 3,
+        "candidates": 0,
+        "reasons": {
+          "provider_failure": 3
+        },
+        "providers": {
+          "thumio": {
+            "used": 94,
+            "limit": 1000,
+            "period": "2026-10-01",
+            "allowed": true
+          }
+        },
+        "enabled": [
+          "thumio"
+        ]
+      },
+      "checked": 3,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "browser_merge",
+      "name": "Merge parallel browser results",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
       "id": "cleanup_publish",
       "name": "Demo-only cleanup checkpoint",
       "status": "success",
@@ -394,6 +450,17 @@
       "temporaryFailures": 0,
       "details": null,
       "checked": 100,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "compression_final",
+      "name": "New screenshot compression",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
       "unavailableResponses": 0,
       "inconclusiveChecks": 0,
       "warnings": 0
@@ -718,6 +785,188 @@
       "warnings": 0
     },
     {
+      "id": "browser_cycle",
+      "name": "Two-hour browser cycle",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "due": true,
+        "eligibilityBased": true,
+        "demoDue": 1004,
+        "previewDue": 1026,
+        "lastCompletedAt": "2026-10-09T00:30:57.868Z",
+        "nextDueAt": null,
+        "forced": false,
+        "reason": "1026 screenshots and 1004 demo checks eligible; untouched backlog can run after a recent batch."
+      },
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "browser_complete",
+      "name": "Browser cycle saved",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "health",
+      "name": "Demo health",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "mode": "parallel_runner_shards",
+        "complete": true,
+        "reasons": {},
+        "examples": [],
+        "shards": 4,
+        "due": 0,
+        "selected": 0,
+        "limit": 136888,
+        "attempted": 0,
+        "working": 0,
+        "captured": 0,
+        "unavailable": 0,
+        "temporaryFailures": 0,
+        "deferred": 0,
+        "remainingDue": 0,
+        "durationMs": 459745,
+        "workerTimeMs": 0,
+        "progressWarnings": 8,
+        "linksRepaired": 11,
+        "merge": {
+          "applied": 1026,
+          "conflicts": 0
+        }
+      },
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "previews",
+      "name": "Preview screenshots",
+      "status": "success",
+      "temporaryFailures": 246,
+      "details": {
+        "mode": "parallel_runner_shards",
+        "complete": true,
+        "reasons": {
+          "http_500": 4,
+          "network_or_timeout": 6,
+          "http_404": 87,
+          "empty_page": 123,
+          "http_504": 1,
+          "dns_not_found": 5,
+          "http_503": 84,
+          "http_502": 3,
+          "http_522": 1,
+          "uniform_image": 1,
+          "challenge": 1,
+          "screenshot_error": 4,
+          "login_wall": 3,
+          "http_402": 5,
+          "http_451": 1,
+          "tls_error": 1,
+          "rate_limit": 2,
+          "http_401": 1,
+          "probe_timeout": 2,
+          "access_restricted": 3
+        },
+        "examples": [
+          {
+            "project": "ChrisCarini/upptime",
+            "reason": "http_500"
+          },
+          {
+            "project": "netlify-templates/astro-supabase-starter",
+            "reason": "http_500"
+          },
+          {
+            "project": "microprediction/winning",
+            "reason": "network_or_timeout"
+          },
+          {
+            "project": "wrongakram/React-Three-Minecraft-Chest",
+            "reason": "http_404"
+          },
+          {
+            "project": "fairy-root/gravity",
+            "reason": "http_404"
+          },
+          {
+            "project": "prajwal714/Movie-Booking-and-Recommendation-Website",
+            "reason": "http_404"
+          },
+          {
+            "project": "maykbrito/read-4-me",
+            "reason": "empty_page"
+          },
+          {
+            "project": "marcoschulte/vue3-progress",
+            "reason": "http_404"
+          },
+          {
+            "project": "visheshguria/Lumen5_Clone",
+            "reason": "http_404"
+          },
+          {
+            "project": "vertigis/vertigis-web-samples",
+            "reason": "empty_page"
+          },
+          {
+            "project": "kelonye/crypto-bet",
+            "reason": "empty_page"
+          },
+          {
+            "project": "ysongh/StoriesNFT",
+            "reason": "empty_page"
+          }
+        ],
+        "shards": 4,
+        "due": 1026,
+        "selected": 1026,
+        "limit": 136888,
+        "attempted": 1026,
+        "working": 693,
+        "captured": 688,
+        "unavailable": 87,
+        "temporaryFailures": 246,
+        "deferred": 0,
+        "remainingDue": 0,
+        "durationMs": 459744,
+        "workerTimeMs": 6414122,
+        "progressWarnings": 8,
+        "linksRepaired": 11,
+        "merge": {
+          "applied": 1026,
+          "conflicts": 0
+        }
+      },
+      "checked": 1026,
+      "unavailableResponses": 87,
+      "inconclusiveChecks": 246,
+      "warnings": 0
+    },
+    {
+      "id": "growth",
+      "name": "Growth history",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
       "id": "validate",
       "name": "Application checks",
       "status": "success",
@@ -837,6 +1086,17 @@
         "curatedBatch": 40,
         "communityBatch": 20
       },
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "checkpoint_publish",
+      "name": "Discovery checkpoint",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
       "checked": 0,
       "unavailableResponses": 0,
       "inconclusiveChecks": 0,
