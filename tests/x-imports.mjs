@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {createRequire} from 'node:module';
-import {importXCandidates, validatedXCandidate, mergeXProvenance} from '../scripts/x-imports.mjs';
+import {importXCandidates, validatedXCandidate, mergeXProvenance,xLinkedDemo} from '../scripts/x-imports.mjs';
 import {applyListingControls} from '../lib/listing-policy.mjs';
 import {compactProject} from '../lib/browse-index.mjs';
 const require=createRequire(import.meta.url),T=require('../dist/taxonomy.js'),B=require('../dist/browse.js');
@@ -38,4 +38,9 @@ const failedImage=await importXCandidates(manifest,{repositories:[]},{...options
 assert.equal(failedImage.catalog.repositories.length,0);
 const stale=await importXCandidates({schema:1,repositories:[{...row,lastCheckedAt:new Date(at-49*3600000).toISOString()}]},{repositories:[]},options);
 assert.equal(stale.results.length,0);
+const linked={...row,demoEvidence:{kind:'x_link',url:demo,repository:full,postUrl:source.url}};
+assert.equal(xLinkedDemo(linked),demo+'/');assert.equal(xLinkedDemo(linked,'unrelated/repo'),null);assert.equal(xLinkedDemo({...linked,demoEvidence:{...linked.demoEvidence,postUrl:'https://x.com/i/web/status/999'}}),null);
+const postDemo=await importXCandidates({schema:1,repositories:[linked]},{repositories:[]},{...options,importer:async()=>({...row,demo:null})});assert.equal(postDemo.results[0].status,'imported');
+const unrelated=await importXCandidates({schema:1,repositories:[{...linked,demoEvidence:{...linked.demoEvidence,postUrl:'https://x.com/i/web/status/999'}}]},{repositories:[]},{...options,importer:async()=>({...row,demo:null})});assert.equal(unrelated.results[0].status,'retry');
+const changedLinked=await importXCandidates({schema:1,repositories:[linked]},{repositories:[]},{...options,importer:async()=>({...row,demo:'https://new.example.test'})});assert.equal(changedLinked.results[0].status,'retry');
 console.log('PASS X intake freshness, moderation, screenshot paths, canonical deduplication and additional category.');

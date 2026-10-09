@@ -1,7 +1,9 @@
 import {createRequire} from 'node:module';
 import {createHash} from 'node:crypto';
 const require = createRequire(import.meta.url), Q = require('../dist/quality.js');
+const D=require('../dist/discovery.js');
 export const X_SOURCE_CATEGORY = 'As Seen On X.com';
+export function xLinkedDemo(entry,full=entry?.full){const evidence=entry?.demoEvidence;return evidence?.kind==='x_link'&&evidence.url===entry.demo&&evidence.repository?.toLowerCase()===full?.toLowerCase()&&entry.discoveredVia?.some(s=>xSource(s)&&s.url===evidence.postUrl)?D.demoUrl(entry.demo):null;}
 export function xSource(source) {
   if (source?.kind !== 'x' || typeof source.url !== 'string') return false;
   try { const u = new URL(source.url); return u.protocol === 'https:' && ['x.com', 'twitter.com'].includes(u.hostname) && !u.username && !u.password && !u.port && /\/(?:[^/]+\/status|i\/web\/status)\/\d+$/.test(u.pathname); } catch { return false; }
@@ -34,6 +36,10 @@ export async function importXCandidates(manifest, catalog, {importer, capture, c
       const prior = entries.get(candidate.full.toLowerCase());
       // Keep fresh repository evidence, README context and current author-provided demo extraction.
       let entry = await importer(candidate.full, candidate.discoveredVia.find(xSource), prior);
+      // Trusted collector evidence can supply a demo absent from the README.
+      // Preserve any current repository-provided demo; changed demos remain held.
+      const evidence=candidate.demoEvidence;
+      if(entry&&!entry.demo&&xLinkedDemo(candidate,entry.full))entry={...entry,demo:candidate.demo,demoEvidence:evidence};
       if (!entry || entry.demo !== candidate.demo || entry.full.toLowerCase() !== candidate.full.toLowerCase()) { results.push({full: candidate.full, status: 'retry', reason: 'repository_or_demo_changed'}); continue; }
       const image = xScreenshot(candidate);
       entry = mergeXProvenance({...entry, demoHealth: candidate.demoHealth, previewCheck: candidate.previewCheck, screenshots: [image, ...(entry.screenshots || []).filter(s => s.kind !== 'demo')].slice(0, 6)}, candidate);

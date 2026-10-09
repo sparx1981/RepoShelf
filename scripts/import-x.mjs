@@ -28,7 +28,7 @@ try{const prior=JSON.parse(await readFile(new URL('../data/x-intake.json',import
 const result = await importXCandidates(manifest, catalog, {
   offset,
   controls: entries => applyListingControls(entries, moderation),
-  importer: (full, provenance, prior) => importListCandidate(full, provenance, prior, {headers, requireDemo: true}),
+  importer: (full, provenance, prior) => importListCandidate(full, provenance, prior, {headers, requireDemo: false}),
   capture: async path => {
     if (!/^previews\/[a-f0-9]{24}\.jpg$/.test(path)) throw Error('Invalid collector screenshot path');
     const bytes = await resource(path, 2 * 1024 * 1024);
