@@ -54,7 +54,7 @@ function select(repositories,o={},editorial={rows:[]},mentions=[]){
  const out={total:ranked.length,indexed:available.length,items:ranked.slice(offset,offset+limit).map(r=>({...card(r),...(searching?{searchMatch:{group:searchMatch(r,o.q).group,reason:searchMatch(r,o.q).reason}}:{})})),nextOffset:offset+limit<ranked.length?offset+limit:null,facets:{categories,technologies,sources},shelves:{},shelfItems:[]};
  if(searching)out.searchGroups={best:matched.filter(r=>searchMatch(r,o.q).group==='best').length,other:matched.filter(r=>searchMatch(r,o.q).group==='other').length};
  if(!ranked.length&&!o.storefront)out.suggestions=suggestions(available.filter(r=>!exclude.has(r.full.toLowerCase())),o);
- if(o.storefront){const rows=E.resolve(editorial.rows,editorial.builtinSetupRequired!==false).filter(row=>row.enabled&&(row.builtin_key==='hero'||(editorial.customRows?!row.builtin_key?.startsWith('category:'):Boolean(row.builtin_key))));const map=new Map(repositories.map(r=>[r.full.toLowerCase(),r])),chosen=new Map(),categoryPools=new Map();let community;
+ if(o.storefront){const rows=E.resolve(editorial.rows,editorial.builtinSetupRequired!==false).filter(row=>E.visible(row,editorial.customRows));const map=new Map(repositories.map(r=>[r.full.toLowerCase(),r])),chosen=new Map(),categoryPools=new Map();let community;
  // Index overlapping categories once rather than re-testing the whole catalogue for every ribbon.
  for(const r of matched)for(const key of new Set(E.categoryNames(r).map(category=>category.toLowerCase()))){if(!categoryPools.has(key))categoryPools.set(key,[]);categoryPools.get(key).push(r)}
  if(o.staged){out.shelfRows=rows;out.publicPools=o.publicPools===true;out.privateShelves=rows.filter(r=>r.mode==='random').map(r=>r.id);out.items=[]}

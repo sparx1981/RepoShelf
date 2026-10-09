@@ -17,7 +17,7 @@ function gate(){if(!A.ready)return;$('#admin-gate').classList.remove('admin-gate
 
 /* ---------- storefront editor ---------- */
 const migration8='<a href="https://github.com/sparx1981/RepoShelf/blob/main/supabase/migrations/202610040008_editorial_discovery_qa.sql" target="_blank" rel="noopener">migration 8</a>';
-function applyEditorial(data){builtinSetupRequired=data.builtinSetupRequired===true;rows=E.resolve(data.rows);$('#editorial-setup').hidden=!builtinSetupRequired;$('#editorial-setup').innerHTML=`Built-in rows are read-only until ${migration8} is applied in Supabase. Existing custom rows remain available.`;$('#custom-rows').checked=data.customRows;renderRows()}
+function applyEditorial(data){builtinSetupRequired=data.builtinSetupRequired===true;rows=E.resolve(data.rows,builtinSetupRequired);$('#editorial-setup').hidden=!builtinSetupRequired;$('#editorial-setup').innerHTML=`Built-in rows are read-only until ${migration8} is applied in Supabase. Existing custom rows remain available.`;$('#custom-rows').checked=data.customRows;renderRows()}
 const idle=fn=>window.requestIdleCallback?requestIdleCallback(fn,{timeout:2000}):setTimeout(fn,300);
 let categoriesFilled=false;
 function fillCategories(facets){const select=$('#row-category'),current=select.value;select.innerHTML='<option value="">Any category</option>'+[...new Set([...E.categories,...Object.keys(facets||{})])].sort().map(x=>`<option>${esc(x)}</option>`).join('');select.value=current}
