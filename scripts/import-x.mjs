@@ -39,5 +39,5 @@ const result = await importXCandidates(manifest, catalog, {
 });
 await writeFile(catalogFile, JSON.stringify(result.catalog, null, 2) + '\n');
 await mkdir(new URL('../data/', import.meta.url), {recursive: true});
-await writeFile(new URL('../data/x-intake.json', import.meta.url), JSON.stringify({revision, nextOffset:result.nextOffset, checkedAt: new Date().toISOString(), results: result.results}) + '\n');
+await writeFile(new URL('../data/x-intake.json', import.meta.url), JSON.stringify({revision,collectorRunId:process.env.X_COLLECTOR_RUN_ID||null, nextOffset:result.nextOffset, checkedAt: new Date().toISOString(), qualityReady:manifest.repositories.length, accepted:result.results.filter(r=>r.status==='imported').length, held:result.results.filter(r=>r.status!=='imported').length, results: result.results}) + '\n');
 console.log(`X intake: ${result.results.filter(r => r.status === 'imported').length} imported or updated; ${result.results.filter(r => r.status !== 'imported').length} held.`);

@@ -1,8 +1,13 @@
 name: Import validated repositories from X
 on:
   workflow_dispatch:
+    inputs:
+      not_before:
+        description: Collector request time; blank imports existing validated candidates
+        type: string
+        default: ''
   schedule:
-    - cron: '45 7 * * *'
+    - cron: '20 6 * * *'
 permissions:
   contents: write
 concurrency:
@@ -11,7 +16,7 @@ concurrency:
 jobs:
   intake:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
         with:
@@ -21,6 +26,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Wait for successful X collection and validation
+        if: github.event_name == 'schedule' || inputs.not_before != ''
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          X_NOT_BEFORE: ${{ inputs.not_before }}
+        run: node scripts/wait-x-collector.mjs
       - name: Restore accumulated catalogue changes
         run: node scripts/publish-catalog.mjs restore
       - name: Refresh current moderation decisions
@@ -29,7 +40,5 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
         run: node scripts/import-x.mjs
-      - name: Save accepted candidates for normal publication
-        env:
-          SYNC_PUBLICATION_PHASE: deferred
+      - name: Publish imported X repositories
         run: node scripts/publish-catalog.mjs

@@ -44,7 +44,8 @@ function select(repositories,o={},editorial={rows:[]},mentions=[]){
  const technologiesFor=r=>{if(!technologyCache.has(r))technologyCache.set(r,S.technologies(r));return technologyCache.get(r)};
  const available=repositories.filter(r=>r.availability!=='unavailable'),matched=available.filter(r=>matches(r,o,technologiesFor)&&!exclude.has(r.full.toLowerCase()));
  const searching=Boolean(String(o.q||'').trim()),relevance=searching&&(!o.sort||o.sort==='relevance');
- const popular=order(matched,'popular'),ties=new Map(popular.map((r,i)=>[r.full,i]));
+ const fastPopular=(pool,category='')=>{const ids=o.publicPools&&o.precomputed?.[category];if(!ids||ids.length!==pool.length)return order(pool,'popular');const map=new Map(pool.map(r=>[r.full,r]));if(!ids.every(id=>map.has(id)))return order(pool,'popular');return ids.map(id=>map.get(id))};
+ const popular=fastPopular(matched),ties=new Map(popular.map((r,i)=>[r.full,i]));
  const ranked=relevance?[...matched].sort((a,b)=>{const x=searchMatch(a,o.q),y=searchMatch(b,o.q);return (x.group==='other')-(y.group==='other')||y.score-x.score||ties.get(a.full)-ties.get(b.full)}):(!o.sort||['relevance','popular','featured'].includes(o.sort)?popular:order(matched,o.sort)),offset=o.offset||0,limit=o.limit||48;
  const categories={},technologies={},sources={github:0,huggingface:0};
  // Disjunctive facets: omit just that facet's active selection, retain the others.
@@ -53,14 +54,16 @@ function select(repositories,o={},editorial={rows:[]},mentions=[]){
  const out={total:ranked.length,indexed:available.length,items:ranked.slice(offset,offset+limit).map(r=>({...card(r),...(searching?{searchMatch:{group:searchMatch(r,o.q).group,reason:searchMatch(r,o.q).reason}}:{})})),nextOffset:offset+limit<ranked.length?offset+limit:null,facets:{categories,technologies,sources},shelves:{},shelfItems:[]};
  if(searching)out.searchGroups={best:matched.filter(r=>searchMatch(r,o.q).group==='best').length,other:matched.filter(r=>searchMatch(r,o.q).group==='other').length};
  if(!ranked.length&&!o.storefront)out.suggestions=suggestions(available.filter(r=>!exclude.has(r.full.toLowerCase())),o);
- if(o.storefront){const rows=E.resolve(editorial.rows,editorial.builtinSetupRequired!==false).filter(row=>row.enabled&&(row.builtin_key==='hero'||(editorial.customRows?!row.builtin_key?.startsWith('category:'):Boolean(row.builtin_key))));const map=new Map(repositories.map(r=>[r.full.toLowerCase(),r])),chosen=new Map();let community;
+ if(o.storefront){const rows=E.resolve(editorial.rows,editorial.builtinSetupRequired!==false).filter(row=>row.enabled&&(row.builtin_key==='hero'||(editorial.customRows?!row.builtin_key?.startsWith('category:'):Boolean(row.builtin_key))));const map=new Map(repositories.map(r=>[r.full.toLowerCase(),r])),chosen=new Map(),categoryPools=new Map();let community;
+ // Index overlapping categories once rather than re-testing the whole catalogue for every ribbon.
+ for(const r of matched)for(const key of new Set(E.categoryNames(r).map(category=>category.toLowerCase()))){if(!categoryPools.has(key))categoryPools.set(key,[]);categoryPools.get(key).push(r)}
  if(o.staged){out.shelfRows=rows;out.publicPools=o.publicPools===true;out.privateShelves=rows.filter(r=>r.mode==='random').map(r=>r.id);out.items=[]}
  const wanted=o.staged?new Set(o.shelfIds||[...rows.filter(r=>r.builtin_key==='hero'),...rows.filter(r=>r.builtin_key!=='hero').slice(0,o.shelfLimit)].map(r=>r.id)):null;
  for(const saved of rows){if(wanted&&!wanted.has(saved.id)||o.publicPools&&saved.mode==='random')continue;const row=saved.builtin_key?.startsWith('category:')&&['popular','trending'].includes(saved.mode)?{...saved,mode:o.ranks?.[saved.category]||saved.mode}:saved,featured=['hero','picks'].includes(row.builtin_key);let pool=row.mode==='manual'?row.items.map(id=>map.get(id.toLowerCase())).filter(Boolean):matched;
   // Hand-picked spotlight and Editor's picks stay unless something is really wrong with them, so a missed or failed check never empties them.
-  pool=pool.filter(r=>(!featured||Q.featuredEligible(r,o.evidenceAt,{lenient:row.mode==='manual'}))&&matches(r,o,technologiesFor)&&!exclude.has(r.full.toLowerCase())&&(!row.category||E.matchesCategory(r,row.category)));
+  pool=row.mode==='manual'?pool.filter(r=>(!featured||Q.featuredEligible(r,o.evidenceAt,{lenient:true}))&&matches(r,o,technologiesFor)&&!exclude.has(r.full.toLowerCase())&&(!row.category||E.matchesCategory(r,row.category))):(row.category&&!['all','all projects'].includes(row.category.toLowerCase())?categoryPools.get(row.category.toLowerCase())||[]:matched).filter(r=>!featured||Q.featuredEligible(r,o.evidenceAt));
   if(row.mode==='community'){community??=C.attach(repositories,mentions);const posts=new Map(community.map(r=>[r.full.toLowerCase(),r.communityPosts]));pool=pool.map(r=>({...r,communityPosts:posts.get(r.full.toLowerCase())||[]}))}
-  if(['random','daily'].includes(row.mode))pool=E.shuffle(pool,{mode:row.mode,seed:o.seed||'',row:row.id});else if(row.mode!=='manual')pool=order(pool,row.mode);
+  if(['random','daily'].includes(row.mode))pool=E.shuffle(pool,{mode:row.mode,seed:o.seed||'',row:row.id});else if(row.mode!=='manual')pool=row.mode==='popular'?fastPopular(pool,row.category||''):order(pool,row.mode);
   const cap=row.builtin_key==='hero'?5:row.mode==='manual'?120:12;
   // Where chosen spotlight listings have dropped out, the best listings that pass the strict check take their places (never more than were chosen).
   let fill=[];const want=Math.min(cap,row.items.length);if(row.builtin_key==='hero'&&row.mode==='manual'&&pool.length<want){const have=new Set(pool.map(r=>r.full.toLowerCase()));fill=order(matched,'popular').filter(r=>!have.has(r.full.toLowerCase())&&Q.featuredEligible(r,o.evidenceAt)).slice(0,want-pool.length)}
