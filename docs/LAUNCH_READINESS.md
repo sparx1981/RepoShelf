@@ -24,7 +24,7 @@ The support/privacy mailbox remains unset. When ready, configure `REPOSHELF_CONT
 
 ## Conversion analytics
 
-The existing optional analytics choice remains independent of account sign-in and legal agreement. Client and server honour consent, DNT/GPC, bot filtering and administrator exclusion. No search text, IP address or GitHub/account ID is included in analytics events. Private reporting is a functional account action, separate from analytics consent.
+The existing optional analytics choice remains independent of account sign-in and legal agreement. Client and server honour consent, DNT/GPC, bot filtering and administrator exclusion. No search text, IP address or GitHub/account ID is included in individual analytics events. Migration 28 adds separate filtered search-term aggregates from renewed website consent and authenticated MCP requests, and country-level page-view aggregates. These contain no account/browser links; rare values below three observations are not reported. Private reporting is a functional account action, separate from analytics consent.
 
 New events record successful likes, newly observed public fork verification, sign-in starts/completions and shelf IDs. Like removals do not count as a new save. Initial collection reads do not count existing forks as new verifications. Sign-in markers are stored only after consent and expire after a day; completion requires a signed-in GitHub session. Migration readiness gates new event kinds without blocking existing statistics.
 
