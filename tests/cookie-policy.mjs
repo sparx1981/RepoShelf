@@ -11,5 +11,5 @@ for(const key of keys)assert(page.includes(key),`Cookie Policy lists the ${key} 
 const sw=await readFile(new URL('sw.js',dist),'utf8'),cache=sw.match(/CACHE='([^']+)'/)[1];assert(page.includes(cache),'Cookie Policy lists the offline cache');
 // The policy is reachable and honest about what it does not do.
 for(const file of ['index.html','account.html','privacy.html','terms.html','legal.html'])assert((await readFile(new URL(file,dist),'utf8')).includes('/cookies.html'),`${file} links to the Cookie Policy`);
-assert(page.includes('Google Fonts'),'third-party fonts are disclosed');assert(/Do Not Track|Global Privacy Control/.test(page));assert(!/\b(advertising cookies are used|we use advertising)\b/i.test(page));
+assert(page.includes('served from this site')&&!page.includes('Google Fonts'),'self-hosted fonts are described and Google Fonts is no longer listed');assert(/Do Not Track|Global Privacy Control/.test(page));assert(!/\b(advertising cookies are used|we use advertising)\b/i.test(page));
 console.log('PASS: Cookie Policy lists every cookie, storage key and cache the application uses, and is linked from the footer and legal pages.');
