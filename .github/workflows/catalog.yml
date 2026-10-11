@@ -16,6 +16,10 @@ on:
         description: Bounded launch acceleration pass
         type: boolean
         default: false
+      trendshift_now:
+        description: Read the Trendshift and GitHub trending lists now (otherwise at most once a day)
+        type: boolean
+        default: false
       watchdog_recovery:
         description: Automatic catch-up requested by the sync watchdog
         type: boolean
@@ -93,6 +97,8 @@ on:
       - 'scripts/bluesky-stream.mjs'
       - 'scripts/import-community.mjs'
       - 'dist/community.js'
+      - 'scripts/trendshift-sources.mjs'
+      - 'scripts/import-trendshift.mjs'
       - '.github/workflows/catalog.yml'
 env:
   BROWSER_SHARD_COUNT: '4'
@@ -135,6 +141,7 @@ jobs:
             .catalog-cache.json
             .sources-cache.json
             .community-cache.json
+            .trendshift-cache.json
           key: demo-catalog-${{ github.run_id }}
           restore-keys: demo-catalog-
       - name: Install agent server dependencies
@@ -194,6 +201,16 @@ jobs:
           mkdir -p .sync-logs
           set -o pipefail
           node scripts/import-community.mjs 2>&1 | tee .sync-logs/community.log
+      - name: Read Trendshift and GitHub trending lists
+        id: trendshift
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TRENDSHIFT_FORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.trendshift_now && '1' || '' }}
+        run: |
+          mkdir -p .sync-logs
+          set -o pipefail
+          node scripts/import-trendshift.mjs 2>&1 | tee .sync-logs/trendshift.log
       - name: Find public repository demos
         id: catalog
         env:
@@ -296,6 +313,7 @@ jobs:
             dist/catalog.json
             dist/spaces.json
             dist/community.json
+            dist/trendshift.json
             dist/growth.json
             data/
           retention-days: 3
@@ -461,6 +479,7 @@ jobs:
             dist/catalog.json
             dist/spaces.json
             dist/community.json
+            dist/trendshift.json
             dist/growth.json
             dist/previews/
             data/

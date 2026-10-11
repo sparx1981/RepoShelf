@@ -39,7 +39,7 @@ assert.deepEqual(T.annotate({description:'Flutter mobile application'}).platform
 assert.deepEqual(T.annotate({description:'Android iOS macOS app'}).platforms,['Android','iOS & iPadOS','macOS']);
 assert.deepEqual(T.annotate({description:'Kotlin server and Swift Linux tooling'}).platforms,[]);
 assert(!T.annotate({description:'OpenAI Gym reinforcement learning',subjects:['Health & fitness'],classification:{version:1}}).subjects.includes('Health & fitness'),'Old assignments are corrected');
-assert.equal(E.defaults().length,48);
+assert.equal(E.defaults().length,49);
 const temp=await mkdtemp(tmpdir()+'/reposhelf-taxonomy-'),root=pathToFileURL(temp+'/');
 try{await mkdir(new URL('dist/',root));await writeFile(new URL('dist/catalog.json',root),JSON.stringify({updatedAt:project.lastCheckedAt,repositories:[project]}));const first=await reclassifyCatalog(root),second=await reclassifyCatalog(root);assert.equal(first.checked,1);assert.equal(second.changed,0,'Repeated local passes are deterministic');const saved=JSON.parse(await readFile(new URL('dist/catalog.json',root)));assert.equal(saved.updatedAt,project.lastCheckedAt);assert.equal(saved.repositories[0].lastCheckedAt,project.lastCheckedAt);assert(saved.repositories[0].classification.version===T.version)}finally{await rm(root,{recursive:true,force:true})}
 for(const [metadata,expected] of [

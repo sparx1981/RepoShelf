@@ -16,10 +16,10 @@
 .admin-gate.admin-gate-loading{max-width:none;padding:0}
 #toast:empty{display:none}
 .admin-tabs{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:24px;border-bottom:1px solid var(--line);margin-bottom:20px}
-.admin-tabs button,.admin-tabs .admin-promotions{display:inline-flex;align-items:center;gap:6px;padding:14px 0;border:0;border-bottom:2px solid transparent;background:none;color:var(--text-secondary);cursor:pointer;font-size:15px;white-space:nowrap}
-.admin-tabs button:hover,.admin-tabs .admin-promotions:hover{color:var(--text)}
+.admin-tabs button,.admin-tabs .admin-promotions,.admin-tabs .admin-link-out{display:inline-flex;align-items:center;gap:6px;padding:14px 0;border:0;border-bottom:2px solid transparent;background:none;color:var(--text-secondary);cursor:pointer;font-size:15px;white-space:nowrap}
+.admin-tabs button:hover,.admin-tabs .admin-promotions:hover,.admin-tabs .admin-link-out:hover{color:var(--text)}
 .admin-tabs button.active{color:var(--lime);border-bottom-color:var(--lime)}
-.admin-tabs .admin-promotions .link-out{opacity:.7}
+.admin-tabs .admin-promotions .link-out,.admin-tabs .admin-link-out .link-out{opacity:.7}
 .admin-tabs button:focus-visible,.admin-tabs a:focus-visible{outline:2px solid var(--lime);outline-offset:2px;border-radius:3px}
 .tab-flag{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--status-warning-muted)}
 .tab-flag[data-level=bad]{background:var(--status-error-border)}
@@ -275,7 +275,7 @@
 @media(max-width:480px){
  .form-pair{grid-template-columns:1fr}
  .admin-tabs{gap:16px}
- .admin-tabs button,.admin-tabs .admin-promotions{font-size:13px}
+ .admin-tabs button,.admin-tabs .admin-promotions,.admin-tabs .admin-link-out{font-size:13px}
  .metric{padding:16px}
  .metric strong{font-size:25px}
  .panel-heading{align-items:flex-start}
@@ -317,7 +317,7 @@
 @media(pointer:coarse){
  .row-tile .row-tile-actions button,.selected-project button,.project-choice,.copy-code{min-height:44px}
  .info-tip-btn{width:32px;height:32px}
- .admin-tabs button,.admin-tabs .admin-promotions{min-height:44px}
+ .admin-tabs button,.admin-tabs .admin-promotions,.admin-tabs .admin-link-out{min-height:44px}
 }
 
 .stat-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1px;margin:12px 0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:var(--line)}

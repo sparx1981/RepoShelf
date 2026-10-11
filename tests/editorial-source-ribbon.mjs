@@ -6,7 +6,7 @@ import {xRibbon,ensureXRibbon,sourceRibbonRows} from '../lib/editorial-source-ri
 import {invalidateStorefront} from '../lib/storefront-cache.mjs';
 const E=createRequire(import.meta.url)('../dist/editorial.js');
 const legacy=E.defaults().filter(r=>r.builtin_key!==E.xRibbonKey).map((r,i)=>({...r,position:i+1,revision:2}));
-const resolved=E.resolve(legacy,false);assert.equal(resolved.length,48);assert.equal(resolved[1].builtin_key,E.xRibbonKey);assert(E.visible(resolved[1],true));assert(!E.visible({...resolved[1],enabled:false},false));
+const resolved=E.resolve(legacy,false);assert.equal(resolved.length,49);assert.equal(resolved[1].builtin_key,E.xRibbonKey);assert(E.visible(resolved[1],true));assert(!E.visible({...resolved[1],enabled:false},false));
 const disabled={...xRibbon,enabled:false,position:500};assert.equal(E.resolve([...legacy,disabled],false).find(r=>r.id===xRibbon.id).position,500);assert.equal(E.resolve([...legacy,disabled],false).find(r=>r.id===xRibbon.id).enabled,false);
 assert.equal(E.resolve([],false).length,0);
 let rows=structuredClone(legacy),inserts=0,reorders=0,admin=true,purges=0;

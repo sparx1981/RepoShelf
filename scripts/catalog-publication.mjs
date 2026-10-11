@@ -6,8 +6,8 @@ import {join,dirname} from 'node:path';
 import {scheduledPublicationDue,utcDay} from '../lib/publication-policy.mjs';
 import {PACKED,packedName,isPackedName,logicalName,decompress,pack,unpack} from '../lib/data-packing.mjs';
 export const CHECKPOINT_BRANCH='reposhelf-checkpoints';
-export const generatedPaths=[...PACKED.map(packedName).filter(p=>p.startsWith('dist/')),'dist/community.json','dist/growth.json','data','dist/previews'];
-export const generated=path=>path.startsWith('data/')||path.startsWith('dist/previews/')||/^dist\/(catalog|spaces|community|growth)\.json(\.gz)?$/.test(path);
+export const generatedPaths=[...PACKED.map(packedName).filter(p=>p.startsWith('dist/')),'dist/community.json','dist/trendshift.json','dist/growth.json','data','dist/previews'];
+export const generated=path=>path.startsWith('data/')||path.startsWith('dist/previews/')||/^dist\/(catalog|spaces|community|trendshift|growth)\.json(\.gz)?$/.test(path);
 const git=(root,args,options={})=>{
  if(options.stdio)return execFileSync('git',args,{cwd:root,encoding:'utf8',...options});
  // File lists grow with the catalogue too. Capture all Git stdout on disk,
@@ -24,12 +24,12 @@ function blobBytes(root,ref,path){
  catch(error){if(error.status===128)return null;throw error}
  finally{closeSync(fd);rmSync(directory,{recursive:true,force:true})}
 }
-function publicJson(path,text){const value=JSON.parse(text);if(path==='dist/catalog.json'||path==='dist/spaces.json'){delete value.updatedAt;delete value.revalidation;delete value.discovery;value.repositories=(value.repositories||[]).map(r=>{const row={...r};for(const key of ['enrichmentAttemptAt','overviewAttemptAt','agentContextAttemptAt','aiOverviewAttemptAt'])delete row[key];return row}).sort((a,b)=>a.full.localeCompare(b.full))}else if(path==='dist/community.json')delete value.updatedAt;return JSON.stringify(value)}
+function publicJson(path,text){const value=JSON.parse(text);if(path==='dist/catalog.json'||path==='dist/spaces.json'){delete value.updatedAt;delete value.revalidation;delete value.discovery;value.repositories=(value.repositories||[]).map(r=>{const row={...r};for(const key of ['enrichmentAttemptAt','overviewAttemptAt','agentContextAttemptAt','aiOverviewAttemptAt'])delete row[key];return row}).sort((a,b)=>a.full.localeCompare(b.full))}else if(path==='dist/community.json'||path==='dist/trendshift.json')delete value.updatedAt;return JSON.stringify(value)}
 const internalFile=raw=>{const path=logicalName(raw);return internalLogical(path)};
 const internalLogical=path=>path==='data/x-intake.json'||path==='data/x-collection-run.json'||path.startsWith('data/sync-runs/')||path.startsWith('data/browse/')||path==='data/catalogue-quality.json'||path==='data/admin-summary.json'||path==='data/publication.json'||path==='data/recovery-results.json'||path==='data/discovery-search.json'||path==='data/capture-providers.json'||path==='data/browser-cycle.json'||path==='data/launch-cadence.json'||path==='data/ai-overview-usage.json'||path==='dist/growth.json';
 export function publicFileChanged(path,before,after){
  if(internalFile(path))return false;
- if(/^dist\/(catalog|spaces|community)\.json$/.test(path)&&before!==null&&after!==null){try{return publicJson(path,before)!==publicJson(path,after)}catch{return true}}
+ if(/^dist\/(catalog|spaces|community|trendshift)\.json$/.test(path)&&before!==null&&after!==null){try{return publicJson(path,before)!==publicJson(path,after)}catch{return true}}
  return before!==after;
 }
 async function stage(root){pack(root);const paths=generatedPaths.filter(p=>existsSync(join(root,p))||git(root,['ls-files','--',p]).trim());if(paths.length)git(root,['add','-A','--',...paths]);return paths}
