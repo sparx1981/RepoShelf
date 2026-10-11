@@ -3,7 +3,8 @@ import {execFileSync} from 'node:child_process';
 import {mkdtemp,mkdir,writeFile,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';import {join} from 'node:path';
 import {saveCheckpoint,CHECKPOINT_BRANCH} from '../scripts/catalog-publication.mjs';
-const git=(cwd,...args)=>execFileSync('git',args,{cwd,encoding:'utf8',env:{...process.env,GIT_AUTHOR_NAME:'t',GIT_AUTHOR_EMAIL:'t@t',GIT_COMMITTER_NAME:'t',GIT_COMMITTER_EMAIL:'t@t'}}).trim();
+Object.assign(process.env,{GIT_AUTHOR_NAME:'test',GIT_AUTHOR_EMAIL:'test@example.invalid',GIT_COMMITTER_NAME:'test',GIT_COMMITTER_EMAIL:'test@example.invalid',GIT_CONFIG_GLOBAL:'/dev/null'});
+const git=(cwd,...args)=>execFileSync('git',args,{cwd,encoding:'utf8'}).trim();
 const dir=await mkdtemp(join(tmpdir(),'reposhelf-ckpt-'));
 try{
   const remote=join(dir,'remote.git'),work=join(dir,'work');
