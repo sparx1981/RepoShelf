@@ -20,6 +20,8 @@ create or replace function public.reposhelf_ingest_prompt_events(events jsonb) r
 declare e jsonb; saved integer:=0; n integer;
 begin
  if jsonb_typeof(events)<>'array' or jsonb_array_length(events)>10 then raise check_violation;end if;
+ -- Per-event rows are kept for 90 days, as the Privacy Policy states for other analytics events.
+ if pg_try_advisory_xact_lock(71883003) then delete from public.prompt_events where created_at<now()-interval '90 days';end if;
  for e in select * from jsonb_array_elements(events) loop
   insert into public.prompt_events(event_id,kind,prompt_key,session_hash,visitor_hash,period_visitor_hash)
    values((e->>'event_id')::uuid,e->>'kind',e->>'prompt_key',e->>'session_hash',e->>'visitor_hash',e->>'period_visitor_hash') on conflict do nothing;
