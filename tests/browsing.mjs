@@ -1,15 +1,15 @@
 import assert from 'node:assert/strict';
 import {gunzipSync} from 'node:zlib';
-import {mkdtemp,mkdir,writeFile,readFile,rm} from 'node:fs/promises';
+import {mkdtemp,mkdir,writeFile,readFile,rm,cp} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import {pathToFileURL} from 'node:url';
 import {createRequire} from 'node:module';
 import {Readable} from 'node:stream';
-import {createBrowseIndex,generateBrowseIndex} from '../lib/browse-index.mjs';
+import {createBrowseIndex,generateBrowseIndex,mergePublished,splitPublished} from '../lib/browse-index.mjs';
 import {createBrowseService} from '../lib/browse-service.mjs';
 import {createEditorialHandler} from '../api/editorial.mjs';
 import {createAccounts} from '../lib/accounts.mjs';
-const require=createRequire(import.meta.url),E=require('../dist/editorial.js'),S=require('../dist/storefront.js');
+const require=createRequire(import.meta.url),E=require('../dist/editorial.js'),S=require('../dist/storefront.js'),Q=require('../dist/quality.js');
 const now=Date.now(),repos=Array.from({length:130},(_,i)=>({full:`team/project-${i}`,name:`Project ${i}`,description:'A visual planning tool.',category:i%2?'Design':'Productivity',topics:['react'],technologies:['React'],demo:i%3?'https://demo.example.org':null,availability:i===129?'unavailable':'available',created:new Date(now-i*86400000).toISOString(),stars:i,forks:i/2,lastCheckedAt:new Date(now).toISOString(),metrics:[{at:new Date(now-7*86400000).toISOString(),stars:0,forks:0}],overview:{kind:'readme',paragraphs:['Searchable collaboration context.'],features:['A detailed feature'],sourceUrl:'https://github.com/team/project/README.md'},agentContext:{documents:[{name:'LICENSE'}]},screenshots:[{src:'https://example.org/preview.jpg',kind:'readme'},{src:'https://example.org/extra.jpg',kind:'readme'}]}));
 for(const r of repos){r.demo??='https://demo.example.org';r.screenshots[0]={...r.screenshots[0],kind:'demo',url:r.demo};}for(const r of repos)if(r.demo)r.demoHealth={url:r.demo,status:'working',checkedAt:new Date(now).toISOString()};
 const spaces={repositories:[{full:'hf:team/linked',source:'huggingface',spaceId:'team/linked',githubFull:repos[0].full,name:'Linked',demo:'https://huggingface.co/spaces/team/linked',availability:'available'},{full:'hf:team/space',source:'huggingface',spaceId:'team/space',name:'An AI Space',description:'Try AI',demo:'https://huggingface.co/spaces/team/space',category:'AI & machine learning',availability:'available',likes:20}]};
@@ -19,8 +19,25 @@ const community={mentions:[{full:repos[1].full,source:'hackernews',id:'42',url:'
 try{
  await mkdir(new URL('dist/',root));for(const [name,data] of Object.entries({'catalog.json':{updatedAt:new Date(now).toISOString(),repositories:repos},'spaces.json':spaces,'community.json':community}))await writeFile(new URL('dist/'+name,root),JSON.stringify(data));
  const generated=await generateBrowseIndex(root),index=generated.index,service=createBrowseService({root});
- { const cold=createBrowseService({root});assert.equal((await cold.dataset()).textLoaded,undefined,'search text is not loaded until needed');await cold.warm();assert.equal((await cold.dataset()).textLoaded,true,'warming loads the search text ahead of the first query');}
+ { const cold=createBrowseService({root});assert.equal((await cold.publicDataset()).textLoaded,undefined,'search text is not loaded until needed');await cold.warm();assert.equal((await cold.publicDataset()).textLoaded,true,'warming loads the search text ahead of the first query');}
  const onDisk=JSON.parse(await readFile(new URL('data/browse/index.json',root))),searchFile=JSON.parse(gunzipSync(await readFile(new URL('data/browse/search.json.gz',root))).toString());
+ { // Public requests load only the published part; the parts merge back into the complete list, in order, for administrators.
+  const pub=JSON.parse(await readFile(new URL('data/browse/index-pub.json',root))),rest=JSON.parse(await readFile(new URL('data/browse/index-rest.json',root))),full=JSON.parse(await readFile(new URL('data/browse/index.json',root))),at=Q.evidenceTime(full.snapshots.catalog);
+  assert.equal(pub.version,full.version);assert.equal(rest.version,full.version);assert.equal(pub.search,'search-pub.json.gz');assert.equal(rest.search,'search-rest.json.gz');
+  assert.deepEqual(mergePublished(pub,rest).repositories,full.repositories,'the parts merge back into the complete list in its original order');assert.equal(pub.total,full.repositories.length);
+  assert(pub.repositories.length>0&&rest.repositories.length>0&&pub.repositories.length+rest.repositories.length===full.repositories.length);
+  assert(pub.repositories.every(r=>Q.publishedEligible(r,at)),'the published part holds only published repositories');
+  for(const days of [0,1,3,10,60,400])for(const r of rest.repositories)assert(!Q.publishedEligible(r,at+days*86400000),'evidence only ages, so nothing outside the published part can become published later: '+r.full);
+  const searchPub=JSON.parse(gunzipSync(await readFile(new URL('data/browse/search-pub.json.gz',root)))),searchRest=JSON.parse(gunzipSync(await readFile(new URL('data/browse/search-rest.json.gz',root)))),searchAll=JSON.parse(gunzipSync(await readFile(new URL('data/browse/search.json.gz',root))));
+  assert.equal(searchPub.normalized,true);assert.deepEqual({...searchPub.entries,...searchRest.entries},searchAll.entries);assert.equal(Object.keys(searchPub.entries).length+Object.keys(searchRest.entries).length,Object.keys(searchAll.entries).length);assert.deepEqual(Object.keys(searchPub.entries),pub.repositories.map(r=>r.full).filter(f=>searchAll.entries[f]));
+  const reSplit=splitPublished(full,searchAll,at);assert.deepEqual(reSplit.published.index.repositories,pub.repositories);
+  // A deployment holds only the parts. Its public and administrator answers must equal the complete index's.
+  const deploy=pathToFileURL(await mkdtemp(tmpdir()+'/reposhelf-parts-')+'/');await cp(root,deploy,{recursive:true});await rm(new URL('data/browse/index.json',deploy));await rm(new URL('data/browse/search.json.gz',deploy));
+  const whole=createBrowseService({root}),parts=createBrowseService({root:deploy}),requests=[{q:'collaboration',demos:false,sort:'relevance'},{q:'project',demos:true,sort:'name'},{demos:true,sort:'popular'},{category:'Design',demos:false,sort:'newest'},{q:'planning',demos:false,source:'all',sort:'relevance',limit:7}];
+  for(const request of requests)for(const manage of [false,true]){const expected=await whole.search({...request},{rows:[]},{manage}),actual=await parts.search({...request},{rows:[]},{manage});assert.deepEqual(actual,expected,'parts-only service answers like the complete index: '+JSON.stringify(request)+' manage='+manage)}
+  assert((await parts.search({demos:false,sort:'name'},{rows:[]},{manage:true})).total>(await parts.search({demos:false,sort:'name'},{rows:[]},{manage:false})).total,'administrators still see unpublished repositories');
+  await assert.rejects(async()=>{const broken=pathToFileURL(await mkdtemp(tmpdir()+'/reposhelf-parts-')+'/');await cp(deploy,broken,{recursive:true});const other=JSON.parse(await readFile(new URL('data/browse/index-rest.json',broken)));other.version='different';await writeFile(new URL('data/browse/index-rest.json',broken),JSON.stringify(other));await createBrowseService({root:broken}).dataset()},e=>e.code==='runtime_index_mismatch','mismatched parts are refused');
+ }
  assert.equal(onDisk.search,'search.json.gz');assert(onDisk.repositories.every(r=>!('searchText' in r)&&!('searchReadme' in r)&&!('searchOverview' in r)),'Cold-start index carries no search text');assert.equal(searchFile.version,onDisk.version);assert(searchFile.entries[repos[1].full][0].includes('collaboration'),'Overview text moves to the search file');
  assert(index.repositories.length>=130,'No catalogue ceiling');assert(!index.repositories.some(r=>r.full==='hf:team/linked'),'Linked Spaces remain deduplicated');assert.equal(index.repositories.find(r=>r.full===repos[0].full).demo,spaces.repositories[0].demo);
  assert(index.repositories.every(r=>!r.overview&&!r.agentContext&&!r.metrics));assert.equal(index.repositories.find(r=>r.full===repos[1].full).screenshots.length,1);assert.deepEqual(S.trend(index.repositories.find(r=>r.full===repos[1].full)),S.trend(repos[1]));
@@ -32,7 +49,7 @@ try{
  const detail=await service.detail(repos[1].full);assert.equal(detail.repo.overview.paragraphs[0],'Searchable collaboration context.');assert.equal(detail.repo.screenshots.length,2);assert.equal(detail.repo.communityPosts.length,1);
  // Prove serving generated metadata does not depend on reading the monoliths.
  await rm(new URL('dist/catalog.json',root));await rm(new URL('dist/spaces.json',root));const independent=createBrowseService({root});assert.equal((await independent.search({q:'collaboration',demos:false})).total,129);assert((await independent.detail(repos[1].full)).repo.agentContext);
- const changed=JSON.parse(await readFile(new URL('data/browse/index.json',root)));changed.version='another-version';await writeFile(new URL('data/browse/index.json',root),JSON.stringify(changed));await assert.rejects(()=>createBrowseService({root}).search({q:'collaboration',demos:false,sort:'name',cursor:first.nextCursor}),e=>e.code==='catalog_changed');
+ const changed=JSON.parse(await readFile(new URL('data/browse/index.json',root)));changed.version='another-version';await writeFile(new URL('data/browse/index.json',root),JSON.stringify(changed));for(const name of ['index-pub.json','index-rest.json']){const part=JSON.parse(await readFile(new URL('data/browse/'+name,root)));part.version='another-version';await writeFile(new URL('data/browse/'+name,root),JSON.stringify(part))}await assert.rejects(()=>createBrowseService({root}).search({q:'collaboration',demos:false,sort:'name',cursor:first.nextCursor}),e=>e.code==='catalog_changed');
  const accounts=createAccounts({config:{origin:'https://reposhelf.test'},legal:{active:false}});let handler=createEditorialHandler({checkpoint:{json:async()=>null},accounts,browse:independent});
  async function call(url,body,origin='https://reposhelf.test'){const req=Readable.from(body?[JSON.stringify(body)]:[]);req.url=url;req.method=body?'POST':'GET';req.headers={origin};let result;const res={writeHead(status){this.status=status},end(value){result={status:this.status,data:JSON.parse(value)}}};await handler(req,res);return result}
  assert.equal((await call('/api/editorial?action=browse',{demos:false})).status,200);assert.equal((await call('/api/editorial?action=browse&manage=1',{demos:false})).status,503);assert.equal((await call('/api/editorial?action=browse',{demos:false},'https://evil.test')).status,403);assert.equal((await call('/api/editorial?action=detail&id='+repos[1].full)).status,200);
