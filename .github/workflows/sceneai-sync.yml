@@ -1,0 +1,31 @@
+name: Sync SceneAI prompts
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '17 5 * * 1'
+permissions:
+  contents: read
+concurrency:
+  group: reposhelf-sceneai-sync
+  cancel-in-progress: false
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # Only the two script files are needed, so skip the large catalogue checkout.
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            scripts/sync-sceneai.mjs
+            lib/sceneai-sync.mjs
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Import new free prompts
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          SYNC_TRIGGER: ${{ github.event_name == 'workflow_dispatch' && 'manual' || 'weekly' }}
+        run: node scripts/sync-sceneai.mjs

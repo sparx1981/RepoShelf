@@ -70,7 +70,7 @@ assert.equal((await run('/api/prompts?area=detail&source=other&id=x',{token:'mem
 assert.equal((await run('/api/prompts?area=detail&source=siteshelf&id=../etc',{token:'member'})).status,400);
 assert.equal((await run('/api/prompts?area=detail&source=siteshelf&id=a%26select%3D*',{token:'member'})).status,400);
 assert.equal((await run('/api/prompts?area=nope')).status,400);
-assert.equal((await run('/api/prompts',{method:'POST'})).status,405);
+assert.equal((await run('/api/prompts',{method:'POST'})).status,403,'writes need a trusted origin and an administrator');assert.equal((await run('/api/prompts',{method:'PUT'})).status,405);
 const tableCalls=calls.filter(c=>c.path.startsWith('/rest/v1/ss_'));
 assert(tableCalls.length>0&&tableCalls.every(c=>c.apikey==='server-test-secret'&&!c.token),'the tables are only read with the server key');
 

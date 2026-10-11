@@ -13,7 +13,7 @@
 <button data-admin-tab="analytics" aria-controls="analytics-panel">Analytics</button>
 <button data-admin-tab="users" aria-controls="users-panel">Users &amp; roles</button>
 <button data-admin-tab="help" aria-controls="help-panel">Help</button>
-<a class="admin-link-out" href="https://siteshelf-two.vercel.app" target="_blank" rel="noopener noreferrer">SiteShelf <span class="link-out" aria-hidden="true">↗</span><span class="sr-only"> (opens in a new tab)</span></a>
+<button data-admin-tab="prompts" aria-controls="prompts-panel">Prompts</button>
 </nav>
 <p id="admin-message" role="status"></p>
 <section id="editorial-panel" aria-labelledby="editorial-heading" hidden>
@@ -75,6 +75,25 @@
 <div id="sync-content" aria-live="polite"></div>
 <div class="account-actions"><button id="sync-prev" class="button outline" hidden>Newer runs</button><button id="sync-next" class="button outline" hidden>Older runs</button></div>
 </section>
+<section id="prompts-panel" aria-labelledby="prompts-heading" hidden>
+<h2 id="prompts-heading" class="sr-only" tabindex="-1">Prompts</h2>
+<div class="panel"><div class="panel-heading"><h3>Prompt library</h3><div class="row-tile-actions"><button class="button outline" id="prompts-refresh" type="button">Refresh</button><button class="button lime" id="prompts-import" type="button">Import from SceneAI</button></div></div>
+<p class="small">Everyone can browse the library. Only signed-in members see the prompt and code. New SceneAI prompts arrive unpublished so you can review them first. <a href="/prompts.html">Open the public library</a>.</p>
+<p id="prompts-message" role="status" class="small"></p>
+<div id="prompts-usage" class="small"></div>
+<div class="row-tile-actions"><label class="sr-only" for="prompts-filter">Show</label><select id="prompts-filter"><option value="all">All prompts</option><option value="review">Waiting for review</option><option value="hidden">Unpublished</option><option value="siteshelf">Original</option><option value="sceneai">From SceneAI</option></select><label class="sr-only" for="prompts-search">Search prompts</label><input id="prompts-search" type="search" maxlength="80" placeholder="Search prompts" autocomplete="off"></div>
+<div class="help-table-wrap"><table class="tool-table"><thead><tr><th scope="col">Title</th><th scope="col">Source</th><th scope="col">Category</th><th scope="col">Status</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead><tbody id="prompts-rows"></tbody></table></div>
+<p><button id="prompts-more" class="button outline" type="button" hidden>Show more</button></p>
+<p class="small" id="prompts-runs"></p></div>
+<dialog id="prompt-edit" aria-labelledby="prompt-edit-title"><form id="prompt-edit-form" method="dialog"><h3 id="prompt-edit-title">Edit prompt</h3>
+<label for="pe-title">Title</label><input id="pe-title" maxlength="200" required>
+<label for="pe-category">Category</label><input id="pe-category" maxlength="80">
+<label for="pe-description">Description</label><textarea id="pe-description" maxlength="1000" rows="3"></textarea>
+<label for="pe-prompt">Prompt</label><textarea id="pe-prompt" maxlength="60000" rows="10" required></textarea>
+<label class="legal-check"><input id="pe-published" type="checkbox"> Published (visible in the public library)</label>
+<p id="pe-status" role="status" class="small"></p>
+<div class="row-tile-actions"><button class="button lime" id="pe-save" type="submit">Save</button><button class="button outline" id="pe-cancel" type="button">Cancel</button></div></form></dialog>
+</section>
 <section id="users-panel" aria-labelledby="users-heading" hidden>
 <div class="panel-heading"><div><h2 id="users-heading" tabindex="-1">Users &amp; roles</h2><p class="small">Users appear after signing in with GitHub. Administrators can edit the storefront, view analytics and grant access to others. Your own role and the last administrator are protected, and every change is recorded.</p></div></div>
 <label class="user-search-label">Find a user<input id="user-search" type="search" maxlength="100" placeholder="GitHub username or account ID"></label>
@@ -135,4 +154,4 @@
 <div class="dialog-actions"><button type="button" class="button outline" id="moderation-cancel">Cancel</button><button class="button lime" id="moderation-save">Save changes</button></div>
 </form>
 <details><summary>Moderation history</summary><div id="moderation-audit"></div></details></dialog>
-<div id="toast" role="status"></div><script src="/discovery.js"></script><script src="/storefront.js"></script><script src="/taxonomy.js"></script><script src="/editorial.js"></script><script src="/quality.js"></script><script src="/providers.js"></script><script src="/account.js"></script><script src="/admin-ui.js"></script><script src="/admin-growth.js"></script><script src="/admin-sync-progress.js"></script><script src="/admin-overview.js"></script><script src="/admin.js"></script><script src="/admin-launch.js"></script><script src="/admin-capture.js"></script><script src="/admin-x-collection.js"></script><script src="/admin-promotions.js"></script><script src="/viewer-config.js"></script><script src="/viewer.js"></script><script src="/admin-viewer.js"></script><script src="/outgoing-links.js"></script></body></html>
+<div id="toast" role="status"></div><script src="/discovery.js"></script><script src="/storefront.js"></script><script src="/taxonomy.js"></script><script src="/editorial.js"></script><script src="/quality.js"></script><script src="/providers.js"></script><script src="/account.js"></script><script src="/admin-ui.js"></script><script src="/admin-growth.js"></script><script src="/admin-sync-progress.js"></script><script src="/admin-overview.js"></script><script src="/admin.js"></script><script src="/admin-launch.js"></script><script src="/admin-capture.js"></script><script src="/admin-x-collection.js"></script><script src="/admin-promotions.js"></script><script src="/admin-prompts.js"></script><script src="/viewer-config.js"></script><script src="/viewer.js"></script><script src="/admin-viewer.js"></script><script src="/outgoing-links.js"></script></body></html>
