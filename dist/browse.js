@@ -1,22 +1,35 @@
 (function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory(require('./providers.js'),require('./storefront.js'),require('./quality.js'),require('./community.js'),require('./editorial.js'));else root.RepoBrowse=factory(root.RepoProviders,root.RepoStore,root.RepoQuality,root.RepoCommunity,root.RepoEditorial)})(globalThis,function(P,S,Q,C,E){
 'use strict';
-function card(r){const {searchText,searchOverview,searchReadme,communityPosts,classification,previewAttemptAt,...out}=r;return out}
+function card(r){const {searchText,searchOverview,searchReadme,searchPrepared,communityPosts,classification,previewAttemptAt,...out}=r;return out}
 const searchCache=new WeakMap();
 const aliases={nodejs:['nodejs'],nextjs:['nextjs'],threejs:['threejs'],reactjs:['react'],js:['javascript'],ts:['typescript'],ai:['ai','machine learning','artificial intelligence'],photo:['photo','photography','picture','image'],picture:['picture','photo','image'],budget:['budget','finance','expense'],kanban:['kanban','task board'],todo:['todo','task','to do']};
 function normalize(value){return String(value||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\b(node|next|three|react)\s*\.\s*js\b/g,'$1js').replace(/[^\p{L}\p{N}+#]+/gu,' ').trim()}
 function stem(word){return word.length>4&&word.endsWith('s')&&!word.endsWith('ss')?word.slice(0,-1):word}
 function near(a,b){if(a.length<4||b.length<4||Math.abs(a.length-b.length)>1)return false;if(a===b)return true;if(a.length===b.length){let differences=[];for(let i=0;i<a.length;i++)if(a[i]!==b[i])differences.push(i);return differences.length===1||differences.length===2&&differences[1]===differences[0]+1&&a[differences[0]]===b[differences[1]]&&a[differences[1]]===b[differences[0]]}let shorter=a.length<b.length?a:b,longer=a.length<b.length?b:a,i=0,j=0,skipped=false;while(i<shorter.length){if(shorter[i]===longer[j]){i++;j++}else{if(skipped)return false;skipped=true;j++}}return true}
+// A word occurs in already-normalised text (single spaces, no edge spaces). whole: bounded by spaces on both sides; otherwise it only has to start a token.
+function wordAt(text,word,whole){const n=word.length;if(!n)return false;for(let i=text.indexOf(word);i!==-1;i=text.indexOf(word,i+1)){if(i!==0&&text.charCodeAt(i-1)!==32)continue;if(!whole||i+n===text.length||text.charCodeAt(i+n)===32)return true}return false}
+// Some token equals the word or has the same stem. Only the word, its stem and the stem plus "s" can have that stem, so no token list is needed.
+function stemAt(text,word){const root=stem(word);if(wordAt(text,word,true))return true;if(root!==word&&stem(root)===root&&wordAt(text,root,true))return true;const plural=root+'s';return plural!==word&&stem(plural)===root&&wordAt(text,plural,true)}
+function aliasAt(text,variant){return wordAt(text,variant,true)||!variant.includes(' ')&&(stem(variant)===variant&&wordAt(text,variant,true)||stem(variant+'s')===variant&&wordAt(text,variant+'s',true))}
+function tokensOf(text){return text?text.split(' '):[]}
+// Name, repository, description, technology and tag text only changes when the record does, so it is normalised once per record. Overview and README text arrives
+// already normalised from the search file (searchPrepared); anything else is normalised here, as before.
+const lightCache=new WeakMap();
+function lightFields(r){const m=lightCache.get(r);if(m&&m.name===r.name&&m.full===r.full&&m.description===r.description&&m.language===r.language&&m.topics===r.topics&&m.subjects===r.subjects&&m.category===r.category&&m.technologies===r.technologies)return m.texts;
+ const texts=[normalize(r.name),normalize(r.full),normalize(r.description),normalize([r.language,...S.technologies(r)].join(' ')),normalize([...(r.topics||[]),...(r.subjects||[]),r.category].join(' '))];
+ lightCache.set(r,{name:r.name,full:r.full,description:r.description,language:r.language,topics:r.topics,subjects:r.subjects,category:r.category,technologies:r.technologies,texts});return texts}
 function searchMatch(r,query){
  const q=normalize(query);if(!q)return {score:0,group:'best',reason:''};let cached=searchCache.get(r);if(cached?.q===q)return cached.result;
- const fields=[['name',normalize(r.name),100],['repository',normalize(r.full),85],['description',normalize(r.description),70],['overview',normalize(r.searchOverview),65],['technology',normalize([r.language,...S.technologies(r)].join(' ')),55],['tag',normalize([...(r.topics||[]),...(r.subjects||[]),r.category].join(' ')),40],['README',normalize(r.searchReadme??r.searchText),12]];
- const tokens=fields.map(([,text])=>text.split(' ').filter(Boolean));const words=q.split(' ');let score=0,broader=false,reasons=new Set();
- for(const word of words){let hit=null;for(let i=0;i<fields.length;i++){const [label,text,weight]=fields[i];if(tokens[i].some(t=>t===word||stem(t)===stem(word))||i<2&&word.length>=3&&tokens[i].some(t=>t.startsWith(word))){if(!hit||weight>hit.weight)hit={label,weight,broad:i===6}}}
- if(!hit)for(const variant of aliases[stem(word)]||[]){for(let i=0;i<fields.length;i++)if((' '+fields[i][1]+' ').includes(' '+variant+' ')||!variant.includes(' ')&&tokens[i].some(t=>stem(t)===variant)){const weight=fields[i][2]*.7;if(!hit||weight>hit.weight)hit={label:'related terms',weight,broad:true}}}
- if(!hit&&word.length>=4&&word.length<=32)for(let i=0;i<6;i++)if(tokens[i].some(t=>near(word,t))){const weight=fields[i][2]*.55;if(!hit||weight>hit.weight)hit={label:'similar spelling',weight,broad:true}}
+ const light=lightFields(r),prepared=r.searchPrepared===true,readme=r.searchReadme??r.searchText;
+ const fields=[['name',light[0],100],['repository',light[1],85],['description',light[2],70],['overview',prepared?String(r.searchOverview||''):normalize(r.searchOverview),65],['technology',light[3],55],['tag',light[4],40],['README',prepared?String(readme||''):normalize(readme),12]];
+ let tokens=null;const words=q.split(' ');let score=0,broader=false,reasons=new Set();
+ for(const word of words){let hit=null;for(let i=0;i<fields.length;i++){const [label,text,weight]=fields[i];if(stemAt(text,word)||i<2&&word.length>=3&&wordAt(text,word,false)){if(!hit||weight>hit.weight)hit={label,weight,broad:i===6}}}
+ if(!hit)for(const variant of aliases[stem(word)]||[]){for(let i=0;i<fields.length;i++)if(aliasAt(fields[i][1],variant)){const weight=fields[i][2]*.7;if(!hit||weight>hit.weight)hit={label:'related terms',weight,broad:true}}}
+ if(!hit&&word.length>=4&&word.length<=32){tokens??=[];for(let i=0;i<6;i++){tokens[i]??=tokensOf(fields[i][1]);if(tokens[i].some(t=>near(word,t))){const weight=fields[i][2]*.55;if(!hit||weight>hit.weight)hit={label:'similar spelling',weight,broad:true}}}}
  if(!hit){const result=null;searchCache.set(r,{q,result});return result}score+=hit.weight;broader||=hit.broad;reasons.add(hit.label);
  }
- if(fields[0][1]===q)score+=500;else if(fields[0][1].startsWith(q))score+=180;else if((' '+fields[0][1]+' ').includes(' '+q+' '))score+=120;
- if(fields[1][1]===q)score+=350;for(let i=2;i<6;i++)if((' '+fields[i][1]+' ').includes(' '+q+' '))score+=fields[i][2];
+ if(fields[0][1]===q)score+=500;else if(fields[0][1].startsWith(q))score+=180;else if(wordAt(fields[0][1],q,true))score+=120;
+ if(fields[1][1]===q)score+=350;for(let i=2;i<6;i++)if(wordAt(fields[i][1],q,true))score+=fields[i][2];
  const reason=broader?(reasons.has('similar spelling')?'Similar spelling':reasons.has('related terms')?'Matches related terms':'Mentioned in README'):reasons.has('name')?'Matches project name':reasons.has('technology')?'Matches technology':reasons.has('description')?'Matches description':reasons.has('overview')?'Matches overview':reasons.has('tag')?'Matches tags':'Matches repository name';
  const result={score,group:broader?'other':'best',reason};searchCache.set(r,{q,result});return result;
 }
@@ -73,5 +86,5 @@ function select(repositories,o={},editorial={rows:[]},mentions=[]){
  out.shelfItems=[...chosen.values()];}
  return out;
 }
-return {card,matches,order,select,suggestions,searchMatch};
+return {card,matches,order,select,suggestions,searchMatch,normalize};
 });
