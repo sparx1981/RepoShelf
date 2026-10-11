@@ -13,13 +13,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      # Only the two script files are needed, so skip the large catalogue checkout.
       - uses: actions/checkout@v4
-        with:
-          sparse-checkout: |
-            scripts/sync-sceneai.mjs
-            lib/sceneai-sync.mjs
-          sparse-checkout-cone-mode: false
+      - name: Unpack saved catalogue data
+        run: node scripts/data-packing.mjs unpack
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
