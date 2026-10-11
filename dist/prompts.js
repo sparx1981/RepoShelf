@@ -1,0 +1,61 @@
+'use strict';
+(()=>{
+const A=window.RepoAccount,$=s=>document.querySelector(s),API='/api/prompts',PAGE=48,KEEP='reposhelf.prompts.open';
+let items=[],shown=PAGE,current=null,full=null,fullFor=null,tab='live',liveFor=null;
+const el=(tag,props={},...kids)=>{const n=document.createElement(tag);for(const[k,v]of Object.entries(props)){if(k==='text')n.textContent=v;else if(k==='class')n.className=v;else n.setAttribute(k,v)}n.append(...kids);return n};
+const key=i=>i.source+'/'+i.id;
+const signedIn=()=>Boolean(A?.user);
+async function getJson(url){const r=await fetch(url,{credentials:'same-origin'}),d=await r.json().catch(()=>null);if(!r.ok||!d){const e=new Error(d?.error?.message||'Something went wrong. Please try again.');e.status=r.status;e.code=d?.error?.code;throw e}return d}
+
+/* ---------- browse ---------- */
+function filtered(){const q=$('#prompt-search').value.trim().toLowerCase(),c=$('#prompt-category').value;return items.filter(i=>(!c||i.category===c)&&(!q||(i.title+' '+i.description+' '+i.category).toLowerCase().includes(q)))}
+function render(){const list=filtered(),grid=$('#prompt-grid');grid.replaceChildren();for(const i of list.slice(0,shown)){const card=el('button',{class:'prompt-card',type:'button','aria-label':'Open '+i.title});
+ card.append(i.thumbnail?Object.assign(el('img',{alt:'',loading:'lazy',decoding:'async',referrerpolicy:'no-referrer'}),{src:i.thumbnail}):el('div',{class:'no-thumb'}),el('div',{class:'body'},el('span',{class:'tag',text:i.category}),el('h3',{text:i.title}),el('p',{text:i.description})));
+ card.onclick=()=>open(i);grid.append(el('li',{},card))}
+ $('#prompt-count').textContent=list.length?`${list.length} ${list.length===1?'page':'pages'}`:'Nothing matches that search.';$('#prompt-more').hidden=list.length<=shown}
+$('#prompt-filters').addEventListener('submit',e=>e.preventDefault());
+$('#prompt-search').addEventListener('input',()=>{shown=PAGE;render()});$('#prompt-category').addEventListener('change',()=>{shown=PAGE;render()});
+$('#prompt-more').onclick=()=>{shown+=PAGE;render()};
+
+/* ---------- detail ---------- */
+const dialog=$('#prompt-dialog'),tabs=['live','prompt','code'];
+function setTab(name,focus){tab=name;for(const t of tabs){const on=t===name;$('#tab-'+t).setAttribute('aria-selected',on);$('#tab-'+t).tabIndex=on?0:-1;$('#panel-'+t).hidden=!on}if(focus)$('#tab-'+name).focus();if(name!=='live')void showGated(name)}
+for(const t of tabs){$('#tab-'+t).onclick=()=>setTab(t);$('#tab-'+t).onkeydown=e=>{const i=tabs.indexOf(t),n=e.key==='ArrowRight'?(i+1)%3:e.key==='ArrowLeft'?(i+2)%3:-1;if(n>=0){e.preventDefault();setTab(tabs[n],true)}}}
+function open(item){current=item;full=null;fullFor=null;liveFor=null;$('#prompt-title').textContent=item.title;const credit=$('#prompt-credit');credit.hidden=!item.credit;credit.replaceChildren();if(item.credit){credit.append('Originally made by ',el('a',{href:item.credit.url,rel:'noopener noreferrer',target:'_blank',text:item.credit.name}),'. Shown here with a link back.')}
+ try{history.replaceState(null,'','#'+key(item))}catch{}
+ if(!dialog.open)dialog.showModal();setTab('live');void loadLive(item)}
+dialog.addEventListener('close',()=>{$('#live-frame').srcdoc='';liveFor=null;try{history.replaceState(null,'',location.pathname)}catch{}});
+$('#prompt-close').onclick=()=>dialog.close();
+dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close()});
+async function loadLive(item){const status=$('#live-status'),frame=$('#live-frame');frame.srcdoc='';status.textContent='Loading the page…';liveFor=key(item);try{const d=await getJson(`${API}?area=preview&source=${item.source}&id=${encodeURIComponent(item.id)}`);if(liveFor!==key(item))return;frame.srcdoc=d.html;status.textContent='This is a live page. It runs in a sealed frame.'}catch(e){if(liveFor===key(item))status.textContent=e.status===404?'This page has no live version yet.':e.message}}
+
+function lock(panel,what){panel.replaceChildren(el('div',{class:'prompt-lock'},el('h3',{text:'Sign in to see '+what}),el('p',{text:'Browsing is open to everyone. Signing in with GitHub unlocks the prompt, the code and the download.'}),el('a',{class:'button lime',href:'/api/auth?action=start&return=%2Fprompts.html',text:'Sign in with GitHub'})));const a=panel.querySelector('a');a.onclick=()=>{try{sessionStorage.setItem(KEEP,JSON.stringify({key:key(current),tab,at:Date.now()}))}catch{}}}
+async function ensureFull(){if(full&&fullFor===key(current))return full;const item=current;const d=await getJson(`${API}?area=bundle&source=${item.source}&id=${encodeURIComponent(item.id)}`);if(current!==item)return null;full=d;fullFor=key(item);return d}
+function download(name,blob){const a=el('a',{href:URL.createObjectURL(blob),download:name});document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),10000)}
+async function copy(text,status,msg){try{await navigator.clipboard.writeText(text);status.textContent=msg}catch{status.textContent='Copy was unavailable. Select the text and copy it manually.'}}
+function aiLinks(prompt){const wrap=document.createDocumentFragment(),enc=encodeURIComponent(prompt);const long=enc.length>6000;for(const[name,base]of[['Claude','https://claude.ai/new?q='],['ChatGPT','https://chatgpt.com/?q=']]){const a=el('a',{class:'button outline',href:long?base.split('?')[0]:base+enc,text:'Open in '+name,rel:'noopener noreferrer',target:'_blank'});if(long)a.title='This prompt is long. Copy it first, then paste it in.';wrap.append(a)}return wrap}
+async function showGated(name){const panel=$('#panel-'+name);if(!signedIn()){lock(panel,name==='prompt'?'the prompt':'the code');return}
+ panel.replaceChildren(el('p',{class:'prompt-note',text:'Loading…',role:'status'}));const item=current;
+ try{const d=await ensureFull();if(!d||current!==item||tab!==name)return;const status=el('p',{class:'prompt-note',role:'status'});
+  if(name==='prompt'){panel.replaceChildren(el('pre',{class:'prompt-text',text:d.prompt}),el('div',{class:'prompt-actions'},Object.assign(el('button',{class:'button lime',type:'button',text:'Copy prompt'}),{onclick:()=>copy(d.prompt,status,'Prompt copied.')}),aiLinks(d.prompt)),status)}
+  else{panel.replaceChildren(el('pre',{class:'prompt-code'},el('code',{text:d.html})),el('div',{class:'prompt-actions'},Object.assign(el('button',{class:'button lime',type:'button',text:'Copy code'}),{onclick:()=>copy(d.html,status,'Code copied.')}),Object.assign(el('button',{class:'button outline',type:'button',text:'Download zip'}),{onclick:()=>{download((item.id||'page')+'.zip',zip(d,item));status.textContent='Download started.'}})),status)}
+ }catch(e){if(e.status===401){panel.replaceChildren();lock(panel,name==='prompt'?'the prompt':'the code')}else if(e.status===428||e.code==='legal_required'){location.href='/legal.html'}else panel.replaceChildren(el('p',{class:'legal-feedback','data-tone':'error',role:'alert',text:e.message}))}}
+
+/* ---------- zip (stored, no compression) ---------- */
+const CRC=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+const crc32=b=>{let c=0xFFFFFFFF;for(let i=0;i<b.length;i++)c=CRC[(c^b[i])&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0};
+function zip(d,item){const enc=new TextEncoder(),credit=item.credit?`\n\nOriginally made by ${item.credit.name} (${item.credit.url}).`:'';
+ const files=[['index.html',enc.encode(d.html)],['prompt.txt',enc.encode(d.prompt+'\n')],['README.txt',enc.encode(`${d.title}\n\nindex.html is a complete page: open it in a browser.\nprompt.txt is the prompt it was made from.\n\nFrom RepoShelf: https://www.reposhelf.co.uk/prompts.html${credit}\n`)]];
+ const parts=[],central=[];let offset=0;const now=new Date(),dt=((now.getFullYear()-1980)<<9|(now.getMonth()+1)<<5|now.getDate())&0xFFFF,tm=(now.getHours()<<11|now.getMinutes()<<5|now.getSeconds()>>1)&0xFFFF;
+ for(const[name,data]of files){const n=enc.encode(name),c=crc32(data),h=new DataView(new ArrayBuffer(30));h.setUint32(0,0x04034b50,true);h.setUint16(4,20,true);h.setUint16(6,0x0800,true);h.setUint16(8,0,true);h.setUint16(10,tm,true);h.setUint16(12,dt,true);h.setUint32(14,c,true);h.setUint32(18,data.length,true);h.setUint32(22,data.length,true);h.setUint16(26,n.length,true);h.setUint16(28,0,true);
+  parts.push(new Uint8Array(h.buffer),n,data);const ch=new DataView(new ArrayBuffer(46));ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);ch.setUint16(8,0x0800,true);ch.setUint16(10,0,true);ch.setUint16(12,tm,true);ch.setUint16(14,dt,true);ch.setUint32(16,c,true);ch.setUint32(20,data.length,true);ch.setUint32(24,data.length,true);ch.setUint16(28,n.length,true);ch.setUint32(42,offset,true);central.push(new Uint8Array(ch.buffer),n);offset+=30+n.length+data.length}
+ const size=central.reduce((s,p)=>s+p.length,0),end=new DataView(new ArrayBuffer(22));end.setUint32(0,0x06054b50,true);end.setUint16(8,files.length,true);end.setUint16(10,files.length,true);end.setUint32(12,size,true);end.setUint32(16,offset,true);
+ return new Blob([...parts,...central,new Uint8Array(end.buffer)],{type:'application/zip'})}
+
+/* ---------- start ---------- */
+function fromHash(){const m=/^#(siteshelf|sceneai)\/([a-z0-9-]{1,80})$/.exec(location.hash);return m?items.find(i=>i.source===m[1]&&i.id===m[2]):null}
+function resume(){let saved=null;try{saved=JSON.parse(sessionStorage.getItem(KEEP)||'null');sessionStorage.removeItem(KEEP)}catch{}if(!saved||Date.now()-saved.at>1800000||!signedIn())return false;const item=items.find(i=>key(i)===saved.key);if(!item)return false;open(item);if(tabs.includes(saved.tab)&&saved.tab!=='live')setTab(saved.tab);return true}
+let resumed=false;
+window.addEventListener('reposhelf-account',()=>{if(!A.ready||!items.length)return;if(!resumed){resumed=true;if(resume())return}if(dialog.open&&tab!=='live'){full=null;void showGated(tab)}});
+(async()=>{try{const d=await getJson(API);items=d.items||[];const cats=[...new Set(items.map(i=>i.category))].sort();for(const c of cats)$('#prompt-category').append(el('option',{value:c,text:c}));render();const hit=fromHash();if(hit)open(hit);if(A?.ready&&!resumed){resumed=true;if(!hit)resume()}}catch(e){$('#prompt-count').textContent=e.message}})();
+})();
