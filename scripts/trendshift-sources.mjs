@@ -54,13 +54,19 @@ export async function collectTrendshift({fetcher=fetch,now=Date.now()}={}){
  return {lists,sources};
 }
 export const SIGNAL_WINDOW=3*86400000;
-// Rebuilds the saved entries from this run's lists. A repository seen in a successfully read list takes that run's ranks and
+// Each list contributes a weight that shrinks with list position; the best contribution plus a small bonus per extra list is
+// kept as one number per repository. List positions and list names are NOT stored: only whether, and how strongly, a repository
+// was trending, which is all RepoShelf needs to decide what to scan and import first.
+const WEIGHTS={daily:.5,weekly:.35,monthly:.2,githubDaily:.4};
+export function derivedSignal(positions){const parts=Object.entries(positions).filter(([list,position])=>WEIGHTS[list]&&Number.isInteger(position)&&position>=1&&position<=500).map(([list,position])=>WEIGHTS[list]/(1+Math.log(position)));return parts.length?Math.round((Math.max(...parts)+.1*(parts.length-1))*1000)/1000:0}
+// Rebuilds the saved entries from this run's lists. A repository seen in a successfully read list takes that run's score and
 // time; one not seen keeps its previous entry until it is older than the three-day signal window, so a failed or partial read
 // never blanks the ribbon and a repository that has really dropped off stops counting.
 export function mergeTrendshift(prior={},lists={},now=Date.now()){
  const at=new Date(now).toISOString(),entries={};
- for(const [key,entry]of Object.entries(prior||{})){const seen=Date.parse(entry?.seenAt);if(entry&&Number.isFinite(seen)&&now-seen<=SIGNAL_WINDOW&&entry.ranks&&typeof entry.full==='string')entries[key]=entry}
- const fresh={};
- for(const [list,repos]of Object.entries(lists))repos.forEach((full,i)=>{const key=full.toLowerCase();fresh[key]??={full,seenAt:at,ranks:{}};fresh[key].ranks[list]=i+1});
- return {...entries,...fresh};
+ for(const [key,entry]of Object.entries(prior||{})){const seen=Date.parse(entry?.seenAt);if(entry&&Number.isFinite(seen)&&now-seen<=SIGNAL_WINDOW&&entry.signal>0&&typeof entry.full==='string')entries[key]=entry}
+ const positions={};
+ for(const [list,repos]of Object.entries(lists))repos.forEach((full,i)=>{const key=full.toLowerCase();positions[key]??={full,at:{}};positions[key].at[list]=i+1});
+ for(const [key,{full,at:where}]of Object.entries(positions)){const signal=derivedSignal(where);if(signal>0)entries[key]={full,seenAt:at,signal}}
+ return entries;
 }

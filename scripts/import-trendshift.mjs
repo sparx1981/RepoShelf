@@ -16,9 +16,9 @@ const entries=mergeTrendshift(snapshot.entries,result.lists,now);
 for(const [key,entry]of Object.entries(entries)){const canonical=cache[key]?.canonicalFull;if(canonical&&/^[\w.-]+\/[\w.-]+$/.test(canonical)&&canonical.toLowerCase()!==key){delete entries[key];entries[canonical.toLowerCase()]={...entry,full:canonical}}}
 const headers={Accept:'application/vnd.github+json','User-Agent':'RepoShelf-catalog'};if(process.env.GITHUB_TOKEN)headers.Authorization=`Bearer ${process.env.GITHUB_TOKEN}`;
 const batch=Math.max(0,Math.min(100,Number(process.env.TRENDSHIFT_IMPORT_BATCH||40)));let checked=0,imported=0,failed=0;
-// Only repositories the catalogue does not hold yet are imported, best-ranked first. They go through the same checks as every
+// Only repositories the catalogue does not hold yet are imported, strongest signal first. They go through the same checks as every
 // other import: public, not archived, a demo link found in the README or homepage, moderation exclusions respected.
-const order=Object.values(entries).sort((a,b)=>Math.min(...Object.values(a.ranks))-Math.min(...Object.values(b.ranks))||a.full.localeCompare(b.full));
+const order=Object.values(entries).sort((a,b)=>b.signal-a.signal||a.full.localeCompare(b.full));
 for(const candidate of order){if(checked>=batch)break;const key=candidate.full.toLowerCase();if(repos.has(key))continue;const last=cache[key];if(last?.nextAttemptAt&&Date.parse(last.nextAttemptAt)>now)continue;checked++;
  try{const entry=await importListCandidate(candidate.full,{kind:'trendshift',name:'Trendshift',url:'https://trendshift.io/'},undefined,{headers,requireDemo:true,skipArchived:true,now});
   cache[key]={nextAttemptAt:new Date(now+86400000).toISOString(),...(entry?{canonicalFull:entry.full}:{})};
