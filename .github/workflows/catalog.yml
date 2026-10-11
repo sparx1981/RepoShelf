@@ -99,6 +99,7 @@ on:
       - 'dist/community.js'
       - 'scripts/trendshift-sources.mjs'
       - 'scripts/import-trendshift.mjs'
+      - 'scripts/codepen-probe.mjs'
       - '.github/workflows/catalog.yml'
 env:
   BROWSER_SHARD_COUNT: '4'
@@ -142,6 +143,7 @@ jobs:
             .sources-cache.json
             .community-cache.json
             .trendshift-cache.json
+            .codepen-probe.json
           key: demo-catalog-${{ github.run_id }}
           restore-keys: demo-catalog-
       - name: Install agent server dependencies
@@ -211,6 +213,13 @@ jobs:
           mkdir -p .sync-logs
           set -o pipefail
           node scripts/import-trendshift.mjs 2>&1 | tee .sync-logs/trendshift.log
+      - name: Probe CodePen public pages (read-only, at most three times)
+        id: codepen_probe
+        continue-on-error: true
+        run: |
+          mkdir -p .sync-logs
+          set -o pipefail
+          node scripts/codepen-probe.mjs 2>&1 | tee .sync-logs/codepen-probe.log
       - name: Find public repository demos
         id: catalog
         env:
