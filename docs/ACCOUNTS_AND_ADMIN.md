@@ -130,7 +130,7 @@ All outgoing web links require verified GitHub sign-in, including README, licenc
 
 Free repository submissions are available from the signed-in account menu. See [SUBMISSIONS.md](SUBMISSIONS.md) for migration 7 and worker activation. Paid promotion is a separate feature.
 
-The profile menu groups My collection and My submissions under Your projects, and Account & data, Connect your AI assistant and Sign out under Account. Administrators also see a role badge, My promotions (test), and one Admin dashboard link. Storefront editing, analytics, users/roles, sync logs, promotion reviews and setup Help are accessed from that dashboard. Fork checks, last scan status and legacy browser-like imports are in My collection; fork checks appear in its Forks tab.
+The profile menu groups My collection and My submissions under Your projects, and Account & data, Connect your AI assistant and Sign out under Account. Administrators also see a role badge and an Administration group containing the Admin dashboard link and My promotions (test). The same menu opens from the profile icon on both the Projects and Prompts pages (shared code in `dist/profile-menu.js`); on Prompts, My collection links to `/#collection`. Storefront editing, analytics, users/roles, sync logs, promotion reviews and setup Help are accessed from that dashboard. Fork checks, last scan status and legacy browser-like imports are in My collection; fork checks appear in its Forks tab.
 
 
 ## Built-in storefront rows and random ordering

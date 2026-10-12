@@ -44,4 +44,4 @@ This implementation cannot accept live payments by configuration alone. A later 
 
 Verification includes server ownership and signature/price/origin tests, PostgreSQL permissions and capacity/clock tests, browser owner/admin flows, mobile layouts and deployed private-route checks. Provider calls are simulated in automated flow tests; a real Stripe sandbox checkout still needs the above setup.
 
-During the test programme, all promotion pages, eligibility checks and member promotion actions require an administrator role. Ordinary members can use free repository submissions but cannot open test checkout, even through a direct URL. The signed-in profile menu shows My promotions only to administrators. Promotion reviews are reached through the Admin dashboard.
+During the test programme, all promotion pages, eligibility checks and member promotion actions require an administrator role. Ordinary members can use free repository submissions but cannot open test checkout, even through a direct URL. The signed-in profile menu shows My promotions only to administrators, in its Administration group. Promotion reviews are reached through the Admin dashboard.

@@ -68,3 +68,4 @@ let resumed=false;
 window.addEventListener('reposhelf-account',()=>{if(A.ready)void loadSaved();if(!A.ready||!items.length)return;if(!resumed){resumed=true;if(resume())return}if(dialog.open&&tab!=='live'){full=null;void showGated(tab)}});
 (async()=>{try{const d=await getJson(API);items=d.items||[];const cats=[...new Set(items.map(i=>i.category))].sort();for(const c of cats)$('#prompt-category').append(el('option',{value:c,text:c}));render();const hit=fromHash();if(hit)open(hit);if(A?.ready&&!resumed){resumed=true;if(!hit)resume()}}catch(e){$('#prompt-count').textContent=e.message}})();
 })();
+window.RepoProfileMenu?.install({collectionHref:'/#collection'});
