@@ -1,0 +1,15 @@
+# Google and Bing indexing setup
+
+The owner has confirmed that neither Search Console nor Bing Webmaster Tools is set up. This repository cannot register accounts, prove domain ownership or inspect actual indexing without the owner's provider access. Public crawl checks are not proof that a search engine has indexed a page.
+
+1. Sign into [Google Search Console](https://search.google.com/search-console/welcome) and add the URL-prefix property **https://www.reposhelf.co.uk/**. A domain property is also possible if you control DNS; follow the provider's DNS verification instructions instead of the HTML-tag method below.
+2. Choose **HTML tag** verification. Copy only the tag's `content` value into `REPOSHELF_GOOGLE_SITE_VERIFICATION` in the Vercel project's **Production** environment. This is a public ownership token, not an account password or API key. The build publishes it on the homepage. Redeploy, check the tag in page source, then click **Verify** in Search Console.
+3. In Search Console → **Sitemaps**, submit **https://www.reposhelf.co.uk/sitemap.xml**. Use **URL Inspection** on the homepage, `/explore.html` and a linked project page. Request indexing where available. Check **Page indexing**, exclusions, and query/impression reports after Google has processed the site; sitemap acceptance does not guarantee indexing.
+4. Sign into [Bing Webmaster Tools](https://www.bing.com/webmasters/) and import the verified Search Console property, or add the same canonical URL manually. For manual HTML-tag verification, put only the `msvalidate.01` tag's `content` value in `REPOSHELF_BING_SITE_VERIFICATION`, deploy and complete verification. Submit the same sitemap in Bing's **Sitemaps** area and inspect representative URLs.
+5. Run `npm run audit:discovery -- --base https://www.reposhelf.co.uk`. This checks the live HTTP responses, canonical URLs, robots policy, sitemap, public JSON/Markdown journey, citation/evidence consistency, and anonymous authentication boundaries. `--full` traverses all public discovery chunks; the default samples up to three. The report is saved under ignored `artifacts/discovery-audit.json`. Provider indexing remains labelled **not checked** until inspected in the owner accounts.
+
+Verification values are optional. Leaving them empty omits the tags. Provide the token alone, not a whole HTML tag. Only production should receive these values; preview deployments remain noindex and disallow crawling.
+
+Do not send account passwords, OAuth access tokens or private API keys in chat. Public verification tags can be shared if you want them added to the production configuration.
+
+A healthy review should distinguish **discovered**, **crawled**, **indexed**, and **excluded** URLs. Check Google's chosen canonical against the sitemap URL, investigate an unexpected noindex or blocked URL, and use the recorded project evidence dates when deciding whether an old project should be republished. The generated sitemap omits `lastmod` because this application does not yet track genuine page-content modification times.

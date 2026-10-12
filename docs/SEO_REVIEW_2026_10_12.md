@@ -27,3 +27,11 @@ The SEO integration suite checks public metadata, Markdown alternatives, agent l
 4. Improve source-backed project context over time where descriptions are too brief. Prefer useful author evidence and provenance over generating near-duplicate category or keyword pages.
 
 Google’s [AI search guidance](https://developers.google.com/search/docs/appearance/ai-features) treats accessible content and ordinary SEO as the foundation. The [llms.txt proposal](https://llmstxt.org/) helps agents navigate readable material, but is optional and does not guarantee discovery or citations.
+
+## Follow-up implementation: indexing, stability, context, performance and journeys
+
+Search Console and Bing Webmaster Tools are not set up. Optional public verification tags and a documented setup/submission flow are ready; provider registration, verification, submission and actual indexing reports still require owner access.
+
+Selection now retains eligible published URLs, and GitHub repository identity supports proven rename redirects. Source-backed requirements/audience and dated maintenance context are available consistently in HTML, Markdown and bounded JSON. Public project screenshots receive measured WebP variants, and generated pages use minified stylesheet assets. CI verifies an HTTP discovery/citation journey and mobile/desktop/no-JavaScript browsing while recording clearly labelled fixture lab LCP/CLS. A separate production audit command checks live crawlability and anonymous endpoint boundaries.
+
+The controlled preview-compression fixture measured 76,587 original JPEG bytes, 5,368 mobile WebP bytes and 8,642 desktop WebP bytes. These figures demonstrate the transformation and are not a claim about all production screenshots. Production field Core Web Vitals and authenticated live-member journeys have not been measured from this workspace.

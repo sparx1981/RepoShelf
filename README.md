@@ -145,3 +145,5 @@ Administrators can view catalog sync history from their profile or the Sync log 
 Public category and project pages, canonical URLs, Open Graph/Twitter previews, structured data, `robots.txt`, and `/sitemap.xml` are generated during `npm run build`. [The SEO guide](docs/SEO.md) explains publication rules, canonical domain configuration, and search-engine submission. Run `npm run test:seo` for the SEO integration checks.
 
 Agents and LLMs can start at `/llms.txt`, read the public guide at `/agent-guide.html.md`, or follow `/discovery.json` to versioned JSON chunks of up to 25 published listings. Every indexed project/category page provides a linked Markdown alternative. These use the same public selection and moderation rules; authenticated REST and MCP access retain their existing credentials.
+
+Search Console/Bing verification, sitemap submission and indexing follow-up: [docs/INDEXING_SETUP.md](docs/INDEXING_SETUP.md). Run `npm run audit:discovery` to check public HTTP discovery and citation consistency; this does not report actual provider indexing.

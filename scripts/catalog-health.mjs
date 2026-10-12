@@ -25,6 +25,12 @@ if(!res.ok)return retry(res.status===403?'access_denied':'temporary');
 const data=await res.json();if(typeof data.full_name!=='string'||typeof data.private!=='boolean')return retry('invalid_response');
 const {checkError,nextCheckAt,unavailableSince,unavailableReason,...kept}=entry;
 if(data.private||data.visibility&&data.visibility!=='public')return {entry:{...kept,availability:'unavailable',unavailableReason:'not_public',unavailableSince:entry.unavailableSince||at,lastCheckedAt:at,lastAttemptAt:at},data,stop:false};
-return {entry:{...kept,availability:'available',lastCheckedAt:at,lastAttemptAt:at,lastAvailableAt:at,...res.headers.get('etag')?{repositoryEtag:res.headers.get('etag'),repositoryEtagFor:entry.full}:{}},data,stop:false};
+const repositoryId=Number.isSafeInteger(data.id)&&data.id>0?data.id:null,renamed=data.full_name.toLowerCase()!==entry.full.toLowerCase();
+let providerRedirect=false;try{const url=new URL(res.url);providerRedirect=res.redirected===true&&url.origin==='https://api.github.com'&&url.pathname.toLowerCase()==='/repos/'+data.full_name.toLowerCase()}catch{}
+const proof=renamed&&repositoryId&&(entry.repositoryId===repositoryId||(!entry.repositoryId&&providerRedirect));
+const aliases=(Array.isArray(entry.repositoryAliases)?entry.repositoryAliases:[]).filter(alias=>alias&&alias.repositoryId===repositoryId);
+if(proof&&!aliases.some(alias=>alias.full.toLowerCase()===entry.full.toLowerCase()))aliases.push({full:entry.full,repositoryId,checkedAt:at});
+return {entry:{...kept,...repositoryId?{repositoryId,repositoryAliases:aliases.slice(-20)}:{},availability:'available',lastCheckedAt:at,lastAttemptAt:at,lastAvailableAt:at,...res.headers.get('etag')?{repositoryEtag:res.headers.get('etag'),repositoryEtagFor:entry.full}:{}},data,stop:false};
 }catch{return retry('temporary')}
 }
+

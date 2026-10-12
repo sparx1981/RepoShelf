@@ -24,9 +24,13 @@ export async function buildPublicAssets(){
  const assets=new URL('assets/',dist);await mkdir(assets,{recursive:true});const files=(await readdir(dist)).filter(n=>/\.(?:js|css)$/.test(n)),names={};
  for(const name of files){const source=await readFile(new URL(name,dist),'utf8'),result=await transform(source,{loader:name.endsWith('.css')?'css':'js',minify:true,target:'es2020',legalComments:'inline'}),hash=createHash('sha256').update(result.code).digest('hex').slice(0,16),target=name.replace(/\.(js|css)$/,`.${hash}.$1`);await writeFile(new URL(target,assets),result.code);names[name]='/assets/'+target;}
  // HTML source remains readable and unchanged; only the deployment output is rewritten.
- for(const name of (await readdir(dist)).filter(n=>n.endsWith('.html'))){let html=await readFile(new URL(name,dist),'utf8');await writeFile(new URL(name,backup),html);html=html.replace(/(src|href)=(['"])(\/?)([^'"/?]+\.(?:js|css))\2/g,(all,attribute,quote,slash,file)=>names[file]?`${attribute}=${quote}${names[file]}${quote}`:all);await writeFile(new URL(name,dist),html)}
+ const htmlFiles=(await readdir(dist)).filter(n=>n.endsWith('.html'));
+ async function nested(folder){let entries;try{entries=await readdir(new URL(folder,dist),{withFileTypes:true})}catch(e){if(e.code==='ENOENT')return;throw e}for(const item of entries){const path=folder+item.name;if(item.isDirectory())await nested(path+'/');else if(item.name.endsWith('.html'))htmlFiles.push(path)}}
+ await nested('projects/');await nested('categories/');
+ for(const name of htmlFiles){let html=await readFile(new URL(name,dist),'utf8');if(!name.includes('/'))await writeFile(new URL(name,backup),html);html=html.replace(/(src|href)=(['"])(\/?)([^'"/?]+\.(?:js|css))\2/g,(all,attribute,quote,slash,file)=>names[file]?`${attribute}=${quote}${names[file]}${quote}`:all);await writeFile(new URL(name,dist),html)}
  console.log(`Public assets: ${files.length} minified, fingerprinted files.`);
 }
 if(process.argv.includes('--restore'))await restorePublicHTML();
 if(process.argv.includes('--previews'))await generatePreviewVariants();
 if(process.argv.includes('--assets'))await buildPublicAssets();
+
