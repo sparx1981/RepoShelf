@@ -50,3 +50,33 @@ assert.deepEqual(out,{found:2,added:1,skipped:1});assert.equal(posts.length,1);
 
 assert.match(CREDIT_NAME,/MotionSites/);
 console.log('motionsites-import tests passed');
+
+// The admin button's endpoint: administrators only, downloads text from the repository and adds new prompts.
+import {createAccounts} from '../lib/accounts.mjs';
+import {createPromptsHandler} from '../api/prompts.mjs';
+const config={url:'https://fixture.supabase.co',key:'k',serviceKey:'server-secret',origin:'https://reposhelf.test'};
+const writes=[];
+const accounts=createAccounts({legal:{active:false},config,fetcher:async(url,opts)=>{
+  const u=new URL(url),token=opts.headers.Authorization?.replace('Bearer ',''),json=(d,s=200)=>new Response(JSON.stringify(d),{status:s,headers:{'Content-Type':'application/json'}});
+  if(u.pathname==='/auth/v1/user')return token?json({id:token,identities:[],user_metadata:{}}):json({},401);
+  if(u.pathname==='/rest/v1/rpc/reposhelf_is_admin')return json(token==='admin');
+  if(opts.method==='POST'){writes.push(JSON.parse(opts.body));return json([])}
+  if(u.pathname==='/rest/v1/ss_prompts')return json([]);
+  return json({},404);
+}});
+const github=async url=>String(url).includes('api.github.com')
+  ?new Response(JSON.stringify([{name:'Apex_SaaS.md',type:'file'},{name:'../evil.md',type:'file'},{name:'img.png',type:'file'}]))
+  :new Response(md());
+const handler=createPromptsHandler({accounts,github});
+async function call(token,origin='https://reposhelf.test'){
+  const req={url:'/api/prompts?area=admin-import-motionsites',method:'POST',body:{},headers:{...origin?{origin}:{},...token?{cookie:'__Host-reposhelf-access='+token}:{}}};
+  const res={status:0,body:'',getHeader(){},setHeader(){},writeHead(s){this.status=s},end(b){this.body=String(b||'')}};
+  await handler(req,res);return res;
+}
+for(const t of [undefined,'member'])assert([401,403].includes((await call(t)).status),'import is closed to non-admins');
+assert.equal((await call('admin','https://evil.test')).status,403);
+assert.equal(writes.length,0);
+const ok=await call('admin');
+assert.equal(ok.status,200);assert.deepEqual(JSON.parse(ok.body),{found:1,added:1,skipped:0});
+assert.equal(writes.length,1);assert.equal(writes[0].source_id,'apex-saas');
+console.log('motionsites admin endpoint tests passed');

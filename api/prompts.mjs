@@ -5,7 +5,7 @@
 import {requireLegal} from '../lib/legal.mjs';
 import {createAccounts,respond,accountFailure,only,fail,readBody} from '../lib/accounts.mjs';
 import {createSceneAiSync} from '../lib/sceneai-sync.mjs';
-import {CREDIT_NAME} from '../lib/motionsites-import.mjs';
+import {CREDIT_NAME,createMotionSitesImport,fetchMotionSitesFiles} from '../lib/motionsites-import.mjs';
 
 const SOURCES=['siteshelf','sceneai'];
 const LIST_COLUMNS='source,source_id,title,category,description,type,thumbnail,animated_thumbnail,source_url,created_at,updated_at';
@@ -32,7 +32,7 @@ function publicCache(res,status,data,seconds){
   res.end(JSON.stringify(data));
 }
 
-export function createPromptsHandler({accounts=createAccounts()}={}){
+export function createPromptsHandler({accounts=createAccounts(),github=fetch}={}){
   const rows=(path)=>accounts.request('/rest/v1/'+path,{service:true});
   async function find(source,id,columns){
     const [row]=await rows(`ss_prompts?source=eq.${q(source)}&source_id=eq.${q(id)}&published=eq.true&select=${columns}&limit=1`);
@@ -52,6 +52,10 @@ export function createPromptsHandler({accounts=createAccounts()}={}){
     if(area==='admin-sync'){
       const sync=createSceneAiSync({db:(path,opts={})=>accounts.request('/rest/v1/'+path,{service:true,...opts})});
       return respond(res,200,await sync.run('manual',{limit:40}));
+    }
+    if(area==='admin-import-motionsites'){
+      const run=createMotionSitesImport({db:(path,opts={})=>accounts.request('/rest/v1/'+path,{service:true,...opts})});
+      try{return respond(res,200,await run(await fetchMotionSitesFiles(github)))}catch(e){fail(502,'import_failed',String(e.message||e).slice(0,200))}
     }
     if(!SOURCES.includes(body?.source)||!idOf(body?.id))fail(400,'invalid_prompt','Choose a valid prompt.');
     const where=`ss_prompts?source=eq.${q(body.source)}&source_id=eq.${q(body.id)}`;

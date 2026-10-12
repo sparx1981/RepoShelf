@@ -38,6 +38,7 @@ function bind(){
  $('#prompts-refresh').onclick=()=>task(load);
  $('#prompts-filter').onchange=()=>{shown=PAGE;render()};$('#prompts-search').oninput=()=>{shown=PAGE;render()};$('#prompts-more').onclick=()=>{shown+=PAGE;render()};
  $('#prompts-import').onclick=()=>task(async()=>{say('Importing free prompts from SceneAI…');const r=await call('admin-sync',{});await load();say(`Import finished: ${r.found} free found, ${r.added} added, ${r.updated} updated. New prompts wait for your review.`)});
+ $('#prompts-import-ms').onclick=()=>task(async()=>{say('Importing free prompts from MotionSites…');const r=await call('admin-import-motionsites',{});await load();say(`Import finished: ${r.found} found, ${r.added} added, ${r.skipped} already here or skipped. New prompts are live.`)});
  $('#pe-cancel').onclick=()=>{editing=null;$('#prompt-edit').close()};
  $('#prompt-edit-form').onsubmit=e=>{e.preventDefault();const i=editing;if(!i)return;task(async()=>{const body={source:i.source,id:i.source_id,title:$('#pe-title').value,category:$('#pe-category').value,description:$('#pe-description').value,prompt:$('#pe-prompt').value,published:$('#pe-published').checked};try{await call('admin-save',body)}catch(err){$('#pe-status').textContent=err.message;return}Object.assign(i,{title:body.title.trim(),category:body.category.trim()||null,published:body.published,is_new:false});editing=null;$('#prompt-edit').close();say('Saved.');render()})};
 }
