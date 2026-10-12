@@ -5,6 +5,7 @@
 import {requireLegal} from '../lib/legal.mjs';
 import {createAccounts,respond,accountFailure,only,fail,readBody} from '../lib/accounts.mjs';
 import {createSceneAiSync} from '../lib/sceneai-sync.mjs';
+import {CREDIT_NAME} from '../lib/motionsites-import.mjs';
 
 const SOURCES=['siteshelf','sceneai'];
 const LIST_COLUMNS='source,source_id,title,category,description,type,thumbnail,animated_thumbnail,source_url,created_at,updated_at';
@@ -22,7 +23,7 @@ function publicItem(row){
     source:row.source,id:row.source_id,title:row.title,category:row.category||'Other',description:row.description||'',type:row.type||'free',
     thumbnail:own?`/api/prompts?area=thumb&source=${row.source}&id=${row.source_id}`:row.thumbnail||null,
     animated:own?null:row.animated_thumbnail||null,
-    credit:own?null:{name:'SceneAI',url:row.source_url||'https://sceneai.art'},
+    credit:own?(row.source_url?{name:CREDIT_NAME,url:row.source_url}:null):{name:'SceneAI',url:row.source_url||'https://sceneai.art'},
     updatedAt:row.updated_at||row.created_at
   };
 }
