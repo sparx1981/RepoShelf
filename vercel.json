@@ -91,6 +91,74 @@
           "value": "noindex"
         }
       ]
+    },
+    {
+      "source": "/(.*)\\.md",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/markdown; charset=utf-8"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        },
+        {
+          "key": "Link",
+          "value": "</llms.txt>; rel=\"describedby\""
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/discovery/(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        },
+        {
+          "key": "Link",
+          "value": "</llms.txt>; rel=\"describedby\""
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/discovery.json",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex"
+        },
+        {
+          "key": "Link",
+          "value": "</llms.txt>; rel=\"describedby\", </openapi.json>; rel=\"service-desc\"; type=\"application/json\""
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/llms.txt",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "text/plain; charset=utf-8"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
     }
   ],
   "functions": {
@@ -140,7 +208,7 @@
       "maxDuration": 30
     },
     "api/editorial.mjs": {
-      "includeFiles": "{dist/{tax*,providers,quality,community,editorial,storefront,discovery,picks,viewer*,browse}.js,data/{listing-controls.json,browse/*.json,browse/search-*.gz,runtime/browse-projects/**},dist/growth.json}",
+      "includeFiles": "{dist/{tax*,providers,quality,community,editorial,storefront,discovery,picks,viewer*,browse}.js,data/{seo-redirects.json,listing-controls.json,browse/*.json,browse/search-*.gz,runtime/browse-projects/**},dist/growth.json}",
       "excludeFiles": "{tests/**,node_modules/{sharp,@img,*esbuild*,@vercel/nft}/**,dist/{catalog*,spaces*,assets/**,.asset-html/**,previews/**},data/{browse/projects,readmes,context,sync-runs}/**,data/browse/{index,search}.json,data/runtime/{*.gz,*.json}}",
       "maxDuration": 30
     },
@@ -175,6 +243,10 @@
     {
       "source": "/api/viewer",
       "destination": "/api/editorial?area=viewer"
+    },
+    {
+      "source": "/projects/:path*",
+      "destination": "/api/editorial?area=seo-route&path=/projects/:path*"
     }
   ],
   "ignoreCommand": "node scripts/deployment-policy.mjs",
