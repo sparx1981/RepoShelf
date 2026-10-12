@@ -1,0 +1,96 @@
+import {readFile,writeFile,mkdir,readdir,rm} from 'node:fs/promises';
+import {createRequire} from 'node:module';
+import {pathToFileURL,fileURLToPath} from 'node:url';
+
+const require=createRequire(import.meta.url),Q=require('../dist/quality.js'),P=require('../dist/providers.js'),E=require('../dist/editorial.js'),S=require('../dist/storefront.js');
+export const DEFAULT_SITE_URL='https://www.reposhelf.co.uk';
+export const PROJECT_LIMIT=5000;
+const PAGE_SIZE=48;
+const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const plain=value=>String(value??'').replace(/\s+/g,' ').trim();
+const excerpt=(value,size=160)=>{const text=plain(value);return text.length<=size?text:text.slice(0,size-1).replace(/\s+\S*$/,'')+'…'};
+const json=value=>JSON.stringify(value).replace(/</g,'\\u003c');
+const slug=value=>String(value).toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+export function siteOrigin(env=process.env){
+ const url=new URL(env.REPOSHELF_SITE_URL||DEFAULT_SITE_URL);
+ if(url.protocol!=='https:'||url.username||url.password||url.pathname!=='/'||url.search||url.hash)throw Error('REPOSHELF_SITE_URL must be an HTTPS origin, such as https://www.reposhelf.co.uk');
+ return url.origin;
+}
+export function projectPath(r){
+ const space=P.isSpace(r),id=space?r.spaceId:r.full;
+ if(!P.validId(id)||id.split('/').some(part=>part==='.'||part==='..')||space&&r.full!==`hf:${id}`)return null;
+ return `/projects/${space?'huggingface':'github'}/${id.toLowerCase()}.html`;
+}
+const categoryPath=(name,page=1)=>`/categories/${slug(name)}${page>1?'-page-'+page:''}.html`;
+const demoImage=r=>{const image=(r.screenshots||[]).find(s=>s.kind==='demo'&&(!s.url||s.url===r.demo)&&/^\/?previews\/[a-f0-9]{24}(?:-provider)?\.jpg$/.test(s.src));return image?'/'+image.src.replace(/^\//,''):null};
+const privatePage=name=>/^(?:admin(?:-.*)?|account|legal|offline)\.html$/.test(name);
+const preview=env=>Boolean(env.VERCEL_ENV&&env.VERCEL_ENV!=='production');
+function metadata({title,description,path,image='/social-preview.png',imageAlt='RepoShelf — discover projects and live demos',origin,noindex=false,data}){
+ const canonical=origin+path,robots=noindex?'noindex, nofollow':'index, follow, max-image-preview:large';
+ return `<title>${escape(title)}</title><meta name="description" content="${escape(excerpt(description))}"><!-- reposhelf-seo:start --><link rel="canonical" href="${escape(canonical)}"><meta name="robots" content="${robots}"><meta property="og:type" content="website"><meta property="og:site_name" content="RepoShelf"><meta property="og:locale" content="en_GB"><meta property="og:title" content="${escape(title)}"><meta property="og:description" content="${escape(excerpt(description))}"><meta property="og:url" content="${escape(canonical)}"><meta property="og:image" content="${escape(origin+image)}"><meta property="og:image:alt" content="${escape(imageAlt)}">${image==='/social-preview.png'?'<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">':''}<meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="${escape(title)}"><meta name="twitter:description" content="${escape(excerpt(description))}"><meta name="twitter:image" content="${escape(origin+image)}"><meta name="twitter:image:alt" content="${escape(imageAlt)}">${data?`<script type="application/ld+json">${json(data)}</script>`:''}<!-- reposhelf-seo:end -->`;
+}
+function shell(options,body){return `<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b0b0d">${metadata(options)}<link rel="stylesheet" href="/fonts.css"><link rel="stylesheet" href="/style.css"><link rel="stylesheet" href="/legal.css"><link rel="stylesheet" href="/seo.css"></head><body><a class="seo-skip" href="#content">Skip to content</a><header><a class="brand" href="/" aria-label="RepoShelf home"><span class="brand-icon">r.</span></a><nav aria-label="Main navigation"><a class="nav" href="/">Projects</a><a class="nav active" href="/explore.html">Explore</a><a class="nav" href="/prompts.html">Prompts</a></nav></header><main id="content" class="legal-main seo-main">${body}</main><footer class="site-legal"><a href="/">RepoShelf home</a><a href="/explore.html">Browse by category</a><a href="/terms.html">Terms of Service</a><a href="/privacy.html">Privacy Policy</a></footer></body></html>\n`}
+const breadcrumbs=(items,origin)=>({'@type':'BreadcrumbList',itemListElement:items.map(([name,path],i)=>({'@type':'ListItem',position:i+1,name,item:origin+path}))});
+function links(items){return `<ul class="seo-project-list">${items.map(r=>`<li><h2><a href="${projectPath(r)}">${escape(r.name)}</a></h2><p class="seo-identity">${escape(r.full)}</p><p>${escape(excerpt(r.description,260))}</p></li>`).join('')}</ul>`}
+const date=value=>Number.isFinite(Date.parse(value))?new Date(value).toISOString().slice(0,10):null;
+function projectPage(r,{origin,noindex,categories,related}){
+ const path=projectPath(r),title=`${r.name} — ${P.isSpace(r)?'Hugging Face Space':'GitHub project'} | RepoShelf`,description=excerpt(r.description||`${r.name} on ${P.isSpace(r)?'Hugging Face Spaces':'GitHub'}. Explore this project on RepoShelf.`),image=demoImage(r),licence=Q.licenseInfo(r),checked=date(Q.demoState(r)?.checkedAt);
+ const overview=(r.overview?.paragraphs||[]).filter(p=>typeof p==='string').slice(0,3),features=(r.overview?.features||[]).filter(p=>typeof p==='string').slice(0,5),topics=categories.filter(c=>E.matchesCategory(r,c));
+ const about={'@type':P.isSpace(r)?'CreativeWork':'SoftwareSourceCode',name:r.name,description,identifier:r.full,...(!P.isSpace(r)?{codeRepository:P.repositoryUrl(r),...(r.language?{programmingLanguage:r.language}:{})}:{}),...(licence.url?{license:licence.url}:{})};
+ const data={'@context':'https://schema.org','@graph':[{'@type':'WebPage','@id':origin+path,url:origin+path,name:title,description,about},breadcrumbs([['RepoShelf','/'],['Explore','/explore.html'],[r.name,path]],origin)]};
+ const body=`<nav class="seo-breadcrumbs" aria-label="Breadcrumb"><a href="/">RepoShelf</a><a href="/explore.html">Explore</a><span aria-current="page">${escape(r.name)}</span></nav><h1>${escape(r.name)}</h1><p class="seo-identity">${escape(r.full)} · ${P.isSpace(r)?'Hugging Face Space':'Public GitHub repository'}</p><p class="seo-summary">${escape(r.description||description)}</p>${r.editorialDescription?'<p class="small">Editorial description by RepoShelf.</p>':''}<p><a class="button lime" href="/?project=${encodeURIComponent(r.full)}">Open project in RepoShelf</a></p><p class="small">Open the project to try its demo, view the repository, or save it to your collection. Repository and demo actions use RepoShelf’s sign-in flow.</p>${image?`<figure class="seo-preview"><img src="${image}" alt="${escape(r.name)} live demo screenshot" width="1200" height="750" decoding="async"><figcaption>Captured from the live demo${date((r.screenshots||[]).find(s=>('/'+s.src.replace(/^\//,''))===image)?.capturedAt)?' · '+date((r.screenshots||[]).find(s=>('/'+s.src.replace(/^\//,''))===image)?.capturedAt):''}</figcaption></figure>`:''}${overview.length||features.length?`<section aria-labelledby="about-project"><h2 id="about-project">About this project</h2><p class="small">Author-written excerpt from the project README.</p>${overview.map(p=>`<p>${escape(p.slice(0,3000))}</p>`).join('')}${features.length?`<ul>${features.map(f=>`<li>${escape(f.slice(0,1000))}</li>`).join('')}</ul>`:''}</section>`:''}<dl class="rank-list"><div><dt>Technologies</dt><dd>${escape(S.technologies(r).join(', ')||r.language||'Not recorded')}</dd></div><div><dt>Licence</dt><dd>${escape(licence.id||'No licence detected')}. ${escape(licence.text)}</dd></div><div><dt>Demo check</dt><dd>${checked?`A public page loaded on ${checked}. This does not test every feature.`:'A dated demo check is not available.'}</dd></div></dl>${topics.length?`<section aria-labelledby="project-categories"><h2 id="project-categories">Browse related categories</h2><ul class="seo-category-links">${topics.map(c=>`<li><a href="${categoryPath(c)}">${escape(c)}</a></li>`).join('')}</ul></section>`:''}${related.length?`<section aria-labelledby="related-projects"><h2 id="related-projects">More projects to explore</h2>${links(related)}</section>`:''}`;
+ return shell({title,description,path,origin,noindex,data,...(image?{image,imageAlt:`${r.name} live demo screenshot`}:{})},body);
+}
+export function selectProjects(index,{now=Date.now(),limit=PROJECT_LIMIT}={}){
+ const evidence=Q.evidenceTime(index.snapshots?.catalog,now),seen=new Set();
+ const ranked=P.popular((index.repositories||[]).filter(r=>projectPath(r)&&plain(r.name)&&plain(r.description)&&Q.publishedEligible(r,evidence)).sort((a,b)=>a.full.localeCompare(b.full))).filter(r=>{const key=r.full.toLowerCase();if(seen.has(key))return false;seen.add(key);return true});
+ const selected=new Map(),categories=E.categories.filter(c=>ranked.some(r=>E.matchesCategory(r,c))),groups=categories.map(c=>ranked.filter(r=>E.matchesCategory(r,c)).slice(0,12));
+ // Reserve space across categories before filling by popularity, so smaller subjects remain discoverable.
+ for(let i=0;i<12;i++)for(const group of groups){const r=group[i];if(r&&selected.size<limit)selected.set(r.full.toLowerCase(),r)}
+ for(const r of ranked)if(selected.size<limit)selected.set(r.full.toLowerCase(),r);
+ return ranked.filter(r=>selected.has(r.full.toLowerCase()));
+}
+export function socialImageSVG(){return `<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630"><rect width="1200" height="630" fill="#0b0b0d"/><rect x="72" y="72" width="76" height="76" rx="16" fill="#d6fb79"/><text x="85" y="125" fill="#111113" font-family="sans-serif" font-size="59" font-weight="800">r.</text><text x="174" y="126" fill="#f4f4f5" font-family="sans-serif" font-size="45" font-weight="700">RepoShelf</text><text x="72" y="302" fill="#f4f4f5" font-family="sans-serif" font-size="65" font-weight="700">Find your next project.</text><text x="72" y="383" fill="#c5c5cd" font-family="sans-serif" font-size="32">GitHub projects. Hugging Face Spaces. Live demos.</text><path d="M72 487H1128" stroke="#2b2c32"/><text x="72" y="551" fill="#d6fb79" font-family="sans-serif" font-size="27">Find it. Fork it. Make it yours.</text></svg>`}
+async function renderSocialImage(dist){const {default:sharp}=await import('sharp');await sharp(Buffer.from(socialImageSVG())).png().toFile(fileURLToPath(new URL('social-preview.png',dist)))}
+export async function buildSEO(root=new URL('../',import.meta.url),{index,projects,env=process.env,now=Date.now(),limit=PROJECT_LIMIT,renderImage=renderSocialImage}={}){
+ const dist=new URL('dist/',root),origin=siteOrigin(env),noindex=preview(env);
+ if(!index)index=JSON.parse(await readFile(new URL('data/browse/index.json',root),'utf8'));
+ const selected=selectProjects(index,{now,limit}),details=projects?new Map(projects.map(r=>[r.full.toLowerCase(),r])):null;
+ const categories=E.categories.filter(c=>selected.some(r=>E.matchesCategory(r,c))),groups=new Map(categories.map(c=>[c,selected.filter(r=>E.matchesCategory(r,c))]));
+ // Remove retired, hidden, renamed, and no-longer-published pages before writing the new sitemap.
+ for(const folder of ['projects/','categories/']){await rm(new URL(folder,dist),{recursive:true,force:true});await mkdir(new URL(folder,dist),{recursive:true})}
+ const paths=[],manifest={};
+ async function output(path,html){const url=new URL(path.slice(1),dist);await mkdir(new URL('./',url),{recursive:true});await writeFile(url,html);paths.push(path)}
+ for(const r of selected){let detail=details?.get(r.full.toLowerCase());if(!detail){try{const {projectKey}=await import('../lib/project-key.mjs');detail=JSON.parse(await readFile(new URL(`data/browse/projects/${projectKey(r.full)}.json`,root),'utf8'))}catch(e){if(e.code!=='ENOENT')throw e}}
+  // The filtered public index owns visibility, identity and description; full detail only supplies author excerpts.
+  const record={...detail,...r},group=categories.find(c=>E.matchesCategory(r,c)),related=(groups.get(group)||selected).filter(p=>p.full!==r.full).slice(0,4);
+  const path=projectPath(r);await output(path,projectPage(record,{origin,noindex,categories,related}));manifest[r.full.toLowerCase()]=path;
+ }
+ for(const [category,items] of groups){const pages=Math.ceil(items.length/PAGE_SIZE);for(let page=1;page<=pages;page++){
+  const path=categoryPath(category,page),slice=items.slice((page-1)*PAGE_SIZE,page*PAGE_SIZE),title=`${category} projects${page>1?' — page '+page:''} | RepoShelf`,description=`Explore ${category.toLowerCase()} projects from GitHub and Hugging Face Spaces. Compare project descriptions and discover live demos on RepoShelf.`;
+  const data={'@context':'https://schema.org','@graph':[{'@type':'CollectionPage',url:origin+path,name:title,description,mainEntity:{'@type':'ItemList',itemListElement:slice.map((r,i)=>({'@type':'ListItem',position:(page-1)*PAGE_SIZE+i+1,name:r.name,url:origin+projectPath(r)}))}},breadcrumbs([['RepoShelf','/'],['Explore','/explore.html'],[category,path]],origin)]};
+  await output(path,shell({title,description,path,origin,noindex,data},`<nav class="seo-breadcrumbs" aria-label="Breadcrumb"><a href="/">RepoShelf</a><a href="/explore.html">Explore</a><span aria-current="page">${escape(category)}</span></nav><h1>${escape(category)} projects</h1><p>${escape(description)}</p>${links(slice)}${pages>1?`<nav class="seo-pagination" aria-label="Category pages">${page>1?`<a href="${categoryPath(category,page-1)}" rel="prev">Previous page</a>`:''}<span aria-current="page">Page ${page} of ${pages}</span>${page<pages?`<a href="${categoryPath(category,page+1)}" rel="next">Next page</a>`:''}</nav>`:''}`));
+ }}
+ const title='Explore GitHub projects and Hugging Face Spaces | RepoShelf',description='Discover projects by category. Browse developer tools, design apps, productivity projects, and interactive AI demos on RepoShelf.';
+ await output('/explore.html',shell({title,description,path:'/explore.html',origin,noindex,data:{'@context':'https://schema.org','@type':'CollectionPage',url:origin+'/explore.html',name:title,description}},`<h1>Explore projects by category</h1><p>${description}</p>${categories.length?`<ul class="seo-category-list">${categories.map(c=>`<li><a href="${categoryPath(c)}">${escape(c)}</a><span>${groups.get(c).length.toLocaleString('en-GB')} projects</span></li>`).join('')}</ul><h2>Projects to explore</h2>${links(selected.slice(0,12))}`:'<p>Project pages are being refreshed. <a href="/">Browse the RepoShelf storefront</a> for the current catalogue.</p>'}`));
+ const indexable=new Set(['index.html','explore.html','connect.html','prompts.html','submissions.html','promotions.html','agent-guide.html']);
+ for(const name of (await readdir(dist)).filter(n=>n.endsWith('.html'))){
+  if(name==='explore.html')continue;
+  const path=name==='index.html'?'/':'/'+name;let html=await readFile(new URL(name,dist),'utf8');
+  let title=html.match(/<title>([^]*?)<\/title>/i)?.[1]||'RepoShelf',description=html.match(/<meta\s+name="description"\s+content="([^"]*)"\s*\/?>/i)?.[1]||'Discover projects and live demos on RepoShelf.';
+  // Existing text is already HTML-escaped. Decode only the entities our metadata writer emits before escaping again.
+  const decode=s=>s.replace(/&(amp|quot|#39|lt|gt);/g,(_,c)=>({amp:'&',quot:'"','#39':"'",lt:'<',gt:'>'}[c]));title=decode(title);description=decode(description);
+  if(name==='index.html'){title='RepoShelf — Discover GitHub projects and live demos';description='Discover GitHub projects and Hugging Face Spaces. Browse by category, explore live demos, and keep a collection of projects on RepoShelf.'}
+  html=html.replace(/<!-- reposhelf-seo:start -->[^]*?<!-- reposhelf-seo:end -->/g,'').replace(/<title>[^]*?<\/title>/gi,'').replace(/<meta\s+name="(?:description|robots)"[^>]*>/gi,'').replace(/<link\s+rel="canonical"[^>]*>/gi,'');
+  html=html.replace('</head>',metadata({title,description,path,origin,noindex:noindex||privatePage(name),data:name==='index.html'?{'@context':'https://schema.org','@type':'WebSite','@id':origin+'/#website',url:origin+'/',name:'RepoShelf',description,inLanguage:'en'}:undefined})+'</head>');
+  await writeFile(new URL(name,dist),html);if(indexable.has(name))paths.push(path);
+ }
+ await renderImage(dist);
+ await writeFile(new URL('project-pages.json',dist),JSON.stringify(manifest)+'\n');
+ const unique=[...new Set(paths)].sort();
+ await writeFile(new URL('sitemap.xml',dist),`<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${(noindex?[]:unique).map(path=>`  <url><loc>${escape(origin+path)}</loc></url>`).join('\n')}\n</urlset>\n`);
+ await writeFile(new URL('robots.txt',dist),noindex?'User-agent: *\nDisallow: /\n':`User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /admin\n\nSitemap: ${origin}/sitemap.xml\n`);
+ console.log(`SEO: ${selected.length} public project pages, ${categories.length} categories, ${noindex?'preview indexing disabled':unique.length+' sitemap URLs'}.`);
+ return {paths:unique,projects:selected,manifest,categories};
+}
+if(process.argv[1]&&import.meta.url===pathToFileURL(process.argv[1]).href)await buildSEO();
