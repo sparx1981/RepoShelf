@@ -19,3 +19,15 @@ After merging and deploying:
 3. Use URL Inspection to request crawling of the home page and directory, and monitor indexing and search queries. Publishing a sitemap enables discovery; search engines decide whether and when to index pages.
 
 No account verification, sitemap submission, or production deployment is performed by the build. `npm run test:seo` checks generated HTML, pagination, moderation, escaping, canonical configuration, sitemap consistency, repeated builds, retirement, and preview exclusions without calling external services.
+
+## Agents and LLMs
+
+`/llms.txt` points to `/agent-guide.html.md`, `/explore.html.md`, and `/discovery.json`. The public project and category pages advertise Markdown alternatives through `rel="alternate" type="text/markdown"`; all public HTML advertises the discovery guide with `rel="describedby"` and the OpenAPI schema with `rel="service-desc"`. The home page identifies the source repository in its website metadata, and the agent guide describes the public catalogue with DataCatalog/Dataset structured data.
+
+Markdown alternatives append `.md` to the canonical HTML path. They contain project descriptions, author excerpts where present, source links, declared licences, and recorded check dates. Author text is escaped as content. JSON chunks contain only a small whitelist of public metadata fields; full catalogue records, account data and credentials are not copied into them.
+
+The discovery manifest reports coverage explicitly: at most 5,000 published listings, not the full catalogue. Follow `firstPage`, then each chunk’s `next` URL. Chunks contain at most 25 records and share a version derived from their content. A rebuild removes old chunks; a reader receiving 404 for an older version should re-fetch the manifest and restart. Metadata names observation dates separately from generation time.
+
+Markdown and JSON responses receive `X-Robots-Tag: noindex` to keep machine-readable copies out of search results; their corresponding canonical HTML pages remain indexable. The existing production wildcard robots policy already allows public search and assistant crawlers. No crawler-specific rule overrides that policy, and private REST/MCP endpoints keep their existing authentication. Preview deployments remain excluded from crawling.
+
+`llms.txt` is an optional discovery convention, not a ranking requirement. Google’s [AI features guidance](https://developers.google.com/search/docs/appearance/ai-features) says ordinary SEO fundamentals and accessible, useful content apply. The [llms.txt proposal](https://llmstxt.org/) recommends concise guides, linked Markdown pages, and standard link relations. Neither guarantees that a search engine or model will index or cite a website.
