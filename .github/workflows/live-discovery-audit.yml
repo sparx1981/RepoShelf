@@ -16,6 +16,29 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Inspect sitemap HTTP, crawler agents, DNS and XML
+        run: |
+          node --input-type=module <<'NETWORK'
+          import {resolve4,resolve6,resolveNs} from 'node:dns/promises';
+          import {writeFile,mkdir} from 'node:fs/promises';
+          const google='Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',bing='Mozilla/5.0 (compatible; bingbot/2.0; +http://www.bing.com/bingbot.htm)';
+          const tests=[['https://www.reposhelf.co.uk/sitemap.xml','RepoShelf sitemap diagnostics'],['https://www.reposhelf.co.uk/sitemap.xml',google],['https://www.reposhelf.co.uk/sitemap.xml',bing],['https://www.reposhelf.co.uk/robots.txt',google],['https://reposhelf.co.uk/sitemap.xml',google],['http://www.reposhelf.co.uk/sitemap.xml',google]];
+          await mkdir('artifacts',{recursive:true});
+          for(const [url,ua] of tests){try{const res=await fetch(url,{headers:{'User-Agent':ua,Accept:'application/xml,text/plain,*/*'},redirect:'manual',signal:AbortSignal.timeout(15000)}),body=await res.text();const report={url,userAgent:ua,status:res.status,headers:Object.fromEntries(['content-type','cache-control','x-robots-tag','location','server','x-vercel-mitigated','x-vercel-cache'].map(key=>[key,res.headers.get(key)])),bytes:Buffer.byteLength(body),start:body.slice(0,140)};console.log('SITEMAP HTTP '+JSON.stringify(report));if(res.status===200&&url==='https://www.reposhelf.co.uk/sitemap.xml')await writeFile('artifacts/live-sitemap.xml',body);if(url.endsWith('/robots.txt'))console.log('ROBOTS '+body)}catch(error){console.log('SITEMAP HTTP '+JSON.stringify({url,userAgent:ua,error:error.message,cause:error.cause?.code}))}}
+          for(const [type,fn,host] of [['A',resolve4,'www.reposhelf.co.uk'],['AAAA',resolve6,'www.reposhelf.co.uk'],['NS',resolveNs,'reposhelf.co.uk']])try{console.log('DNS '+JSON.stringify({host,type,values:await fn(host)}))}catch(error){console.log('DNS '+JSON.stringify({host,type,error:error.code}))}
+          NETWORK
+          python3 - <<'XML'
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+          file=Path('artifacts/live-sitemap.xml')
+          if file.exists():
+              tree=ET.parse(file); root=tree.getroot(); urls=root.findall('{http://www.sitemaps.org/schemas/sitemap/0.9}url'); locations=[row.find('{http://www.sitemaps.org/schemas/sitemap/0.9}loc').text for row in urls]
+              assert root.tag=='{http://www.sitemaps.org/schemas/sitemap/0.9}urlset'
+              assert 0<len(urls)<=50000 and len(locations)==len(set(locations))
+              assert all(url.startswith('https://www.reposhelf.co.uk/') for url in locations)
+              assert file.stat().st_size<50*1024*1024
+              print('PASS: well-formed XML, '+str(len(urls))+' unique canonical URLs, '+str(file.stat().st_size)+' uncompressed bytes')
+          XML
       - name: Wait for production and audit public discovery
         run: |
           node --input-type=module <<'AUDIT'
