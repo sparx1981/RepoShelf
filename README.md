@@ -138,3 +138,8 @@ GitHub sign-in and synced liked projects use Supabase, with database-enforced ow
 Follow [the activation guide](docs/ACCOUNTS_AND_ADMIN.md) to connect Supabase, apply the migration, enable GitHub OAuth, configure Vercel environment variables and grant your verified administrator role. The administration workspace is `/admin.html`. No real provider credentials are embedded in this repository.
 
 Administrators can view catalog sync history from their profile or the Sync log tab. New refreshes record exact ID additions, metadata updates, totals, stage outcomes and reported temporary failures; older runs display their GitHub Actions status without fabricated counts.
+
+
+## Search engine discovery
+
+Public category and project pages, canonical URLs, Open Graph/Twitter previews, structured data, `robots.txt`, and `/sitemap.xml` are generated during `npm run build`. [The SEO guide](docs/SEO.md) explains publication rules, canonical domain configuration, and search-engine submission. Run `npm run test:seo` for the SEO integration checks.
