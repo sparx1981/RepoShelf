@@ -22,8 +22,8 @@ jobs:
           import {auditDiscovery} from './scripts/audit-discovery.mjs';
           import {mkdir,writeFile} from 'node:fs/promises';
           let last;
-          for(let attempt=0;attempt<40;attempt++){
-           try{const report=await auditDiscovery('https://www.reposhelf.co.uk',{allowEmpty:true});await mkdir('artifacts',{recursive:true});await writeFile('artifacts/discovery-live.json',JSON.stringify(report,null,2));console.log('Production discovery audit: '+JSON.stringify(report));last=null;break}catch(error){last=error;console.log('Awaiting production release: '+error.message);if(attempt<39)await new Promise(resolve=>setTimeout(resolve,15000))}
+          for(let attempt=0;attempt<1;attempt++){
+           try{const report=await auditDiscovery('https://www.reposhelf.co.uk',{allowEmpty:true});await mkdir('artifacts',{recursive:true});await writeFile('artifacts/discovery-live.json',JSON.stringify(report,null,2));console.log('Production discovery audit: '+JSON.stringify(report));last=null;break}catch(error){last=error;console.log('Awaiting production release: '+error.message);if(attempt<0)await new Promise(resolve=>setTimeout(resolve,15000))}
           }
           if(last)throw last;
           AUDIT
