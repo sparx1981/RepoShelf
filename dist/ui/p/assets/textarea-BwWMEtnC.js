@@ -1,0 +1,1 @@
+import{j as a}from"./index-KoDGA9gA.js";import{c as o}from"./index-2uqsLyWL.js";function l({className:e,...t}){return a.jsx("textarea",{"data-slot":"textarea",className:o("cn-textarea flex field-sizing-content min-h-16 w-full outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50",e),...t})}export{l as T};

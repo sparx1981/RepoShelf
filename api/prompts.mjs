@@ -1,6 +1,7 @@
 // Prompt library (formerly SiteShelf). One function, several areas, to stay inside the 12-function Hobby limit.
 //   Public:    list, thumb, preview      - listing details, thumbnails and the live generated page.
 //   Signed in: detail, bundle            - the prompt text and the code. Never returned to guests.
+//   UI:        ui-detail                 - a UI component's prompt, code and supporting files (signed in).
 //   Admin:     admin-list, admin-get (GET); admin-save, admin-delete, admin-sync (POST) - manage the library.
 import {requireLegal} from '../lib/legal.mjs';
 import {createAccounts,respond,accountFailure,only,fail,readBody} from '../lib/accounts.mjs';
@@ -117,6 +118,16 @@ export function createPromptsHandler({accounts=createAccounts(),github=fetch}={}
         await member(req,res);
         const {source,id}=target(params),row=await find(source,id,LIST_COLUMNS+',prompt');
         return respond(res,200,{...publicItem(row),prompt:row.prompt});
+      }
+      if(area==='ui-detail'){
+        await member(req,res);
+        const id=idOf(params.get('id'));
+        if(!id)fail(400,'invalid_component','Choose a valid component.');
+        const [row]=await rows(`ui_items?id=eq.${q(id)}&published=eq.true&select=id,title,category,family,description,prompt,code,files,shadcn,npm&limit=1`);
+        if(!row)fail(404,'not_found','That component is not available.');
+        const paths=(row.files||[]).filter(p=>/^[a-zA-Z0-9_./-]{1,200}$/.test(p));
+        const files=paths.length?await rows(`ui_files?path=in.(${q(paths.map(p=>'"'+p+'"').join(','))})&select=path,content&order=path.asc`):[];
+        return respond(res,200,{...row,files});
       }
       if(area==='bundle'){
         await member(req,res);

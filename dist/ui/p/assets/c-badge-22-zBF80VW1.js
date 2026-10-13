@@ -1,0 +1,1 @@
+import{j as r}from"./index-KoDGA9gA.js";import{B as t}from"./badge-Ct2J1g21.js";import"./index-B8k91cqS.js";import"./clsx-B-dksMZM.js";import"./index-2uqsLyWL.js";import"./index-C6p621qs.js";function n(){return r.jsxs(t,{variant:"info-light",children:[r.jsx("span",{className:"ms-0.25 size-1.25 rounded-full! bg-[currentColor]"})," ","Badge"]})}export{n as default};

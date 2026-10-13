@@ -1,0 +1,1 @@
+import{j as t}from"./index-KoDGA9gA.js";import{B as r}from"./badge-Ct2J1g21.js";import"./index-B8k91cqS.js";import"./clsx-B-dksMZM.js";import"./index-2uqsLyWL.js";import"./index-C6p621qs.js";function n(){return t.jsx(r,{variant:"destructive-light",children:"Badge"})}export{n as default};

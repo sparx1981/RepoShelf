@@ -1,0 +1,5 @@
+import{j as e}from"./index-KoDGA9gA.js";import{B as r}from"./badge-Ct2J1g21.js";import{C as n,a as s,b as a,g as o}from"./code-block-DivkaxDr.js";import{B as l}from"./button-B8-NCv4s.js";import"./index-B8k91cqS.js";import"./clsx-B-dksMZM.js";import"./index-2uqsLyWL.js";import"./index-C6p621qs.js";const c=`export function parseAmount(input: string) {
+  const value = parseInt(input)
+  if (value == NaN) return 0
+  return value
+}`;function v(){return e.jsx("div",{className:"w-full max-w-2xl",children:e.jsxs(n,{code:c,language:"typescript",showLineNumbers:!0,lineLevels:{error:[3],warning:[2]},children:[e.jsxs(s,{children:[e.jsx(a,{children:"parse-amount.ts"}),e.jsxs("div",{className:"ml-auto flex items-center gap-1.5",children:[e.jsx(r,{variant:"destructive-light",children:"1 error"}),e.jsx(r,{variant:"warning-light",children:"1 warning"})]})]}),e.jsx(o,{children:({line:t,state:i})=>i?.level?e.jsxs(l,{size:"xs",variant:"outline",className:"bg-background",children:["Fix line ",t]}):null})]})})}export{v as default};

@@ -1,0 +1,1 @@
+import{c as e,t as i,m as r}from"./format-DISGvqdk.js";function u(n,t,s){return e(n,+i(n)+t)}function c(n,t,s){const o=i(n,s?.in);return o.setTime(o.getTime()+t*r),o}function m(n,t,s){return u(n,-1)}export{c as a,m as s};

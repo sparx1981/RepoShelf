@@ -1,0 +1,1 @@
+import{c as e}from"./createLucideIcon-DK5VjWTh.js";const c=[["rect",{width:"18",height:"18",x:"3",y:"3",rx:"2",key:"afitv7"}],["path",{d:"m9 12 2 2 4-4",key:"dzmm74"}]],o=e("square-check",c);export{o as S};

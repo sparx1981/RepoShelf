@@ -1,0 +1,1 @@
+import{j as a}from"./index-KoDGA9gA.js";import{C as o,a as s,b as t}from"./index-CYPAdwzg.js";function r({...l}){return a.jsx(o,{"data-slot":"collapsible",...l})}function n({...l}){return a.jsx(s,{"data-slot":"collapsible-trigger",...l})}function p({...l}){return a.jsx(t,{"data-slot":"collapsible-content",...l})}export{r as C,p as a,n as b};

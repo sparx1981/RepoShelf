@@ -1,0 +1,1 @@
+import{j as r}from"./index-KoDGA9gA.js";import{B as t}from"./button-B8-NCv4s.js";import"./index-B8k91cqS.js";import"./clsx-B-dksMZM.js";import"./index-2uqsLyWL.js";import"./index-C6p621qs.js";function p(){return r.jsx(t,{variant:"secondary",children:"Secondary"})}export{p as default};

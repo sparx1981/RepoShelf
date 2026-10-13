@@ -1,0 +1,1 @@
+import{r as a}from"./index-KoDGA9gA.js";import{u as i}from"./useBaseUiId-D7TsnVMQ.js";import{u as n}from"./ComboboxEmpty-BrTEu5N3.js";const x=a.forwardRef(function(e,t){const{render:l,className:m,style:c,children:r,...o}=e,s=n();return i("div",e,{ref:[t,s],props:[{children:r,role:"status","aria-live":"polite","aria-atomic":!0},o]})});export{x as C};

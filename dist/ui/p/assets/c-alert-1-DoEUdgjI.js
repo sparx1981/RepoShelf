@@ -1,0 +1,1 @@
+import{j as t}from"./index-KoDGA9gA.js";import{A as r,a as i,b as e}from"./alert-CE0zGwFQ.js";import"./index-B8k91cqS.js";import"./clsx-B-dksMZM.js";import"./index-2uqsLyWL.js";function p(){return t.jsxs(r,{children:[t.jsx(i,{children:"Alert!"}),t.jsx(e,{children:"This is an alert with a title and description."})]})}export{p as default};

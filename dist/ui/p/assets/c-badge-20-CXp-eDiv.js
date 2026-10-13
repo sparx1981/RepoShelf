@@ -1,0 +1,1 @@
+import{j as r}from"./index-KoDGA9gA.js";import{B as t}from"./badge-Ct2J1g21.js";import{C as o}from"./check-DFOrUz4o.js";import"./index-B8k91cqS.js";import"./clsx-B-dksMZM.js";import"./index-2uqsLyWL.js";import"./index-C6p621qs.js";import"./createLucideIcon-DK5VjWTh.js";function u(){return r.jsxs(t,{variant:"outline",children:[r.jsx(o,{}),"Badge"]})}export{u as default};

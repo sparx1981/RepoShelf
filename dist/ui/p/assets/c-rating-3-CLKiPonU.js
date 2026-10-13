@@ -1,0 +1,1 @@
+import{j as t}from"./index-KoDGA9gA.js";import{R as r}from"./rating-BJjQYP07.js";import"./index-B8k91cqS.js";import"./clsx-B-dksMZM.js";import"./index-2uqsLyWL.js";import"./star-DYZb3BfM.js";import"./createLucideIcon-DK5VjWTh.js";function s(){return t.jsx(r,{rating:4.5,showValue:!0})}export{s as default};

@@ -1,0 +1,1 @@
+import{j as t}from"./index-KoDGA9gA.js";import{S as r}from"./spinner-Bv4ZejPA.js";import"./index-2uqsLyWL.js";import"./loader-circle-Di5ju3St.js";import"./createLucideIcon-DK5VjWTh.js";function o(){return t.jsx("div",{className:"flex items-center justify-center gap-6",children:t.jsx(r,{})})}export{o as default};

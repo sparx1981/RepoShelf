@@ -1,0 +1,1 @@
+import{j as s}from"./index-KoDGA9gA.js";import{c as o}from"./index-2uqsLyWL.js";function r({className:t,...e}){return s.jsx("div",{"data-slot":"skeleton",className:o("cn-skeleton animate-pulse",t),...e})}export{r as S};

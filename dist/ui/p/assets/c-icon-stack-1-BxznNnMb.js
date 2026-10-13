@@ -1,0 +1,1 @@
+import{j as r}from"./index-KoDGA9gA.js";import{I as e}from"./icon-stack-CFI0V-yM.js";import{L as t}from"./layers-BSx-3Uda.js";import"./index-2uqsLyWL.js";import"./createLucideIcon-DK5VjWTh.js";function n(){return r.jsx("div",{className:"flex items-center justify-center",children:r.jsx(e,{"aria-hidden":"true",children:r.jsx(t,{className:"size-4"})})})}export{n as default};

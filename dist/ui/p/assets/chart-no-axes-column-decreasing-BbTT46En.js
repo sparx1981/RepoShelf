@@ -1,0 +1,1 @@
+import{c as e}from"./createLucideIcon-DK5VjWTh.js";const c=[["path",{d:"M5 21V3",key:"clc1r8"}],["path",{d:"M12 21V9",key:"uvy0l4"}],["path",{d:"M19 21v-6",key:"tkawy9"}]],o=e("chart-no-axes-column-decreasing",c);export{o as C};

@@ -1,0 +1,1 @@
+import{j as r}from"./index-KoDGA9gA.js";import{K as t,a as e}from"./kbd-CkdmPHPR.js";import"./index-2uqsLyWL.js";function a(){return r.jsx("div",{className:"flex items-center justify-center",children:r.jsxs(t,{children:[r.jsx(e,{children:"Ctrl"}),r.jsx(e,{children:"Shift"}),r.jsx(e,{children:"P"})]})})}export{a as default};

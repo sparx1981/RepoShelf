@@ -1,0 +1,1 @@
+import{j as e}from"./index-KoDGA9gA.js";import{T as a}from"./textarea-BwWMEtnC.js";import"./index-2uqsLyWL.js";function m(){return e.jsx("div",{className:"mx-auto w-full max-w-xs",children:e.jsx(a,{placeholder:"Type your message here…",className:"w-full"})})}export{m as default};

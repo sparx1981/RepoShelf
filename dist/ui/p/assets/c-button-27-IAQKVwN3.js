@@ -1,0 +1,1 @@
+import{j as t}from"./index-KoDGA9gA.js";import{B as r}from"./button-B8-NCv4s.js";import"./index-B8k91cqS.js";import"./clsx-B-dksMZM.js";import"./index-2uqsLyWL.js";import"./index-C6p621qs.js";function p(){return t.jsx(r,{asChild:!0,children:t.jsx("a",{href:"/",children:"Back to Home"})})}export{p as default};

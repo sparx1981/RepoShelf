@@ -1,0 +1,1 @@
+import{r as a}from"./index-KoDGA9gA.js";function p({timeout:e=2e3,onCopy:o}={}){const[i,r]=a.useState(!1);return{isCopied:i,copyToClipboard:t=>{typeof window>"u"||!navigator.clipboard.writeText||t&&navigator.clipboard.writeText(t).then(()=>{r(!0),o&&o(),e!==0&&setTimeout(()=>{r(!1)},e)},console.error)}}}export{p as u};

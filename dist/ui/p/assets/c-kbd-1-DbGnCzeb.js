@@ -1,0 +1,1 @@
+import{j as r}from"./index-KoDGA9gA.js";import{a as t}from"./kbd-CkdmPHPR.js";import"./index-2uqsLyWL.js";function n(){return r.jsxs("div",{className:"flex items-center justify-center gap-2",children:[r.jsx(t,{children:"Ctrl"}),r.jsx(t,{children:"⌘K"}),r.jsx(t,{children:"Ctrl + B"})]})}export{n as default};

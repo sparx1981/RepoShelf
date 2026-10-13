@@ -1,0 +1,1 @@
+import{c as o}from"./createLucideIcon-DK5VjWTh.js";const e=[["path",{d:"m17 18-6-6 6-6",key:"1yerx2"}],["path",{d:"M7 6v12",key:"1p53r6"}]],c=o("chevron-first",e);const t=[["path",{d:"m7 18 6-6-6-6",key:"lwmzdw"}],["path",{d:"M17 6v12",key:"1o0aio"}]],r=o("chevron-last",t);export{c as C,r as a};

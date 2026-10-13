@@ -1,0 +1,1 @@
+import{j as t}from"./index-KoDGA9gA.js";import{B as r}from"./button-B8-NCv4s.js";import{G as o}from"./github-icon-Rg-TO0nJ.js";import"./index-B8k91cqS.js";import"./clsx-B-dksMZM.js";import"./index-2uqsLyWL.js";import"./index-C6p621qs.js";function u(){return t.jsxs(r,{variant:"secondary",children:[t.jsx(o,{"aria-hidden":"true"}),"Github"]})}export{u as default};
