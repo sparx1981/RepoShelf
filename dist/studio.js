@@ -1,7 +1,7 @@
-import {recipe,svg,snippet} from './studio/core.mjs';
-import {gradientTool,drawSVG,png} from './studio/gradient.mjs';
-import {rampTool} from './studio/ramps.mjs';
-import {asciiTool} from './studio/ascii.mjs';
+import {recipe,svg,snippet} from '/studio/core.mjs';
+import {gradientTool,drawSVG,png} from '/studio/gradient.mjs';
+import {rampTool} from '/studio/ramps.mjs';
+import {asciiTool} from '/studio/ascii.mjs';
 const $=id=>document.getElementById(id),A=window.RepoAccount,KEEP='reposhelf.studio.resume.v1',PAGE=24;
 let active='gradient',initialized=false,timer,backgrounds=[],images=[],selectedBackground=null,selectedImage=null,backgroundLimit=PAGE,imageLimit=PAGE,saved=new Set(),savedFor=null;
 function status(message,error=false){$('studio-status').textContent=message;$('studio-status').dataset.error=String(error)}

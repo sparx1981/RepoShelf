@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
-import {mkdir,writeFile} from 'node:fs/promises';
+import {mkdir,writeFile,readFile} from 'node:fs/promises';
 import {createPromptsHandler} from '../api/prompts.mjs';
 const {chromium}=await import(process.env.REPOSHELF_PLAYWRIGHT_MODULE||'playwright');
-const base=process.env.REPOSHELF_STUDIO_TEST_URL||'http://127.0.0.1:3000';
+const built=process.env.REPOSHELF_STUDIO_BUILT==='1';
+const base=process.env.REPOSHELF_STUDIO_TEST_URL||(built?'https://studio.test':'http://127.0.0.1:3000');
 const out=new URL('../.impeccable/review/',import.meta.url);await mkdir(out,{recursive:true});
 const browser=await chromium.launch({headless:true,channel:'chromium',executablePath:process.env.REPOSHELF_CHROMIUM_PATH,args:['--no-sandbox']}),errors=[],metrics={};
 const member={id:'00000000-0000-0000-0000-000000000002',name:'Studio tester',githubConnected:true,providers:['github']};let signedIn=false,legalRequired=false;
@@ -10,9 +11,16 @@ const handler=createPromptsHandler({accounts:{config:{origin:base},legal:{active
 try{
  const context=await browser.newContext({viewport:{width:1440,height:1100},serviceWorkers:'block',acceptDownloads:true});
  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
+ if(built)await page.route('**/*',async route=>{
+  const u=new URL(route.request().url());if(u.origin!==base)return route.abort();
+  const file=new URL('../dist/'+u.pathname.slice(1),import.meta.url);
+  const types={html:'text/html',js:'application/javascript',mjs:'application/javascript',css:'text/css',json:'application/json',webp:'image/webp',png:'image/png',woff2:'font/woff2',svg:'image/svg+xml'};
+  try{return await route.fulfill({body:await readFile(file),contentType:types[u.pathname.split('.').pop()]||'application/octet-stream'})}
+  catch(error){if(error.code!=='ENOENT')throw error;errors.push('Missing built asset: '+u.pathname);return route.fulfill({status:404,body:'Not found'})}
+ });
  await page.route('**/api/**',async route=>{const u=new URL(route.request().url());if(u.pathname==='/api/auth')return route.fulfill({json:{enabled:true,analyticsEnabled:false,user:signedIn?member:null,legal:{active:true,required:legalRequired}}});if(u.pathname==='/api/collection')return route.fulfill({json:route.request().method()==='GET'?{items:[],nextCursor:null}:{liked:true}});if(u.pathname==='/api/forks')return route.fulfill({json:{items:[],sync:{lastAttemptAt:new Date().toISOString()}}});if(u.pathname==='/api/prompts'){const result={headers:{},getHeader(){},setHeader(){},writeHead(s,h){this.status=s;this.headers=h},end(b){this.body=b}};await handler({method:route.request().method(),url:u.pathname+u.search,headers:{}},result);return route.fulfill({status:result.status,headers:result.headers,body:result.body})}return route.continue()});
  await page.addInitScript(()=>localStorage.setItem('reposhelf.analytics.consent.v2','no'));
- await page.goto(base+'/studio.html');await page.waitForFunction(()=>document.querySelector('#background-count').textContent.includes('100 backgrounds'));
+ await page.goto(base+'/studio.html');assert.deepEqual(errors,[],'Studio must load every built asset before testing its controls.');await page.waitForFunction(()=>document.querySelector('#background-count').textContent.includes('100 backgrounds'));
  await page.locator('#gradient-canvas').screenshot({path:new URL('gradient-canvas.png',out).pathname});
  await page.screenshot({path:new URL('desktop.png',out).pathname,fullPage:true});
  assert.equal(await page.locator('#gradient-colours input[type=color]').count(),4);
