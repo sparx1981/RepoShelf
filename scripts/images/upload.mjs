@@ -1,9 +1,12 @@
 import {readFile,copyFile,mkdir} from 'node:fs/promises';
-import {root,work,json,atomic,flag,digest} from './common.mjs';
+import {root,work,json,atomic,flag,digest,prompts} from './common.mjs';
 const folder=new URL('processed/',work),index=await json(new URL('index.json',folder)),sizes=await json(new URL('sizes.json',folder)),available=Number(flag('available-bytes','0')),upload=process.argv.includes('--upload');
-if(index.length!==120||new Set(index.map(i=>i.category)).size!==12)throw Error('Release requires 120 accepted images across 12 categories.');
+const plan=new Map((await prompts()).map(i=>[i.id,i])),seen=new Set();
+if(!index.length||index.length>120)throw Error('Publish a non-empty reviewed batch of up to 120 images.');
+for(const item of index){if(seen.has(item.id)||plan.get(item.id)?.category!==item.category)throw Error('The batch contains a duplicate or unplanned image.');seen.add(item.id)}
+if(process.argv.includes('--complete')&&(index.length!==120||new Set(index.map(i=>i.category)).size!==12))throw Error('The complete release requires 120 accepted images across 12 categories.');
 if(!Number.isSafeInteger(available)||available<sizes.privateBytes)throw Error('Set --available-bytes to the verified remaining free storage allowance.');
-if(!upload){console.log(`Dry run: ${index.length} images, ${sizes.privateBytes} bytes, ${available} free bytes available. No network writes. Add --upload after applying the Studio migration.`);process.exit(0)}
+if(!upload){await new Promise(resolve=>process.stdout.write(`Dry run: ${index.length} images, ${sizes.privateBytes} bytes, ${available} free bytes available. No network writes. Add --upload after applying the Studio migration.\n`,resolve));process.exit(0)}
 const base=process.env.SUPABASE_URL,key=process.env.SUPABASE_SERVICE_ROLE_KEY||process.env.SUPABASE_SECRET_KEY;
 if(base!=='https://jccogltqhkffuderukrj.supabase.co'||!key)throw Error('Configure the existing RepoShelf project URL and service key in the environment. Never pass the key as a command argument.');
 const headers={apikey:key,Authorization:'Bearer '+key};
@@ -14,4 +17,4 @@ for(const item of index)for(const variant of ['web','full','original']){const na
 // Verify every private object before making its public catalogue visible.
 for(const item of index)for(const variant of ['web','full','original'])await request('/storage/v1/object/info/studio-images/'+item.files[variant]);
 const publicDir=new URL('dist/studio/images/',root);await mkdir(new URL('thumbs/',publicDir),{recursive:true});for(const item of index)await copyFile(new URL(`thumbs/${item.id}.webp`,folder),new URL(`thumbs/${item.id}.webp`,publicDir));await atomic(new URL('index.json',publicDir),index);
-console.log('120 images uploaded to private storage and verified. Public thumbnails and catalogue are ready for the application deployment.');
+console.log(`${index.length} images uploaded to private storage and verified. Public thumbnails and catalogue are ready for the application deployment.`);

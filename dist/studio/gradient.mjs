@@ -1,4 +1,4 @@
-import {recipe,svg,random,contrast,rgbToHex} from './core.mjs';
+import {recipe,svg,random,contrast,rgbToHex,animationDuration} from './core.mjs';
 export async function drawSVG(canvas,source){const url=URL.createObjectURL(new Blob([source],{type:'image/svg+xml'}));try{const image=new Image();image.src=url;await image.decode();canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height)}finally{URL.revokeObjectURL(url)}}
 export function canvasBlob(canvas){return new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(Error('The browser could not export this image.')),'image/png'))}
 export async function png(source,width=1920,height=Math.round(width*9/16)){const canvas=document.createElement('canvas');canvas.width=width;canvas.height=height;await drawSVG(canvas,source);return canvasBlob(canvas)}
@@ -15,12 +15,14 @@ export function gradientTool({change,status}){
   function sync(){state=recipe(state);$('gradient-type').value=state.type;$('gradient-angle').closest('label').hidden=!['linear','conic'].includes(state.type);$('gradient-angle').value=state.angle;$('gradient-angle-value').value=state.angle+'°';$('gradient-grain').value=state.grain;$('gradient-grain-value').value=state.grain+'%';$('gradient-animate').checked=state.animate;colours();pointControls();draw();change()}
   $('gradient-type').onchange=e=>{state.type=e.target.value;sync()};
   for(const [id,key] of [['gradient-angle','angle'],['gradient-grain','grain']])$(id).oninput=e=>{state[key]=Number(e.target.value);$(id+'-value').value=state[key]+(key==='angle'?'°':'%');draw();change()};
-  $('gradient-animate').onchange=e=>{state.animate=e.target.checked;draw();change()};
+  function animation(){const stage=$('gradient-stage');stage.style.setProperty('--studio-animation-duration',animationDuration(state)+'s');$('gradient-speed').value=state.speed;$('gradient-speed-value').value=state.speed+'×';$('gradient-speed').disabled=!state.animate;stage.classList.toggle('is-animated',state.animate)}
+  $('gradient-animate').onchange=e=>{state.animate=e.target.checked;animation();change()};
+  $('gradient-speed').oninput=e=>{state.speed=Number(e.target.value);animation();change()};
   $('gradient-add-colour').onclick=()=>{if(state.colors.length>=6)return;state.colors.push('#d6fb79');state.stops=state.colors.map((_,i)=>Math.round(i*100/(state.colors.length-1)));sync()};
   $('gradient-add-point').onclick=()=>{if(state.points.length>=9)return;state.points.push({x:.5,y:.5});sync()};$('gradient-remove-point').onclick=()=>{if(state.points.length<=3)return;state.points.pop();sync()};
   $('gradient-shuffle').onclick=()=>{state.seed=Math.floor(Math.random()*2147483647);const rnd=random(state.seed);state.points=state.points.map(()=>({x:rnd(),y:rnd()}));state.angle=Math.floor(rnd()*360);sync()};
   $('gradient-show-copy').onchange=e=>$('gradient-preview-copy').hidden=!e.target.checked;$('gradient-copy-tone').onchange=checkContrast;
   function move(event){const rect=canvas.getBoundingClientRect(),x=Math.max(0,Math.min(1,(event.clientX-rect.left)/rect.width)),y=Math.max(0,Math.min(1,(event.clientY-rect.top)/rect.height));state.points[drag]={x,y};draw();change()}
   canvas.onpointerdown=e=>{if(state.type!=='mesh')return;const rect=canvas.getBoundingClientRect();let distance=40;state.points.forEach((p,i)=>{const d=Math.hypot(rect.left+p.x*rect.width-e.clientX,rect.top+p.y*rect.height-e.clientY);if(d<distance){drag=i;distance=d}});if(drag>=0){canvas.setPointerCapture(e.pointerId);move(e)}};canvas.onpointermove=e=>{if(drag>=0)move(e)};const end=()=>{if(drag>=0){drag=-1;pointControls()}};canvas.onpointerup=end;canvas.onpointercancel=end;
-  sync();return {get:()=>recipe(state),set:v=>{state=recipe(v);sync()},width:()=>Number($('gradient-size').value)};
+  sync();animation();return {get:()=>recipe(state),set:v=>{state=recipe(v);sync();animation()},width:()=>Number($('gradient-size').value)};
 }

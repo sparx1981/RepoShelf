@@ -170,7 +170,7 @@ Canvas and gallery previews use a (16:9) ratio. Colour ramps remain eleven equal
 
 Most interface depth comes from tonal surfaces and restrained strokes. Dialogs use a diffuse shadow (0 30px 90px #0008) over the shared translucent overlay and backdrop blur (5px). Studio mesh handles use a small local shadow (0 2px 6px #0007), while light sample headlines use a text shadow (0 2px 12px #0007); dark sample headlines remove it. These support legibility over artwork rather than elevating every container.
 
-State transitions use background, colour and transform over (.2s). Optional preview drift uses a (12s ease-in-out) alternating cycle. Reduced-motion rules disable shared transitions and Studio drift.
+State transitions use background, colour and transform over (.2s). Optional preview drift defaults to a (4s ease-in-out) alternating cycle, with a ¼×–4× speed slider; the selected speed is retained in shared recipes and code exports. Reduced-motion rules disable shared transitions and Studio drift.
 
 ## Shapes
 

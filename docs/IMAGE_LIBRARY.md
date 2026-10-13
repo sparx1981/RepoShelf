@@ -1,8 +1,8 @@
 # Offline image library
 
-Approved first release: **120 reviewed images across twelve categories**, after Studio's tools and procedural backgrounds. Images are generated with the image tool available in the conversation, registered locally and uploaded to existing private Supabase Storage. There is no paid Images API, API key or visitor-triggered generation route.
+Planned collection: **120 reviewed images across twelve categories**, published in reviewed batches after Studio's tools and procedural backgrounds. Images are generated with the image tool available in the conversation, registered locally and uploaded to existing private Supabase Storage. There is no paid Images API, API key or visitor-triggered generation route.
 
-The collection is being produced and is not yet published. The committed public index remains empty until all private objects have been uploaded and verified. Do not add placeholder AI images or expose originals under `dist/`.
+The first batch contains 20 reviewed images across twelve categories. Each batch becomes public only after every private download has been uploaded and verified. Do not add placeholder AI images or expose originals under `dist/`.
 
 ## Production workflow
 
@@ -11,7 +11,7 @@ The collection is being produced and is not yet published. The committed public 
 3. Run `node scripts/images/contact-sheet.mjs` and inspect the contact sheets in `artifacts/images/`. Review at least a 24-image pilot, two per category, before expanding. The assistant handles curation as requested by the owner. Reject text, logo/face resemblance, malformed geometry, banding, near-duplicates and poor composition.
 4. Record accepted IDs in `work/images/review.json`, for example `{ "soft-gradients-01": { "accepted": true, "hash": "<manifest hash>", "notes": "Reviewed: calm left third; no text, faces or logos." } }`. Acceptance applies only to the exact reviewed original; changed files require another review.
 5. Run `node scripts/images/process.mjs --max-bytes 800000000`. It preserves original PNG bytes, including embedded provenance, and creates 1600- and 2560-pixel WebPs and public thumbnails. Larger exports can be enlarged; catalogue metadata discloses this. Square textures retain square download variants. All output is staged under `work/images/processed/`, with a byte report. An exceeded budget stops processing without uploading or publishing.
-6. Check the existing project's plan, used storage and current free allowance. Run `node scripts/images/upload.mjs --available-bytes <verified remaining free bytes>` for a dry run. The release requires 120 reviewed entries in twelve categories.
+6. Check the existing project's plan, used storage and current free allowance. Run `node scripts/images/upload.mjs --available-bytes <verified remaining free bytes>` for a dry run. Reviewed batches can contain fewer than 120 entries. Add `--complete` to require all 120 entries across twelve categories.
 7. Apply the Studio migration first, then run the same command with `--upload` using `SUPABASE_URL` and the existing service key in the environment only. Never put a key in chat, command arguments, public files or Git. The uploader accepts only RepoShelf's existing project URL, verifies a private bucket, resumes by object hash, and verifies every private object before copying the public catalogue and thumbnails into `dist/studio/images/`.
 
 ## Storage and membership
@@ -26,4 +26,10 @@ Every published item is marked AI-generated. Metadata includes the reported prov
 
 ## Checks
 
-`node tests/images.mjs` validates prompts, the resumable reviewed pipeline, unchanged original bytes, enlargement disclosure, private signed downloads, guest refusal and stale legal acceptance. Add `--release` before publishing to require all 120 public entries. Browser/image downloads must also be checked against the configured storage project before release.
+`node tests/images.mjs` validates prompts, the resumable reviewed pipeline, unchanged original bytes, enlargement disclosure, private signed downloads, guest refusal and stale legal acceptance. Add `--release` when completing the full collection to require all 120 public entries. Browser/image downloads must also be checked against the configured storage project before release.
+
+## First-batch import
+
+The first batch uses the connected Supabase management tools for a temporary, single-purpose import job. Each invocation requires a short-lived random ticket and can write only its embedded, reviewed files to the private bucket. The job checks local hashes before upload and downloads each stored file to verify its hash afterward. The temporary HTTP transport is restricted to the database operator and removed after the import; the import function is closed and JWT protection is enabled. Original PNGs and download WebPs stay out of the public repository. Later batches may use the environment-based uploader with the same private-storage checks.
+
+Provider terms checked on 2026-10-13: [OpenAI Europe Terms of Use](https://openai.com/policies/eu-terms-of-use/), Content section. Output ownership is assigned to the user as between OpenAI and the user, subject to applicable law; output can be similar to other users' output. The collection retains AI disclosure and non-exclusive project-use terms.

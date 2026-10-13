@@ -11,8 +11,10 @@ export function recipe(value={}){
   const points=Array.isArray(value.points)?value.points.slice(0,9).map(p=>({x:clamp(Number(p?.x)||0,0,1),y:clamp(Number(p?.y)||0,0,1)})):DEFAULT.points.map(p=>({...p}));
   const pairs=palette.map((color,i)=>{const n=Number(value.stops?.[i]);return {color,stop:clamp(Number.isFinite(n)?n:i*100/(palette.length-1),0,100)}}).sort((a,b)=>a.stop-b.stop);
   const stops=pairs.map(p=>p.stop);
-  return {type:TYPES.includes(value.type)?value.type:DEFAULT.type,colors:pairs.map(p=>p.color),stops,angle:clamp(Number(value.angle??135)||0,0,360),grain:clamp(Number(value.grain??6)||0,0,25),seed:clamp(Math.floor(Number(value.seed??42)||0),0,2147483647),points:points.length>=3?points:DEFAULT.points.map(p=>({...p})),animate:value.animate===true};
+  const speed=Number(value.speed??1);
+  return {type:TYPES.includes(value.type)?value.type:DEFAULT.type,colors:pairs.map(p=>p.color),stops,angle:clamp(Number(value.angle??135)||0,0,360),grain:clamp(Number(value.grain??6)||0,0,25),seed:clamp(Math.floor(Number(value.seed??42)||0),0,2147483647),points:points.length>=3?points:DEFAULT.points.map(p=>({...p})),animate:value.animate===true,speed:clamp(Number.isFinite(speed)?speed:1,.25,4)};
 }
+export const animationDuration=input=>Number((4/recipe(input).speed).toFixed(2));
 function gradients(r){return r.colors.map((color,i)=>`<radialGradient id="g${i}"><stop stop-color="${color}"/><stop offset="1" stop-color="${color}" stop-opacity="0"/></radialGradient>`).join('')}
 function mesh(r){return r.points.map((p,i)=>`<ellipse cx="${p.x*1000}" cy="${p.y*562.5}" rx="${560+i%3*110}" ry="${380+i%2*100}" fill="url(#g${i%r.colors.length})"/>`).join('')}
 function wave(r,aurora=false){const rnd=random(r.seed);return Array.from({length:aurora?7:12},(_,i)=>{const y=130+i*(aurora?40:35),bend=(rnd()-.5)*450;return `<path d="M-150 ${y+bend} C200 ${y-220},520 ${y+260+bend},1150 ${y-bend}" fill="none" stroke="${r.colors[i%r.colors.length]}" stroke-width="${aurora?40+rnd()*80:12+rnd()*30}" opacity="${aurora?.45:.35}"${aurora?' filter="url(#blur)"':''}/>`}).join('')}
@@ -35,7 +37,7 @@ export function css(input){
   let bg=r.type==='linear'?`linear-gradient(${r.angle}deg, ${stops})`:r.type==='conic'?`conic-gradient(from ${r.angle}deg, ${stops})`:null;
   // Mesh/aurora/wave and grain use the same original vector renderer for faithful exports.
   if(!bg||r.grain)bg=`url("data:image/svg+xml,${encodeURIComponent(svg(r))}")`;
-  return `.studio-background {\n  background: ${bg};\n  background-color: ${r.colors[0]};\n  background-size: 100% 100%;\n  min-height: 20rem;\n}${r.animate?'\n@media (prefers-reduced-motion: no-preference) {\n  .studio-background { background-size: 115% 115%; animation: studio-drift 12s ease-in-out infinite alternate; }\n}\n@keyframes studio-drift { from { background-position: 0% 0%; } to { background-position: 100% 100%; } }':''}`;
+  return `.studio-background {\n  background: ${bg};\n  background-color: ${r.colors[0]};\n  background-size: 100% 100%;\n  min-height: 20rem;\n}${r.animate?`\n@media (prefers-reduced-motion: no-preference) {\n  .studio-background { background-size: 115% 115%; animation: studio-drift ${animationDuration(r)}s ease-in-out infinite alternate; }\n}\n@keyframes studio-drift { from { background-position: 0% 0%; } to { background-position: 100% 100%; } }`:''}`;
 }
 export function snippet(input,format='css'){
   if(format==='css')return css(input);
@@ -63,4 +65,4 @@ export function ascii(pixels,width,height,{characters=CHAR_RAMPS[0],dither=false
   const lum=new Float32Array(width*height);for(let i=0;i<lum.length;i++){const alpha=pixels[i*4+3]/255;lum[i]=(.2126*pixels[i*4]+.7152*pixels[i*4+1]+.0722*pixels[i*4+2])*alpha+255*(1-alpha)}
   const lines=[];for(let y=0;y<height;y++){let line='';for(let x=0;x<width;x++){const k=y*width+x,v=clamp(lum[k],0,255),n=Math.round(v/255*(chars.length-1));line+=chars[invert?chars.length-1-n:n];if(dither){const err=v-n*255/(chars.length-1);if(x+1<width)lum[k+1]+=err*7/16;if(y+1<height){if(x)lum[k+width-1]+=err*3/16;lum[k+width]+=err*5/16;if(x+1<width)lum[k+width+1]+=err/16}}}lines.push(line)}return lines.join('\n');
 }
-export function asciiSVG(text,foreground='#d6fb79',background='#101113'){const lines=text.split('\n'),w=Math.max(...lines.map(s=>Array.from(s).length))*6+24,h=lines.length*12+24;return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="${background}"/><g font-family="monospace" font-size="10" fill="${foreground}" xml:space="preserve">${lines.map((s,i)=>`<text x="12" y="${24+i*12}">${xml(s)}</text>`).join('')}</g></svg>`}
+export function asciiSVG(text,foreground='#d6fb79',background='#101113'){const lines=text.split('\n'),w=Math.max(...lines.map(s=>Array.from(s).length))*6+32,h=lines.length*14+32;return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"><rect width="100%" height="100%" fill="${background}"/><g font-family="monospace" font-size="10" fill="${foreground}" xml:space="preserve">${lines.map((s,i)=>`<text x="16" y="${26+i*14}">${xml(s)}</text>`).join('')}</g></svg>`}
