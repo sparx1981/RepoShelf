@@ -1,0 +1,35 @@
+import assert from 'node:assert/strict';
+import {readFile,writeFile,mkdir,mkdtemp,rm,readdir,stat} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {join} from 'node:path';
+import {execFile} from 'node:child_process';
+import {promisify} from 'node:util';
+import sharp from 'sharp';
+import {createAccounts,fail} from '../lib/accounts.mjs';
+import {createPromptsHandler} from '../api/prompts.mjs';
+import {imageDownload,studioItem} from '../lib/studio.mjs';
+const rows=JSON.parse(await readFile(new URL('../scripts/images/prompts.json',import.meta.url),'utf8'));
+assert.equal(rows.length,120);assert.equal(new Set(rows.map(r=>r.id)).size,120);assert.equal(new Set(rows.map(r=>r.category)).size,12);
+for(const category of new Set(rows.map(r=>r.category)))assert.equal(rows.filter(r=>r.category===category).length,10);
+const index=JSON.parse(await readFile(new URL('../dist/studio/images/index.json',import.meta.url),'utf8'));
+if(process.argv.includes('--release'))assert.equal(index.length,120,'the published image release is complete');
+let totalThumbs=0;for(const item of index){assert.equal(item.ai,true);assert.match(item.originalHash,/^[a-f0-9]{64}$/);assert.ok(item.width&&item.height);totalThumbs+=(await stat(new URL(`../dist/studio/images/thumbs/${item.id}.webp`,import.meta.url))).size}assert.ok(totalThumbs<10000000);
+const fixture={id:'test-image',files:{web:'test-image/web.webp',full:'test-image/full.webp',original:'test-image/original.png'}},calls=[];let accepted=false;
+const accounts=createAccounts({legal:{active:true,acceptance:true,version:'image-test'},config:{url:'https://fixture.supabase.co',key:'public-test-key',serviceKey:'server-test-secret',origin:'https://reposhelf.test'},fetcher:async(url,opts)=>{const u=new URL(url),token=opts.headers.Authorization?.replace('Bearer ',''),body=opts.body?JSON.parse(opts.body):null;calls.push({path:u.pathname,body,apikey:opts.headers.apikey});const json=(d,status=200)=>new Response(JSON.stringify(d),{status,headers:{'Content-Type':'application/json'}});if(u.pathname==='/auth/v1/user')return token==='member'?json({id:'00000000-0000-0000-0000-000000000002',identities:[],user_metadata:{}}):json({},401);if(u.pathname==='/rest/v1/legal_acceptances')return json(accepted?[{accepted_at:'2026-10-13'}]:[]);if(u.pathname.startsWith('/storage/v1/object/sign/studio-images/'))return json({signedURL:u.pathname.replace('/storage/v1','')+'?token=fixture-token'});return json({},404)}});
+const handler=createPromptsHandler({accounts,studio:{async item(source,id){if(id==='test-image')return fixture;return studioItem(source,id)},download:imageDownload}});
+async function run(url,token){const out={headers:{},getHeader(){},setHeader(){},writeHead(s,h){this.status=s;this.headers=h},end(b){this.text=String(b);this.data=JSON.parse(this.text)}};await handler({url,method:'GET',headers:{...token?{cookie:'__Host-reposhelf-access='+token}:{}}},out);return out}
+let r=await run('/api/prompts?area=image-download&id=test-image&variant=full');assert.equal(r.status,401);
+r=await run('/api/prompts?area=image-download&id=test-image&variant=full','member');assert.equal(r.status,428);assert.ok(!calls.some(c=>c.path.includes('/storage/')),'no URL issued before legal acceptance');
+accepted=true;r=await run('/api/prompts?area=image-download&id=test-image&variant=full','member');assert.equal(r.status,200);assert.equal(r.data.expiresIn,60);assert.equal(new URL(r.data.url).origin,'https://fixture.supabase.co');assert.equal(r.headers['Cache-Control'],'private, no-store');assert.equal(calls.at(-1).apikey,'server-test-secret');assert.equal(calls.at(-1).body.expiresIn,60);
+assert.equal((await run('/api/prompts?area=image-download&id=test-image&variant=../../raw','member')).status,400);assert.equal((await run('/api/prompts?area=image-download&id=../../raw&variant=full','member')).status,400);assert.equal((await run('/api/prompts?area=image-download&id=unknown-one&variant=full','member')).status,404);
+await assert.rejects(()=>imageDownload(accounts,{id:'test-image',files:{full:'another-image/full.webp'}},'full'),e=>e.status===503);
+// Test the actual offline pipeline with synthetic fixtures, never publish them.
+const folder=await mkdtemp(join(tmpdir(),'reposhelf-images-test-')),exec=promisify(execFile),env={...process.env,REPOSHELF_IMAGE_WORKDIR:folder};
+try{const incoming=join(folder,'incoming');await mkdir(incoming);const id=rows[0].id,original=await sharp({create:{width:640,height:360,channels:3,background:'#708f69'}}).png().toBuffer();await writeFile(join(incoming,id+'.png'),original);
+ const call=script=>exec(process.execPath,['scripts/images/'+script],{cwd:new URL('../',import.meta.url).pathname,env,maxBuffer:1000000});
+ await call('ingest.mjs');const manifest=JSON.parse(await readFile(join(folder,'manifest.json'),'utf8'));await call('ingest.mjs');assert.equal(Object.keys(JSON.parse(await readFile(join(folder,'manifest.json'),'utf8'))).length,1,'ingest resumes without duplication');
+ await writeFile(join(folder,'review.json'),JSON.stringify({[id]:{accepted:true,hash:'stale'}}));await call('process.mjs');assert.equal(JSON.parse(await readFile(join(folder,'processed/index.json'),'utf8')).length,0,'a changed image must be reviewed again');
+ await writeFile(join(folder,'review.json'),JSON.stringify({[id]:{accepted:true,hash:manifest[id].hash}}));await call('process.mjs');const processed=JSON.parse(await readFile(join(folder,'processed/index.json'),'utf8'));assert.equal(processed.length,1);assert.deepEqual(await readFile(join(folder,'processed',id,'original.png')),original,'original metadata and bytes are preserved');const meta=await sharp(join(folder,'processed',id,'full.webp')).metadata();assert.equal(meta.width,2560);assert.equal(meta.height,1440);assert.equal(processed[0].upscaled,true);
+ await assert.rejects(()=>exec(process.execPath,['scripts/images/process.mjs','--max-bytes','1'],{cwd:new URL('../',import.meta.url).pathname,env,maxBuffer:1000000}));
+}finally{await rm(folder,{recursive:true,force:true})}
+console.log(`PASS: 120 prompts in 12 categories; ${index.length} published images; reviewed/resumable offline pipeline; unchanged originals; bounded private member downloads and legal gate.`);

@@ -7,6 +7,7 @@ import {requireLegal} from '../lib/legal.mjs';
 import {createAccounts,respond,accountFailure,only,fail,readBody} from '../lib/accounts.mjs';
 import {createSceneAiSync} from '../lib/sceneai-sync.mjs';
 import {CREDIT_NAME,createMotionSitesImport,fetchMotionSitesFiles} from '../lib/motionsites-import.mjs';
+import {studioItem,backgroundDetail,imageDownload} from '../lib/studio.mjs';
 
 const SOURCES=['siteshelf','sceneai'];
 const LIST_COLUMNS='source,source_id,title,category,description,type,thumbnail,animated_thumbnail,source_url,created_at,updated_at';
@@ -33,7 +34,7 @@ function publicCache(res,status,data,seconds){
   res.end(JSON.stringify(data));
 }
 
-export function createPromptsHandler({accounts=createAccounts(),github=fetch}={}){
+export function createPromptsHandler({accounts=createAccounts(),github=fetch,studio={item:studioItem,background:backgroundDetail,download:imageDownload}}={}){
   const rows=(path)=>accounts.request('/rest/v1/'+path,{service:true});
   async function find(source,id,columns){
     const [row]=await rows(`ss_prompts?source=eq.${q(source)}&source_id=eq.${q(id)}&published=eq.true&select=${columns}&limit=1`);
@@ -128,6 +129,19 @@ export function createPromptsHandler({accounts=createAccounts(),github=fetch}={}
         const paths=(row.files||[]).filter(p=>/^[a-zA-Z0-9_./-]{1,200}$/.test(p));
         const files=paths.length?await rows(`ui_files?path=in.(${q(paths.map(p=>'"'+p+'"').join(','))})&select=path,content&order=path.asc`):[];
         return respond(res,200,{...row,files});
+      }
+      if(area==='studio-access'){
+        await member(req,res);
+        return respond(res,200,{allowed:true});
+      }
+      if(area==='studio-background'){
+        await member(req,res);
+        return respond(res,200,studio.background(await studio.item('bg',params.get('id'))));
+      }
+      if(area==='image-download'){
+        await member(req,res);
+        const item=await studio.item('img',params.get('id'));
+        return respond(res,200,await studio.download(accounts,item,params.get('variant')));
       }
       if(area==='bundle'){
         await member(req,res);

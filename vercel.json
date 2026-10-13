@@ -186,6 +186,15 @@
           "value": "public, max-age=0, must-revalidate"
         }
       ]
+    },
+    {
+      "source": "/studio/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=300, stale-while-revalidate=3600"
+        }
+      ]
     }
   ],
   "functions": {
@@ -245,7 +254,7 @@
       "maxDuration": 30
     },
     "api/prompts.mjs": {
-      "includeFiles": "{dist/{taxonomy,providers,quality,community,editorial,storefront,discovery,picks,viewer-config}.js,data/listing-controls.json}",
+      "includeFiles": "{dist/{taxonomy,providers,quality,community,editorial,storefront,discovery,picks,viewer-config}.js,data/listing-controls.json,dist/studio/index.json,dist/studio/images/index.json}",
       "excludeFiles": "{tests/**,node_modules/{sharp,@img,*esbuild*,@vercel/nft}/**,dist/{catalog*,spaces*,assets/**,.asset-html/**,previews/**},data/{browse,readmes,context,sync-runs}/**,data/runtime/**}",
       "maxDuration": 30
     }

@@ -11,3 +11,5 @@ if(manifest.display!=='standalone'||manifest.start_url!=='/'||manifest.scope!=='
 for(const icon of manifest.icons)if(!existsSync('dist'+icon.src))throw Error('Missing app icon '+icon.src);
 if(!existsSync('dist/icons/apple-touch-icon.png'))throw Error('Missing Apple app icon');
 console.log('RepoShelf static build validated. Output: dist/');
+
+for(const file of ['dist/studio.js','dist/studio/core.mjs','dist/studio/gradient.mjs','dist/studio/ramps.mjs','dist/studio/ascii.mjs','lib/studio.mjs','scripts/build-studio-library.mjs','scripts/images/ingest.mjs','scripts/images/contact-sheet.mjs','scripts/images/process.mjs','scripts/images/upload.mjs'])execFileSync(process.execPath,['--check',file],{stdio:'inherit'});
