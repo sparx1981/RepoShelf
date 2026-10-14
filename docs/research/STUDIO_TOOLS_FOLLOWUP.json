@@ -1,0 +1,104 @@
+{
+  "reviewedAt": "2026-10-14",
+  "catalogueSource": "data/catalogue-quality.json",
+  "entriesExamined": 53278,
+  "matches": [
+    {
+      "full": "VincentGarreau/particles.js",
+      "description": "A lightweight JavaScript library for creating particles",
+      "license": "MIT",
+      "demo": "http://vincentgarreau.com/particles.js/",
+      "consideration": "Lightweight particle interaction reference; inspect maintenance/accessibility before choosing it over tsParticles."
+    },
+    {
+      "full": "tsparticles/tsparticles",
+      "description": "tsParticles - Easily create highly customizable JavaScript particles effects, confetti explosions and fireworks animations and use them as animated backgrounds for your website. Ready to use components available for React.js, Vue.js (2.x and 3.x), Angular, Svelte, jQuery, Preact, Inferno, Solid, Riot and Web Components.",
+      "license": "MIT",
+      "demo": "https://particles.js.org/",
+      "consideration": "Potential emitter, particle shape, interaction and trail presets; choose a small module set and protect reduced-motion/visibility behaviour."
+    },
+    {
+      "full": "omgovich/react-colorful",
+      "description": "\ud83c\udfa8 A tiny (3,1 KB) color picker component for React and Preact apps",
+      "license": "MIT",
+      "demo": "https://omgovich.github.io/react-colorful",
+      "consideration": "Keyboard/touch interaction and colour input patterns. Source inspected; React runtime not needed for Studio."
+    },
+    {
+      "full": "web-padawan/vanilla-colorful",
+      "description": "A tiny color picker custom element for modern web apps (2.7 KB) \ud83c\udfa8",
+      "license": "MIT",
+      "demo": "https://web-padawan.github.io/vanilla-colorful/",
+      "consideration": "Framework-free accessible picker reference. Keep native sliders and pointer input; custom element could be evaluated if a richer picker is needed."
+    },
+    {
+      "full": "collidingScopes/particular-drift",
+      "description": "Turn images into flowing particle animations. Built with js, webgl / glsl, and html5 canvas",
+      "license": "MIT",
+      "demo": "https://particular-drift.netlify.app**/",
+      "consideration": "Potential image-to-particle tool. Upstream README fetch currently returns404; verify source availability before reuse."
+    },
+    {
+      "full": "KumarSashank/motiscope",
+      "description": "Recreate any web animation from a screen recording. A motion-design plugin: analyzes motion (timing, easing, stagger, loops) and rebuilds it as GSAP / CSS / Framer Motion / Lottie code.",
+      "license": "MIT",
+      "demo": "https://kumarsashank.github.io/motiscope/",
+      "consideration": "Potential timeline/easing inspector; investigate local-first export and avoid adding paid AI processing."
+    },
+    {
+      "full": "radial-color-picker/vue-color-picker",
+      "description": "Radial Color Picker - Vue",
+      "license": "MIT",
+      "demo": "https://radial-color-picker.github.io/vue-color-picker/",
+      "consideration": "Wheel geometry and hue interaction reference; Vue dependency unnecessary for the current native SVG wheel."
+    },
+    {
+      "full": "johnowhitaker/inkwash",
+      "description": "Pen-and-ink with living water \u2014 single-file fluid ink drawing app",
+      "license": "MIT",
+      "demo": "https://johnowhitaker.github.io/inkwash/",
+      "consideration": "Potential wet/dry ink, pressure-sensitive brushes and fix-to-paper controls. WebGL2 requirement needs a bounded fallback."
+    },
+    {
+      "full": "georgedoescode/fluid-design-system-on-demand-builders",
+      "description": "Generate fluid, custom property based design systems on the fly \u2014 entirely based on Utopia",
+      "license": null,
+      "demo": "https://codepen.io/georgedoescode/pen/dyJxqNP",
+      "consideration": "Potential fluid spacing/type token generator; licence not declared in catalogue, so reference only until clarified."
+    },
+    {
+      "full": "BIAsia/oreo-design-avatar",
+      "description": "SVG soft gradient avatar generator \u2014 6 shape families \u00d7 40 palettes, light/dark, OKLCH tone controls, zero-dependency SVG. Part of Oreo Design Component",
+      "license": "MIT",
+      "demo": "https://oreo-design-avatar.vercel.app/",
+      "consideration": "Potential geometric SVG avatars with OKLCH controls; licence and source require review before bundling."
+    }
+  ],
+  "sourceReads": [
+    {
+      "repo": "omgovich/react-colorful",
+      "path": "README.md",
+      "blob": "b36278638e5dbaba177528f96becb7930efe3527"
+    },
+    {
+      "repo": "omgovich/react-colorful",
+      "path": "src/components/common/Interactive.tsx",
+      "blob": "977477dee584f4a54b6d8819e44f10874a2c92f9"
+    },
+    {
+      "repo": "web-padawan/vanilla-colorful",
+      "path": "README.md",
+      "blob": "e1e914970fb8a069ad5cfe130e9b4ef64560f218"
+    },
+    {
+      "repo": "johnowhitaker/inkwash",
+      "path": "README.md",
+      "blob": "6ea76569d28725929bac46a2022c1b4acb80aa07"
+    },
+    {
+      "repo": "johnowhitaker/inkwash",
+      "path": "index.html lines1-100",
+      "blob": "0c540d957dfe752028d8cf72fbf11f8571bb8348"
+    }
+  ]
+}
