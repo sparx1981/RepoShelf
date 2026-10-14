@@ -1,8 +1,8 @@
 # Offline image library
 
-Planned collection: **120 reviewed images across twelve categories**, published in reviewed batches after Studio's tools and procedural backgrounds. Images are generated with the image tool available in the conversation, registered locally and uploaded to existing private Supabase Storage. There is no paid Images API, API key or visitor-triggered generation route.
+Collection: **120 reviewed images across twelve categories**, published in reviewed batches after Studio's tools and procedural backgrounds. Images are generated with the image tool available in the conversation, registered locally and uploaded to existing private Supabase Storage. There is no paid Images API, API key or visitor-triggered generation route.
 
-The first batch contains 20 reviewed images across twelve categories. Each batch becomes public only after every private download has been uploaded and verified. Do not add placeholder AI images or expose originals under `dist/`.
+The collection launched with 20 reviewed images and now contains ten images in each of twelve categories. Three images also offer optional motion previews and private MP4 downloads. Each batch becomes public only after every private download has been uploaded and verified. Do not add placeholder AI images or expose originals under `dist/`.
 
 ## Production workflow
 
