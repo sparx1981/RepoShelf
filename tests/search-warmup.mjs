@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import {createServer} from 'node:http';
 import {createEditorialHandler} from '../api/editorial.mjs';
-// GET /api/editorial?action=warm loads the catalogue and search text ahead of a person's first query. It answers 204, is never cached, and cannot fail the page.
+// GET /api/editorial?action=warm prepares search candidate lookup ahead of a person's first query. It answers 204, is never cached, and cannot fail the page.
 let warmed=0,fail=false;
 const browse={warm:async()=>{warmed++;if(fail)throw Error('Catalogue unavailable')}},accounts={config:{origin:'https://example.org'},ready:false,origin(){}};
 const server=createServer(createEditorialHandler({accounts,browse,checkpoint:{json:async()=>null}}));await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));

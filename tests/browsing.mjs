@@ -19,7 +19,7 @@ const community={mentions:[{full:repos[1].full,source:'hackernews',id:'42',url:'
 try{
  await mkdir(new URL('dist/',root));for(const [name,data] of Object.entries({'catalog.json':{updatedAt:new Date(now).toISOString(),repositories:repos},'spaces.json':spaces,'community.json':community}))await writeFile(new URL('dist/'+name,root),JSON.stringify(data));
  const generated=await generateBrowseIndex(root),index=generated.index,service=createBrowseService({root});
- { const cold=createBrowseService({root});assert.equal((await cold.publicDataset()).textLoaded,undefined,'search text is not loaded until needed');await cold.warm();assert.equal((await cold.publicDataset()).textLoaded,true,'warming loads the search text ahead of the first query');}
+ { const cold=createBrowseService({root});assert.equal((await cold.publicDataset()).textLoaded,undefined,'search text is not loaded until needed');await cold.warm();assert.equal((await cold.publicDataset()).searchReady,true,'warming prepares candidate lookup without loading the full search text');}
  const onDisk=JSON.parse(await readFile(new URL('data/browse/index.json',root))),searchFile=JSON.parse(gunzipSync(await readFile(new URL('data/browse/search.json.gz',root))).toString());
  { // Public requests load only the published part; the parts merge back into the complete list, in order, for administrators.
   const pub=JSON.parse(await readFile(new URL('data/browse/index-pub.json',root))),rest=JSON.parse(await readFile(new URL('data/browse/index-rest.json',root))),full=JSON.parse(await readFile(new URL('data/browse/index.json',root))),at=Q.evidenceTime(full.snapshots.catalog);

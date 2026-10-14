@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {createRequire} from 'node:module';
+import {buildSearchCandidates,candidateIds} from '../lib/search-candidates.mjs';
 const require=createRequire(import.meta.url),Fast=require('../dist/browse.js'),Reference=require('./support/browse-reference.cjs');
 // The optimised matcher must return exactly what the original did, whether records are raw or prepared (normalised text from the search file).
 let seed=20261011;const rand=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296},pick=list=>list[Math.floor(rand()*list.length)];
@@ -24,3 +25,9 @@ probe.name='Theta';assert.equal(Fast.searchMatch(probe,'theta').reason,'Matches 
 probe.topics=['sigma-topic'];assert.equal(Fast.searchMatch(probe,'sigma').reason,'Matches tags');
 assert(matched>2000,'the corpus must produce a meaningful number of matches ('+matched+')');
 console.log(`PASS: optimised search matcher equals the original on ${compared} record/query pairs (${matched} matches), raw and prepared records, and tracks edits.`);
+
+
+const candidateRecords=prepared.map((r,i)=>({...r,full:r.full+'-'+i})),referenceRecords=records.map((r,i)=>({...r,full:r.full+'-'+i}));
+const candidateIndex=buildSearchCandidates({version:'fixture',repositories:candidateRecords},{entries:Object.fromEntries(candidateRecords.map(r=>[r.full,[r.searchOverview||'',r.searchReadme||Fast.normalize(r.searchText)||'']]))},[]);
+for(const q of queries){const found=candidateIds(candidateIndex,q);if(found===null)continue;const ids=new Set(found);for(let i=0;i<referenceRecords.length;i++)if(Reference.searchMatch(referenceRecords[i],q))assert(ids.has(i),'Candidate lookup must retain '+referenceRecords[i].full+' for '+q)}
+console.log('PASS: candidate lookup retains every reference match across accents, plurals, prefixes, aliases, typos, README and non-Latin queries.');
