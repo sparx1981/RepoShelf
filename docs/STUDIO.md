@@ -57,3 +57,8 @@ Typography now has separate Type system and Text effects workspaces. Effects com
 ### Seeded organic patterns and mosaics
 
 Patterns additionally include organic blobs, Truchet arcs, flowing contours, periodic Voronoi cells and triangular mosaics. Seed/shuffle, variation, density and secondary colour controls share the existing recipe and export gate. The optional 2×2 view repeats the actual SVG tile. Voronoi uses bounded half-plane clipping over a periodic neighbourhood; triangular mosaics use a jittered periodic grid. Tile/full raster comparison and area coverage tests verify the repeat construction. No geometry package or new runtime dependency is added.
+
+### Motion effects and interactive ink
+Motion now includes seeded harmonic flow fields, deforming plasma fields, an adjustable damped spring and ellipse/figure-eight path previews. Flow, plasma, paths and other procedural backgrounds repeat over the timeline; springs use two opposing damped responses. Playback starts paused, supports speed changes and stops when hidden or reduced motion is requested.
+
+Fluid ink is an original bounded CPU simulation (32 × 32 velocity/dye grid), with pointer painting plus keyboard-accessible Add/Clear ink buttons, brush radius, drag force, curl and dye dissipation controls. This intentionally avoids GPU setup and paid APIs. It is a simulation, not a promised seamless loop. Shared links save seed/settings; exported offline HTML preserves the current field and supports further painting. Current-frame PNG uses the actual preview canvas. Research references are documented in `docs/research/STUDIO_EFFECTS_ROADMAP.md`; no third-party source is bundled in these new renderers.
