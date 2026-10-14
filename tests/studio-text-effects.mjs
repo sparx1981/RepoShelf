@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import vm from 'node:vm';
 import sharp from 'sharp';
-import {textEffectState,textEffectSVG,textEffectHTML,textUnits} from '../dist/studio/text-effects-core.mjs';
+import {textEffectState,textEffectSVG,textEffectHTML,textUnits,textEffectMaxSize} from '../dist/studio/text-effects-core.mjs';
 assert.deepEqual(textUnits('A👩‍👩‍👧‍👦e\u0301','letter'),['A','👩‍👩‍👧‍👦','é']);
 assert.equal(textEffectState({font:'dm',weight:800}).weight,700);
 for(const layout of ['straight','arc','circle','wave'])for(const appearance of ['plain','glow','neon','spotlight','embossed','enamel']){
@@ -14,3 +14,9 @@ const html=textEffectHTML({text:dangerous,animation:'rise',unit:'word'});const s
 const nodes={art:{},play:{setAttribute(){}}},frames=new Map();let id=0;const media={matches:false,addEventListener(){}};
 vm.runInNewContext(script,{Intl,document:{hidden:false,getElementById:id=>nodes[id],addEventListener(){}},matchMedia:()=>media,requestAnimationFrame:f=>{frames.set(++id,f);return id},cancelAnimationFrame:i=>frames.delete(i)});assert.equal(frames.size,0);assert.match(nodes.art.innerHTML,/<svg/);nodes.play.onclick();assert.equal(frames.size,1);nodes.play.onclick();assert.equal(frames.size,0);
 console.log('PASS: Text layouts/materials rasterise; glyph clusters, safe text, animation phases and paused standalone export pass.');
+
+const fitted=textEffectState({text:'A longer headline that needs room',size:144});assert.equal(fitted.size,textEffectMaxSize(fitted));
+async function pixels(s,p=1){return sharp(Buffer.from(textEffectSVG(s,p))).resize(480,270).removeAlpha().raw().toBuffer()}
+const base={text:'Studio',size:130,appearance:'plain'};for(const appearance of ['embossed','enamel'])assert.notDeepEqual(await pixels({...base,appearance}),await pixels(base));
+for(const animation of ['sweep','weight'])assert.notDeepEqual(await pixels({...base,animation},0),await pixels({...base,animation},animation==='sweep'?.25:.5));
+for(const [key,value] of [['waveAmplitude',120],['waveCycles',1.8],['wavePhase',90],['waveStart',1.8],['waveMiddle',.4],['waveEnd',1.8]])assert.notDeepEqual(await pixels({...base,layout:'wave',unit:'letter',[key]:value}),await pixels({...base,layout:'wave',unit:'letter'}),key+' changes actual pixels');
