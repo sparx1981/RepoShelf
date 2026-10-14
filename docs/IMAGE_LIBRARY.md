@@ -22,6 +22,8 @@ Keep all original PNGs, review records and processed private files out of Git. `
 
 ## Disclosure and rights
 
+Selected reviewed stills also have locally rendered, silent 8-second H.264 MP4 loops at 1280 × 720. These use gentle repeating framing movement derived from the artwork; they are not AI-generated video. Run `node scripts/images/animate.mjs --ids <comma-separated-reviewed-ids>`, review the loop and its 320 × 180 animated WebP preview, and record their exact hashes and acceptance in `work/images/animations.json` before processing again. MP4s stay private behind the existing member/legal download gate. Small motion previews are public alongside thumbnails; Studio starts still and provides explicit Play/Pause controls. Full MP4s stay out of Git. The combined public preview budget remains 10 MB.
+
 Every published item is marked AI-generated. Metadata includes the reported provider/model, date, original dimensions/hash and enlargement status. Preserve embedded provenance in originals. Verify the provider's current ownership/commercial-use and provenance terms before launching the collection. RepoShelf's asset terms allow non-exclusive personal/commercial project use, prohibit standalone resale/redistribution and implied endorsement, and provide the existing operator's takedown contact. Do not claim copyright exclusivity or guaranteed rights for every intended use.
 
 ## Checks
