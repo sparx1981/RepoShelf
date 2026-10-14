@@ -1,3 +1,4 @@
+import {rampTool} from '../dist/studio/ramps.mjs';
 import assert from 'node:assert/strict';
 import {readFile,mkdir,writeFile} from 'node:fs/promises';
 import vm from 'node:vm';
@@ -48,3 +49,5 @@ assert.equal(get('effect-play-controls').hidden,true);effects.set({...effects.ge
 effects.set({...effects.get(),layout:'arc',appearance:'embossed',animation:'rise'});for(const key of ['radius','depth','strength','lightX','lightY','duration','stagger','unit','accent','phase'])assert.equal(get('effect-'+key).disabled,false,key+' available for animated relief arc');assert.equal(effects.get().radius,205);assert.equal(effects.get().depth,12);
 effects.set({...effects.get(),appearance:'spotlight',animation:'sweep'});assert.equal(get('effect-lightX').disabled,true,'sweep drives light X');assert.equal(get('effect-lightY').disabled,false);assert.equal(get('effect-stagger').disabled,true,'sweep does not stagger units');assert.equal(get('effect-light-hint').hidden,true,'pointer does not control automatic light');
 effects.set({...effects.get(),animation:'none'});assert.equal(get('effect-lightX').disabled,false);assert.equal(get('effect-light-hint').hidden,false);effects.set({...effects.get(),animation:'reveal',text:'One'});assert.equal(get('effect-stagger').disabled,true,'one unit cannot stagger');
+
+const ramps=rampTool({change,status(){}});assert.doesNotThrow(()=>ramps.set(undefined));assert.equal(ramps.get().name,"brand");

@@ -3,3 +3,6 @@
 .ui-install{margin:0 0 14px;white-space:pre-wrap}
 .ui-file{margin:0 0 10px}.ui-file summary{cursor:pointer;padding:8px 2px;font-size:13px;color:var(--text-secondary)}.ui-file .prompt-code{max-height:36dvh}
 #live-frame{height:min(72dvh,720px)}
+
+/* Fit the full 520 × 325 thumbnail; HTML height attributes must not crop narrow cards. */
+#studio-ui .prompt-card img{height:auto;aspect-ratio:16/10;object-fit:contain;object-position:center top;flex:none}
