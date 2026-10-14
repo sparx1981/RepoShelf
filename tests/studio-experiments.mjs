@@ -1,0 +1,40 @@
+import assert from 'node:assert/strict';
+import {readFile,mkdir,writeFile} from 'node:fs/promises';
+import vm from 'node:vm';
+import sharp from 'sharp';
+import {patternState,patternSVG,patternCSS,motionState,motionFrame,motionCSS,motionHTML,bezierProgress,typeState,typeScale,typeCSS,typeTokens} from '../dist/studio/experiments-core.mjs';
+import {patternTool} from '../dist/studio/patterns.mjs';
+import {motionTool} from '../dist/studio/motion.mjs';
+import {typographyTool} from '../dist/studio/typography.mjs';
+for(const kind of ['dots','rings','lines','grid','waves','diamonds'])for(const angle of [0,45,90]){
+ const svg=patternSVG({kind,angle,spacing:48},true),meta=await sharp(Buffer.from(svg)).metadata();assert.ok(meta.width>0&&meta.height>0);assert.equal(meta.width,meta.height);assert.match(svg,/patternUnits="userSpaceOnUse"/);assert.ok(!svg.includes('NaN'));
+ const {data}=await sharp(Buffer.from(svg)).ensureAlpha().raw().toBuffer({resolveWithObject:true});assert.ok(data.some((v,i)=>i%4!==3&&v>50),'pattern renders visible marks');
+ assert.match(patternCSS({kind,angle}),/background-repeat: repeat/);
+}
+// A 45° rotation needs the diagonal repeat period, not a cropped square tile.
+const tile=patternSVG({angle:45,spacing:48},true);assert.equal(Number(/width="([^"]+)"/.exec(tile)[1]),48*Math.SQRT2);
+const transparent=await sharp(Buffer.from(patternSVG({transparent:true,opacity:.5},true))).ensureAlpha().raw().toBuffer();assert.ok(transparent.some((v,i)=>i%4===3&&v===0),'transparent tile retains clear space');
+const unsafe=patternState({kind:'<script>',ink:'url(javascript:x)',spacing:1e100,size:-5,angle:33});assert.equal(unsafe.spacing,160);assert.equal(unsafe.size,1);assert.equal(unsafe.angle,0);assert.ok(!patternSVG(unsafe).includes('javascript:'));
+for(const kind of ['waves','aurora','particles','easing']){
+ const s=motionState({kind});assert.equal(motionFrame(s,0),motionFrame(s,1),'loop endpoints match');assert.notEqual(motionFrame(s,.1),motionFrame(s,.3),'artwork actually changes');await sharp(Buffer.from(motionFrame(s,.25))).png().toBuffer();
+ const html=motionHTML({...s,phase:.3});assert.doesNotMatch(html.replaceAll('http://www.w3.org/2000/svg',''),/<script[^>]+src|https?:\/\//);assert.match(html,/prefers-reduced-motion/);new vm.Script(/<script>([\s\S]*)<\/script>/.exec(html)[1]);
+}
+const ease=motionState({kind:'easing',x1:0,y1:0,x2:1,y2:1});for(const x of [0,.1,.5,.9,1])assert.ok(Math.abs(bezierProgress(x,ease)-x)<1e-6);
+assert.match(motionCSS({...ease,speed:2}),/studio-travel 2s/);assert.match(motionCSS(ease),/prefers-reduced-motion: no-preference/);assert.throws(()=>motionCSS({kind:'waves'}),/Interface easing/);
+for(const input of [{},{base:24,ratio:1.5},{base:14,ratio:1.125},{base:Infinity,ratio:-10,heading:'<script>',title:'<img onerror=bad>'}]){
+ const scale=typeScale(input);assert.equal(scale.length,8);for(const r of scale){assert.ok(Number.isFinite(r.min)&&r.min>0&&r.min<=r.max);assert.match(r.css,/^clamp\(/);assert.ok(!r.css.includes('NaN'))}for(let i=1;i<scale.length;i++)assert.ok(scale[i].max>scale[i-1].max);assert.doesNotMatch(typeCSS(input),/<img|onerror|script>/);assert.equal(Object.keys(typeTokens(input).fontSize).length,8);
+}
+// Execute real editor controllers with DOM, media-query and animation fixtures.
+const html=await readFile(new URL('../dist/.asset-html/studio.html',import.meta.url),'utf8');
+class Node{constructor(){this.children=[];this.style={values:{},setProperty(k,v){this.values[k]=v}};this.value='';this.type='';this.hidden=false;this.checked=false}append(...n){this.children.push(...n)}replaceChildren(...n){this.children=n}setAttribute(k,v){this[k]=String(v)}}
+const nodes=new Map();for(const m of html.matchAll(/<[^>]+\bid="([^"]+)"[^>]*>/g)){assert.ok(!nodes.has(m[1]),'unique id '+m[1]);const n=new Node();n.type=/type="([^"]+)"/.exec(m[0])?.[1]||'';nodes.set(m[1],n)}
+const events={},mediaEvents={},frames=new Map();let id=0,changes=0;const media={matches:false,addEventListener:(n,f)=>mediaEvents[n]=f};
+globalThis.document={hidden:false,getElementById:k=>nodes.get(k),createElement:()=>new Node(),addEventListener:(n,f)=>events[n]=f};globalThis.matchMedia=()=>media;globalThis.requestAnimationFrame=f=>{frames.set(++id,f);return id};globalThis.cancelAnimationFrame=k=>frames.delete(k);
+const get=k=>nodes.get(k),change=()=>changes++;
+const patterns=patternTool({change});get('pattern-spacing').oninput({target:{value:80}});assert.equal(patterns.get().spacing,80);get('pattern-transparent').oninput({target:{type:'checkbox',checked:true}});assert.equal(patterns.get().transparent,true);assert.doesNotMatch(patterns.tile(),/fill="#15221e"/);get('pattern-reset').onclick();assert.equal(patterns.get().spacing,48);
+const motion=motionTool({change});assert.equal(frames.size,0,'starts paused');motion.activate(true);get('motion-play').onclick();assert.equal(frames.size,1);function tick(now){const [key,f]=frames.entries().next().value;frames.delete(key);f(now)}tick(100);tick(300);assert.ok(motion.get().phase>.25);motion.activate(false);assert.equal(frames.size,0,'hidden tool stops work');motion.activate(true);document.hidden=true;events.visibilitychange();assert.equal(frames.size,0,'hidden document stops work');document.hidden=false;events.visibilitychange();assert.equal(frames.size,1);media.matches=true;mediaEvents.change();assert.equal(frames.size,0);assert.equal(get('motion-play').disabled,true,'reduced motion prevents playback');media.matches=false;mediaEvents.change();get('motion-kind').oninput({target:{value:'easing'}});assert.equal(get('motion-easing-controls').hidden,false);assert.equal(get('motion-background-controls').hidden,true);get('motion-phase').oninput({target:{value:60}});assert.equal(motion.get().phase,.6);assert.equal(frames.size,0,'scrub pauses playback');assert.match(motion.html(),/phase=0.6/);
+const typography=typographyTool({change});get('type-title').oninput({target:{value:'<img src=x onerror=bad>'}});assert.equal(get('type-headline').textContent,'<img src=x onerror=bad>','specimen text remains text');assert.ok(get('type-specimen').style.values['--type-body-size'].includes('cqi'));assert.ok(get('type-specimen').style.values['--type-body'].includes('DM Sans'),'font family is independent of font size');assert.equal(get('type-scale').children.length,8);typography.set({base:20,heading:'serif'});assert.equal(typography.get().base,20);assert.match(typography.css(),/Georgia/);
+// The exported HTML works alone, starts paused, and can play/pause.
+const art=new Node(),button=new Node(),exportFrames=new Map(),exportEvents={},exportMedia={matches:false,addEventListener:(k,v)=>exportEvents[k]=v};let serial=0;
+vm.runInNewContext(/<script>([\s\S]*)<\/script>/.exec(motion.html())[1],{document:{hidden:false,getElementById:k=>k==='art'?art:button,addEventListener(){}},matchMedia:()=>exportMedia,requestAnimationFrame:f=>{exportFrames.set(++serial,f);return serial},cancelAnimationFrame:k=>exportFrames.delete(k)});assert.match(art.innerHTML,/<svg/);assert.equal(exportFrames.size,0);button.onclick();assert.equal(exportFrames.size,1);button.onclick();assert.equal(exportFrames.size,0);
+console.log('PASS: SVG patterns rasterise, diagonal repeats and transparency survive; motion loops, exports, playback lifecycle and reduced motion work; type scales remain ordered, bounded and safe; all editor controls run.');

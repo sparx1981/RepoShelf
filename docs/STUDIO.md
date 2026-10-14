@@ -39,3 +39,13 @@ Studio's root entry script is fingerprinted into `/assets/` during deployment. I
 Animation speed ranges from ¼× to 4×. At 1×, a drift takes four seconds each way; recipes and shared links retain the speed, and CSS/React/Tailwind exports use it. Reduced-motion settings disable the animation. PNG and SVG exports are still images. ASCII text fitting uses measured glyph bounds for accents and descenders; preview and SVG rows include extra vertical spacing, and editing resets the preview to its first row.
 
 Selected AI images include optional 8-second animations derived locally from their reviewed still artwork. The editor starts with a still and offers Play/Pause for a small preview, plus a signed-in MP4 download. No visitor generation API or paid video service is used.
+
+## Patterns, motion and typography
+
+Three further local editors use the same member/legal gate and compact shared links. Reference research is recorded in [STUDIO_TOOL_REFERENCES.md](research/STUDIO_TOOL_REFERENCES.md); catalogue states and unavailable reference sources are explicit. Original implementation, no new runtime dependency.
+
+- **SVG patterns:** dots, rings, lines, grid, waves and diamonds; spacing, mark size, opacity, palette, transparency and repeating-safe orientation. Export a repeating SVG tile, full-preview PNG or CSS background.
+- **Motion:** waves, aurora ribbons and deterministic orbiting particles, plus interface cubic Bézier easing with presets and four editable coordinates. Speed, palette, detail, movement, play/pause and timeline scrubbing. Starts paused; background geometry deforms in place. Playback suspends in hidden tabs/documents and respects reduced motion. Export dependency-free animated HTML, current-frame PNG or (in interface mode) timing CSS. The HTML begins paused and retains its reduced-motion guard. These are mathematical animations, not generated video.
+- **Typography:** heading/body font pairs, modular scale, fluid sizes, base size, leading, tracking, reading measure, preview width and editable specimen text. Export scoped responsive CSS or type tokens JSON. Preview width simulates available viewport width; exported sizes interpolate over 360–1440px at a 16px root and retain rem bounds. Existing Manrope/DM Sans are self-hosted; local Georgia/system families require no new font download. Font loading remains the recipient project’s responsibility.
+
+The three tools have no network dependency after loading except the existing export authorisation. Sharing includes settings/text for the selected experiment. Motion links restore a still phase, never autoplay. PNG exports are still images; no video encoding or paid service is introduced.
