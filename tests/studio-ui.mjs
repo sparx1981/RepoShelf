@@ -27,7 +27,7 @@ async function environment(hash=''){
   setTimeout:f=>{const id=++serial;timers.set(id,f);return id},clearTimeout:id=>timers.delete(id),
   addEventListener:(k,f)=>listeners.set(k,[...(listeners.get(k)||[]),f]),dispatchEvent,
   RepoAccount:{ready:true,user:null,track(){}},RepoProfileMenu:{install(){},open(){ctx.signInOpened=true}},
-  patternTool:()=>({get:()=>({}),set(){}}),motionTool:()=>({get:()=>({}),set(){},activate(){}}),typographyTool:()=>({get:()=>({}),set(){}}),gradientTool:()=>({get:()=>({}),set(){}}),rampTool:()=>({get:()=>({}),set(){}}),asciiTool:()=>({get:()=>({}),set(){}}),
+  patternTool:()=>({get:()=>({}),set(){}}),motionTool:()=>({get:()=>({}),set(){},activate(){}}),typographyTool:()=>({get:()=>({}),set(){},colours(fg,bg){ctx.transferredColours=[fg,bg]}}),gradientTool:()=>({get:()=>({}),set(){}}),rampTool:()=>({get:()=>({foreground:'#112233',background:'#fafafa'}),set(){}}),asciiTool:()=>({get:()=>({}),set(){}}),
   fetch:async url=>{requests.push(url);return {ok:true,json:async()=>url==='/ui/index.json'?[{id:'c-badge-4',t:'Badge',f:'General',k:'badge',c:'Badge'}]:[]}}
  };
  ctx.window=ctx;vm.createContext(ctx);vm.runInContext(ui,ctx);vm.runInContext(studio,ctx);
@@ -48,3 +48,5 @@ const redirect=await readFile(new URL('ui-redirect.js',root),'utf8');for(const h
 console.log('PASS: Studio/UI controllers lazy-load once, retain deep links and auth return, clear previews on close, and support keyboard tab navigation; legacy UI links redirect.');
 
 e=await environment('#s='+encodeURIComponent(JSON.stringify({v:1,tool:'typography',typography:{view:'effects'}})));assert.equal(e.nodes.get('studio-typography').hidden,false);assert.equal(e.nodes.get('studio-status').textContent,undefined);e=await environment('#s=%broken');assert.equal(e.ctx.location.hash,'');
+
+e=await environment();e.nodes.get('ramp-to-type').onclick();assert.deepEqual(Array.from(e.ctx.transferredColours),['#112233','#fafafa']);assert.equal(e.nodes.get('studio-typography').hidden,false);assert.equal(e.nodes.get('type-view').focused,true);

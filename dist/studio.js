@@ -70,3 +70,5 @@ async function catalogue(url){const res=await fetch(url,{cache:'no-cache'});if(!
 $('image-motion-toggle').onclick=()=>{if(!selectedImage?.animation?.preview)return;const button=$('image-motion-toggle'),playing=button.getAttribute('aria-pressed')!=='true';$('image-preview').src=playing?selectedImage.animation.preview:'/studio/images/thumbs/'+selectedImage.id+'.webp';button.setAttribute('aria-pressed',String(playing));button.textContent=playing?'Pause animation':'Play animation';};
 
 for(const prefix of ['background','image'])$(prefix+'-browse').onclick=()=>{$(prefix+'-filters').scrollIntoView({block:'start',behavior:'instant'});$(prefix+'-search').focus({preventScroll:true})};
+
+$('ramp-to-type').onclick=()=>{const {foreground,background}=ramps.get();typography.colours(foreground,background);switchTab('typography');$('studio-typography').scrollIntoView({block:'start'});$('type-view').focus({preventScroll:true});status('Colours copied to Typography: heading, body and background.');change()};

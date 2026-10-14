@@ -20,3 +20,5 @@ if(process.argv.includes('--built')){assert.doesNotMatch(source,/\bfrom\s*["'](?
 const sourceHTML=await readFile(new URL('.asset-html/studio.html',dist),'utf8');for(const [,pattern] of sourceHTML.matchAll(/\bpattern="([^"]+)"/g))assert.doesNotThrow(()=>new RegExp(pattern,'v'),'Studio HTML patterns must support current Chromium Unicode sets');
 
 const tokenPattern=new RegExp('^(?:'+sourceHTML.match(/id="ramp-name"[^>]*pattern="([^"]+)"/)[1]+')$','v');for(const name of ['brand','brand-2','a','a'.repeat(30)])assert(tokenPattern.test(name));for(const name of ['','2brand','-brand','Brand','brand_name','a'.repeat(31)])assert(!tokenPattern.test(name));
+
+if(process.argv.includes("--built")){const {studioBundle}=await import("../scripts/build-public-assets.mjs");assert.equal(source,(await studioBundle()).code,"Built Studio must match its current nested controller sources")}
