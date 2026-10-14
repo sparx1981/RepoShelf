@@ -1,6 +1,6 @@
 # UI library
 
-The **UI** section (`/ui.html`) lists 1,241 copy-ready interface components for React, Tailwind CSS and shadcn/ui. Like Prompts, browsing is open to everyone and the valuable part is for signed-in members.
+The **UI components** tab inside Studio (`/studio.html#ui`) lists 1,241 copy-ready interface components for React, Tailwind CSS and shadcn/ui. Like Prompts, browsing is open to everyone and the valuable part is for signed-in members.
 
 | | Everyone | Signed in |
 |---|---|---|
@@ -34,3 +34,5 @@ The script upserts by id, so running it twice only updates rows. Pass the servic
 ## Adding or changing components
 
 Add the preview to the runtime under `dist/ui/p/`, a thumbnail to `dist/ui/thumbs/`, an entry to `dist/ui/index.json`, and a row to `ui_items` (and any new shared file to `ui_files`). Keep the public files free of anything that is not meant for visitors.
+
+Existing `/ui.html#ui/<id>` links redirect to the same component in Studio. Browsing, previews, sign-in gates, licence notices and saved component ids are preserved.

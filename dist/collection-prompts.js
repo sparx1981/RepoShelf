@@ -14,7 +14,7 @@ function render(){box.replaceChildren();
  box.hidden=false;
  box.append(el('h3',{text:`Saved resources (${items.length})`}));
  const ul=el('ul',{class:'saved-prompt-list'});
- for(const it of items){const s=it.repo||{},src=String(it.id).slice(3),a=el('a',{href:(src.startsWith('bg/')||src.startsWith('img/')?'/studio.html#':src.startsWith('ui/')?'/ui.html#':'/prompts.html#')+src},el('strong',{text:s.name||src.split('/').pop()}),el('span',{text:s.category||(src.startsWith('bg/')?'Background':src.startsWith('img/')?'Image':src.startsWith('ui/')?'UI component':'Prompt')}));ul.append(el('li',{},a))}
+ for(const it of items){const s=it.repo||{},src=String(it.id).slice(3),a=el('a',{href:(src.startsWith('bg/')||src.startsWith('img/')?'/studio.html#':src.startsWith('ui/')?'/studio.html#':'/prompts.html#')+src},el('strong',{text:s.name||src.split('/').pop()}),el('span',{text:s.category||(src.startsWith('bg/')?'Background':src.startsWith('img/')?'Image':src.startsWith('ui/')?'UI component':'Prompt')}));ul.append(el('li',{},a))}
  box.append(ul,el('p',{class:'saved-prompts-note'},el('a',{href:'/prompts.html',text:'Browse the prompt library'})))}
 async function load(){const id=A.user?.id||null;if(loading||id===loadedFor)return;loading=true;try{const d=id?await A.request('/api/collection?kind=prompts'):{items:[]};loadedFor=id;items=d.items||[]}catch{items=[]}finally{loading=false}refresh()}
 function refresh(){if(!wanted()){box.hidden=true;return}if(A.user?.id!==loadedFor){void load();return}render()}

@@ -16,6 +16,10 @@ Recipes and preview code are intentionally public. The gate controls supported e
 
 Shared links include tool settings and text, never uploaded image data. Preview contrast is sampled from the headline area; it does not certify arbitrary content placed on the background.
 
+## UI components
+
+The UI components tab contains the existing searchable component library, live previews, member-only prompts/code/ZIP downloads and saves. It shares Studio’s account menu. Old UI links redirect with the component id preserved; saved components open directly in Studio.
+
 ## Background catalogue
 
 Run `npm run studio:build`. The deterministic builder produces 1,500 candidates, selects 100 distinct recipes and writes five contact sheets to `artifacts/studio/`. Review the sheets before accepting changes. The first release was visually reviewed; near-identical grain pairs were corrected by varying their focal position. Thumbnails are under 20 KB each and total approximately 0.5 MB.
