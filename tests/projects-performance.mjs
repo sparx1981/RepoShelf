@@ -26,6 +26,7 @@ try{
  await writeFile(snapshotFile,JSON.stringify(buildStorefrontSnapshot(generated.index,clickEditorial,[],[])));
  const clickedFast=await createBrowseService({root,controls:async()=>[],popularity:async()=>counts}).search(options,clickEditorial);
  assert.deepEqual(clickedFast.shelves,clickedFallback.shelves,'live click ranking is retained');assert.equal(clickedFast.catalogVersion,clickedFallback.catalogVersion,'click counts keep the same catalogue version');assert.equal(clickedFast.shelfItems.find(r=>r.full===repos[900].full).repoShelfClicks,5);assert(!clickedFast.shelfItems.some(r=>r.full==='team/not-published'));
+ assert(clickedFast.shelfItems.every(r=>!('searchReadme' in r)&&!('searchOverview' in r)&&!('agentContext' in r)),'click-ranked cards retain the compact response boundary');
  await writeFile(snapshotFile,JSON.stringify(snapshot));
  assert(matchesStorefrontSnapshot(snapshot,options,editorial,[],now));
  assert(!matchesStorefrontSnapshot(snapshot,options,editorial,[{project_id:repos[0].full,visibility:'hidden'}],now),'fresh moderation rejects a stale snapshot');
