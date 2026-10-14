@@ -49,3 +49,7 @@ Three further local editors use the same member/legal gate and compact shared li
 - **Typography:** heading/body font pairs, modular scale, fluid sizes, base size, leading, tracking, reading measure, preview width and editable specimen text. Export scoped responsive CSS or type tokens JSON. Preview width simulates available viewport width; exported sizes interpolate over 360–1440px at a 16px root and retain rem bounds. Existing Manrope/DM Sans are self-hosted; local Georgia/system families require no new font download. Font loading remains the recipient project’s responsibility.
 
 The three tools have no network dependency after loading except the existing export authorisation. Sharing includes settings/text for the selected experiment. Motion links restore a still phase, never autoplay. PNG exports are still images; no video encoding or paid service is introduced.
+
+### Typography text effects
+
+Typography now has separate Type system and Text effects workspaces. Effects combine straight/arc/circle/wave layouts with glow, neon, spotlight, embossed or enamel-style SVG relief and grapheme/word animation. Duration, stagger, weight, light position and timeline are editable; exports include SVG/PNG snapshots and a paused, self-contained animated HTML page. Fonts use documented fallbacks. These are native SVG material treatments, not a full 3D physical renderer. Existing type-system exports and links remain supported. Pointer spotlight input has matching X/Y sliders. All supported exports use the existing member/legal gate.
