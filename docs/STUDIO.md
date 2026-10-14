@@ -53,3 +53,7 @@ The three tools have no network dependency after loading except the existing exp
 ### Typography text effects
 
 Typography now has separate Type system and Text effects workspaces. Effects combine straight/arc/circle/wave layouts with glow, neon, spotlight, embossed or enamel-style SVG relief and grapheme/word animation. Duration, stagger, weight, light position and timeline are editable; exports include SVG/PNG snapshots and a paused, self-contained animated HTML page. Fonts use documented fallbacks. These are native SVG material treatments, not a full 3D physical renderer. Existing type-system exports and links remain supported. Pointer spotlight input has matching X/Y sliders. All supported exports use the existing member/legal gate.
+
+### Seeded organic patterns and mosaics
+
+Patterns additionally include organic blobs, Truchet arcs, flowing contours, periodic Voronoi cells and triangular mosaics. Seed/shuffle, variation, density and secondary colour controls share the existing recipe and export gate. The optional 2×2 view repeats the actual SVG tile. Voronoi uses bounded half-plane clipping over a periodic neighbourhood; triangular mosaics use a jittered periodic grid. Tile/full raster comparison and area coverage tests verify the repeat construction. No geometry package or new runtime dependency is added.
