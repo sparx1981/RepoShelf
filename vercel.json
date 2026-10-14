@@ -244,8 +244,8 @@
       "maxDuration": 30
     },
     "api/editorial.mjs": {
-      "includeFiles": "{dist/{tax*,providers,quality,community,editorial,storefront,discovery,picks,viewer*,browse}.js,data/{seo-redirects.json,listing-controls.json,browse/*.json,browse/search-*.gz,runtime/browse-projects/**},dist/growth.json}",
-      "excludeFiles": "{tests/**,node_modules/{sharp,@img,*esbuild*,@vercel/nft}/**,dist/{catalog*,spaces*,assets/**,.asset-html/**,previews/**},data/{browse/projects,readmes,context,sync-runs}/**,data/browse/{index,search}.json,data/runtime/{*.gz,*.json}}",
+      "includeFiles": "{dist/{tax*,providers,quality,community,editorial,storefront,discovery,picks,viewer*,browse}.js,data/{seo-redirects.json,listing-controls.json,browse/*.json,browse/{index,search}-*.gz,runtime/browse-projects/**},dist/growth.json}",
+      "excludeFiles": "{tests/**,node_modules/{sharp,@img,*esbuild*,@vercel/nft}/**,dist/{catalog*,spaces*,assets/**,.asset-html/**,previews/**},data/{browse/projects,readmes,context,sync-runs}/**,data/browse/{index*.json,search.json,search-pub.json.gz},data/runtime/*.*}",
       "maxDuration": 30
     },
     "api/agent.mjs": {
@@ -298,5 +298,9 @@
       "destination": "/",
       "permanent": true
     }
-  ]
+  ],
+  "regions": [
+    "dub1"
+  ],
+  "fluid": true
 }

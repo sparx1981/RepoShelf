@@ -34,7 +34,7 @@ function searchMatch(r,query){
  const result={score,group:broader?'other':'best',reason};searchCache.set(r,{q,result});return result;
 }
 
-function matches(r,o,technologies=S.technologies){return r.availability!=='unavailable'&&(!o.demos||Q.hasLiveDemo(r))&&P.matchesSource(r,o.source||'all')&&(!o.category||['All','All projects'].includes(o.category)||E.matchesCategory(r,o.category))&&(!o.technology||o.technology==='All technologies'||technologies(r).includes(o.technology))&&Boolean(searchMatch(r,o.q))}
+function matches(r,o,technologies=S.technologies){if(o.candidateIds&&!o.candidateIds.has(r.full))return false;return r.availability!=='unavailable'&&(!o.demos||Q.hasLiveDemo(r))&&P.matchesSource(r,o.source||'all')&&(!o.category||['All','All projects'].includes(o.category)||E.matchesCategory(r,o.category))&&(!o.technology||o.technology==='All technologies'||technologies(r).includes(o.technology))&&Boolean(searchMatch(r,o.q))}
 function order(repos,sort='popular'){if(sort==='reposhelf')return repos.filter(r=>r.repoShelfClicks>0).sort((a,b)=>b.repoShelfClicks-a.repoShelfClicks||a.full.localeCompare(b.full));if(['popular','featured'].includes(sort))return P.popular(repos);if(sort==='trending')return S.sorted(repos.filter(r=>!P.isSpace(r)),'trending');if(sort==='community')return C.rank(repos);if(sort==='trendshift')return S.trendshiftRanked(repos);if(sort==='releases')return repos.filter(r=>S.recentRelease(r)).sort((a,b)=>Date.parse(b.latestRelease.publishedAt)-Date.parse(a.latestRelease.publishedAt)||a.full.localeCompare(b.full));const list=[...repos];list.sort((a,b)=>sort==='name'?a.name.localeCompare(b.name):['stars','forks'].includes(sort)?(b[sort]??-1)-(a[sort]??-1)||a.full.localeCompare(b.full):(Date.parse(b[sort==='newest'?'created':'updated'])||0)-(Date.parse(a[sort==='newest'?'created':'updated'])||0)||a.full.localeCompare(b.full));return list}
 function suggestions(repositories,o){
  const out=[],seen=new Set(),base={q:o.q||'',category:o.category||'',technology:o.technology||'',source:o.source||'all',sort:o.q?'relevance':'popular'};
@@ -58,7 +58,7 @@ function select(repositories,o={},editorial={rows:[]},mentions=[]){
  const available=repositories.filter(r=>r.availability!=='unavailable'),matched=available.filter(r=>matches(r,o,technologiesFor)&&!exclude.has(r.full.toLowerCase()));
  const searching=Boolean(String(o.q||'').trim()),relevance=searching&&(!o.sort||o.sort==='relevance');
  const fastPopular=(pool,category='')=>{const ids=o.publicPools&&o.precomputed?.[category];if(!ids||ids.length!==pool.length)return order(pool,'popular');const map=new Map(pool.map(r=>[r.full,r]));if(!ids.every(id=>map.has(id)))return order(pool,'popular');return ids.map(id=>map.get(id))};
- const popular=fastPopular(matched),ties=new Map(popular.map((r,i)=>[r.full,i]));
+ const popular=relevance||!o.sort||['relevance','popular','featured'].includes(o.sort)?fastPopular(matched):null,ties=relevance?new Map(popular.map((r,i)=>[r.full,i])):null;
  const ranked=relevance?[...matched].sort((a,b)=>{const x=searchMatch(a,o.q),y=searchMatch(b,o.q);return (x.group==='other')-(y.group==='other')||y.score-x.score||ties.get(a.full)-ties.get(b.full)}):(!o.sort||['relevance','popular','featured'].includes(o.sort)?popular:order(matched,o.sort)),offset=o.offset||0,limit=o.limit||48;
  const categories={},technologies={},sources={github:0,huggingface:0};
  // Disjunctive facets: omit just that facet's active selection, retain the others.
@@ -84,7 +84,9 @@ function select(repositories,o={},editorial={rows:[]},mentions=[]){
   if(o.publicPools&&row.mode==='manual'&&row.builtin_key==='hero'){out.publicShuffleCounts||={};out.publicShuffleCounts[row.id]=pool.length;selected.splice(0,selected.length,...[...pool,...fill])}
   out.shelves[row.id]=selected.map(r=>r.full);for(const r of selected)chosen.set(r.full.toLowerCase(),{...chosen.get(r.full.toLowerCase()),...card(r)})}
  out.shelfItems=[...chosen.values()];}
+ if(!o.storefront&&o.captureSelection)o.captureSelection({ranked,out,searching,query:o.q});
  return out;
 }
-return {card,matches,order,select,suggestions,searchMatch,normalize};
+function page(selection,offset,limit){const {ranked,out,searching,query}=selection;return {...out,items:ranked.slice(offset,offset+limit).map(r=>({...card(r),...(searching?{searchMatch:{group:searchMatch(r,query).group,reason:searchMatch(r,query).reason}}:{})})),nextOffset:offset+limit<ranked.length?offset+limit:null}}
+return {card,matches,order,select,page,suggestions,searchMatch,normalize,stem,near,aliases};
 });

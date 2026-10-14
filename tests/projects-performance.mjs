@@ -1,0 +1,43 @@
+import assert from 'node:assert/strict';
+import {mkdtemp,mkdir,writeFile,readFile,rename,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import {pathToFileURL} from 'node:url';
+import {createRequire} from 'node:module';
+import {generateBrowseIndex} from '../lib/browse-index.mjs';
+import {createBrowseService} from '../lib/browse-service.mjs';
+import {createBrowseCache} from '../lib/browse-cache.mjs';
+import {buildStorefrontSnapshot,matchesStorefrontSnapshot} from '../lib/storefront-snapshot.mjs';
+import {createListingControls,invalidateListingControls} from '../lib/listing-policy.mjs';
+const require=createRequire(import.meta.url),B=require('../dist/browse.js'),E=require('../dist/editorial.js');
+const now=Date.now(),at=new Date(now).toISOString(),root=pathToFileURL(await mkdtemp(tmpdir()+'/reposhelf-performance-')+'/');
+const repos=Array.from({length:1000},(_,i)=>({full:'team/app-'+i,name:'App '+i,description:'A useful project.',category:i%2?'Design':'Productivity',topics:['react'],demo:'https://example.org/'+i,availability:'available',lastCheckedAt:at,stars:1000-i,forks:i,demoHealth:{url:'https://example.org/'+i,status:'working',checkedAt:at},screenshots:[{src:'https://example.org/'+i+'.jpg',kind:'demo',url:'https://example.org/'+i}],readmeSnapshot:{searchTerms:i===900?['rarevoice']:['ordinary']}}));
+try{
+ await mkdir(new URL('dist/',root));for(const [name,data] of Object.entries({'catalog.json':{updatedAt:at,repositories:repos},'spaces.json':{repositories:[]},'community.json':{mentions:[]}}))await writeFile(new URL('dist/'+name,root),JSON.stringify(data));
+ const generated=await generateBrowseIndex(root),editorial={rows:E.defaults(),customRows:false,builtinSetupRequired:false},snapshot=buildStorefrontSnapshot(generated.index,editorial,[],[]),snapshotFile=new URL('data/browse/storefront.json',root);
+ await rename(snapshotFile,new URL('data/browse/storefront.saved',root));
+ const options={q:'',category:'All projects',technology:'All technologies',source:'all',sort:'popular',demos:true,storefront:true,seed:'',ranks:{},exclude:[],limit:48,staged:true,shelfLimit:3,publicPools:true};
+ const fallback=await createBrowseService({root,controls:async()=>[]}).search(options,editorial);
+ await writeFile(snapshotFile,JSON.stringify(snapshot));
+ const fast=await createBrowseService({root,controls:async()=>[]}).search(options,editorial);
+ for(const key of ['catalogVersion','total','facets','shelves','privateShelves'])assert.deepEqual(fast[key],fallback[key],key+' remains identical with the build snapshot');
+ assert.deepEqual(fast.shelfItems.map(r=>r.full).sort(),fallback.shelfItems.map(r=>r.full).sort());
+ const clickEditorial={...editorial,rows:editorial.rows.map(row=>row.mode==='reposhelf'?{...row,position:-99.5}:row)},counts={[repos[900].full]:5,[repos[2].full]:3,'team/not-published':100};
+ await rm(snapshotFile);const clickedFallback=await createBrowseService({root,controls:async()=>[],popularity:async()=>counts}).search(options,clickEditorial);
+ await writeFile(snapshotFile,JSON.stringify(buildStorefrontSnapshot(generated.index,clickEditorial,[],[])));
+ const clickedFast=await createBrowseService({root,controls:async()=>[],popularity:async()=>counts}).search(options,clickEditorial);
+ assert.deepEqual(clickedFast.shelves,clickedFallback.shelves,'live click ranking is retained');assert.equal(clickedFast.catalogVersion,clickedFallback.catalogVersion,'click counts keep the same catalogue version');assert.equal(clickedFast.shelfItems.find(r=>r.full===repos[900].full).repoShelfClicks,5);assert(!clickedFast.shelfItems.some(r=>r.full==='team/not-published'));
+ await writeFile(snapshotFile,JSON.stringify(snapshot));
+ assert(matchesStorefrontSnapshot(snapshot,options,editorial,[],now));
+ assert(!matchesStorefrontSnapshot(snapshot,options,editorial,[{project_id:repos[0].full,visibility:'hidden'}],now),'fresh moderation rejects a stale snapshot');
+ assert(!matchesStorefrontSnapshot(snapshot,options,{...editorial,customRows:true},[],now),'changed shelf settings reject the snapshot');
+ assert(!matchesStorefrontSnapshot(snapshot,options,editorial,[],now+73*3600000),'aged evidence rejects the snapshot');
+ const search=createBrowseService({root,controls:async()=>[]}),rare=await search.search({q:'rarevoice',sort:'relevance'});assert.equal(rare.total,1);assert.equal(rare.items[0].full,repos[900].full);const dataset=await search.publicDataset();assert(!dataset.textLoaded,'first search does not load the monolithic text');assert(dataset.index.repositories.filter(r=>r.searchPrepared).length<300,'only the matching shard is hydrated');
+ const original=B.select;let calls=0;B.select=(...args)=>{calls++;return original(...args)};
+ try{const paging=createBrowseService({root,controls:async()=>[]}),first=await paging.search({sort:'name',limit:7}),count=calls,second=await paging.search({sort:'name',limit:7,cursor:first.nextCursor});assert.equal(calls,count,'pagination reuses selection/facets');assert.equal(second.items.length,7);assert(!second.items.some(r=>first.items.some(x=>x.full===r.full)));}finally{B.select=original}
+ let controls=[];const moderated=createBrowseService({root,controls:async()=>controls});const first=await moderated.search({sort:'name'});controls=[{project_id:first.items[0].full,visibility:'hidden'}];const next=await moderated.search({sort:'name'});assert.equal(next.total,first.total-1);assert(!next.items.some(r=>r.full===first.items[0].full));await assert.rejects(moderated.search({sort:'name',cursor:first.nextCursor}),e=>e.code==='catalog_changed');
+ await rm(new URL('data/browse/search-pub.json.gz',root));
+ controls=[{project_id:repos[1].full,description:'rarevoice',visibility:'visible'}];const edited=await moderated.search({q:'rarevoice'});assert(edited.items.some(r=>r.full===repos[1].full),'edited searchable metadata is never excluded by the build index');
+}finally{await rm(root,{recursive:true,force:true})}
+let clock=0;const cache=createBrowseCache({maxEntries:2,maxItems:3,ttl:10,now:()=>clock});cache.set('a',1,2);cache.set('b',2,2);assert.equal(cache.get('a'),undefined);assert.equal(cache.get('b'),2);clock=11;assert.equal(cache.get('b'),undefined);cache.set('oversized',3,4);assert.equal(cache.get('oversized'),undefined);
+let calls=0,release;const controls=createListingControls({root:pathToFileURL(tmpdir()+'/'),accounts:{ready:true,request:()=>{calls++;return new Promise(resolve=>{release=resolve})}}});const one=controls({fresh:true}),two=controls({fresh:true});await new Promise(resolve=>setTimeout(resolve,20));assert.equal(calls,1,'concurrent moderation reads are combined');release([]);assert.deepEqual(await Promise.all([one,two]),[[],[]]);invalidateListingControls();const three=controls({fresh:true});await new Promise(resolve=>setTimeout(resolve,20));assert.equal(calls,2,'invalidation requires a new moderation read');release([]);await three;
+console.log('PASS: build snapshot parity, fresh moderation/settings/expiry, selective README shards, pagination reuse, cache bounds, metadata edits and combined moderation reads.');
