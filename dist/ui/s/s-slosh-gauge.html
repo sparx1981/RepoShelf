@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sloshing gauge preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,460px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.lg{display:grid;gap:18px;justify-items:center}
+.lg canvas{width:190px;height:190px;border-radius:50%;box-shadow:0 0 0 2px var(--sc-line)}
+.lg label{display:grid;gap:6px;width:min(100%,260px);font-size:13px;color:var(--sc-muted)}.lg input{width:100%;accent-color:var(--sc-accent)}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="lg"><canvas width="380" height="380" role="img" aria-label="Gauge at 64 percent"></canvas><label>Level <input type="range" min="0" max="100" value="64"></label></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling,cv=root.querySelector('canvas'),ctx=cv.getContext('2d'),input=root.querySelector('input'),calm=matchMedia('(prefers-reduced-motion: reduce)'),level=.64,target=.64,kick=0,t=0,css=getComputedStyle(root);
+function colour(n,f){return css.getPropertyValue(n).trim()||f}
+function draw(){var W=cv.width,H=cv.height,accent=colour('--sc-accent','#6d5ef5'),fg=colour('--sc-fg','#111'),y=H*(1-level),amp=calm.matches?0:6+kick*14,label=Math.round(level*100)+'%';
+function waves(k){ctx.beginPath();ctx.moveTo(0,H);for(var x=0;x<=W;x+=6){ctx.lineTo(x,y+Math.sin(x/(k?38:55)+t*(k?-1.6:1.1)+k)*amp*(k?.7:1))}ctx.lineTo(W,H);ctx.closePath()}
+function text(c){ctx.fillStyle=c;ctx.font='700 64px system-ui,sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(label,W/2,H/2)}
+ctx.clearRect(0,0,W,H);ctx.save();ctx.beginPath();ctx.arc(W/2,H/2,W/2-4,0,Math.PI*2);ctx.clip();ctx.fillStyle=colour('--sc-surface','#f5f5f7');ctx.fillRect(0,0,W,H);
+ctx.fillStyle=accent;ctx.globalAlpha=.45;waves(1);ctx.fill();ctx.globalAlpha=1;waves(0);ctx.fill();text(fg);ctx.save();waves(0);ctx.clip();text('#fff');ctx.restore();ctx.restore()}
+function frame(){level+=(target-level)*.08;kick*=.95;t+=.04;draw();if(!document.hidden)requestAnimationFrame(frame);else document.addEventListener('visibilitychange',function w(){document.removeEventListener('visibilitychange',w);requestAnimationFrame(frame)})}
+input.addEventListener('input',function(){target=input.value/100;kick=1;cv.setAttribute('aria-label','Gauge at '+input.value+' percent')});frame();})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

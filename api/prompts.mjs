@@ -4,6 +4,7 @@
 //   UI:        ui-detail                 - a UI component's prompt, code and supporting files (signed in).
 //   Admin:     admin-list, admin-get (GET); admin-save, admin-delete, admin-sync (POST) - manage the library.
 import {requireLegal} from '../lib/legal.mjs';
+import {showcaseDetail} from '../lib/ui-showcase/index.mjs';
 import {createAccounts,respond,accountFailure,only,fail,readBody} from '../lib/accounts.mjs';
 import {createSceneAiSync} from '../lib/sceneai-sync.mjs';
 import {CREDIT_NAME,createMotionSitesImport,fetchMotionSitesFiles} from '../lib/motionsites-import.mjs';
@@ -124,6 +125,7 @@ export function createPromptsHandler({accounts=createAccounts(),github=fetch,stu
         await member(req,res);
         const id=idOf(params.get('id'));
         if(!id)fail(400,'invalid_component','Choose a valid component.');
+        const original=showcaseDetail(id);if(original)return respond(res,200,original);
         const [row]=await rows(`ui_items?id=eq.${q(id)}&published=eq.true&select=id,title,category,family,description,prompt,code,files,shadcn,npm&limit=1`);
         if(!row)fail(404,'not_found','That component is not available.');
         const paths=(row.files||[]).filter(p=>/^[a-zA-Z0-9_./-]{1,200}$/.test(p));

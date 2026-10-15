@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Card stack preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,520px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.cs{display:grid;gap:22px;justify-items:center}
+.cs-stack{position:relative;width:min(100%,300px);height:200px}
+.cs-card{position:absolute;inset:0;display:flex;align-items:flex-end;padding:20px;border-radius:20px;color:#fff;font-weight:700;font-size:22px;box-shadow:0 18px 36px -20px rgba(0,0,0,.55);transition:transform .5s cubic-bezier(.3,1.2,.4,1),opacity .4s;transform-origin:50% 100%}
+.cs-card[data-pos="0"]{transform:translateY(0) scale(1);z-index:4}.cs-card[data-pos="1"]{transform:translateY(-16px) scale(.94);z-index:3}.cs-card[data-pos="2"]{transform:translateY(-32px) scale(.88);z-index:2}.cs-card[data-pos="3"]{transform:translateY(-48px) scale(.82);z-index:1}
+.cs-card[data-pos="out"]{transform:translateY(-120%) rotate(-8deg) scale(1);opacity:0;z-index:5}
+.cs-actions{display:flex;gap:10px}.cs-actions button{padding:9px 18px;border:1px solid var(--sc-line);border-radius:999px;background:var(--sc-surface);cursor:pointer}.cs-actions button:hover{border-color:var(--sc-accent)}
+.cs-stack{margin-top:48px}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="cs"><div class="cs-stack"><article class="cs-card" data-pos="0" style="background:linear-gradient(135deg,#6d5ef5,#22d3ee)">Aurora</article><article class="cs-card" data-pos="1" style="background:linear-gradient(135deg,#f97316,#f43f5e)">Ember</article><article class="cs-card" data-pos="2" style="background:linear-gradient(135deg,#10b981,#3b82f6)">Lagoon</article><article class="cs-card" data-pos="3" style="background:linear-gradient(135deg,#a855f7,#ec4899)">Orchid</article></div><div class="cs-actions"><button data-act="prev">Previous</button><button data-act="next">Next card</button></div><p class="cs-live" role="status" aria-live="polite" style="margin:0;color:var(--sc-muted);font-size:13px">Showing Aurora</p></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling,cards=[].slice.call(root.querySelectorAll('.cs-card')),order=cards.slice(),live=root.querySelector('.cs-live'),busy=false;
+function paint(){order.forEach(function(c,i){c.dataset.pos=i});live.textContent='Showing '+order[0].textContent}
+root.querySelector('[data-act=next]').addEventListener('click',function(){if(busy)return;busy=true;var top=order[0];top.dataset.pos='out';setTimeout(function(){order.push(order.shift());paint();busy=false},330)});
+root.querySelector('[data-act=prev]').addEventListener('click',function(){if(busy)return;busy=true;var last=order[order.length-1];last.dataset.pos='out';setTimeout(function(){order.unshift(order.pop());paint();busy=false},330)});})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

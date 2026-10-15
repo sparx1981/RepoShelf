@@ -36,3 +36,12 @@ The script upserts by id, so running it twice only updates rows. Pass the servic
 Add the preview to the runtime under `dist/ui/p/`, a thumbnail to `dist/ui/thumbs/`, an entry to `dist/ui/index.json`, and a row to `ui_items` (and any new shared file to `ui_files`). Keep the public files free of anything that is not meant for visitors.
 
 Existing `/ui.html#ui/<id>` links redirect to the same component in Studio. Browsing, previews, sign-in gates, licence notices and saved component ids are preserved.
+
+## Showcase components (original)
+
+Twenty-nine expressive components and micro-interactions are written by RepoShelf as plain HTML, CSS and JavaScript, and are mixed in alternately with the existing components at the top of the list. They fill three groups: Expressive components (spotlight cards, dock, bento grid, navigation, stepper and more), Micro-interactions (switches, checkboxes, hold-to-confirm, swipe rows, gauges and more) and Hover & cursor effects.
+
+- **Source:** `lib/ui-showcase/` (`components.mjs`, `micro.mjs`, shared tokens in `base.mjs`). `npm run ui:showcase` writes the preview pages to `dist/ui/s/`, renders thumbnails with Playwright, and puts the rows at the front of `dist/ui/index.json` (rows carry `s:1` and a `p` preview path, so the build is repeatable).
+- **Access is unchanged:** previews and thumbnails are public; the prompt and code come from `/api/prompts?area=ui-detail` for signed-in members. Showcase ids start `s-` and are answered from `lib/ui-showcase/` rather than the database. Saves use `ss:ui/s-…` and the existing legal gate.
+- **Licence:** these are original code, not MIT. Members may use and change them in any project, but may not redistribute them as a component library. The notice leads the copied code, travels in the ZIP as `LICENSE.txt`, and is on the licence page. They take inspiration from interaction patterns that are common on the web, including effects seen in React Bits (MIT + Commons Clause, which forbids redistributing its components); none of its code is used.
+- **Quality bar:** previews follow the light/dark toggle, honour reduced motion, have visible keyboard focus and use real buttons and inputs. `tests/ui-showcase.mjs` enforces the catalogue position, previews, thumbnails, licence, safe self-contained code and the member gate.

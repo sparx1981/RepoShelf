@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Voice recording pill preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,480px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.vp{display:grid;place-items:center;padding:24px 0}
+.vp-btn{display:inline-flex;align-items:center;gap:12px;height:54px;padding:0 24px;border:1px solid var(--sc-line);border-radius:999px;background:var(--sc-surface);cursor:pointer;font-weight:600;transition:width .5s cubic-bezier(.3,1.1,.4,1),background .3s,color .3s;width:150px;overflow:hidden;justify-content:center;white-space:nowrap}
+.vp-btn[aria-pressed=true]{width:330px;background:var(--sc-fg);color:var(--sc-bg);justify-content:flex-start}
+.vp-dot{flex:none;width:12px;height:12px;border-radius:50%;background:#ef4444}.vp-btn[aria-pressed=true] .vp-dot{animation:vp-pulse 1.2s infinite}
+.vp-bars{display:none;align-items:center;gap:3px;height:26px;margin-left:auto}.vp-btn[aria-pressed=true] .vp-bars{display:flex}
+.vp-bars i{width:3px;height:var(--h,6px);border-radius:2px;background:currentColor;opacity:.85;transition:height .1s}
+.vp-time{display:none;font-variant-numeric:tabular-nums}.vp-btn[aria-pressed=true] .vp-time{display:inline}
+@keyframes vp-pulse{50%{opacity:.35;transform:scale(.8)}}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="vp"><button class="vp-btn" aria-pressed="false"><span class="vp-dot"></span><span class="vp-label">Record</span><span class="vp-time">0:00</span><span class="vp-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span></button><p class="vp-live" role="status" aria-live="polite" style="position:absolute;left:-9999px"></p></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling,btn=root.querySelector('.vp-btn'),label=root.querySelector('.vp-label'),time=root.querySelector('.vp-time'),live=root.querySelector('.vp-live'),bars=[].slice.call(root.querySelectorAll('.vp-bars i')),calm=matchMedia('(prefers-reduced-motion: reduce)'),secs=0,timer=0,anim=0,hs=bars.map(function(){return 6});
+function fmt(s){return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
+function loop(){bars.forEach(function(b,i){var target=calm.matches?10:4+Math.random()*22;hs[i]+=(target-hs[i])*.45;b.style.setProperty('--h',hs[i].toFixed(1)+'px')});}
+btn.addEventListener('click',function(){var on=btn.getAttribute('aria-pressed')!=='true';btn.setAttribute('aria-pressed',String(on));if(on){secs=0;time.textContent='0:00';label.textContent='Recording';live.textContent='Recording started';timer=setInterval(function(){secs++;time.textContent=fmt(secs)},1000);anim=setInterval(loop,110)}else{clearInterval(timer);clearInterval(anim);label.textContent='Saved '+fmt(secs);live.textContent='Recording saved, '+fmt(secs);setTimeout(function(){if(btn.getAttribute('aria-pressed')!=='true')label.textContent='Record'},1800)}});})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

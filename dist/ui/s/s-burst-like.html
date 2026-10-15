@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Burst like button preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,460px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.lk{display:grid;place-items:center;padding:30px 0}
+.lk-btn{position:relative;display:inline-flex;align-items:center;gap:12px;padding:12px 22px;border:1px solid var(--sc-line);border-radius:999px;background:var(--sc-surface);cursor:pointer;font-weight:600}
+.lk-heart{position:relative;width:26px;height:26px}.lk-heart svg{width:26px;height:26px;fill:none;stroke:var(--sc-muted);stroke-width:2;transition:fill .2s,stroke .2s}
+.lk-btn[aria-pressed=true] .lk-heart svg{fill:#ef4444;stroke:#ef4444;animation:lk-pop .5s cubic-bezier(.3,1.6,.5,1)}
+.lk-ring{position:absolute;inset:0;border-radius:50%;border:2px solid #ef4444;opacity:0;pointer-events:none}
+.lk-btn.burst .lk-ring{animation:lk-ring .55s ease-out}
+.lk-dot{position:absolute;left:50%;top:50%;width:5px;height:5px;margin:-2.5px;border-radius:50%;background:#ef4444;opacity:0;pointer-events:none}
+.lk-btn.burst .lk-dot{animation:lk-fly .6s ease-out}
+.lk-count{display:inline-block;min-width:2.2ch;overflow:hidden;height:1.5em}.lk-count b{display:block;font-weight:600;transition:transform .35s cubic-bezier(.3,1.2,.5,1)}
+@keyframes lk-pop{0%{transform:scale(1)}50%{transform:scale(1.4)}100%{transform:scale(1)}}
+@keyframes lk-ring{from{transform:scale(.6);opacity:.9}to{transform:scale(2.2);opacity:0}}
+@keyframes lk-fly{from{opacity:1;transform:rotate(var(--a)) translateY(0)}to{opacity:0;transform:rotate(var(--a)) translateY(-26px)}}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="lk"><button class="lk-btn" aria-pressed="false" aria-label="Like, 128 likes"><span class="lk-heart"><span class="lk-ring"></span><i class="lk-dot" style="--a:0deg"></i><i class="lk-dot" style="--a:60deg"></i><i class="lk-dot" style="--a:120deg"></i><i class="lk-dot" style="--a:180deg"></i><i class="lk-dot" style="--a:240deg"></i><i class="lk-dot" style="--a:300deg"></i><svg viewBox="0 0 24 24" stroke-linejoin="round"><path d="M12 21s-7.5-4.6-9.6-9.2C.9 8.4 2.7 4.5 6.4 4.5c2 0 3.6 1 4.6 2.6l1 1.5 1-1.5c1-1.6 2.6-2.6 4.6-2.6 3.7 0 5.5 3.9 4 7.3C19.5 16.4 12 21 12 21z"/></svg></span><span class="lk-count"><b>128</b><b>129</b></span></button></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling,btn=root.querySelector('.lk-btn'),nums=btn.querySelector('.lk-count'),base=128;
+function set(on){btn.setAttribute('aria-pressed',String(on));var n=base+(on?1:0);nums.querySelectorAll('b').forEach(function(b){b.style.transform='translateY('+(on?-100:0)+'%)'});btn.setAttribute('aria-label',(on?'Unlike':'Like')+', '+n+' likes')}
+btn.addEventListener('click',function(){var on=btn.getAttribute('aria-pressed')!=='true';set(on);btn.classList.remove('burst');if(on){void btn.offsetWidth;btn.classList.add('burst')}});})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

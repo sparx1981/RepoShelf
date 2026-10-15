@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Flowing menu preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,760px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.fm{border-top:1px solid var(--sc-line)}
+.fm a{position:relative;display:block;height:84px;overflow:hidden;border-bottom:1px solid var(--sc-line);color:var(--sc-fg);text-decoration:none;text-transform:uppercase;font-weight:700;font-size:38px;letter-spacing:-.02em}
+.fm a>span{position:absolute;inset:0;display:grid;align-items:center;padding:0 20px}
+.fm-pane{position:absolute;inset:0;background:var(--sc-accent);color:var(--sc-accent-fg);transform:translateY(101%);transition:transform .45s cubic-bezier(.25,.8,.25,1);overflow:hidden;display:flex;align-items:center}
+.fm a.in-top .fm-pane{transform:translateY(-101%);transition:none}.fm a.in-bottom .fm-pane{transform:translateY(101%);transition:none}
+.fm a.is-open .fm-pane{transform:translateY(0);transition:transform .45s cubic-bezier(.25,.8,.25,1)}
+.fm-track{display:flex;white-space:nowrap;animation:fm-run 9s linear infinite}
+.fm-track em{font-style:normal;padding:0 20px}
+@keyframes fm-run{to{transform:translateX(-50%)}}
+.fm a:focus-visible .fm-pane{transform:translateY(0)}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<nav class="fm" aria-label="Menu"><a href="#"><span>Projects</span><div class="fm-pane" aria-hidden="true"><div class="fm-track"><em>Projects</em><em>Projects</em><em>Projects</em><em>Projects</em><em>Projects</em><em>Projects</em><em>Projects</em><em>Projects</em></div></div></a><a href="#"><span>Studio</span><div class="fm-pane" aria-hidden="true"><div class="fm-track"><em>Studio</em><em>Studio</em><em>Studio</em><em>Studio</em><em>Studio</em><em>Studio</em><em>Studio</em><em>Studio</em></div></div></a><a href="#"><span>Journal</span><div class="fm-pane" aria-hidden="true"><div class="fm-track"><em>Journal</em><em>Journal</em><em>Journal</em><em>Journal</em><em>Journal</em><em>Journal</em><em>Journal</em><em>Journal</em></div></div></a><a href="#"><span>Contact</span><div class="fm-pane" aria-hidden="true"><div class="fm-track"><em>Contact</em><em>Contact</em><em>Contact</em><em>Contact</em><em>Contact</em><em>Contact</em><em>Contact</em><em>Contact</em></div></div></a></nav>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling;
+root.querySelectorAll('.fm a').forEach(function(a){
+function edge(e){var r=a.getBoundingClientRect();return e.clientY-r.top<r.height/2?'top':'bottom'}
+a.addEventListener('click',function(e){e.preventDefault()});
+a.addEventListener('pointerenter',function(e){var side=edge(e);a.classList.remove('is-open','in-top','in-bottom');a.classList.add('in-'+side);void a.offsetWidth;a.classList.add('is-open')});
+a.addEventListener('pointerleave',function(e){var side=edge(e);a.classList.remove('is-open');a.querySelector('.fm-pane').style.transform='translateY('+(side==='top'?'-101%':'101%')+')';setTimeout(function(){a.querySelector('.fm-pane').style.transform='';a.classList.remove('in-top','in-bottom')},470)});});})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

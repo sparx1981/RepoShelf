@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Click spark preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,520px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.cp{position:relative;display:grid;place-items:center;min-height:260px;border:1px dashed var(--sc-line);border-radius:20px;background:var(--sc-surface);cursor:crosshair;overflow:hidden;text-align:center;padding:20px}
+.cp canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.cp p{position:relative;margin:0;color:var(--sc-muted);font-size:15px}.cp b{display:block;color:var(--sc-fg);font-size:20px;margin-bottom:4px}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="cp" tabindex="0" role="button" aria-label="Click or press Enter to release sparks"><canvas></canvas><p><b>Click anywhere</b>to release a burst of sparks</p></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling,box=root.querySelector('.cp'),cv=box.querySelector('canvas'),ctx=cv.getContext('2d'),sparks=[],raf=0,calm=matchMedia('(prefers-reduced-motion: reduce)');
+function size(){var r=box.getBoundingClientRect(),d=devicePixelRatio||1;cv.width=r.width*d;cv.height=r.height*d;ctx.setTransform(d,0,0,d,0,0)}size();new ResizeObserver(size).observe(box);
+function burst(x,y){if(calm.matches)return;var colour=getComputedStyle(root).getPropertyValue('--sc-accent').trim()||'#6d5ef5';for(var i=0;i<8;i++)sparks.push({x:x,y:y,a:i/8*Math.PI*2+Math.random()*.3,t:performance.now(),c:colour});if(!raf)raf=requestAnimationFrame(draw)}
+function draw(now){var r=box.getBoundingClientRect();ctx.clearRect(0,0,r.width,r.height);sparks=sparks.filter(function(s){var k=(now-s.t)/450;if(k>=1)return false;var e=1-Math.pow(1-k,3),d1=8+e*26,d2=d1+(1-k)*12;ctx.strokeStyle=s.c;ctx.globalAlpha=1-k;ctx.lineWidth=2.5;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(s.x+Math.cos(s.a)*d1,s.y+Math.sin(s.a)*d1);ctx.lineTo(s.x+Math.cos(s.a)*d2,s.y+Math.sin(s.a)*d2);ctx.stroke();return true});ctx.globalAlpha=1;raf=sparks.length?requestAnimationFrame(draw):0}
+box.addEventListener('pointerdown',function(e){var r=box.getBoundingClientRect();burst(e.clientX-r.left,e.clientY-r.top)});box.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();var r=box.getBoundingClientRect();burst(r.width/2,r.height/2)}});})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

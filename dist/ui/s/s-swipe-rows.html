@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Swipe to delete rows preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,520px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.sw{display:grid;gap:8px}
+.sw-item{position:relative;border-radius:14px;overflow:hidden;background:#ef4444;max-height:80px;transition:max-height .35s .1s,margin .35s .1s,opacity .3s}
+.sw-item.is-gone{max-height:0;margin-top:-8px;opacity:0}
+.sw-bin{position:absolute;right:0;top:0;bottom:0;display:flex;align-items:center;padding:0 22px;color:#fff;border:0;background:none;font-weight:600;cursor:pointer}
+.sw-row{position:relative;display:block;padding:14px 18px;background:var(--sc-surface);border:1px solid var(--sc-line);border-radius:14px;transform:translateX(var(--x,0px));touch-action:pan-y;cursor:grab;transition:transform .35s cubic-bezier(.3,1.3,.5,1)}
+.sw-row.is-drag{transition:none;cursor:grabbing}
+.sw-row strong{display:block;font-size:15px}.sw-row span{font-size:13px;color:var(--sc-muted)}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="sw"><div class="sw-item"><button class="sw-bin">Delete</button><div class="sw-row"><strong>Invoice #1042</strong><span>Due in 3 days</span></div></div><div class="sw-item"><button class="sw-bin">Delete</button><div class="sw-row"><strong>Welcome email</strong><span>Draft · edited 2h ago</span></div></div><div class="sw-item"><button class="sw-bin">Delete</button><div class="sw-row"><strong>Team offsite</strong><span>Friday · 12 people</span></div></div><div class="sw-item"><button class="sw-bin">Delete</button><div class="sw-row"><strong>Release notes</strong><span>Needs review</span></div></div><p class="sw-live" role="status" aria-live="polite" style="margin:6px 0 0;font-size:13px;color:var(--sc-muted)">Drag a row left, or use its Delete button.</p></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling,live=root.querySelector('.sw-live');
+root.querySelectorAll('.sw-item').forEach(function(item){var row=item.querySelector('.sw-row'),bin=item.querySelector('.sw-bin'),sx=0,x=0,on=false;
+function remove(){row.style.setProperty('--x','-110%');item.classList.add('is-gone');live.textContent='Removed '+row.querySelector('strong').textContent;setTimeout(function(){item.style.display='none'},520)}
+row.addEventListener('pointerdown',function(e){on=true;sx=e.clientX-x;row.classList.add('is-drag');row.setPointerCapture(e.pointerId)});
+row.addEventListener('pointermove',function(e){if(!on)return;var d=e.clientX-sx;x=d<0?d:d*.2;row.style.setProperty('--x',x+'px')});
+function end(){if(!on)return;on=false;row.classList.remove('is-drag');if(x<-row.offsetWidth*.4)remove();else{x=0;row.style.setProperty('--x','0px')}}
+row.addEventListener('pointerup',end);row.addEventListener('pointercancel',end);bin.addEventListener('click',remove);});})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

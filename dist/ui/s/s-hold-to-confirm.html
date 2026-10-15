@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hold to confirm preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,460px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.hb{display:grid;gap:14px;justify-items:center}
+.hb-btn{position:relative;overflow:hidden;min-width:220px;padding:15px 26px;border:1px solid color-mix(in srgb,#ef4444 50%,var(--sc-line));border-radius:14px;background:var(--sc-surface);cursor:pointer;font-weight:600;touch-action:none;user-select:none;-webkit-user-select:none}
+.hb-fill{position:absolute;inset:0;background:#ef4444;transform:scaleX(var(--p,0));transform-origin:left}
+.hb-label{position:relative;color:var(--sc-fg);mix-blend-mode:normal}
+.hb-btn[data-done=true]{border-color:#16a34a}.hb-btn[data-done=true] .hb-fill{background:#16a34a;transform:scaleX(1)}.hb-btn[data-done=true] .hb-label{color:#fff}
+.hb-btn[data-holding=true] .hb-label{color:#fff}
+.hb-reset{border:0;background:none;color:var(--sc-muted);text-decoration:underline;cursor:pointer;font-size:13px}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="hb"><button class="hb-btn" aria-describedby="hb-hint"><span class="hb-fill"></span><span class="hb-label">Hold to delete</span></button><p id="hb-hint" class="hb-live" role="status" aria-live="polite" style="margin:0;font-size:13px;color:var(--sc-muted)">Press and hold for 1.2 seconds.</p><button class="hb-reset" hidden>Reset</button></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling,btn=root.querySelector('.hb-btn'),label=root.querySelector('.hb-label'),live=root.querySelector('.hb-live'),reset=root.querySelector('.hb-reset'),p=0,raf=0,last=0,holding=false,done=false,TIME=1200;
+function paint(){btn.style.setProperty('--p',p)}
+function tick(t){var dt=last?t-last:0;last=t;p=Math.max(0,Math.min(1,p+(holding?dt/TIME:-dt/(TIME/2))));paint();if(holding&&p>=1){holding=false;done=true;btn.dataset.done='true';btn.dataset.holding='false';label.textContent='Deleted \u2713';live.textContent='Deleted';reset.hidden=false;raf=0;return}if(holding||p>0)raf=requestAnimationFrame(tick);else{raf=0;btn.dataset.holding='false'}}
+function start(){if(done)return;holding=true;btn.dataset.holding='true';last=0;if(!raf)raf=requestAnimationFrame(tick)}
+function stop(){holding=false;last=0;if(!raf&&p>0)raf=requestAnimationFrame(tick)}
+btn.addEventListener('pointerdown',function(e){e.preventDefault();btn.setPointerCapture(e.pointerId);start()});btn.addEventListener('pointerup',stop);btn.addEventListener('pointercancel',stop);
+btn.addEventListener('keydown',function(e){if((e.key===' '||e.key==='Enter')&&!e.repeat){e.preventDefault();start()}});btn.addEventListener('keyup',function(e){if(e.key===' '||e.key==='Enter')stop()});btn.addEventListener('blur',stop);
+reset.addEventListener('click',function(){done=false;p=0;paint();delete btn.dataset.done;label.textContent='Hold to delete';live.textContent='Press and hold for 1.2 seconds.';reset.hidden=true});})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

@@ -22,7 +22,7 @@ The UI components tab contains the existing searchable component library, live p
 
 ## Background catalogue
 
-Run `npm run studio:build`. The deterministic builder produces 1,500 candidates, selects 100 distinct recipes and writes five contact sheets to `artifacts/studio/`. Review the sheets before accepting changes. The first release was visually reviewed; near-identical grain pairs were corrected by varying their focal position. Thumbnails are under 20 KB each and total approximately 0.5 MB.
+Run `npm run studio:build`. The deterministic builder produces 1,500 candidates, selects 100 distinct recipes and writes five contact sheets to `artifacts/studio/`. Review the sheets before accepting changes. The first release was visually reviewed; near-identical grain pairs were corrected by varying their focal position. Static thumbnails are under 20 KB each and total approximately 0.5 MB.
 
 Public files are `dist/studio/index.json` and `dist/studio/thumbs/`. Saved resources use `ss:bg/<id>` and appear as Saved resources in My collection. Analytics reuse the existing resource action store.
 
@@ -79,3 +79,14 @@ Studio's production entry is now a single bundled ES module whose filename hashe
 A fresh contrast checker uses Brand colour for its text and follows brand changes until the text colour is edited or swapped. The compact checker places an accessible SVG swap button between its two colour wells. Copy to Typography applies the text colour to both heading and body, applies the background, seeds Text Effects ink/background and opens Type System; other typography settings remain intact. Type System has independent heading, body and background colour controls, persisted in recipes and included in CSS/JSON exports. Existing saved custom checker colours are preserved.
 
 Text ASCII now samples padded measured glyph bounds instead of a mostly empty 16:9 canvas, reserves at least twelve sampling rows per text line plus outer space, and uses a text-dependent minimum column count (30–120, with a 160 maximum). Fit to preview accounts for both width and height; horizontal overflow at the minimum readable preview size exposes scroll controls. Image sampling keeps its existing aspect-ratio path. A raster regression compares a long phrase against the old full-frame conversion and verifies increased ink-row detail without losing the measured source bounds. Very long text still benefits from explicit line breaks.
+
+### Live backgrounds
+Twenty original WebGL backgrounds are mixed into the Backgrounds gallery, alternating with the static ones so the first rows show both. They are tagged "Live" and grouped as Live shaders, Live ASCII & dither, Live patterns and Live fluid & light. Each is a fragment shader written for RepoShelf from standard techniques (value-noise fbm, domain warping, Bayer dithering, metaball fields, polar coordinates); no third-party shader source is included. The Motion, SVG patterns and ASCII tabs link to the matching live category.
+
+- **Files:** `dist/studio/live-runner.mjs` (the self-contained WebGL runner), `dist/studio/live-shaders.mjs` (catalogue, shaders, parameter clamping and exports) and `dist/studio/live.mjs` (the editor). The server imports the catalogue, so saves and collection snapshots use the same ids. Thumbnails are rendered from the real shaders by `npm run studio:thumbs` (needs Playwright with Chromium) and a contact sheet is written to `artifacts/studio-live/` for review.
+- **Controls:** speed, scale, one shader-specific amount, four colours, shuffle and reset. Shared links keep tuned settings. Preview pauses when hidden or off screen, and draws a still frame when reduced motion is on. Live backgrounds need WebGL; without it the editor says so.
+- **Exports:** current-frame PNG, a dependency-free standalone HTML page and a React component. The runner source is embedded in the export, so it needs no libraries. All use the existing member and legal gate; the SVG, CSS and Tailwind exports are hidden because a shader has no static equivalent.
+- **Tests:** `tests/studio-live.mjs` checks metadata, bounded parameters, thumbnails, export safety and server validation. Set `REPOSHELF_PLAYWRIGHT_MODULE` to also compile every shader in Chromium.
+
+### More text effects
+Typography text effects add Decrypt, Typewriter, Focus pull, Glitch and Pressure wave animations, plus Moving gradient and Outline looks. They live in the same self-contained SVG renderer as the older effects, so SVG, PNG and animated HTML exports carry them. Typewriter and Decrypt use the stagger control; Glitch uses strength.

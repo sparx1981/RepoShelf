@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Status morph button preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,460px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.sb{display:grid;place-items:center;gap:14px;padding:20px 0}
+.sb-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:10px;min-width:170px;height:50px;padding:0 26px;border:0;border-radius:999px;background:var(--sc-accent);color:var(--sc-accent-fg);font-weight:600;cursor:pointer;transition:min-width .4s cubic-bezier(.3,1.1,.4,1),background .3s}
+.sb-btn[data-state=loading]{min-width:50px;padding:0}.sb-btn[data-state=success]{background:#16a34a;color:#fff}.sb-btn[data-state=error]{background:#dc2626;color:#fff;animation:sb-shake .4s}
+.sb-btn:disabled{cursor:progress}
+.sb-ico{display:none;width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round}
+.sb-btn[data-state=loading] .sb-label,.sb-btn[data-state=loading] .sb-check,.sb-btn[data-state=loading] .sb-cross{display:none}.sb-btn[data-state=loading] .sb-spin{display:block;animation:sb-spin .8s linear infinite}
+.sb-btn[data-state=success] .sb-check{display:block;stroke-dasharray:24;animation:sb-draw .4s forwards}.sb-btn[data-state=error] .sb-cross{display:block}
+.sb-btn[data-state=success] .sb-label,.sb-btn[data-state=error] .sb-label{display:none}
+@keyframes sb-spin{to{transform:rotate(360deg)}}@keyframes sb-draw{from{stroke-dashoffset:24}to{stroke-dashoffset:0}}@keyframes sb-shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="sb"><button class="sb-btn" data-state="idle"><span class="sb-label">Save changes</span><svg class="sb-ico sb-spin" viewBox="0 0 24 24"><path d="M12 3a9 9 0 1 0 9 9" /></svg><svg class="sb-ico sb-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><svg class="sb-ico sb-cross" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button><p class="sb-live" role="status" aria-live="polite" style="margin:0;font-size:13px;color:var(--sc-muted)">Ready</p></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling,btn=root.querySelector('.sb-btn'),live=root.querySelector('.sb-live'),runs=0;
+function set(s,msg){btn.dataset.state=s;live.textContent=msg}
+btn.addEventListener('click',function(){if(btn.disabled)return;btn.disabled=true;set('loading','Saving…');setTimeout(function(){runs++;if(runs%3===0)set('error','Could not save. Try again.');else set('success','Saved');setTimeout(function(){set('idle','Ready');btn.disabled=false},1800)},1600)});})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

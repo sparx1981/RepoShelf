@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sliding pill navigation preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,640px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.pn{position:relative;display:inline-flex;gap:2px;padding:5px;border-radius:999px;border:1px solid var(--sc-line);background:var(--sc-surface)}
+.pn-pill{position:absolute;top:5px;bottom:5px;left:0;width:0;border-radius:999px;background:var(--sc-bg);box-shadow:0 1px 3px rgba(0,0,0,.18),0 0 0 1px var(--sc-line);transition:transform .3s cubic-bezier(.3,.9,.3,1),width .3s cubic-bezier(.3,.9,.3,1)}
+.pn a{position:relative;padding:8px 16px;border-radius:999px;color:var(--sc-muted);text-decoration:none;font-size:14px;transition:color .2s}
+.pn a:hover,.pn a:focus-visible,.pn a[aria-current=page]{color:var(--sc-fg)}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<nav class="pn" aria-label="Main"><span class="pn-pill"></span><a href="#" aria-current="page">Home</a><a href="#">Products</a><a href="#">Pricing</a><a href="#">Docs</a><a href="#">Contact</a></nav>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling,nav=root.querySelector('.pn'),pill=nav.querySelector('.pn-pill'),links=[].slice.call(nav.querySelectorAll('a'));
+function to(a){pill.style.width=a.offsetWidth+'px';pill.style.transform='translateX('+(a.offsetLeft-5)+'px)'}
+function current(){return nav.querySelector('[aria-current=page]')}
+links.forEach(function(a){a.addEventListener('mouseenter',function(){to(a)});a.addEventListener('focus',function(){to(a)});a.addEventListener('click',function(e){e.preventDefault();links.forEach(function(l){l.removeAttribute('aria-current')});a.setAttribute('aria-current','page')})});
+nav.addEventListener('mouseleave',function(){to(current())});nav.addEventListener('focusout',function(){to(current())});
+pill.style.transition='none';to(current());requestAnimationFrame(function(){pill.style.transition=''});})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

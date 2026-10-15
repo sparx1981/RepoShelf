@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Holographic profile card preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,520px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.hp-wrap{perspective:900px;display:grid;place-items:center}
+.hp{position:relative;width:min(100%,300px);padding:24px;border-radius:22px;overflow:hidden;background:linear-gradient(160deg,#1e1b4b,#0f172a);color:#fff;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .35s cubic-bezier(.2,.8,.2,1);box-shadow:0 22px 44px -22px rgba(0,0,0,.7)}
+.hp.is-active{transition:transform .08s linear}
+.hp-avatar{display:grid;place-items:center;width:84px;height:84px;margin:0 auto 14px;border-radius:50%;background:conic-gradient(from 200deg,#6d5ef5,#22d3ee,#f472b6,#6d5ef5);font-size:30px;font-weight:700}
+.hp h3{margin:0;text-align:center;font-size:20px}.hp p{margin:2px 0 18px;text-align:center;color:rgba(255,255,255,.65);font-size:14px}
+.hp-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}.hp-stats b{display:block;font-size:18px}.hp-stats span{font-size:11px;color:rgba(255,255,255,.6);text-transform:uppercase;letter-spacing:.06em}
+.hp-foil{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .25s;background:repeating-linear-gradient(115deg,#ff7ab8 0%,#ffd86b 12%,#7dffb2 24%,#6ad6ff 36%,#b58cff 48%,#ff7ab8 60%);background-size:260% 260%;background-position:var(--bx,50%) var(--by,50%);mix-blend-mode:color-dodge;filter:saturate(1.4) brightness(.8)}
+.hp.is-active .hp-foil{opacity:.5}
+.hp-glow{position:absolute;inset:0;pointer-events:none;opacity:0;transition:opacity .25s;background:radial-gradient(circle at var(--gx,50%) var(--gy,50%),rgba(255,255,255,.35),transparent 55%)}.hp.is-active .hp-glow{opacity:1}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="hp-wrap"><article class="hp"><div class="hp-avatar">AR</div><h3>Ada Reyes</h3><p>Design engineer</p><div class="hp-stats"><div><b>128</b><span>Projects</span></div><div><b>4.9</b><span>Rating</span></div><div><b>12k</b><span>Fans</span></div></div><div class="hp-foil"></div><div class="hp-glow"></div></article></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling,card=root.querySelector('.hp'),calm=matchMedia('(prefers-reduced-motion: reduce)');
+card.addEventListener('pointermove',function(e){if(calm.matches)return;var r=card.getBoundingClientRect(),x=(e.clientX-r.left)/r.width,y=(e.clientY-r.top)/r.height;card.classList.add('is-active');card.style.setProperty('--ry',((x-.5)*16)+'deg');card.style.setProperty('--rx',((.5-y)*16)+'deg');card.style.setProperty('--bx',(x*100)+'%');card.style.setProperty('--by',(y*100)+'%');card.style.setProperty('--gx',(x*100)+'%');card.style.setProperty('--gy',(y*100)+'%')});
+card.addEventListener('pointerleave',function(){card.classList.remove('is-active');card.style.setProperty('--rx','0deg');card.style.setProperty('--ry','0deg')});})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

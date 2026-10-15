@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gooey navigation preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,620px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.gn{position:relative;display:inline-flex;padding:6px;border-radius:999px;background:var(--sc-surface);border:1px solid var(--sc-line)}
+.gn-goo{position:absolute;inset:6px;filter:url(#sc-goo);pointer-events:none}
+.gn-blob{position:absolute;top:0;bottom:0;left:0;width:0;border-radius:999px;background:var(--sc-accent);transition:left .45s cubic-bezier(.3,1.3,.5,1),width .45s cubic-bezier(.3,1.3,.5,1)}
+.gn-blob+.gn-blob{transition-duration:.65s}
+.gn-tab{position:relative;z-index:1;padding:9px 20px;border:0;border-radius:999px;background:none;cursor:pointer;color:var(--sc-muted);transition:color .25s}
+.gn-tab[aria-current=true]{color:var(--sc-accent-fg)}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><filter id="sc-goo"><feGaussianBlur in="SourceGraphic" stdDeviation="8" result="b"/><feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -9"/></filter></defs></svg><nav class="gn" aria-label="Sections"><div class="gn-goo"><i class="gn-blob"></i><i class="gn-blob"></i></div><button class="gn-tab" aria-current="true">Overview</button><button class="gn-tab">Activity</button><button class="gn-tab">Reports</button><button class="gn-tab">Settings</button></nav>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling,nav=root.querySelector('.gn'),tabs=[].slice.call(nav.querySelectorAll('.gn-tab')),blobs=nav.querySelectorAll('.gn-blob');
+function go(tab){tabs.forEach(function(t){t.setAttribute('aria-current',String(t===tab))});var x=tab.offsetLeft-6,w=tab.offsetWidth;blobs.forEach(function(b){b.style.left=x+'px';b.style.width=w+'px'})}
+tabs.forEach(function(t,i){t.addEventListener('click',function(){go(t)});t.addEventListener('keydown',function(e){var n=e.key==='ArrowRight'?i+1:e.key==='ArrowLeft'?i-1:-1;if(n>=0&&n<tabs.length){e.preventDefault();tabs[n].focus();go(tabs[n])}})});
+go(tabs[0]);addEventListener('resize',function(){go(nav.querySelector('[aria-current=true]'))});})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

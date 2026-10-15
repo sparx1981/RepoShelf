@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Scrubbable number field preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,480px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.sf{display:grid;gap:10px}
+.sf-row{display:flex;align-items:center;border:1px solid var(--sc-line);border-radius:12px;background:var(--sc-surface);overflow:hidden}
+.sf-row:focus-within{border-color:var(--sc-accent);box-shadow:0 0 0 3px var(--sc-ring)}
+.sf-label{width:96px;padding:12px 14px;color:var(--sc-muted);font-size:13px;cursor:ew-resize;user-select:none;-webkit-user-select:none;touch-action:none;border-right:1px solid var(--sc-line);transition:background .15s,color .15s}
+.sf-label:hover,.sf-label.is-drag{background:var(--sc-accent);color:var(--sc-accent-fg)}
+.sf-row input{flex:1;min-width:0;padding:12px 14px;border:0;background:none;color:var(--sc-fg);font:inherit;font-variant-numeric:tabular-nums;outline:none}
+.sf-unit{padding-right:14px;color:var(--sc-muted);font-size:13px}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="sf"><div class="sf-row"><span class="sf-label" aria-hidden="true">Width</span><input type="number" aria-label="Width" value="320" min="0" max="1000"><span class="sf-unit">px</span></div><div class="sf-row"><span class="sf-label" aria-hidden="true">Height</span><input type="number" aria-label="Height" value="180" min="0" max="1000"><span class="sf-unit">px</span></div><div class="sf-row"><span class="sf-label" aria-hidden="true">Opacity</span><input type="number" aria-label="Opacity" value="80" min="0" max="100"><span class="sf-unit">%</span></div><p style="margin:4px 0 0;font-size:13px;color:var(--sc-muted)">Drag a label sideways. Hold Shift for bigger steps.</p></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling;
+root.querySelectorAll('.sf-row').forEach(function(row){var label=row.querySelector('.sf-label'),input=row.querySelector('input'),start=0,base=0,on=false;
+label.addEventListener('pointerdown',function(e){on=true;start=e.clientX;base=Number(input.value)||0;label.classList.add('is-drag');label.setPointerCapture(e.pointerId)});
+label.addEventListener('pointermove',function(e){if(!on)return;var step=e.shiftKey?10:1,v=Math.round(base+(e.clientX-start)/2*step);v=Math.max(Number(input.min),Math.min(Number(input.max),v));input.value=v});
+function end(){on=false;label.classList.remove('is-drag')}label.addEventListener('pointerup',end);label.addEventListener('pointercancel',end);});})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>
