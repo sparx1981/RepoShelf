@@ -27,7 +27,7 @@ async function environment(hash=''){
   setTimeout:f=>{const id=++serial;timers.set(id,f);return id},clearTimeout:id=>timers.delete(id),
   addEventListener:(k,f)=>listeners.set(k,[...(listeners.get(k)||[]),f]),dispatchEvent,
   RepoAccount:{ready:true,user:null,track(){}},RepoProfileMenu:{install(){},open(){ctx.signInOpened=true}},
-  patternTool:()=>({get:()=>({}),set(){}}),motionTool:()=>({get:()=>({}),set(){},activate(){}}),typographyTool:()=>({get:()=>({}),set(){},colours(fg,bg){ctx.transferredColours=[fg,bg]}}),gradientTool:()=>({get:()=>({}),set(){}}),rampTool:()=>({get:()=>({foreground:'#112233',background:'#fafafa'}),set(){}}),asciiTool:()=>({get:()=>({}),set(){}}),
+  patternTool:()=>({get:()=>({}),set(){}}),motionTool:()=>({get:()=>({}),set(){},activate(){}}),typographyTool:()=>({get:()=>({}),set(){},colours(fg,bg){ctx.transferredColours=[fg,bg]}}),gradientTool:()=>({get:()=>({}),set(){}}),rampTool:()=>({get:()=>({foreground:'#112233',background:'#fafafa'}),set(){}}),asciiTool:()=>({get:()=>({}),set(){}}),liveTool:()=>({get:()=>undefined,open(){},close(){},isDefault:()=>true}),liveItems:[],
   fetch:async url=>{requests.push(url);return {ok:true,json:async()=>url==='/ui/index.json'?[{id:'c-badge-4',t:'Badge',f:'General',k:'badge',c:'Badge'}]:[]}}
  };
  ctx.window=ctx;vm.createContext(ctx);vm.runInContext(ui,ctx);vm.runInContext(studio,ctx);

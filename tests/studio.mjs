@@ -8,7 +8,7 @@ import {createCollectionHandler} from '../api/collection.mjs';
 const index=JSON.parse(await readFile(new URL('../dist/studio/index.json',import.meta.url),'utf8'));
 assert.equal(index.length,100);assert.equal(new Set(index.map(i=>i.id)).size,100);
 assert.equal(new Set(index.map(i=>JSON.stringify(i.recipe))).size,100);
-const thumbs=await readdir(new URL('../dist/studio/thumbs/',import.meta.url));assert.equal(thumbs.length,100);
+const thumbs=await readdir(new URL('../dist/studio/thumbs/',import.meta.url));const {liveItems}=await import('../dist/studio/live-shaders.mjs');assert.equal(thumbs.length,100+liveItems.length);for(const item of liveItems)assert.ok(thumbs.includes(item.id+'.webp'),'Live thumbnail exists: '+item.id);
 for(const item of index){assert.match(item.id,/^[a-z0-9-]{1,80}$/);assert.ok(item.title&&item.category&&item.recipe);assert.ok((await stat(new URL(`../dist/studio/thumbs/${item.id}.webp`,import.meta.url))).size<20000);const source=svg(item.recipe);assert.ok(!source.includes('NaN'));assert.ok(source.startsWith('<svg'))}
 const a=random(123),b=random(123);for(let i=0;i<20;i++)assert.equal(a(),b());
 assert.ok(!svg(recipe({stops:['bad',Infinity]})).includes('NaN'));
