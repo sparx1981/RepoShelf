@@ -20,3 +20,14 @@ async function pixels(s,p=1){return sharp(Buffer.from(textEffectSVG(s,p))).resiz
 const base={text:'Studio',size:130,appearance:'plain'};for(const appearance of ['embossed','enamel'])assert.notDeepEqual(await pixels({...base,appearance}),await pixels(base));
 for(const animation of ['sweep','weight'])assert.notDeepEqual(await pixels({...base,animation},0),await pixels({...base,animation},animation==='sweep'?.25:.5));
 for(const [key,value] of [['waveAmplitude',120],['waveCycles',1.8],['wavePhase',90],['waveStart',1.8],['waveMiddle',.4],['waveEnd',1.8]])assert.notDeepEqual(await pixels({...base,layout:'wave',unit:'letter',[key]:value}),await pixels({...base,layout:'wave',unit:'letter'}),key+' changes actual pixels');
+
+// Large artwork keeps the requested size and expands its viewBox instead of clipping.
+for(const layout of ['straight','arc','circle','wave'])for(const unit of ['word','letter']){
+ const state=textEffectState({text:'BIG TYPE',layout,unit,size:512,fit:false});assert.equal(state.size,512);assert.equal(state.fit,false);
+ const svg=textEffectSVG(state);assert.doesNotMatch(svg,/NaN|Infinity/);assert.match(svg,/font-size="512"/);
+ const box=/viewBox="([^"]+)"/.exec(svg)[1].split(' ').map(Number);assert.ok(box[2]>=960&&box[3]>=540);
+ const {data,info}=await sharp(Buffer.from(svg)).removeAlpha().raw().toBuffer({resolveWithObject:true});assert.ok(data.some(v=>v>100));
+ const html=textEffectHTML({...state,animation:'wave'});new vm.Script(/<script>([\s\S]*)<\/script>/.exec(html)[1]);
+}
+assert.equal(textEffectState({text:'A',size:999,fit:false}).size,512);assert.equal(textEffectState({text:'A',size:300}).size,300);
+console.log('PASS: 512px text survives every layout and unit, with expanded artwork and safe exports.');
