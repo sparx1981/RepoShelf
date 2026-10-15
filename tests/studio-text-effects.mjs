@@ -31,3 +31,28 @@ for(const layout of ['straight','arc','circle','wave'])for(const unit of ['word'
 }
 assert.equal(textEffectState({text:'A',size:999,fit:false}).size,512);assert.equal(textEffectState({text:'A',size:300}).size,300);
 console.log('PASS: 512px text survives every layout and unit, with expanded artwork and safe exports.');
+
+// Decrypt, typewriter, focus pull, glitch and pressure animations; moving gradient and outline looks.
+{
+ const fresh=['decrypt','typewriter','blur','glitch','pressure'];
+ for(const animation of fresh)for(const layout of ['straight','arc','circle','wave'])for(const unit of ['word','letter']){
+  const svg=textEffectSVG({animation,layout,unit,text:'Ágyp <0123> & more',size:96,duration:2},.4);assert.doesNotMatch(svg,/NaN|Infinity|<0123>/);assert.match(svg,/&lt;0123&gt;|[!<>\-_/\[\]{}=+*^?#A-Z0-9]/);
+  assert.ok((await sharp(Buffer.from(svg)).png().toBuffer()).length>1000,animation+' rasterises in '+layout);
+ }
+ for(const appearance of ['gradient','outline'])for(const layout of ['straight','arc','circle','wave'])assert.ok((await sharp(Buffer.from(textEffectSVG({appearance,layout,text:'Studio',size:96}))).png().toBuffer()).length>1000);
+ const text={text:'Studio effects',size:110,unit:'letter',appearance:'plain'};
+ for(const animation of ['decrypt','blur','pressure'])assert.notDeepEqual(await pixels({...text,animation},.1),await pixels({...text,animation},.6),animation+' changes over time');
+ // librsvg ignores tspan opacity, so compare the markup (Chromium renders it, checked in a browser).
+ assert.notEqual(textEffectSVG({...text,animation:'typewriter'},.1),textEffectSVG({...text,animation:'typewriter'},.6));assert.equal((textEffectSVG({...text,animation:'typewriter'},.1).match(/\u258c|\|<\/tspan>/g)||[]).length,1,'One caret, after the last typed letter');
+ assert.deepEqual(await pixels({...text,animation:'decrypt'},.1),await pixels({...text,animation:'decrypt'},.1),'Decrypt is deterministic for a given phase');
+ assert.equal(textEffectSVG({...text,animation:'decrypt'},1).includes('>Studio'),false,'Letter units are individual');
+ assert.match(textEffectSVG({text:'Done',unit:'word',animation:'decrypt'},1),/>Done</,'Decrypt resolves to the real text');
+ assert.doesNotMatch(textEffectSVG({text:'Done',unit:'word',animation:'decrypt'},0),/>Done</,'Decrypt starts scrambled');
+ assert.equal(textEffectSVG({text:'Hi',animation:'typewriter',unit:'letter'},0).includes('opacity="0.000"'),true,'Typewriter starts empty');
+ assert.match(textEffectSVG({text:'Hi',animation:'blur'},0),/feGaussianBlur stdDeviation="14/);assert.doesNotMatch(textEffectSVG({text:'Hi',animation:'blur'},1),/focus-pull/);
+ const bursts=Array.from({length:80},(_,i)=>textEffectSVG({text:'Hi',animation:'glitch',strength:1},i/80)).filter(svg=>svg.includes('mix-blend-mode:screen'));assert.ok(bursts.length>10&&bursts.length<70,'Glitch bursts come and go');
+ const weights=new Set([...textEffectSVG({text:'Pressure',animation:'pressure',unit:'letter',weight:800},.5).matchAll(/font-weight="(\d+)"/g)].map(m=>m[1]));assert.ok(weights.size>2,'Pressure varies weight across letters');
+ for(const animation of fresh){const html=textEffectHTML({animation,unit:'letter',text:'Hello'});new vm.Script(/<script>([\s\S]*)<\/script>/.exec(html)[1])}
+ assert.ok(textEffectState({animation:'decrypt',appearance:'gradient'}).animation==='decrypt'&&textEffectState({animation:'bogus',appearance:'bogus'}).animation==='none');
+}
+console.log('PASS: Decrypt, typewriter, focus pull, glitch and pressure animations plus gradient and outline looks render safely in every layout.');
