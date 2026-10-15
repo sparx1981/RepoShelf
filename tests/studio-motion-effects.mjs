@@ -3,10 +3,14 @@ import vm from 'node:vm';
 import sharp from 'sharp';
 import {motionState,motionFrame,motionHTML} from '../dist/studio/experiments-core.mjs';
 import {createInk,inkHTML} from '../dist/studio/fluid-ink.mjs';
-for(const kind of ['flow','plasma','spring','path']){
- const s=motionState({kind});assert.notEqual(motionFrame(s,.1),motionFrame(s,.3));assert.equal(motionFrame(s,0),motionFrame(s,1));
+for(const kind of ['flow','plasma','spring','path','lissajous','ripples','tunnel','constellation','helix','pendulums','orbits','radar','lattice','fountain','bloom','equalizer']){
+ const s=motionState({kind});assert.equal(s.kind,kind);assert.notEqual(motionFrame(s,.1),motionFrame(s,.3));assert.equal(motionFrame(s,0),motionFrame(s,1));
  for(const phase of [0,.1,.25,.5,.75,.99])await sharp(Buffer.from(motionFrame(s,phase))).resize(192,108).png().toBuffer();
- new vm.Script(motionHTML(s).match(/<script>([\s\S]*?)<\/script>/)[1]);
+ const exported=motionHTML(s).match(/<script>([\s\S]*?)<\/script>/)[1];
+ const art={},button={setAttribute(){}},media={matches:false,addEventListener(){}};
+ vm.runInNewContext(exported,{document:{hidden:false,getElementById:id=>id==='art'?art:button,addEventListener(){}},matchMedia:()=>media,cancelAnimationFrame(){},requestAnimationFrame(){throw Error('Exports must start paused')}});
+ assert.equal(art.innerHTML,motionFrame(s,s.phase),'standalone export renders the same frame');
+ for(const amount of [8,64])for(const amplitude of [10,160]){const svg=motionFrame(motionState({kind,amount,amplitude}),.37);assert.doesNotMatch(svg,/NaN|Infinity/);await sharp(Buffer.from(svg)).resize(192,108).png().toBuffer()}
 }
 assert.notEqual(motionFrame(motionState({kind:'flow',seed:'one'})),motionFrame(motionState({kind:'flow',seed:'two'})));
 const engine=createInk(),empty=engine.pixels();engine.splat(.5,.5,.5,-.5,'#ff2200');assert.notDeepEqual(engine.pixels(),empty);const first=engine.snapshot();

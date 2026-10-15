@@ -71,9 +71,10 @@
 </section>
 <section hidden id="sync-panel" aria-labelledby="sync-heading">
 <div class="panel-heading"><div><h2 id="sync-heading" tabindex="-1">Sync log</h2><p class="small">Scheduled discovery, record changes and stage results.</p></div><div class="panel-controls"><span id="sync-updated" class="update-stamp"></span><button id="refresh-sync" class="button outline" type="button">Refresh</button></div></div>
-<section class="analytics-box"><h3>X.com scanning</h3><div id="x-collection-settings"></div></section>
-<section class="analytics-box"><div class="panel-heading"><h3>Sync switches</h3><button id="sync-switches-refresh" type="button" class="button outline">Refresh switches</button></div><p class="small">Changes save immediately and control future scheduled and manual runs. Running jobs continue. Catalogue discovery, enrichment and screenshots share one catalogue workflow. X.com searches have their separate switch above.</p><div id="sync-switches"></div></section><div id="sync-content" aria-live="polite"></div>
-<div class="account-actions"><button id="sync-prev" class="button outline" hidden>Newer runs</button><button id="sync-next" class="button outline" hidden>Older runs</button></div>
+<div id="sync-actions" aria-live="polite"></div>
+<details class="analytics-box sync-disclosure"><summary><h3>X.com scanning</h3><span id="x-collection-status" class="status-pill tone-neutral" role="status">Loading</span></summary><div class="sync-disclosure-body" id="x-collection-settings"></div></details>
+<details class="analytics-box sync-disclosure"><summary><h3>Sync switches</h3></summary><div class="sync-disclosure-body"><div class="panel-heading"><button id="sync-switches-refresh" type="button" class="button outline">Refresh switches</button></div><p class="small">Changes save immediately and control future scheduled and manual runs. Running jobs continue. Catalogue discovery, enrichment and screenshots share one catalogue workflow. X.com searches have their separate switch above.</p><div id="sync-switches"></div></div></details><div id="sync-content" aria-live="polite"></div>
+<div class="account-actions"><button id="sync-prev" class="button outline" hidden>Newer runs</button><button id="sync-next" class="button outline" hidden>See more</button></div>
 </section>
 <section id="prompts-panel" aria-labelledby="prompts-heading" hidden>
 <h2 id="prompts-heading" class="sr-only" tabindex="-1">Prompts</h2>
