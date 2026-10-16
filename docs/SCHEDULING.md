@@ -89,6 +89,18 @@ Catalogue quality shows progress towards the **first 5,000 published quality-rea
 
 `data/runtime/projects.json.gz` is the small index the saved-collection and promotion functions read (one project's name, short description, category, language, demo, availability, last check and demo health). It had grown to 36.7 MB for 63,000 projects and broke the 30 MB function budget in `scripts/verify-function-bundles.mjs`. It now keeps only those fields (`runtimeEntry` in `scripts/build-runtime-data.mjs`), drops the demo url a health record repeats (`lib/project-store.mjs` puts it back) and is stored gzip-compressed, about 6 MB. `tests/runtime-entry.mjs` checks that every project reads back exactly as before. The functions' `excludeFiles` in `vercel.json` use `[cs]*.gz` so the big catalogue archives stay out while this file is included.
 
+## README search terms
+
+Each project used to carry the 600 most frequent words of its README (`readmeSnapshot.searchTerms`) inside `dist/catalog.json` and `dist/spaces.json`. That was about 115 MB of the 378 MB raw catalogue. The words are derived from the README saved in `data/readmes`, so they now live in their own store, `lib/readme-terms.mjs`:
+
+- `data/readme-terms/part-NN.json.gz`: 32 gzip files, a stable hash of the lower-case project id picks the file, each holding `{ "owner/name": ["term", ...] }` sorted by id. Saving a README (`saveReadmeSnapshot`) writes them; the catalogue records keep only the snapshot's status and hashes.
+- Readers load them only where the words matter: the classifier (`scripts/reclassify-catalog.mjs`), the browse search index (`lib/browse-index.mjs`) and agent search (`lib/catalog-service.mjs`, via `data/runtime/readme-terms.json.gz`, which `scripts/build-runtime-data.mjs` writes and only `api/agent` includes). A record that still has inline terms keeps working.
+- `migrateReadmeTerms` moves terms out of any catalogue that still carries them. It runs after every unpack (`scripts/data-packing.mjs unpack` and checkpoint restore), so an older checkpoint or a checkout from before the change is converted automatically, and it costs one byte search when there is nothing to move.
+- Demo-only cleanup removes the terms of projects that left the catalogue, together with their README.
+- `data/readme-terms/` is an internal file: a change to it alone does not trigger a deploy.
+
+Effect on the real catalogue: raw `dist/catalog.json` 333 MB to 206 MB, `dist/spaces.json` 45 MB to 36 MB, catalogue parts in Git 85 MB to 39 MB (the terms store adds about 42 MB, which is replaced only when a README changes).
+
 ## Compressed catalogue files
 
 GitHub rejects any file over 100 MB, and the saved catalogue passed that size (105 MB in October 2026), which stopped every sync from saving its results. The largest generated files are now stored in Git compressed (`data/browse/index.json.gz`, `data/browse/search.json.gz`, `data/catalogue-quality.json.gz`), about six to ten times smaller, and without the indentation whitespace (pretty-printing added about 40%). Scripts still read and write the plain JSON files, which are not tracked by Git.

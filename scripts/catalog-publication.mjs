@@ -5,6 +5,7 @@ import {tmpdir} from 'node:os';
 import {join,dirname,basename} from 'node:path';
 import {scheduledPublicationDue,utcDay} from '../lib/publication-policy.mjs';
 import {PACKED,packedPathspecs,isPackedName,logicalName,decompress,pack,unpack} from '../lib/data-packing.mjs';
+import {migrateReadmeTerms} from '../lib/readme-terms.mjs';
 export const CHECKPOINT_BRANCH='reposhelf-checkpoints';
 export const generatedPaths=[...packedPathspecs.filter(p=>p.startsWith('dist/')),'dist/community.json','dist/trendshift.json','dist/growth.json','data','dist/previews'];
 export const generated=path=>path.startsWith('data/')||path.startsWith('dist/previews/')||/^dist\/(catalog|spaces|community|trendshift|growth)\.json(\.gz)?$/.test(path)||/^dist\/(catalog|spaces)\.part-(\d{2}|head)\.json\.gz$/.test(path);
@@ -26,7 +27,7 @@ function blobBytes(root,ref,path){
 }
 function publicJson(path,text){const value=JSON.parse(text);if(path==='dist/catalog.json'||path==='dist/spaces.json'){delete value.updatedAt;delete value.revalidation;delete value.discovery;value.repositories=(value.repositories||[]).map(r=>{const row={...r};for(const key of ['enrichmentAttemptAt','overviewAttemptAt','agentContextAttemptAt','aiOverviewAttemptAt'])delete row[key];return row}).sort((a,b)=>a.full.localeCompare(b.full))}else if(path==='dist/community.json'||path==='dist/trendshift.json')delete value.updatedAt;return JSON.stringify(value)}
 const internalFile=raw=>{const path=logicalName(raw);return internalLogical(path)};
-const internalLogical=path=>path==='data/x-intake.json'||path==='data/x-collection-run.json'||path.startsWith('data/sync-runs/')||path.startsWith('data/browse/')||path==='data/catalogue-quality.json'||path==='data/admin-summary.json'||path==='data/publication.json'||path==='data/recovery-results.json'||path==='data/discovery-search.json'||path==='data/capture-providers.json'||path==='data/browser-cycle.json'||path==='data/launch-cadence.json'||path==='data/ai-overview-usage.json'||path==='dist/growth.json';
+const internalLogical=path=>path==='data/x-intake.json'||path==='data/x-collection-run.json'||path.startsWith('data/sync-runs/')||path.startsWith('data/browse/')||path.startsWith('data/readme-terms/')||path==='data/catalogue-quality.json'||path==='data/admin-summary.json'||path==='data/publication.json'||path==='data/recovery-results.json'||path==='data/discovery-search.json'||path==='data/capture-providers.json'||path==='data/browser-cycle.json'||path==='data/launch-cadence.json'||path==='data/ai-overview-usage.json'||path==='dist/growth.json';
 export function publicFileChanged(path,before,after){
  if(internalFile(path))return false;
  if(/^dist\/(catalog|spaces|community|trendshift)\.json$/.test(path)&&before!==null&&after!==null){try{return publicJson(path,before)!==publicJson(path,after)}catch{return true}}
@@ -57,7 +58,7 @@ export async function saveCheckpoint(root,{base,phase='checkpoint'}={}){
 // ls-tree takes literal paths, not patterns, so the catalogue parts are listed through the directory that holds them.
 const treePaths=[...new Set(generatedPaths.map(p=>p.includes('*')?dirname(p):p))];
 export async function restoreCheckpoint(root){
- unpack(root,PACKED,{force:true});
+ unpack(root,PACKED,{force:true});migrateReadmeTerms(root);
  const commit=remoteCheckpoint(root);if(!commit){console.log('No recovery checkpoint branch yet.');return {restored:0,conflicts:0}}
  const meta=JSON.parse(git(root,['show',commit+':.sync-checkpoint.json']));if(meta.schema!==1||!/^[a-f0-9]{40}$/.test(meta.base))throw Error('Invalid checkpoint baseline');
  try{git(root,['cat-file','-e',meta.base+'^{commit}'])}catch{git(root,['fetch','--quiet','origin',meta.base])}
@@ -70,7 +71,7 @@ export async function restoreCheckpoint(root){
  // A separate index lets Git stream all chosen blobs in one checkout. The real
  // index and newer main files remain untouched; only conflict-approved paths enter it.
  if(entries.length){const temporary=await mkdtemp(join(tmpdir(),'reposhelf-restore-index-'));try{const env={...process.env,GIT_INDEX_FILE:join(temporary,'index')};git(root,['read-tree','--empty'],{env});git(root,['update-index','-z','--index-info'],{env,input:entries.map(({path,oid})=>`100644 ${oid}\t${path}\0`).join('')});git(root,['checkout-index','--all','--force'],{env})}finally{await rm(temporary,{recursive:true,force:true})}}
- unpack(root,PACKED.filter(path=>changed.some(file=>logicalName(file)===path)),{force:true});
+ unpack(root,PACKED.filter(path=>changed.some(file=>logicalName(file)===path)),{force:true});migrateReadmeTerms(root);
  console.log(`Checkpoint recovery: ${restored} generated files restored; ${conflicts} files kept from newer main changes.`);return {restored,conflicts};
 }
 export async function publishCatalog(root=process.cwd(),{checkpoint=false,completed=false,scheduled=false,now=Date.now()}={}){

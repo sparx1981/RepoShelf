@@ -1,6 +1,7 @@
 import {savedListingControls} from '../lib/listing-policy.mjs';
 import {readFile,writeFile,readdir,rm,mkdir} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
+import {createTermsWriter} from '../lib/readme-terms.mjs';
 import {createRequire} from 'node:module';
 const require=createRequire(import.meta.url),D=require('../dist/discovery.js'),P=require('../dist/providers.js');
 // Eligibility depends on the author's demo URL, not a transient reachability result.
@@ -14,6 +15,8 @@ export async function enforceDemoOnly(root=new URL('../',import.meta.url)){
  const ids=new Set(all.map(r=>key(r.full)));const previews=new Set(all.flatMap(r=>[...(r.screenshots||[]),...r.previewCandidate?[r.previewCandidate]:[]].map(s=>String(s.src||'').replace(/^\//,''))).filter(p=>/^previews\/[a-f0-9]{24}(?:-provider)?\.jpg$/.test(p)));
  async function sweep(path,pattern,keep){const dir=new URL(path,root);let files;try{files=await readdir(dir)}catch(e){if(e.code==='ENOENT')return;throw e}for(const file of files){if(!pattern.test(file)||keep(file))continue;const target=new URL(file,dir);bytesRemoved+=(await readFile(target)).length;await rm(target);filesRemoved++}}
  await sweep('data/readmes/',/^[a-f0-9]{64}\.json\.gz$/,file=>ids.has(file.slice(0,64)));
+ // Search terms of projects that left the catalogue go with their README.
+ if(all.length){const terms=createTermsWriter(new URL('data/',root));terms.prune(new Set(all.map(r=>r.full.toLowerCase())));terms.flush()}
  await sweep('data/context/',/^[a-f0-9]{64}\.json\.gz$/,file=>ids.has(file.slice(0,64)));
  await sweep('dist/previews/',/^[a-f0-9]{24}(?:-provider)?\.jpg$/,file=>previews.has('previews/'+file));
  await mkdir(new URL('data/',root),{recursive:true});

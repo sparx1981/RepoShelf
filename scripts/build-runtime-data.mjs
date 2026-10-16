@@ -2,6 +2,7 @@ import {mkdir,readFile,writeFile,readdir} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 import {gzipSync} from 'node:zlib';
 import {projectKey} from '../lib/project-key.mjs';
+import {loadTerms} from '../lib/readme-terms.mjs';
 const require=createRequire(import.meta.url),P=require('../dist/providers.js');
 // The saved-collection and promotion functions read one project's headline facts, nothing more, so the runtime index keeps only
 // those (project() in lib/project-store.mjs). Long descriptions are cut where that function cuts them, a demo health record
@@ -16,6 +17,8 @@ export async function generateRuntimeData(root=new URL('../',import.meta.url),ge
  await mkdir(new URL('data/runtime/',root),{recursive:true});
  await writeFile(new URL('data/runtime/catalog.json.gz',root),gzipSync(JSON.stringify(catalog)));
  await writeFile(new URL('data/runtime/spaces.json.gz',root),gzipSync(JSON.stringify(spaces)));
+ // README search terms live in data/readme-terms; the agent search reads them from one runtime file, for projects still in the catalogue.
+ {const known=new Set(raw.map(r=>r.full.toLowerCase()));await writeFile(new URL('data/runtime/readme-terms.json.gz',root),gzipSync(JSON.stringify(Object.fromEntries([...loadTerms(new URL('data/',root))].filter(([id])=>known.has(id)).sort(([a],[b])=>a<b?-1:1))),{level:9}))}
  await mkdir(new URL('data/runtime/browse-projects/',root),{recursive:true});
  const projects=generated?.projects||await Promise.all((await readdir(new URL('data/browse/projects/',root))).filter(n=>n.endsWith('.json')).map(n=>read('data/browse/projects/'+n)));
  let position=0;await Promise.all(Array.from({length:8},async()=>{while(position<projects.length){const r=projects[position++];await writeFile(new URL('data/runtime/browse-projects/'+projectKey(r.full)+'.json.gz',root),gzipSync(JSON.stringify(r),{level:6}))}}));
