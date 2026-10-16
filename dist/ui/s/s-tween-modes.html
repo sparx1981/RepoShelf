@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tween conflict modes preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,780px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.tm{display:grid;gap:12px;padding:18px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface)}
+.tm-lane{display:grid;grid-template-columns:90px 1fr;gap:12px;align-items:center}
+.tm-lane b{font:800 14px/1.1 system-ui;color:var(--sc-fg)}.tm-lane b small{display:block;margin-top:4px;font:600 11px/1.3 system-ui;color:var(--sc-muted)}
+.tm-track{position:relative;height:62px;border:1px solid var(--sc-line);border-radius:14px;background:var(--sc-bg);cursor:pointer;overflow:hidden}
+.tm-track::before{content:"";position:absolute;left:14px;right:14px;top:50%;height:2px;margin-top:-1px;background:var(--sc-line)}
+.tm-mk{position:absolute;left:0;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;background:var(--c,var(--sc-accent));box-shadow:0 8px 16px -6px var(--c,var(--sc-accent))}
+.tm-pin{position:absolute;top:50%;width:10px;height:10px;margin:-5px 0 0 -5px;border-radius:50%;border:2px solid var(--sc-fg);opacity:.7;animation:tm-fade 1.4s ease-out forwards;pointer-events:none}
+@keyframes tm-fade{to{opacity:0;transform:scale(2)}}
+.tm-hint{text-align:center;font:600 12px/1 system-ui;color:var(--sc-muted)}
+@media (prefers-reduced-motion:reduce){.tm-pin{animation:none;opacity:0}}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="tm"><div class="tm-lane"><b>Replace<small>cancel and restart</small></b><div class="tm-track" data-l="0" role="button" tabindex="0" aria-label="Replace lane: click to set a target"><i class="tm-mk" style="--c:#ff6bb5"></i></div></div><div class="tm-lane"><b>Queue<small>one after another</small></b><div class="tm-track" data-l="1" role="button" tabindex="0" aria-label="Queue lane: click to set a target"><i class="tm-mk" style="--c:#6dd3ff"></i></div></div><div class="tm-lane"><b>Blend<small>add the moves together</small></b><div class="tm-track" data-l="2" role="button" tabindex="0" aria-label="Blend lane: click to set a target"><i class="tm-mk" style="--c:#ffd24d"></i></div></div><div class="tm-hint">Click any track quickly, several times in a row</div></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.tm'),tracks=[].slice.call(root.querySelectorAll('.tm-track'));
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,DUR=650,raf=0,visible=true,touched=false;
+function ease(t){return 1-Math.pow(1-t,3)}
+var L=tracks.map(function(t){return {el:t,mk:t.querySelector('.tm-mk'),pos:.08,tw:[],queue:[],base:.08,end:.08}});
+function pins(f){tracks.forEach(function(t){var p=document.createElement('i');p.className='tm-pin';p.style.left=(14+f*(t.clientWidth-28))+'px';t.appendChild(p);setTimeout(function(){p.remove()},1500)})}
+function send(f,now){f=Math.max(0,Math.min(1,f));pins(f);
+ var r=L[0];if(reduce){L.forEach(function(l){l.pos=f;l.end=f});render();return}
+ r.tw=[{from:r.pos,to:f,start:now,d:DUR}];r.end=f;
+ var q=L[1];q.queue.push(f);
+ var b=L[2];b.tw.push({from:0,to:f-b.end,start:now,d:DUR});b.end=f;
+ go()}
+function step(now){raf=0;var more=false;
+ var r=L[0];if(r.tw.length){var t=r.tw[0],k=Math.min(1,(now-t.start)/t.d);r.pos=t.from+(t.to-t.from)*ease(k);if(k<1)more=true;else r.tw=[]}
+ var q=L[1];if(!q.tw.length&&q.queue.length){q.tw=[{from:q.pos,to:q.queue.shift(),start:now,d:DUR}]}
+ if(q.tw.length){var tq=q.tw[0],kq=Math.min(1,(now-tq.start)/tq.d);q.pos=tq.from+(tq.to-tq.from)*ease(kq);if(kq>=1){q.tw=[];if(q.queue.length)more=true}else more=true}else if(q.queue.length)more=true;
+ var b=L[2];var sum=0,keep=[];b.tw.forEach(function(t){var k=Math.min(1,(now-t.start)/t.d);sum+=t.to*ease(k);if(k<1)keep.push(t);else b.base+=t.to});
+ var done=b.tw.filter(function(t){return (now-t.start)/t.d>=1}).length;b.tw=keep;
+ b.pos=b.base+sum*(1);if(keep.length)more=true;
+ render();if(more&&visible)raf=requestAnimationFrame(step)}
+function go(){if(!raf&&visible)raf=requestAnimationFrame(step)}
+function render(){L.forEach(function(l){var w=l.el.clientWidth-28;l.mk.style.transform='translateX('+(14+l.pos*w).toFixed(1)+'px)'})}
+tracks.forEach(function(t){t.addEventListener('pointerdown',function(e){touched=true;var r=t.getBoundingClientRect();send((e.clientX-r.left-14)/(r.width-28),performance.now())});t.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();touched=true;send(Math.random(),performance.now())}})});
+var seq=[.85,.2,.7,.35,.9],auto=0;function demo(){if(touched||document.hidden){auto=setTimeout(demo,3000);return}var i=0;(function fire(){if(touched)return;send(seq[i++],performance.now());if(i<seq.length)setTimeout(fire,260)})();auto=setTimeout(demo,5200)}
+if('IntersectionObserver' in window)new IntersectionObserver(function(es){visible=es[0].isIntersecting;if(visible)go()}).observe(root);
+render();if(!reduce)setTimeout(demo,900);addEventListener('resize',render);})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

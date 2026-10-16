@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Temperature slider preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,640px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.th{display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:center;padding:26px 24px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface)}
+.th-left{display:grid;gap:14px;justify-items:center}
+.th-svg{width:84px;height:270px;overflow:visible}
+.th-tube{fill:var(--sc-bg);stroke:var(--sc-line);stroke-width:3}
+.th-merc{transition:y .35s cubic-bezier(.3,.9,.3,1),height .35s cubic-bezier(.3,.9,.3,1),fill .3s}
+.th-num{position:relative;display:flex;height:48px;overflow:hidden;font:900 42px/48px system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.03em}
+.th-d{position:relative;display:inline-block;width:.6em;height:48px;overflow:hidden}
+.th-d span{position:absolute;left:0;right:0;top:0;text-align:center;transition:transform .35s cubic-bezier(.3,.9,.3,1),opacity .35s}
+.th-d.s{width:.4em}.th-unit{font:700 18px/48px system-ui;color:var(--sc-muted);margin-left:2px}
+.th-rng{width:100%;accent-color:var(--sc-accent)}
+.th-scene{position:relative;height:300px;border-radius:22px;overflow:hidden;background:var(--bg,#9bd);transition:background .3s;display:grid;place-items:center;color:#fff}
+.th-snow,.th-sun{position:absolute;inset:0;transition:opacity .5s}
+.th-flake{position:absolute;top:-10px;width:var(--s);height:var(--s);border-radius:50%;background:#fff;opacity:.85;left:var(--x);animation:th-fall var(--d) linear infinite;animation-delay:var(--l)}
+.th-rays{transform-origin:50% 50%;animation:th-spin 24s linear infinite}
+.th-cap{position:absolute;left:0;right:0;bottom:14px;margin:0;text-align:center;font:800 22px/1 system-ui,-apple-system,"Segoe UI",sans-serif;text-shadow:0 2px 14px rgba(0,0,0,.35)}
+@keyframes th-fall{to{transform:translateY(330px) translateX(24px)}}
+@keyframes th-spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.th-flake,.th-rays{animation:none}.th-merc,.th-d span{transition:none}}
+@media (max-width:540px){.th{grid-template-columns:1fr}}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="th"><div class="th-left"><svg class="th-svg" viewBox="0 0 84 270" aria-hidden="true"><defs><filter id="th-heat" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="turbulence" baseFrequency="0.01 0.04" numOctaves="2" result="t"><animate attributeName="baseFrequency" dur="3s" values="0.01 0.04;0.014 0.06;0.01 0.04" repeatCount="indefinite"/></feTurbulence><feDisplacementMap in="SourceGraphic" in2="t" scale="0" id="th-disp"/></filter></defs><rect class="th-tube" x="30" y="6" width="24" height="214" rx="12"/><circle class="th-tube" cx="42" cy="228" r="30"/><rect class="th-merc" x="35" y="20" width="14" height="200" rx="7" fill="#4aa8ff"/><circle class="th-bulb" cx="42" cy="228" r="22" fill="#4aa8ff"/></svg><div class="th-num" aria-hidden="true"></div></div><div><div class="th-scene"><div class="th-snow"></div><div class="th-sun"><svg viewBox="-100 -100 200 200" style="width:100%;height:100%"><g class="th-rays"></g><circle r="44" fill="#ffe27a"/></svg></div><p class="th-cap" aria-live="polite"></p></div><input class="th-rng" type="range" min="-10" max="40" step="1" value="12" aria-label="Temperature in degrees Celsius"></div></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.th'),rng=root.querySelector('.th-rng'),merc=root.querySelector('.th-merc'),bulb=root.querySelector('.th-bulb'),num=root.querySelector('.th-num'),scene=root.querySelector('.th-scene'),snow=root.querySelector('.th-snow'),sun=root.querySelector('.th-sun'),rays=root.querySelector('.th-rays'),cap=root.querySelector('.th-cap'),NS='http://www.w3.org/2000/svg';
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,cur=null,touched=false,dir=1;
+for(var i=0;i<14;i++){var f=document.createElement('i');f.className='th-flake';f.style.setProperty('--x',(Math.random()*96)+'%');f.style.setProperty('--s',(3+Math.random()*6)+'px');f.style.setProperty('--d',(3+Math.random()*4)+'s');f.style.setProperty('--l',(-Math.random()*6)+'s');snow.appendChild(f)}
+for(var r=0;r<12;r++){var l=document.createElementNS(NS,'path');l.setAttribute('d','M0 -60 L8 -96 L-8 -96 Z');l.setAttribute('fill','#ffd24d');l.setAttribute('transform','rotate('+r*30+')');rays.appendChild(l)}
+function slotsFor(str){return str.split('')}
+function setNum(str){var slots=num.querySelectorAll('.th-d');if(slots.length!==str.length){num.textContent='';str.split('').forEach(function(ch){var d=document.createElement('span');d.className='th-d'+(ch==='-'?' s':'');var s=document.createElement('span');s.textContent=ch;d.appendChild(s);num.appendChild(d)});var u=document.createElement('span');u.className='th-unit';u.textContent='\u00b0C';num.appendChild(u);return}
+ slots.forEach(function(d,i){var c=d.lastElementChild;if(c.textContent===str.charAt(i))return;if(reduce){c.textContent=str.charAt(i);return}var n=document.createElement('span');n.textContent=str.charAt(i);n.style.transform='translateY('+(dir>0?'100%':'-100%')+')';n.style.opacity=0;d.appendChild(n);void n.offsetWidth;c.style.transform='translateY('+(dir>0?'-100%':'100%')+')';c.style.opacity=0;setTimeout(function(){c.remove()},380);n.style.transform='none';n.style.opacity=1})}
+function mix(a,b,t){return a+(b-a)*t}
+function update(){var v=+rng.value,t=(v+10)/50,h=mix(205,6,Math.pow(t,.9)),col='hsl('+h+' 88% 56%)';dir=cur===null||v>=cur?1:-1;cur=v;merc.setAttribute('y',String(220-Math.max(14,t*200)));merc.setAttribute('height',String(Math.max(14,t*200)));merc.setAttribute('fill',col);bulb.setAttribute('fill',col);
+ var bg1='hsl('+mix(205,40,Math.min(1,t*1.3))+' 70% '+mix(58,66,t)+'%)',bg2='hsl('+mix(215,14,Math.min(1,t*1.2))+' 80% '+mix(34,52,t)+'%)';scene.style.background='linear-gradient(160deg,'+bg1+','+bg2+')';
+ snow.style.opacity=v<10?Math.min(1,(10-v)/8):0;sun.style.opacity=v>18?Math.min(1,(v-18)/10):v>8?.15:0;sun.style.transform='scale('+(.7+Math.max(0,(v-10))/40*.5).toFixed(2)+')';
+ var disp=document.getElementById('th-disp');if(disp)disp.setAttribute('scale',reduce?'0':String(Math.max(0,(v-26)/14*8).toFixed(1)));
+ cap.textContent=v<=0?'Freezing':v<10?'Cold':v<20?'Mild':v<30?'Warm':'Hot';setNum(String(v))}
+rng.addEventListener('input',function(){touched=true;update()});
+var phase=0;setInterval(function(){if(touched||document.hidden||reduce)return;phase+=.05;rng.value=Math.round(15+22*Math.sin(phase));update()},120);update();})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

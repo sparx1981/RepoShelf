@@ -58,6 +58,9 @@ Typography now has separate Type system and Text effects workspaces. Effects com
 
 Patterns additionally include organic blobs, Truchet arcs, flowing contours, periodic Voronoi cells and triangular mosaics. Seed/shuffle, variation, density and secondary colour controls share the existing recipe and export gate. The optional 2×2 view repeats the actual SVG tile. Voronoi uses bounded half-plane clipping over a periodic neighbourhood; triangular mosaics use a jittered periodic grid. Tile/full raster comparison and area coverage tests verify the repeat construction. No geometry package or new runtime dependency is added.
 
+### Motion lab
+The Motion tab has two modes: Experiments (the existing editors) and Motion lab. The lab holds four original tools in an accessible tab list (arrow keys move between tabs): **Ease lab** (cubic Bézier handles plus elastic, bounce and wiggle generators with a preview; exports a CSS `cubic-bezier()` or `linear()` list and JavaScript), **Stagger designer** (an item grid with start/centre/edges/random ordering, amount and ease, with a timeline), **Path rider** (drag anchors on a curve and fly an object along it; exports the SVG path and a Web Animations snippet) and **Draw reveal** (stroke-dash drawing of an SVG path with reveal and trim controls). Everything runs in the browser; copy buttons use the clipboard and report through Studio's status line. Source: `dist/studio/motion-lab.mjs`; the easing maths is covered by `tests/motion-lab.mjs`.
+
 ### Motion effects and interactive ink
 Motion now includes seeded harmonic flow fields, deforming plasma fields, an adjustable damped spring and ellipse/figure-eight path previews. Flow, plasma, paths and other procedural backgrounds repeat over the timeline; springs use two opposing damped responses. Playback starts paused, supports speed changes and stops when hidden or reduced motion is requested.
 

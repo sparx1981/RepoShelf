@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Radial time picker preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,520px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.rt2{display:grid;gap:14px;justify-items:center;padding:24px 20px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface)}
+.rt2-head{display:flex;align-items:center;gap:10px}
+.rt2-seg{padding:8px 14px;border:0;border-radius:14px;background:var(--sc-line);color:inherit;cursor:pointer;font:800 38px/1 ui-monospace,SFMono-Regular,Menlo,monospace}
+.rt2-seg[aria-pressed=true]{background:var(--sc-accent);color:var(--sc-accent-fg)}
+.rt2-colon{font:800 38px/1 ui-monospace,monospace}
+.rt2-ap{display:grid;gap:4px;margin-left:6px}
+.rt2-ap button{padding:5px 10px;border:1px solid var(--sc-line);border-radius:8px;background:var(--sc-bg);color:inherit;cursor:pointer;font:700 12px/1 system-ui}
+.rt2-ap button[aria-pressed=true]{border-color:var(--sc-accent);background:var(--sc-ring)}
+.rt2-svg{width:min(100%,300px);height:auto;touch-action:none;cursor:pointer;user-select:none;outline-offset:6px}
+.rt2-face{fill:var(--sc-bg);stroke:var(--sc-line);stroke-width:2}
+.rt2-num{font:700 17px system-ui;fill:var(--sc-fg);text-anchor:middle;dominant-baseline:central;transition:opacity .35s,transform .35s}
+.rt2-hand{stroke:var(--sc-accent);stroke-width:3;stroke-linecap:round}
+.rt2-bub{fill:var(--sc-accent)}
+.rt2-bt{font:800 17px system-ui;fill:var(--sc-accent-fg);text-anchor:middle;dominant-baseline:central}
+.rt2-live{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="rt2"><div class="rt2-head"><button class="rt2-seg" type="button" data-m="h" aria-pressed="true" aria-label="Hour"></button><span class="rt2-colon" aria-hidden="true">:</span><button class="rt2-seg" type="button" data-m="m" aria-pressed="false" aria-label="Minute"></button><div class="rt2-ap" role="group" aria-label="AM or PM"><button type="button" data-ap="AM" aria-pressed="true">AM</button><button type="button" data-ap="PM" aria-pressed="false">PM</button></div></div><svg class="rt2-svg" viewBox="-150 -150 300 300" tabindex="0" role="slider" aria-label="Clock face" aria-valuemin="0" aria-valuemax="11"><circle class="rt2-face" r="144"/><g class="rt2-nums"></g><line class="rt2-hand" x1="0" y1="0" x2="0" y2="-100"/><circle r="5" fill="var(--sc-accent)"/><g class="rt2-b"><circle class="rt2-bub" r="22"/><text class="rt2-bt"></text></g></svg><p class="rt2-live" aria-live="polite"></p></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.rt2'),svg=root.querySelector('.rt2-svg'),nums=root.querySelector('.rt2-nums'),hand=root.querySelector('.rt2-hand'),bub=root.querySelector('.rt2-b'),bt=root.querySelector('.rt2-bt'),segs=root.querySelectorAll('.rt2-seg'),aps=root.querySelectorAll('[data-ap]'),live=root.querySelector('.rt2-live'),NS='http://www.w3.org/2000/svg';
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,mode='h',H=10,M=25,ap='AM',ang=0,tang=0,raf=0,drag=false,touched=false,R=100;
+function pad(n){return (n<10?'0':'')+n}
+function build(){nums.textContent='';for(var i=0;i<12;i++){var t=document.createElementNS(NS,'text');t.setAttribute('class','rt2-num');var a=i/12*6.283-Math.PI/2;t.setAttribute('x',(Math.cos(a)*118).toFixed(1));t.setAttribute('y',(Math.sin(a)*118).toFixed(1));t.textContent=mode==='h'?(i===0?12:i):pad(i*5);nums.appendChild(t)}}
+function val(){return mode==='h'?H%12:M/5}
+function update(){segs[0].textContent=pad(H);segs[1].textContent=pad(M);segs[0].setAttribute('aria-pressed',String(mode==='h'));segs[1].setAttribute('aria-pressed',String(mode==='m'));aps.forEach(function(b){b.setAttribute('aria-pressed',String(b.getAttribute('data-ap')===ap))});var v=mode==='h'?(H%12||12):M;svg.setAttribute('aria-valuenow',String(val()));svg.setAttribute('aria-valuetext',(mode==='h'?'Hour ':'Minute ')+v);bt.textContent=mode==='h'?(H%12||12):pad(M)}
+function place(a){var r=a*Math.PI/180-Math.PI/2;hand.setAttribute('x2',(Math.cos(r)*R).toFixed(1));hand.setAttribute('y2',(Math.sin(r)*R).toFixed(1));bub.setAttribute('transform','translate('+(Math.cos(r)*118).toFixed(1)+' '+(Math.sin(r)*118).toFixed(1)+')')}
+function frame(){raf=0;var d=tang-ang;d=((d+540)%360)-180;if(Math.abs(d)<.1||reduce){ang=tang}else ang+=d*.25;place(ang);if(Math.abs(tang-ang)>.1&&!reduce)raf=requestAnimationFrame(frame)}
+function go(){if(!raf)raf=requestAnimationFrame(frame)}
+function set(v,commit){if(mode==='h'){H=(v%12)+(ap==='PM'?12:0);if(H%12===0&&ap==='AM')H=0}else M=((v%12)*5+60)%60;tang=mode==='h'?(H%12)*30:M*6;update();go();if(commit)live.textContent=pad(H%12||12)+':'+pad(M)+' '+ap}
+function switchMode(m,fade){if(m===mode)return;mode=m;if(fade&&!reduce){nums.style.opacity=0;setTimeout(function(){build();nums.style.opacity=1;nums.style.transition='opacity .35s'},180)}else build();tang=mode==='h'?(H%12)*30:M*6;update();go()}
+function at(e){var r=svg.getBoundingClientRect(),a=Math.atan2(e.clientY-(r.top+r.height/2),e.clientX-(r.left+r.width/2))*180/Math.PI+90;a=(a+360)%360;return Math.round(a/30)%12}
+svg.addEventListener('pointerdown',function(e){touched=true;drag=true;try{svg.setPointerCapture(e.pointerId)}catch(_){}set(at(e),false)});svg.addEventListener('pointermove',function(e){if(drag)set(at(e),false)});
+svg.addEventListener('pointerup',function(){if(!drag)return;drag=false;set(val(),true);if(mode==='h')setTimeout(function(){switchMode('m',true)},220)});
+svg.addEventListener('keydown',function(e){var d=e.key==='ArrowUp'||e.key==='ArrowRight'?1:e.key==='ArrowDown'||e.key==='ArrowLeft'?-1:0;if(e.key==='Home'){e.preventDefault();set(0,true);return}if(e.key==='End'){e.preventDefault();set(11,true);return}if(d){e.preventDefault();touched=true;if(mode==='h'){var h=(H%12+d+12)%12;set(h,true)}else{M=(M+d*5+60)%60;tang=M*6;update();go();live.textContent=pad(H%12||12)+':'+pad(M)+' '+ap}}});
+segs.forEach(function(b){b.addEventListener('click',function(){touched=true;switchMode(b.getAttribute('data-m'),true)})});aps.forEach(function(b){b.addEventListener('click',function(){touched=true;ap=b.getAttribute('data-ap');H=H%12+(ap==='PM'?12:0);update();live.textContent=pad(H%12||12)+':'+pad(M)+' '+ap})});
+build();update();tang=H%12*30;ang=tang;place(ang);
+var auto=setInterval(function(){if(touched||document.hidden||reduce)return;if(mode==='h'){H=(H+3)%24;ap=H>=12?'PM':'AM';tang=(H%12)*30;update();go();if(Math.random()<.5)setTimeout(function(){if(!touched)switchMode('m',true)},900)}else{M=(M+15)%60;tang=M*6;update();go();if(Math.random()<.5)setTimeout(function(){if(!touched)switchMode('h',true)},900)}},1800);})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

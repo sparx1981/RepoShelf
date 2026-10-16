@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Scramble field preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,780px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.sf{position:relative;display:grid;place-items:center;height:360px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface);overflow:hidden;cursor:crosshair}
+.sf-t{font:700 26px/1.55 ui-monospace,"SF Mono","Cascadia Code",Menlo,monospace;letter-spacing:.02em;color:var(--sc-fg);white-space:pre;user-select:none}
+.sf-t i{font-style:normal;display:inline-block;transition:color .15s,transform .15s}
+.sf-t i.on{color:var(--sc-accent);transform:translateY(-2px)}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="sf"><div class="sf-t" role="text" aria-label="Motion is a language that every interface already speaks."></div></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.sf'),tx=root.querySelector('.sf-t');
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,LINES=['Motion is a language','that every interface','already speaks, so make','it speak clearly.'],G='!<>-_/[]{}=+*^?#',S=[],px=0,py=0,inside=false,raf=0,visible=true,burst=-1,t0=0;
+LINES.forEach(function(l,li){for(var i=0;i<l.length;i++){var e=document.createElement('i');e.setAttribute('aria-hidden','true');e.textContent=l.charAt(i);tx.appendChild(e);S.push({el:e,ch:l.charAt(i),x:0,y:0,state:0,next:0,left:0,li:li,i:i})}if(li<LINES.length-1)tx.appendChild(document.createTextNode('\n'))});
+function measure(){var r=root.getBoundingClientRect();S.forEach(function(o){var b=o.el.getBoundingClientRect();o.x=b.left-r.left+b.width/2;o.y=b.top-r.top+b.height/2})}
+function frame(now){raf=0;var x=px,y=py,W=root.clientWidth,H=root.clientHeight;if(!inside){x=W*(.5+.36*Math.sin(now*.0006));y=H*(.5+.28*Math.sin(now*.0009+1))}
+ S.forEach(function(o,idx){var d=Math.hypot(o.x-x,o.y-y),hit=d<96&&o.ch!==' ',wave=burst>=0&&now-burst>idx*12&&now-burst<idx*12+600;
+  if(o.ch===' ')return;
+  if(hit||wave){o.state=1;o.left=3;if(now>o.next){o.next=now+55;o.el.textContent=G.charAt(Math.floor(Math.random()*G.length));o.el.className='on'}}
+  else if(o.state===1){o.state=2}
+  if(o.state===2){if(now>o.next){o.next=now+40;if(o.left-->0){o.el.textContent=G.charAt(Math.floor(Math.random()*G.length))}else{o.el.textContent=o.ch;o.el.className='';o.state=0}}}});
+ if(burst>=0&&now-burst>S.length*12+700)burst=-1;
+ if(visible&&!reduce)raf=requestAnimationFrame(frame)}
+function go(){if(!raf&&visible&&!reduce)raf=requestAnimationFrame(frame)}
+root.addEventListener('pointermove',function(e){var r=root.getBoundingClientRect();px=e.clientX-r.left;py=e.clientY-r.top;inside=true});
+root.addEventListener('pointerleave',function(){inside=false});
+root.addEventListener('pointerdown',function(){if(!reduce)burst=performance.now()});
+if('IntersectionObserver' in window)new IntersectionObserver(function(es){visible=es[0].isIntersecting;if(visible){measure();go()}}).observe(root);
+if('ResizeObserver' in window)new ResizeObserver(function(){measure()}).observe(root);
+setTimeout(function(){measure();go()},60);})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

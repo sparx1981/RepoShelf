@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>HUD scope preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,780px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.hd{position:relative;height:390px;border-radius:28px;overflow:hidden;border:1px solid var(--sc-line);background:radial-gradient(100% 100% at 50% 50%,#08202d,#030913);cursor:crosshair}
+.hd canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="hd" role="img" aria-label="Sci-fi targeting display with radar sweep"><canvas></canvas></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.hd'),cv=root.querySelector('canvas');
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+function Stage(root,cv,draw,resize){
+ var s={W:0,H:0,dpr:1,x:0,y:0,vx:0,vy:0,px:0,py:0,inside:false,down:false,t:0,dt:16,ctx:cv.getContext('2d'),click:null,first:true},raf=0,visible=true,last=0,until=0;
+ function size(){s.dpr=Math.min(2,window.devicePixelRatio||1);s.W=cv.clientWidth;s.H=cv.clientHeight;cv.width=Math.round(s.W*s.dpr);cv.height=Math.round(s.H*s.dpr);s.ctx.setTransform(s.dpr,0,0,s.dpr,0,0);if(resize)resize(s);s.first=true}
+ function frame(now){raf=0;s.dt=Math.min(48,now-(last||now-16));last=now;s.t=now;var tx,ty;
+  if(s.inside){tx=s.px;ty=s.py}else{tx=s.W*(.5+.34*Math.sin(now*.00071)+.1*Math.sin(now*.0023));ty=s.H*(.5+.3*Math.sin(now*.00097+1)+.08*Math.cos(now*.0021))}
+  if(s.first){s.x=tx;s.y=ty;s.first=false}
+  s.vx=tx-s.x;s.vy=ty-s.y;s.x=tx;s.y=ty;draw(s);
+  if(visible&&(!reduce||now<until))raf=requestAnimationFrame(frame)}
+ function go(){if(!raf&&visible){last=0;raf=requestAnimationFrame(frame)}}
+ function poke(){until=performance.now()+900;go()}
+ function at(e){var r=cv.getBoundingClientRect();s.px=e.clientX-r.left;s.py=e.clientY-r.top;s.inside=true}
+ root.addEventListener('pointermove',function(e){at(e);if(reduce)poke()});
+ root.addEventListener('pointerleave',function(){s.inside=false;s.down=false});
+ root.addEventListener('pointerdown',function(e){at(e);s.down=true;if(s.click)s.click(s.px,s.py);if(reduce)poke()});
+ root.addEventListener('pointerup',function(){s.down=false});
+ if('IntersectionObserver' in window)new IntersectionObserver(function(es){visible=es[0].isIntersecting;if(visible)go()}).observe(root);
+ if('ResizeObserver' in window){var lw=0;new ResizeObserver(function(){if(cv.clientWidth&&cv.clientWidth!==lw){lw=cv.clientWidth;size();go()}}).observe(cv)}else{size();go()}
+ if(!reduce)go();else poke();
+ return s}
+var B=[],hex=[],lockT=0;for(var i=0;i<14;i++)B.push({a:Math.random()*6.283,r:.2+Math.random()*.75,lit:0});
+for(var h=0;h<9;h++)hex.push(Math.floor(Math.random()*65535));
+var CY='0,229,255',AM='255,184,0';
+function ring(c,cx,cy,r,n,len,rot,w){c.lineWidth=w||1;for(var i=0;i<n;i++){var a=rot+i/n*6.283,l=i%6===0?len*1.7:len;c.beginPath();c.moveTo(cx+Math.cos(a)*r,cy+Math.sin(a)*r);c.lineTo(cx+Math.cos(a)*(r-l),cy+Math.sin(a)*(r-l));c.stroke()}}
+var s=Stage(root,cv,function(s){var c=s.ctx,W=s.W,H=s.H,cx=W/2,cy=H/2,R=Math.min(W,H)*.42,t=reduce?1.3:s.t/1000;c.clearRect(0,0,W,H);
+ c.strokeStyle='rgba('+CY+',.18)';c.lineWidth=1;for(var g=-6;g<=6;g++){c.beginPath();c.moveTo(cx+g*60,0);c.lineTo(cx+g*60,H);c.stroke();c.beginPath();c.moveTo(0,cy+g*60);c.lineTo(W,cy+g*60);c.stroke()}
+ c.strokeStyle='rgba('+CY+',.55)';ring(c,cx,cy,R,72,6,t*.12,1);c.strokeStyle='rgba('+CY+',.4)';ring(c,cx,cy,R*.78,36,5,-t*.2,1);
+ c.strokeStyle='rgba('+CY+',.5)';c.beginPath();c.arc(cx,cy,R+10,0,6.283);c.stroke();c.setLineDash([4,6]);c.beginPath();c.arc(cx,cy,R*.52,0,6.283);c.stroke();c.setLineDash([]);c.beginPath();c.arc(cx,cy,R*.25,0,6.283);c.stroke();
+ c.beginPath();c.moveTo(cx-R-18,cy);c.lineTo(cx+R+18,cy);c.moveTo(cx,cy-R-18);c.lineTo(cx,cy+R+18);c.strokeStyle='rgba('+CY+',.22)';c.stroke();
+ var sw=(t/4*6.283)%6.283;
+ for(var k=0;k<40;k++){var a0=sw-k*.028,al=(1-k/40)*.32;c.fillStyle='rgba('+CY+','+al.toFixed(3)+')';c.beginPath();c.moveTo(cx,cy);c.arc(cx,cy,R*.98,a0-.03,a0,false);c.closePath();c.fill()}
+ c.strokeStyle='rgba('+CY+',.9)';c.lineWidth=1.5;c.beginPath();c.moveTo(cx,cy);c.lineTo(cx+Math.cos(sw)*R*.98,cy+Math.sin(sw)*R*.98);c.stroke();
+ var tx=s.inside?s.x:s.x,ty=s.y,best=-1,bd=1e9;
+ for(var i=0;i<B.length;i++){var b=B[i],bx=cx+Math.cos(b.a)*b.r*R,by=cy+Math.sin(b.a)*b.r*R,da=((sw-b.a)%6.283+6.283)%6.283;if(da<.12)b.lit=1;b.lit=Math.max(reduce?.8:0,b.lit-.006*(s.dt/16));
+  if(b.lit>0){c.fillStyle='rgba('+CY+','+(b.lit*.9).toFixed(3)+')';c.beginPath();c.arc(bx,by,2.4+b.lit*2,0,6.283);c.fill()}
+  var d=Math.hypot(bx-tx,by-ty);if(d<bd){bd=d;best=i}}
+ if(best>=0&&bd<90){var bb=B[best],bx2=cx+Math.cos(bb.a)*bb.r*R,by2=cy+Math.sin(bb.a)*bb.r*R,sz=12+Math.sin(t*6)*2;lockT=Math.min(1,lockT+.08);c.strokeStyle='rgba('+AM+','+lockT+')';c.lineWidth=1.5;
+  c.strokeRect(bx2-sz,by2-sz,sz*2,sz*2);c.font='11px ui-monospace,monospace';c.fillStyle='rgba('+AM+','+lockT+')';c.fillText('LOCK '+('0'+(best+1)).slice(-2),bx2+sz+6,by2-sz+10)}else lockT=Math.max(0,lockT-.1);
+ var cl=10+Math.max(0,24-Math.hypot(s.vx,s.vy)*1.2)+Math.sin(t*5)*2;c.strokeStyle='rgba('+CY+',.95)';c.lineWidth=1.5;
+ [[-1,-1],[1,-1],[1,1],[-1,1]].forEach(function(q){c.beginPath();c.moveTo(tx+q[0]*cl,ty+q[1]*(cl-9));c.lineTo(tx+q[0]*cl,ty+q[1]*cl);c.lineTo(tx+q[0]*(cl-9),ty+q[1]*cl);c.stroke()});
+ c.setLineDash([3,5]);c.strokeStyle='rgba('+CY+',.35)';c.beginPath();c.moveTo(cx,cy);c.lineTo(tx,ty);c.stroke();c.setLineDash([]);
+ var brg=((Math.atan2(tx-cx,-(ty-cy))*180/Math.PI)+360)%360,rng=Math.hypot(tx-cx,ty-cy)/R*4200;
+ c.font='11px ui-monospace,monospace';c.fillStyle='rgba('+CY+',.95)';c.fillText('BRG '+('00'+Math.round(brg)).slice(-3)+'\u00b0',tx+cl+8,ty-4);c.fillText('RNG '+Math.round(rng)+' M',tx+cl+8,ty+10);
+ c.fillStyle='rgba('+CY+',.8)';c.font='10px ui-monospace,monospace';
+ for(var q=0;q<9;q++){if(!reduce&&Math.random()<.04)hex[q]=Math.floor(Math.random()*65535);c.fillText(('0000'+hex[q].toString(16)).slice(-4).toUpperCase()+' '+('0000'+(hex[(q+3)%9]).toString(16)).slice(-4).toUpperCase(),24,44+q*16)}
+ for(var bq=0;bq<8;bq++){var v=.35+.55*Math.abs(Math.sin(t*.9+bq*1.7)),bw=90;c.strokeStyle='rgba('+CY+',.5)';c.strokeRect(W-24-bw,40+bq*15,bw,7);c.fillStyle='rgba('+CY+',.8)';c.fillRect(W-24-bw,40+bq*15,bw*v,7)}
+ c.fillStyle='rgba('+CY+',.9)';c.font='700 12px ui-monospace,monospace';c.fillText('SCAN '+(100+Math.floor(t*37)%900),24,H-24);c.fillText('TRACKS '+B.filter(function(b){return b.lit>.2}).length+'/14',W-130,H-24);
+ });
+})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

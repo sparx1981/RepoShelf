@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Flight paths preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,780px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.fp{position:relative;border:1px solid #1d2033;border-radius:28px;background:linear-gradient(#0b1230,#1a2656 70%,#2a3a78);overflow:hidden}
+.fp-svg{display:block;width:100%;height:auto}
+.fp-route{fill:none;stroke:rgba(255,255,255,.25);stroke-width:1.5;stroke-dasharray:2 7;stroke-linecap:round;transition:stroke .3s,stroke-width .3s}
+.fp-route.on{stroke:#d6fb79;stroke-width:2.4;stroke-dasharray:none}
+.fp-trail{fill:none;stroke-linecap:round;stroke-linejoin:round}
+.fp-pin{fill:#fff;cursor:pointer;stroke:rgba(255,255,255,.35);stroke-width:6}
+.fp-btn{position:absolute;right:14px;bottom:14px;padding:8px 16px;border:1px solid rgba(255,255,255,.35);border-radius:999px;background:rgba(10,14,40,.6);color:#fff;cursor:pointer;font-size:13px;font-weight:600}
+.fp-btn[aria-pressed=true]{border-color:#d6fb79}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="fp"><svg class="fp-svg" viewBox="0 0 780 420" role="img" aria-label="Three planes flying curved routes"><g class="fp-sky"></g><g class="fp-routes"></g><g class="fp-planes"></g></svg><button class="fp-btn" type="button" aria-pressed="true">Trails</button></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.fp'),sky=root.querySelector('.fp-sky'),routes=root.querySelector('.fp-routes'),planes=root.querySelector('.fp-planes'),btn=root.querySelector('.fp-btn'),NS='http://www.w3.org/2000/svg';
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,trails=true,visible=true,raf=0,R=[],defs=[{d:'M60 340 C 180 80 360 420 520 200 S 700 70 730 120',dur:9000,ph:.1,col:'#d6fb79',s:1},{d:'M80 120 C 260 -10 330 200 420 250 S 600 380 720 300',dur:12000,ph:.45,col:'#7ad8ff',s:.85},{d:'M120 380 C 120 250 300 330 340 200 S 420 40 560 70 S 700 230 650 360',dur:15000,ph:.7,col:'#ff9ad0',s:.95}];
+function el(n,a,p){var e=document.createElementNS(NS,n);for(var k in a)e.setAttribute(k,a[k]);if(p)p.appendChild(e);return e}
+for(var i=0;i<7;i++)el('ellipse',{cx:60+i*118+(i%2)*30,cy:70+(i*53)%260,rx:50+(i%3)*18,ry:12+(i%2)*6,fill:'rgba(255,255,255,.05)'},sky);
+defs.forEach(function(d,i){var p=el('path',{d:d.d,class:'fp-route'},routes),len=p.getTotalLength(),a=p.getPointAtLength(0),b=p.getPointAtLength(len);
+ [a,b].forEach(function(pt){var c=el('circle',{cx:pt.x,cy:pt.y,r:5,class:'fp-pin',tabindex:0,'aria-label':'Airport pin, route '+(i+1)},routes);c.addEventListener('pointerenter',function(){p.classList.add('on')});c.addEventListener('pointerleave',function(){p.classList.remove('on')});c.addEventListener('focus',function(){p.classList.add('on')});c.addEventListener('blur',function(){p.classList.remove('on')})});
+ var tr=el('polyline',{class:'fp-trail',stroke:d.col,'stroke-width':3,opacity:.8},planes),g=el('g',{},planes);el('path',{d:'M16 0 L-11 10 L-6 0 L-11 -10 Z',fill:d.col,transform:'scale('+d.s+')'},g);R.push({p:p,len:len,tr:tr,g:g,d:d,hist:[]})});
+function place(r,t){var e=r.p.getPointAtLength(t*r.len),q=r.p.getPointAtLength(Math.min(r.len,t*r.len+4)),a=Math.atan2(q.y-e.y,q.x-e.x)*180/Math.PI;if(t>.995){var q2=r.p.getPointAtLength(r.len-4);a=Math.atan2(e.y-q2.y,e.x-q2.x)*180/Math.PI}r.g.setAttribute('transform','translate('+e.x.toFixed(1)+' '+e.y.toFixed(1)+') rotate('+a.toFixed(1)+')');return e}
+var ts=R.map(function(r){return r.d.ph}),last=0;
+function frame(now){raf=0;var dt=Math.min(50,now-(last||now));last=now;R.forEach(function(r,i){var t=ts[i];t+=dt/r.d.dur*(.6+.4*Math.sin(Math.PI*t));if(t>=1){t=0;r.hist=[]}ts[i]=t;var e=place(r,t);r.hist.push(e.x.toFixed(1)+','+e.y.toFixed(1));if(r.hist.length>70)r.hist.shift();r.tr.setAttribute('points',trails?r.hist.join(' '):'')});if(visible&&!reduce)raf=requestAnimationFrame(frame)}
+function go(){if(!raf&&visible&&!reduce){last=0;raf=requestAnimationFrame(frame)}}
+btn.addEventListener('click',function(){trails=!trails;btn.setAttribute('aria-pressed',String(trails));if(!trails)R.forEach(function(r){r.tr.setAttribute('points','')})});
+if('IntersectionObserver' in window)new IntersectionObserver(function(es){visible=es[0].isIntersecting;go()}).observe(root);
+R.forEach(function(r,i){place(r,ts[i]+.2)});go();})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

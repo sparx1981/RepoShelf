@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Text replace preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,780px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.tr{display:grid;gap:22px;place-items:center;height:300px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface);overflow:hidden;padding:24px}
+.tr-line{display:flex;font:900 clamp(34px,7vw,62px)/1.2 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.03em;color:var(--sc-fg);white-space:pre;min-height:1.2em}
+.tr-s{display:inline-block;overflow:hidden;height:1.2em;position:relative;white-space:pre}
+.tr-s i{display:block;font-style:normal;position:absolute;left:0;top:0;white-space:pre;will-change:transform}
+.tr-s i.k{position:relative}
+.tr-m{position:absolute;visibility:hidden;white-space:pre;font:inherit;pointer-events:none}
+.tr-f{display:flex;gap:8px}
+.tr-f input{width:220px;padding:10px 14px;border:1px solid var(--sc-line);border-radius:999px;background:var(--sc-bg);color:var(--sc-fg);font:600 14px/1 system-ui}
+.tr-f input:focus-visible{outline:2px solid var(--sc-ring);outline-offset:2px}
+.tr-f button{padding:10px 16px;border:0;border-radius:999px;background:var(--sc-accent);color:var(--sc-accent-fg);font:700 14px/1 system-ui;cursor:pointer}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="tr"><div class="tr-line" aria-hidden="true"></div><span class="tr-live" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)" aria-live="polite"></span><form class="tr-f"><input type="text" maxlength="24" placeholder="Type a new phrase" aria-label="New headline text"><button type="submit">Replace</button></form></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.tr'),line=root.querySelector('.tr-line'),live=root.querySelector('.tr-live'),form=root.querySelector('.tr-f'),inp=form.querySelector('input');
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,P=['Design in motion','Ship with feeling','Polish every frame','Make it move'],pi=0,cur=[],touched=false,meas=document.createElement('span');meas.className='tr-m';line.appendChild(meas);
+var EASE='cubic-bezier(.2,.9,.25,1)';
+function w(ch){meas.textContent=ch;return meas.getBoundingClientRect().width}
+function slot(ch,grow){var s=document.createElement('span');s.className='tr-s';var g=document.createElement('i');g.className='k';g.textContent=ch;s.appendChild(g);var cw=w(ch);s.style.width=cw+'px';line.appendChild(s);return {el:s,g:g,ch:ch,w:cw}}
+function set(txt){live.textContent=txt;var nw=txt.split(''),n=Math.max(nw.length,cur.length),out=[];
+ if(!cur.length){nw.forEach(function(ch){out.push(slot(ch))});cur=out;return}
+ for(var i=0;i<n;i++){var o=cur[i],ch=nw[i];
+  if(o&&ch!==undefined){if(o.ch===ch){out.push(o);continue}
+   var nwid=w(ch),ng=document.createElement('i');ng.textContent=ch;o.el.appendChild(ng);ng.style.position='absolute';
+   if(reduce){o.g.textContent=ch;o.g.style.transform='';ng.remove();o.el.style.width=nwid+'px';o.ch=ch;o.w=nwid;out.push(o);continue}
+   var old=o.g,dl=i*28;old.style.position='absolute';
+   old.animate([{transform:'translateY(0)',opacity:1},{transform:'translateY(-100%)',opacity:0}],{duration:420,delay:dl,easing:EASE,fill:'both'}).onfinish=function(){this.effect.target.remove()};
+   ng.animate([{transform:'translateY(100%)',opacity:0},{transform:'translateY(0)',opacity:1}],{duration:420,delay:dl,easing:EASE,fill:'both'}).onfinish=(function(g,s){return function(){g.style.position='relative';g.className='k';g.getAnimations().forEach(function(a){a.cancel()})}})(ng,o.el);
+   o.el.animate([{width:o.w+'px'},{width:nwid+'px'}],{duration:420,delay:dl,easing:EASE,fill:'forwards'});
+   o.g=ng;o.ch=ch;o.w=nwid;out.push(o)}
+  else if(!o&&ch!==undefined){var ns=slot(ch);if(!reduce){ns.el.animate([{width:'0px'},{width:ns.w+'px'}],{duration:420,delay:i*28,easing:EASE});ns.g.animate([{transform:'translateY(100%)',opacity:0},{transform:'translateY(0)',opacity:1}],{duration:420,delay:i*28,easing:EASE,fill:'backwards'})}out.push(ns)}
+  else if(o&&ch===undefined){(function(o){if(reduce){o.el.remove();return}o.el.animate([{width:o.w+'px',opacity:1},{width:'0px',opacity:0}],{duration:360,easing:EASE,fill:'forwards'}).onfinish=function(){o.el.remove()}})(o)}}
+ cur=out}
+function cycle(){if(!touched&&!document.hidden){pi=(pi+1)%P.length;set(P[pi])}setTimeout(cycle,2400)}
+form.addEventListener('submit',function(e){e.preventDefault();var v=inp.value.trim();if(!v)return;touched=true;set(v)});
+inp.addEventListener('focus',function(){touched=true});
+set(P[0]);if(!reduce)setTimeout(cycle,2000);})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

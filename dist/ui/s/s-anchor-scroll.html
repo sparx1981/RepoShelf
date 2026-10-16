@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Anchor scroll spy preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,780px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.as2{position:relative;border:1px solid var(--sc-line);border-radius:28px;overflow:hidden;background:var(--sc-surface)}
+.as2-box{height:380px;overflow:auto;scrollbar-width:none}.as2-box::-webkit-scrollbar{display:none}
+.as2-nav{position:sticky;top:14px;z-index:10;display:flex;gap:2px;width:max-content;max-width:calc(100% - 28px);margin:14px auto 0;padding:4px;border-radius:999px;background:rgba(20,20,28,.72);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.12);overflow:hidden}
+.as2-ind{position:absolute;top:4px;bottom:4px;left:0;border-radius:999px;background:#fff;transition:transform .45s cubic-bezier(.3,1.2,.4,1),width .45s cubic-bezier(.3,1.2,.4,1)}
+.as2-nav button{position:relative;z-index:1;padding:8px 14px;border:0;border-radius:999px;background:transparent;color:rgba(255,255,255,.8);font:700 13px/1 system-ui;cursor:pointer;transition:color .25s}
+.as2-nav button[aria-current=true]{color:#111}
+.as2-sec{position:relative;height:380px;display:grid;align-content:center;justify-items:start;gap:8px;padding-left:60px;color:#fff;overflow:hidden}
+.as2-nav+.as2-sec{margin-top:-52px;padding-top:52px}
+.as2-sec b{font:900 80px/1 system-ui;letter-spacing:-.05em;opacity:.95}.as2-sec h3{margin:0;font:800 28px/1.1 system-ui}.as2-sec p{margin:0;max-width:34ch;font:500 15px/1.5 system-ui;opacity:.85}
+.as2-sh{position:absolute;right:8%;top:30%;width:150px;height:150px;border-radius:38% 62% 55% 45%;background:rgba(255,255,255,.2);will-change:transform}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="as2"><div class="as2-box" tabindex="0" role="region" aria-label="Sections with anchor navigation"><nav class="as2-nav" aria-label="Sections"><i class="as2-ind"></i></nav></div></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.as2'),box=root.querySelector('.as2-box'),nav=root.querySelector('.as2-nav'),ind=root.querySelector('.as2-ind');
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,S=[['Intro','#6d5ef5','Start with intent'],['Craft','#e0457b','Shape every detail'],['Motion','#f08a3c','Let it flow'],['Detail','#1f9d8b','Mind the edges'],['Finish','#2f6fe0','Land it softly']],B=[],SEC=[],SH=[],active=-1,tw=0,auto=!reduce,touched=false;
+S.forEach(function(s,i){var b=document.createElement('button');b.type='button';b.textContent=s[0];nav.appendChild(b);B.push(b);b.addEventListener('click',function(){stopAuto();to(i)});
+ var sec=document.createElement('section');sec.className='as2-sec';sec.style.background='linear-gradient(150deg,'+s[1]+',color-mix(in srgb,'+s[1]+' 55%,#000))';var n=document.createElement('b');n.textContent='0'+(i+1);var h=document.createElement('h3');h.textContent=s[2];var p=document.createElement('p');p.textContent='Section '+(i+1)+' of 5: '+s[0].toLowerCase()+' is where the page settles for a moment.';var sh=document.createElement('i');sh.className='as2-sh';sec.appendChild(sh);sec.appendChild(n);sec.appendChild(h);sec.appendChild(p);box.appendChild(sec);SEC.push(sec);SH.push(sh)});
+function top(i){return SEC[i].offsetTop+(i?52:0)-(i?52:0)}
+function to(i){cancelAnimationFrame(tw);var from=box.scrollTop,dest=Math.min(SEC[i].offsetTop-0,box.scrollHeight-box.clientHeight),dur=reduce?1:900,t0=0;if(reduce){box.scrollTop=dest;return}
+ function st(now){if(!t0)t0=now;var k=Math.min(1,(now-t0)/dur),e=k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;box.scrollTop=from+(dest-from)*e;if(k<1)tw=requestAnimationFrame(st)}tw=requestAnimationFrame(st)}
+function spy(){var y=box.scrollTop+40,idx=0;SEC.forEach(function(s,i){if(s.offsetTop<=y+26)idx=i});if(idx!==active){active=idx;B.forEach(function(b,i){if(i===idx)b.setAttribute('aria-current','true');else b.removeAttribute('aria-current')});var bb=B[idx];ind.style.width=bb.offsetWidth+'px';ind.style.transform='translateX('+(bb.offsetLeft)+'px)'}
+ var vh=box.clientHeight;SH.forEach(function(sh,i){var d=(SEC[i].offsetTop-box.scrollTop)/vh;sh.style.transform=reduce?'none':'translateY('+(d*40).toFixed(1)+'px) rotate('+(d*30).toFixed(1)+'deg)'})}
+function stopAuto(){auto=false;touched=true}
+['wheel','touchstart','pointerdown','keydown'].forEach(function(e){box.addEventListener(e,function(ev){if(ev.target&&ev.target.closest&&ev.target.closest('.as2-nav'))return;cancelAnimationFrame(tw);stopAuto()},{passive:true})});
+box.addEventListener('scroll',spy,{passive:true});
+var ai=0;function tour(){if(auto&&!document.hidden){ai=(ai+1)%S.length;to(ai)}setTimeout(tour,2600)}
+requestAnimationFrame(function(){spy()});if(!reduce)setTimeout(tour,2200);addEventListener('resize',spy);})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

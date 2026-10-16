@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Physics fountain preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,780px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.pf2{position:relative;border:1px solid #1d1d28;border-radius:28px;background:radial-gradient(ellipse at 50% 100%,#1a1530,#06060b 72%);overflow:hidden}
+.pf2 canvas{display:block;width:100%;height:340px;touch-action:pan-y;cursor:ew-resize}
+.pf2-ctl{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px 16px;padding:14px 18px 16px;border-top:1px solid #1d1d28;color:#cfcfe8}
+.pf2-ctl label{display:grid;gap:4px;font:600 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase}
+.pf2-ctl label span{display:flex;justify-content:space-between}
+.pf2-ctl input{width:100%;accent-color:#a99bff}
+.pf2-btn{align-self:end;padding:8px 14px;border:1px solid #3a3a58;border-radius:999px;background:rgba(10,10,24,.7);color:#e6e6ff;cursor:pointer;font-size:13px;font-weight:600}
+.pf2-btn:hover{border-color:#a99bff}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="pf2"><canvas role="img" aria-label="A particle fountain bouncing on the floor"></canvas><div class="pf2-ctl"></div></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.pf2'),cv=root.querySelector('canvas'),ctl=root.querySelector('.pf2-ctl'),ctx=cv.getContext('2d');
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,dpr=1,W=0,H=0,P=[],nx=0,raf=0,visible=true,drag=false,until=0,cfg={rate:5,speed:10,angle:0,spread:14,gravity:.35},defs=[['rate','Rate',1,12,1],['speed','Speed',4,16,.5],['angle','Angle',-60,60,1],['spread','Spread',0,40,1],['gravity','Gravity',.1,.8,.05]];
+defs.forEach(function(d){var l=document.createElement('label'),s=document.createElement('span'),n=document.createElement('b'),o=document.createElement('output'),i=document.createElement('input');n.textContent=d[1];o.textContent=cfg[d[0]];s.appendChild(n);s.appendChild(o);i.type='range';i.min=d[2];i.max=d[3];i.step=d[4];i.value=cfg[d[0]];i.setAttribute('aria-label',d[1]);i.addEventListener('input',function(){cfg[d[0]]=+i.value;o.textContent=i.value;poke()});l.appendChild(s);l.appendChild(i);ctl.appendChild(l)});
+var burst=document.createElement('button');burst.type='button';burst.className='pf2-btn';burst.textContent='Burst';burst.addEventListener('click',function(){for(var k=0;k<200;k++)emit();poke()});ctl.appendChild(burst);
+function size(){dpr=Math.min(2,window.devicePixelRatio||1);W=cv.clientWidth;H=cv.clientHeight;cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);if(!nx)nx=W/2;nx=Math.min(W-20,nx)}
+function emit(){var a=(cfg.angle+(Math.random()-.5)*2*cfg.spread)*Math.PI/180,s=cfg.speed*(.85+Math.random()*.3);P.push({x:nx,y:H-14,px:nx,py:H-14,vx:Math.sin(a)*s,vy:-Math.cos(a)*s,l:0,h:(performance.now()*.05)%140+250});if(P.length>1200)P.shift()}
+function frame(now){raf=0;for(var i=0;i<cfg.rate;i++)emit();ctx.setTransform(dpr,0,0,dpr,0,0);ctx.fillStyle='rgba(6,6,11,.3)';ctx.fillRect(0,0,W,H);ctx.globalCompositeOperation='lighter';
+ for(var j=P.length-1;j>=0;j--){var p=P[j];p.px=p.x;p.py=p.y;p.vy+=cfg.gravity;p.vx*=.998;p.vy*=.998;p.x+=p.vx;p.y+=p.vy;p.l+=16;if(p.y>H-6){p.y=H-6;p.vy*=-.55;p.vx*=.9;if(Math.abs(p.vy)<.8)p.vy=0}if(p.x<0||p.x>W){p.vx*=-.6;p.x=Math.max(0,Math.min(W,p.x))}if(p.l>4000){P.splice(j,1);continue}var a=1-p.l/4000;ctx.strokeStyle='hsla('+p.h+',90%,65%,'+a*.6+')';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(p.px,p.py);ctx.lineTo(p.x,p.y);ctx.stroke();ctx.fillStyle='hsla('+p.h+',95%,72%,'+a+')';ctx.beginPath();ctx.arc(p.x,p.y,2.2,0,6.283);ctx.fill()}
+ ctx.globalCompositeOperation='source-over';var g=ctx.createRadialGradient(nx,H-12,0,nx,H-12,26);g.addColorStop(0,'rgba(255,255,255,.95)');g.addColorStop(.3,'rgba(180,160,255,.6)');g.addColorStop(1,'rgba(150,120,255,0)');ctx.fillStyle=g;ctx.fillRect(nx-30,H-42,60,60);
+ if(visible&&(!reduce||now<until))raf=requestAnimationFrame(frame)}
+function go(){if(!raf&&visible)raf=requestAnimationFrame(frame)}function poke(){until=performance.now()+1800;go()}
+cv.addEventListener('pointerdown',function(e){drag=true;var r=cv.getBoundingClientRect();nx=Math.max(14,Math.min(W-14,e.clientX-r.left));try{cv.setPointerCapture(e.pointerId)}catch(_){}poke()});cv.addEventListener('pointermove',function(e){if(!drag)return;var r=cv.getBoundingClientRect();nx=Math.max(14,Math.min(W-14,e.clientX-r.left));poke()});cv.addEventListener('pointerup',function(){drag=false});
+if('IntersectionObserver' in window)new IntersectionObserver(function(es){visible=es[0].isIntersecting;go()}).observe(root);
+if('ResizeObserver' in window){var lw=0;new ResizeObserver(function(){if(cv.clientWidth&&cv.clientWidth!==lw){lw=cv.clientWidth;size();go()}}).observe(cv)}else{size();go()}if(reduce)poke();})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

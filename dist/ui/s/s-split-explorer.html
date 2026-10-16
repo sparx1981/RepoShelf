@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Split explorer preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,780px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.sx{display:grid;gap:18px;padding:22px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface)}
+.sx-top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.sx-seg{display:inline-flex;padding:4px;border:1px solid var(--sc-line);border-radius:999px;background:var(--sc-bg)}
+.sx-seg label{position:relative;cursor:pointer}.sx-seg input{position:absolute;opacity:0}
+.sx-seg span{display:block;padding:8px 14px;border-radius:999px;font:700 13px/1 system-ui;color:var(--sc-muted);transition:background .2s,color .2s}
+.sx-seg input:checked+span{background:var(--sc-accent);color:var(--sc-accent-fg)}
+.sx-seg input:focus-visible+span{outline:2px solid var(--sc-ring);outline-offset:2px}
+.sx-chip{padding:7px 12px;border-radius:999px;background:var(--sc-bg);border:1px solid var(--sc-line);font:700 12px/1 ui-monospace,monospace;color:var(--sc-fg)}
+.sx-p{margin:0;min-height:196px;font:700 27px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.02em;color:var(--sc-fg)}
+.sx-p .u{display:inline-block;white-space:pre;outline:1px dashed color-mix(in srgb,var(--sc-accent) 75%,transparent);outline-offset:1px;background:color-mix(in srgb,var(--sc-accent) 9%,transparent);border-radius:3px}
+.sx-p .ln{display:block;overflow:hidden;outline:1px dashed color-mix(in srgb,var(--sc-accent) 75%,transparent);outline-offset:-1px;background:color-mix(in srgb,var(--sc-accent) 9%,transparent)}
+.sx-p .ln>span{display:block;white-space:nowrap}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="sx"><div class="sx-top"><div class="sx-seg" role="radiogroup" aria-label="Split mode"><label><input type="radio" name="sx-m" value="chars" checked><span>Characters</span></label><label><input type="radio" name="sx-m" value="words"><span>Words</span></label><label><input type="radio" name="sx-m" value="lines"><span>Lines</span></label></div><span class="sx-chip" aria-live="polite"></span></div><p class="sx-p" aria-label="Great motion begins with great structure. Split the words, the letters or the lines and every piece becomes a small actor of its own."></p></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.sx'),p=root.querySelector('.sx-p'),chip=root.querySelector('.sx-chip'),radios=[].slice.call(root.querySelectorAll('input[name=sx-m]'));
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,TXT=p.getAttribute('aria-label'),mode='chars',touched=false,idx=0;
+function clear(){while(p.firstChild)p.removeChild(p.firstChild)}
+function stagger(pcs){if(reduce)return;var n=pcs.length;pcs.forEach(function(e,i){e.animate([{transform:'translateY(60%)',opacity:0},{transform:'none',opacity:1}],{duration:460,delay:i*Math.min(40,900/n),easing:'cubic-bezier(.2,.9,.25,1)',fill:'backwards'})})}
+function build(){clear();var pcs=[],unit='';
+ var words=TXT.split(' ');
+ if(mode==='chars'){words.forEach(function(w,wi){var g=document.createElement('span');g.style.display='inline-block';g.style.whiteSpace='nowrap';g.setAttribute('aria-hidden','true');for(var i=0;i<w.length;i++){var s=document.createElement('span');s.className='u';s.textContent=w.charAt(i);g.appendChild(s);pcs.push(s)}p.appendChild(g);if(wi<words.length-1)p.appendChild(document.createTextNode(' '))});unit='characters';chip.textContent=pcs.length+' characters'}
+ else if(mode==='words'){words.forEach(function(w,wi){var s=document.createElement('span');s.className='u';s.setAttribute('aria-hidden','true');s.textContent=w;p.appendChild(s);pcs.push(s);if(wi<words.length-1)p.appendChild(document.createTextNode(' '))});chip.textContent=pcs.length+' words'}
+ else{var ws=[];words.forEach(function(w,wi){var s=document.createElement('span');s.textContent=w;s.style.display='inline-block';s.setAttribute('aria-hidden','true');p.appendChild(s);ws.push(s);if(wi<words.length-1)p.appendChild(document.createTextNode(' '))});
+  var groups=[],lastTop=null;ws.forEach(function(s){var t=s.offsetTop;if(lastTop===null||Math.abs(t-lastTop)>6){groups.push([]);lastTop=t}groups[groups.length-1].push(s.textContent)});
+  clear();groups.forEach(function(g){var ln=document.createElement('span');ln.className='ln';ln.setAttribute('aria-hidden','true');var inner=document.createElement('span');inner.textContent=g.join(' ');ln.appendChild(inner);p.appendChild(ln);pcs.push(inner)});chip.textContent=pcs.length+' lines'}
+ stagger(pcs)}
+function setMode(m){mode=m;radios.forEach(function(r){r.checked=r.value===m});build()}
+radios.forEach(function(r){r.addEventListener('change',function(){touched=true;setMode(r.value)})});
+function cycle(){if(!touched&&!document.hidden){idx=(idx+1)%3;setMode(['chars','words','lines'][idx])}setTimeout(cycle,3200)}
+if('ResizeObserver' in window){var lw=0;new ResizeObserver(function(){var w=p.clientWidth;if(w&&lw&&w!==lw&&mode==='lines')build();lw=w}).observe(p)}
+build();if(!reduce)setTimeout(cycle,3000);})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

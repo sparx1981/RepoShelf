@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Flick wheel preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,560px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.sd{display:grid;gap:14px;justify-items:center;padding:26px 20px 22px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface)}
+.sd-wrap{position:relative;width:min(100%,360px);touch-action:none}
+.sd-svg{display:block;width:100%;height:auto;cursor:grab;user-select:none}
+.sd-svg.drag{cursor:grabbing}
+.sd-ptr{position:absolute;left:50%;top:-8px;width:34px;height:40px;margin-left:-17px;transform-origin:50% 8px;transition:transform .12s;filter:drop-shadow(0 4px 6px rgba(0,0,0,.35))}
+.sd-ptr svg{display:block;width:100%;height:100%;fill:var(--sc-fg)}
+.sd-res{margin:0;min-height:1.4em;font:800 20px/1.2 system-ui,-apple-system,"Segoe UI",sans-serif}
+.sd-btn{padding:9px 20px;border:1px solid var(--sc-line);border-radius:999px;background:var(--sc-bg);color:inherit;cursor:pointer;font-size:14px;font-weight:700}
+.sd-btn:hover{border-color:var(--sc-accent)}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="sd"><div class="sd-wrap"><svg class="sd-svg" viewBox="-180 -180 360 360" role="img" aria-label="Prize wheel with eight segments"><g class="sd-g"></g><circle r="22" fill="var(--sc-bg)" stroke="var(--sc-line)" stroke-width="3"/></svg><div class="sd-ptr" aria-hidden="true"><svg viewBox="0 0 34 40"><path d="M17 40 L2 8 Q17 -4 32 8 Z"/></svg></div></div><p class="sd-res" aria-live="polite">Flick the wheel</p><button class="sd-btn" type="button">Spin</button></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.sd'),svg=root.querySelector('.sd-svg'),g=root.querySelector('.sd-g'),ptr=root.querySelector('.sd-ptr'),res=root.querySelector('.sd-res'),btn=root.querySelector('.sd-btn'),NS='http://www.w3.org/2000/svg';
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,labels=['5%','10%','Free ship','15%','Try again','20%','Gift','25%'],N=8,SEG=360/N,ang=0,vel=0,drag=false,hist=[],raf=0,settle=false,last=0,lastIdx=0,tick=0;
+labels.forEach(function(l,i){var a0=(i*SEG-90-SEG/2)*Math.PI/180,a1=((i+1)*SEG-90-SEG/2)*Math.PI/180,R=170,p=document.createElementNS(NS,'path');p.setAttribute('d','M0 0 L'+(Math.cos(a0)*R).toFixed(2)+' '+(Math.sin(a0)*R).toFixed(2)+' A'+R+' '+R+' 0 0 1 '+(Math.cos(a1)*R).toFixed(2)+' '+(Math.sin(a1)*R).toFixed(2)+' Z');p.setAttribute('fill','hsl('+(262+i*38)+' 78% '+(i%2?58:48)+'%)');g.appendChild(p);var t=document.createElementNS(NS,'text'),am=(i*SEG-90)*Math.PI/180;t.setAttribute('transform','translate('+(Math.cos(am)*110).toFixed(1)+' '+(Math.sin(am)*110).toFixed(1)+') rotate('+(i*SEG)+')');t.setAttribute('text-anchor','middle');t.setAttribute('dominant-baseline','middle');t.setAttribute('fill','#fff');t.setAttribute('style','font:800 19px system-ui,sans-serif');t.textContent=l;g.appendChild(t)});
+function paint(){g.setAttribute('transform','rotate('+ang.toFixed(2)+')');var idx=Math.round((((-ang)%360)+360)%360/SEG)%N;if(idx!==lastIdx&&Math.abs(vel)>.6){lastIdx=idx;ptr.style.transform='rotate('+(-14)+'deg)';clearTimeout(tick);tick=setTimeout(function(){ptr.style.transform=''},70)}lastIdx=idx}
+function result(){var idx=Math.round((((-ang)%360)+360)%360/SEG)%N;res.textContent=labels[idx]==='Try again'?'Try again':'You won: '+labels[idx]}
+function frame(now){raf=0;var dt=Math.min(40,now-(last||now));last=now;if(!drag){if(!settle){ang+=vel*dt;vel*=Math.pow(.985,dt/16);if(Math.abs(vel)*16<.4)settle=true}else{var target=Math.round(ang/SEG)*SEG;ang+=(target-ang)*.12;vel=0;if(Math.abs(target-ang)<.05){ang=target;paint();result();return}}}paint();raf=requestAnimationFrame(frame)}
+function go(){if(!raf){last=0;raf=requestAnimationFrame(frame)}}
+function pa(e){var r=svg.getBoundingClientRect();return Math.atan2(e.clientY-(r.top+r.height/2),e.clientX-(r.left+r.width/2))*180/Math.PI}
+var prev=0;svg.addEventListener('pointerdown',function(e){drag=true;settle=false;vel=0;hist=[];prev=pa(e);svg.classList.add('drag');try{svg.setPointerCapture(e.pointerId)}catch(_){}go()});
+svg.addEventListener('pointermove',function(e){if(!drag)return;var a=pa(e),d=a-prev;if(d>180)d-=360;if(d<-180)d+=360;prev=a;ang+=d;hist.push([performance.now(),d]);while(hist.length>1&&hist[0][0]<performance.now()-90)hist.shift()});
+function up(){if(!drag)return;drag=false;svg.classList.remove('drag');var s=0,t=hist.length?hist[hist.length-1][0]-hist[0][0]:0;hist.forEach(function(h){s+=h[1]});vel=t>0&&!reduce?s/Math.max(16,t):0;if(Math.abs(vel)*16<.4)settle=true;res.textContent='';go()}
+svg.addEventListener('pointerup',up);svg.addEventListener('pointercancel',up);
+btn.addEventListener('click',function(){res.textContent='';if(reduce){ang=-Math.floor(Math.random()*N)*SEG;paint();result();return}settle=false;vel=(Math.random()<.5?-1:1)*(1.2+Math.random()*.8);go()});paint();})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>
