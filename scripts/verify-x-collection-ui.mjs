@@ -21,7 +21,10 @@ try{
     return route.fulfill({json:{items:[]}});
   });
   await page.goto(base+'/admin.html?tab=sync');
-  await page.waitForSelector('#x-collection-enabled');
+  // The X.com scanning settings sit in a disclosure that starts closed (admin.html): wait for the form, then open it.
+  await page.waitForSelector('#x-collection-enabled',{state:'attached'});
+  assert.equal(await page.locator('details.sync-disclosure:has(#x-collection-settings)').evaluate(el=>el.open),false,'X.com scanning starts collapsed');
+  await page.locator('details.sync-disclosure:has(#x-collection-settings) > summary').click();await page.waitForSelector('#x-collection-enabled',{state:'visible'});
   assert.equal(await page.isChecked('#x-collection-enabled'),false);
   await page.check('#x-collection-enabled');await page.getByRole('button',{name:'Save X.com scanning',exact:true}).click();
   await page.waitForFunction(()=>document.querySelector('#x-collection-message')?.textContent.includes('enabled'));
