@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';import {mkdtempSync,mkdirSync,writeFileSync,readFileSync,existsSync,readdirSync,statSync,rmSync} from 'node:fs';import {tmpdir} from 'node:os';import {join} from 'node:path';import {execFileSync} from 'node:child_process';
-import {PACKED,pack,unpack,compress,decompress,isPackedName,logicalName,packedName} from '../lib/data-packing.mjs';
+import {PACKED,pack,unpack,compress,decompress,compactJson,isPackedName,logicalName,packedName} from '../lib/data-packing.mjs';
 const root=mkdtempSync(join(tmpdir(),'reposhelf-pack-'));
 try{
  const body=JSON.stringify({repositories:Array.from({length:500},(_,i)=>({full:'team/p'+i,text:'word '.repeat(60)}))});
@@ -7,6 +7,11 @@ try{
  // packing is small, lossless and deterministic
  assert.deepEqual(pack(root),PACKED);for(const path of PACKED){const gz=readFileSync(join(root,packedName(path)));assert(gz.length<readFileSync(join(root,path)).length/5,'much smaller');assert.equal(decompress(gz).toString(),body)}
  assert.deepEqual(compress(Buffer.from(body)),compress(Buffer.from(body)),'same input, same bytes');assert.deepEqual(pack(root),[],'unchanged files are not rewritten');
+ // pretty-printed input is stored compact, exactly as JSON.stringify would write it, and strings keep their spaces and escapes
+ const tricky={a:' spaced  text ',b:'line\nbreak "quoted" \\ back\\',c:[1,{d:null,e:'x y'}],f:'\u00e9 \ud83d\ude00',g:'ends with backslash\\'};const pretty=Buffer.from(JSON.stringify(tricky,null,2)+'\n');
+ assert.equal(compactJson(pretty).toString(),JSON.stringify(tricky),'indentation is removed and string contents are untouched');assert.equal(compactJson(Buffer.from(JSON.stringify(tricky))).toString(),JSON.stringify(tricky),'compact input is unchanged');
+ const big=JSON.stringify({repositories:Array.from({length:300},(_,i)=>({full:'team/p'+i,text:'a  b\tc '.repeat(20)}))},null,2);writeFileSync(join(root,PACKED[0]),big);pack(root,[PACKED[0]]);assert.equal(decompress(readFileSync(join(root,packedName(PACKED[0])))).toString(),JSON.stringify(JSON.parse(big)),'a pretty file is packed compact');
+ writeFileSync(join(root,PACKED[0]),body);pack(root,[PACKED[0]]);
  // unpacking restores a missing raw file but never overwrites newer raw work unless forced
  rmSync(join(root,PACKED[0]));writeFileSync(join(root,PACKED[1]),'newer local work');
  assert.deepEqual(unpack(root),[PACKED[0]]);assert.equal(readFileSync(join(root,PACKED[0]),'utf8'),body);assert.equal(readFileSync(join(root,PACKED[1]),'utf8'),'newer local work');
