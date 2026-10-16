@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Tilting credit card preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,560px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.cr{display:grid;gap:20px;justify-items:center;padding:44px 20px 30px;border:1px solid var(--sc-line);border-radius:28px;background:radial-gradient(ellipse at 50% 30%,var(--sc-ring),transparent 70%),var(--sc-surface)}
+.cr-wrap{perspective:1000px}
+.cr-card{position:relative;width:min(340px,86vw);aspect-ratio:340/214;transform-style:preserve-3d;transform:rotateX(var(--rx,0deg)) rotateY(calc(var(--ry,0deg) + var(--flip,0deg)));transition:--flip .8s cubic-bezier(.3,.8,.2,1);cursor:pointer}
+@property --flip{syntax:'<angle>';inherits:true;initial-value:0deg}
+.cr-card.is-back{--flip:180deg}
+.cr-face{position:absolute;inset:0;border-radius:18px;overflow:hidden;backface-visibility:hidden;box-shadow:0 30px 50px -22px rgba(30,10,80,.6),inset 0 0 0 1px rgba(255,255,255,.2)}
+.cr-front{background:linear-gradient(135deg,#5b3dff,#b542ff 55%,#ff5fa8);color:#fff;padding:20px 24px}
+.cr-back{background:linear-gradient(135deg,#2a2a3a,#14141c);transform:rotateY(180deg);color:#fff}
+.cr-glare{position:absolute;inset:0;background:radial-gradient(circle at var(--gx,30%) var(--gy,20%),rgba(255,255,255,.55),transparent 45%);mix-blend-mode:soft-light;pointer-events:none}
+.cr-foil{position:absolute;inset:0;background:conic-gradient(from var(--ga,0deg) at 50% 50%,#ff6ad5,#ffd36a,#6aff9a,#6ad8ff,#a06aff,#ff6ad5);mix-blend-mode:overlay;opacity:.35;pointer-events:none}
+.cr-chip{width:44px;height:34px;border-radius:7px;background:linear-gradient(135deg,#ffe9a8,#d9a441);margin-top:40px;position:relative}
+.cr-chip::after{content:"";position:absolute;inset:6px 10px;border:1px solid rgba(90,60,0,.5);border-radius:3px}
+.cr-nfc{position:absolute;right:22px;top:22px;width:26px;height:26px;opacity:.9}
+.cr-num{position:absolute;left:24px;right:24px;bottom:62px;font:600 20px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.12em;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+.cr-row{position:absolute;left:24px;right:24px;bottom:22px;display:flex;justify-content:space-between;font:600 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase}
+.cr-brand{position:absolute;left:24px;top:22px;font:800 15px/1 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.06em}
+.cr-stripe{height:44px;margin-top:26px;background:#05050a}
+.cr-sign{margin:22px 24px 0;display:flex;align-items:center;gap:10px}
+.cr-sign i{flex:1;height:34px;border-radius:4px;background:repeating-linear-gradient(135deg,#f4f1ea 0 6px,#e6e2d8 6px 12px)}
+.cr-sign b{padding:8px 12px;border-radius:4px;background:#fff;color:#111;font:700 13px/1 ui-monospace,monospace;letter-spacing:.2em}
+.cr-fine{position:absolute;left:24px;right:24px;bottom:20px;margin:0;font-size:9px;opacity:.6;line-height:1.4}
+.cr-btn{padding:9px 18px;border:1px solid var(--sc-line);border-radius:999px;background:var(--sc-bg);cursor:pointer;font-size:14px;font-weight:600}
+.cr-btn:hover,.cr-btn[aria-pressed=true]{border-color:var(--sc-accent)}
+@media (prefers-reduced-motion:reduce){.cr-card{transition:none}}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="cr"><div class="cr-wrap"><div class="cr-card"><div class="cr-face cr-front"><span class="cr-brand">ARCHIVE BANK</span><svg class="cr-nfc" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M7 7c3 3 3 7 0 10M11 5c4.5 4 4.5 10 0 14M15 3c6 5 6 13 0 18"/></svg><div class="cr-chip"></div><div class="cr-num">•••• •••• •••• 4821</div><div class="cr-row"><span>Alex Morgan</span><span>09/28</span></div><i class="cr-foil"></i><i class="cr-glare"></i></div><div class="cr-face cr-back"><div class="cr-stripe"></div><div class="cr-sign"><i></i><b>•••</b></div><p class="cr-fine">Sample card for demonstration only. Not a real account.</p><i class="cr-glare"></i></div></div></div><button class="cr-btn" type="button" aria-pressed="false">Flip card</button></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.cr'),card=root.querySelector('.cr-card'),btn=root.querySelector('.cr-btn'),wrap=root.querySelector('.cr-wrap');
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,rx=0,ry=0,tx=0,ty=0,gx=30,gy=20,raf=0,back=false;
+function frame(){raf=0;rx+=(tx-rx)*(reduce?1:.12);ry+=(ty-ry)*(reduce?1:.12);card.style.setProperty('--rx',rx.toFixed(2)+'deg');card.style.setProperty('--ry',ry.toFixed(2)+'deg');card.style.setProperty('--ga',(ry*8+rx*4).toFixed(1)+'deg');
+ card.querySelectorAll('.cr-glare').forEach(function(g){g.style.setProperty('--gx',gx+'%');g.style.setProperty('--gy',gy+'%')});if(Math.abs(tx-rx)>.02||Math.abs(ty-ry)>.02)raf=requestAnimationFrame(frame)}
+function kick(){if(!raf)raf=requestAnimationFrame(frame)}
+wrap.addEventListener('pointermove',function(e){var r=wrap.getBoundingClientRect(),nx=(e.clientX-r.left)/r.width,ny=(e.clientY-r.top)/r.height;ty=(nx-.5)*28*(back?-1:1);tx=(.5-ny)*28;gx=nx*100;gy=ny*100;kick()});
+wrap.addEventListener('pointerleave',function(){tx=ty=0;gx=30;gy=20;kick()});
+function flip(){back=!back;card.classList.toggle('is-back',back);btn.setAttribute('aria-pressed',String(back))}
+card.addEventListener('click',flip);btn.addEventListener('click',flip);})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

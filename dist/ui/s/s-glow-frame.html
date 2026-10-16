@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Glow frame preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,520px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+@property --gf-a{syntax:'<angle>';inherits:false;initial-value:0deg}
+.gfx{display:grid;place-items:center;padding:44px 20px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface)}
+.gf{--gf-a:0deg;position:relative;width:min(100%,340px);padding:2px;border-radius:26px;background:conic-gradient(from var(--gf-a),#7c5cff,#ff5fa8,#ffb454,#38e8ff,#7c5cff);animation:gf-spin 5s linear infinite}
+.gf::before{content:"";position:absolute;inset:-2px;border-radius:30px;background:inherit;filter:blur(22px);opacity:.45;z-index:-1;transition:opacity .3s}
+.gf:hover,.gf:focus-within{animation-duration:2s}
+.gf:hover::before,.gf:focus-within::before{opacity:.7}
+.gf-in{border-radius:24px;padding:26px 26px 24px;background:var(--sc-bg)}
+.gf-tag{display:inline-block;padding:4px 10px;border-radius:999px;background:var(--sc-ring);color:var(--sc-accent);font:700 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase}
+.gf-in h3{margin:14px 0 2px;font:800 24px/1.1 system-ui,-apple-system,"Segoe UI",sans-serif}
+.gf-price{margin:0 0 18px;font:800 46px/1 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.04em}
+.gf-price small{font-size:15px;font-weight:600;color:var(--sc-muted);letter-spacing:0}
+.gf-in ul{margin:0 0 22px;padding:0;list-style:none;display:grid;gap:10px}
+.gf-in li{display:flex;align-items:center;gap:10px;font-size:15px}
+.gf-in li svg{flex:none;width:18px;height:18px;padding:3px;border-radius:50%;background:var(--sc-accent);fill:none;stroke:var(--sc-accent-fg);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.gf-btn{width:100%;padding:13px;border:0;border-radius:14px;background:var(--sc-accent);color:var(--sc-accent-fg);cursor:pointer;font-size:15px;font-weight:700}
+.gf-btn:hover{filter:brightness(1.08)}
+@keyframes gf-spin{to{--gf-a:360deg}}
+@media (prefers-reduced-motion:reduce){.gf{animation:none}}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="gfx"><div class="gf"><div class="gf-in"><span class="gf-tag">Most popular</span><h3>Studio plan</h3><p class="gf-price">$24 <small>/ month</small></p><ul><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Unlimited projects</li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Shared design tokens</li><li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>Priority support</li></ul><button class="gf-btn" type="button">Start free trial</button></div></div></div>
+</div>
+<script>
+(function(){})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

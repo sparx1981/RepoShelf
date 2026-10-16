@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Live feed list preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,560px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.fd{display:grid;gap:14px;padding:18px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface)}
+.fd-list{position:relative;height:456px;overflow:hidden;-webkit-mask-image:linear-gradient(#000 80%,transparent);mask-image:linear-gradient(#000 80%,transparent)}
+.fd-item{position:absolute;left:0;right:0;top:0;height:68px;display:flex;align-items:center;gap:14px;padding:0 16px;border:1px solid var(--sc-line);border-radius:18px;background:var(--sc-bg);transform:translateY(calc(var(--i)*76px));transition:transform .55s cubic-bezier(.2,.9,.3,1.1),opacity .4s,scale .4s}
+.fd-item.enter{transform:translateY(-60px) scale(.92);opacity:0}
+.fd-item.leave{opacity:0;scale:.9}
+.fd-av{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:#fff;font:800 14px/1 system-ui;background:linear-gradient(135deg,hsl(var(--h) 80% 62%),hsl(calc(var(--h) + 40) 80% 52%))}
+.fd-t{min-width:0;flex:1}
+.fd-t strong{display:block;font-size:15px;line-height:1.2}
+.fd-t span{display:block;margin-top:3px;font-size:13px;color:var(--sc-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fd-time{flex:none;font:600 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--sc-muted)}
+.fd-btn{justify-self:center;padding:8px 18px;border:1px solid var(--sc-line);border-radius:999px;background:var(--sc-bg);cursor:pointer;font-size:13px;font-weight:600}
+.fd-btn:hover{border-color:var(--sc-accent)}
+@media (prefers-reduced-motion:reduce){.fd-item{transition:none}}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="fd"><div class="fd-list" role="log" aria-live="polite" aria-label="Activity feed"></div><button class="fd-btn" type="button">Add event</button></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.fd'),list=root.querySelector('.fd-list'),btn=root.querySelector('.fd-btn');
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,MAX=6,items=[],n=0,hold=false,visible=true,timer=0,tick=0;
+var ev=[['Mara Quinn','merged the release branch',20],['Build #482','passed in 1m 12s',150],['Jun Park','commented on Landing page',262],['Deploy','finished for production',200],['Ines Roca','invited 3 teammates',330],['Alerts','latency back to normal',40],['Theo Hart','uploaded 12 assets',290],['Sana Idris','closed 4 issues',170]];
+function ago(t){var s=Math.floor((Date.now()-t)/1000);return s<3?'just now':s<60?s+'s ago':Math.floor(s/60)+'m ago'}
+function add(){var e=ev[n++%ev.length],it=document.createElement('div');it.className='fd-item'+(reduce?'':' enter');var av=document.createElement('span');av.className='fd-av';av.style.setProperty('--h',e[2]);av.textContent=e[0].split(' ').map(function(w){return w.charAt(0)}).join('').slice(0,2);var t=document.createElement('div');t.className='fd-t';var s=document.createElement('strong');s.textContent=e[0];var d=document.createElement('span');d.textContent=e[1];t.appendChild(s);t.appendChild(d);var tm=document.createElement('span');tm.className='fd-time';tm.textContent='just now';it.appendChild(av);it.appendChild(t);it.appendChild(tm);
+ var rec={el:it,time:tm,at:Date.now()};items.unshift(rec);list.appendChild(it);layout();if(!reduce){void it.offsetWidth;it.classList.remove('enter')}
+ if(items.length>MAX){var old=items.pop();old.el.classList.add('leave');setTimeout(function(){old.el.remove()},reduce?0:420)}}
+function layout(){items.forEach(function(r,i){r.el.style.setProperty('--i',i)})}
+function loop(){clearTimeout(timer);timer=setTimeout(function(){if(!hold&&visible)add();loop()},1800)}
+btn.addEventListener('click',add);root.addEventListener('pointerenter',function(){hold=true});root.addEventListener('pointerleave',function(){hold=false});root.addEventListener('focusin',function(){hold=true});root.addEventListener('focusout',function(){hold=false});
+setInterval(function(){if(visible)items.forEach(function(r){r.time.textContent=ago(r.at)})},1000);
+if('IntersectionObserver' in window)new IntersectionObserver(function(es){visible=es[0].isIntersecting}).observe(root);
+for(var i=0;i<5;i++){add();items[0].at-=(5-i)*7000;items[0].time.textContent=ago(items[0].at)}loop();})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

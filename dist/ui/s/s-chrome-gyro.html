@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chrome gyroscope preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,560px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.cg{position:relative;display:grid;place-items:center;height:400px;border:1px solid #1d1d28;border-radius:28px;background:radial-gradient(ellipse at 50% 45%,#232338,#07070d 72%);overflow:hidden}
+.cg-view{width:300px;height:300px;perspective:900px;filter:drop-shadow(0 0 10px rgba(160,180,255,.35))}
+.cg-scene{position:relative;width:100%;height:100%;transform-style:preserve-3d}
+.cg-ring{position:absolute;left:50%;top:50%;border-radius:50%;transform-style:preserve-3d;background:conic-gradient(from var(--s,0deg),#ffffff,#8aa0c8,#1a1f2c,#e6eeff,#5c6f94,#0d1018,#ffffff);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 14px),#000 calc(100% - 13px));mask:radial-gradient(farthest-side,transparent calc(100% - 14px),#000 calc(100% - 13px));}
+.cg-core{position:absolute;left:50%;top:50%;width:70px;height:70px;margin:-35px 0 0 -35px;border-radius:50%;background:radial-gradient(circle at 32% 28%,#fff 0,#cfd8ee 14%,#5e6e92 42%,#11141d 72%,#7f90b8 100%);box-shadow:0 0 30px rgba(140,160,255,.35);transition:box-shadow .5s,filter .5s}
+.cg.halo .cg-core{box-shadow:0 0 60px rgba(170,190,255,.8);filter:brightness(1.25)}
+.cg-btn{position:absolute;right:14px;bottom:14px;padding:8px 16px;border:1px solid #3a3a58;border-radius:999px;background:rgba(10,10,24,.7);color:#e6e6ff;cursor:pointer;font-size:13px;font-weight:600}
+.cg-btn:hover,.cg-btn[aria-pressed=true]{border-color:#a99bff}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="cg"><div class="cg-view" role="img" aria-label="A chrome gyroscope of three spinning rings around a metal sphere"><div class="cg-scene"><div class="cg-ring" data-r="0"></div><div class="cg-ring" data-r="1"></div><div class="cg-ring" data-r="2"></div><div class="cg-core"></div></div></div><button class="cg-btn" type="button" aria-pressed="false">Halo</button></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.cg'),scene=root.querySelector('.cg-scene'),rings=[].slice.call(root.querySelectorAll('.cg-ring')),btn=root.querySelector('.cg-btn');
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,size=[290,222,156],sp=[[.6,.9,.2],[-.8,.4,.7],[.5,-.7,1.1]],ang=[[10,20,0],[60,-30,40],[110,40,80]],halo=false,mix=0,tx=0,ty=0,px=0,py=0,raf=0,visible=true;
+rings.forEach(function(r,i){r.style.width=r.style.height=size[i]+'px';r.style.marginLeft=r.style.marginTop=(-size[i]/2)+'px';r.style.setProperty('--s',(i*70)+'deg')});
+var haloR=[290,236,182],haloZ=[0,16,32];
+function frame(){raf=0;mix+=((halo?1:0)-mix)*(reduce?1:.06);px+=(tx-px)*.1;py+=(ty-py)*.1;
+ rings.forEach(function(r,i){var k=halo?(1-mix*.9):1;if(!reduce){ang[i][0]+=sp[i][0]*k;ang[i][1]+=sp[i][1]*k;ang[i][2]+=sp[i][2]*k}
+  var a0=ang[i][0]*(1-mix)+72*mix,a1=ang[i][1]*(1-mix)+(i*3-3)*mix,a2=ang[i][2]*(1-mix),sz=size[i]*(1-mix)+haloR[i]*mix;
+  r.style.width=r.style.height=sz+'px';r.style.marginLeft=r.style.marginTop=(-sz/2)+'px';r.style.transform='rotateX('+a0.toFixed(2)+'deg) rotateY('+a1.toFixed(2)+'deg) rotateZ('+a2.toFixed(2)+'deg) translateZ('+(haloZ[i]*mix).toFixed(1)+'px)'});
+ scene.style.transform='rotateX('+(py*-14).toFixed(2)+'deg) rotateY('+(px*18).toFixed(2)+'deg)';
+ if(visible&&(!reduce||Math.abs((halo?1:0)-mix)>.003))raf=requestAnimationFrame(frame)}
+function go(){if(!raf&&visible)raf=requestAnimationFrame(frame)}
+function toggle(){halo=!halo;btn.setAttribute('aria-pressed',String(halo));root.classList.toggle('halo',halo);go()}
+btn.addEventListener('click',toggle);root.querySelector('.cg-view').addEventListener('click',toggle);
+root.addEventListener('pointermove',function(e){var r=root.getBoundingClientRect();tx=((e.clientX-r.left)/r.width-.5)*2;ty=((e.clientY-r.top)/r.height-.5)*2;if(reduce)go()});root.addEventListener('pointerleave',function(){tx=ty=0;if(reduce)go()});
+if('IntersectionObserver' in window)new IntersectionObserver(function(es){visible=es[0].isIntersecting;go()}).observe(root);go();})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

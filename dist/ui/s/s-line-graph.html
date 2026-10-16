@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Smooth line graph preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,780px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.lg{display:grid;gap:14px;padding:22px 22px 16px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface)}
+.lg-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.lg-label{margin:0;font:600 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--sc-muted)}
+.lg-val{margin:6px 0 0;font:800 38px/1 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.03em}
+.lg-delta{display:inline-block;margin-left:10px;padding:4px 10px;border-radius:999px;font:700 13px/1 system-ui;background:var(--sc-ring);color:var(--sc-accent);vertical-align:middle;letter-spacing:0}
+.lg-tabs{display:flex;gap:6px}
+.lg-tab{padding:6px 14px;border:1px solid var(--sc-line);border-radius:999px;background:var(--sc-bg);cursor:pointer;font-size:13px;font-weight:600}
+.lg-tab[aria-pressed=true]{border-color:var(--sc-accent);background:var(--sc-ring)}
+.lg-svg{width:100%;height:auto;display:block;overflow:visible;touch-action:pan-y;cursor:crosshair}
+.lg-svg:focus-visible{outline:2px solid var(--sc-accent);outline-offset:6px;border-radius:8px}
+.lg-grid line{stroke:var(--sc-line);stroke-dasharray:3 5}
+.lg-grid text{fill:var(--sc-muted);font:11px ui-monospace,SFMono-Regular,Menlo,monospace}
+.lg-line{fill:none;stroke:var(--sc-accent);stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.lg-line.draw{stroke-dasharray:1;stroke-dashoffset:1;animation:lg-draw 1.1s cubic-bezier(.5,0,.2,1) forwards}
+.lg-area{opacity:.9}
+.lg-guide{stroke:var(--sc-accent);stroke-width:1.2;stroke-dasharray:4 4;opacity:0;transition:opacity .15s}
+.lg-dot{fill:var(--sc-bg);stroke:var(--sc-accent);stroke-width:3;opacity:0;transition:opacity .15s}
+.lg-tip{position:absolute;pointer-events:none;padding:6px 10px;border-radius:10px;background:var(--sc-fg);color:var(--sc-bg);font:700 12px/1.3 system-ui;white-space:nowrap;opacity:0;transform:translate(-50%,-130%);transition:opacity .15s}
+.lg-tip small{display:block;font-weight:500;opacity:.7}
+.lg-wrap{position:relative}
+.lg-live{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@keyframes lg-draw{to{stroke-dashoffset:0}}
+@media (prefers-reduced-motion:reduce){.lg-line.draw{animation:none;stroke-dashoffset:0}}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="lg"><div class="lg-head"><div><p class="lg-label">Weekly active readers</p><p class="lg-val"><span class="lg-num">0</span><span class="lg-delta"></span></p></div><div class="lg-tabs"><button class="lg-tab" type="button" data-r="0" aria-pressed="true">7D</button><button class="lg-tab" type="button" data-r="1" aria-pressed="false">30D</button><button class="lg-tab" type="button" data-r="2" aria-pressed="false">90D</button></div></div><div class="lg-wrap"><svg class="lg-svg" viewBox="0 0 640 240" tabindex="0" role="img" aria-label="Line chart of weekly active readers. Use left and right arrow keys to inspect values."><defs><linearGradient id="lg-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--sc-accent);stop-opacity:.35"/><stop offset="1" style="stop-color:var(--sc-accent);stop-opacity:0"/></linearGradient></defs><g class="lg-grid"></g><path class="lg-area" fill="url(#lg-fill)"/><path class="lg-line" pathLength="1"/><line class="lg-guide" y1="10" y2="220"/><circle class="lg-dot" r="6"/></svg><div class="lg-tip"></div><p class="lg-live" aria-live="polite"></p></div></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.lg'),svg=root.querySelector('.lg-svg'),grid=root.querySelector('.lg-grid'),line=root.querySelector('.lg-line'),area=root.querySelector('.lg-area'),guide=root.querySelector('.lg-guide'),dot=root.querySelector('.lg-dot'),tip=root.querySelector('.lg-tip'),num=root.querySelector('.lg-num'),delta=root.querySelector('.lg-delta'),live=root.querySelector('.lg-live'),tabs=root.querySelectorAll('.lg-tab'),NS='http://www.w3.org/2000/svg';
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,W=640,H=240,P=[10,16,12,28],ranges=[{n:7,u:'day'},{n:30,u:'day'},{n:90,u:'day'}],data=[],cur=[],range=0,sel=-1,seen=false;
+function gen(n,seed){var a=[],v=4200+seed*300;for(var i=0;i<n;i++){v+=Math.sin(i*.7+seed)*180+Math.sin(i*.19+seed*2)*260+Math.cos(i*1.9)*60+30;a.push(Math.round(v))}return a}
+ranges.forEach(function(r,i){data.push(gen(r.n,i+1))});
+var MIN=3000,MAX=7600;
+function fmt(v){return v.toLocaleString('en-GB')}
+function xy(vals){var n=vals.length;return vals.map(function(v,i){return [P[3]+(W-P[3]-P[1])*i/(n-1),P[0]+(H-P[0]-P[2])*(1-(v-MIN)/(MAX-MIN))]})}
+function pathOf(p){var d='M'+p[0][0].toFixed(1)+','+p[0][1].toFixed(1);for(var i=0;i<p.length-1;i++){var p0=p[Math.max(0,i-1)],p1=p[i],p2=p[i+1],p3=p[Math.min(p.length-1,i+2)];d+=' C'+(p1[0]+(p2[0]-p0[0])/6).toFixed(1)+','+(p1[1]+(p2[1]-p0[1])/6).toFixed(1)+' '+(p2[0]-(p3[0]-p1[0])/6).toFixed(1)+','+(p2[1]-(p3[1]-p1[1])/6).toFixed(1)+' '+p2[0].toFixed(1)+','+p2[1].toFixed(1)}return d}
+function draw(vals){var p=xy(vals),d=pathOf(p);line.setAttribute('d',d);area.setAttribute('d',d+' L'+p[p.length-1][0].toFixed(1)+','+(H-P[2])+' L'+p[0][0].toFixed(1)+','+(H-P[2])+' Z')}
+function grids(){grid.textContent='';[0,.5,1].forEach(function(f){var y=P[0]+(H-P[0]-P[2])*f,v=Math.round(MAX-(MAX-MIN)*f),l=document.createElementNS(NS,'line');l.setAttribute('x1',P[3]);l.setAttribute('x2',W-P[1]);l.setAttribute('y1',y);l.setAttribute('y2',y);var t=document.createElementNS(NS,'text');t.setAttribute('x',0);t.setAttribute('y',y+4);t.textContent=(v/1000).toFixed(1)+'k';grid.appendChild(l);grid.appendChild(t)})}
+function label(i){var r=ranges[range],back=r.n-1-i;return back===0?'Today':back+' days ago'}
+function show(i){sel=i;var vals=data[range],p=xy(vals)[i];num.textContent=fmt(vals[i]);guide.setAttribute('x1',p[0]);guide.setAttribute('x2',p[0]);dot.setAttribute('cx',p[0]);dot.setAttribute('cy',p[1]);guide.style.opacity=dot.style.opacity=1;
+ var r=svg.getBoundingClientRect(),wr=svg.parentNode.getBoundingClientRect();tip.style.left=(p[0]/W*r.width)+'px';tip.style.top=(p[1]/H*r.height+(r.top-wr.top))+'px';tip.style.opacity=1;tip.textContent=fmt(vals[i]);var sm=document.createElement('small');sm.textContent=label(i);tip.appendChild(sm);live.textContent=fmt(vals[i])+' readers, '+label(i)}
+function hide(){sel=-1;guide.style.opacity=dot.style.opacity=0;tip.style.opacity=0;summary()}
+function summary(){var v=data[range],last=v[v.length-1],first=v[0],pct=(last-first)/first*100;num.textContent=fmt(last);delta.textContent=(pct>=0?'+':'')+pct.toFixed(1)+'%'}
+function setRange(r){var from=cur.length?cur.slice():data[r].slice(),to=data[r],n=Math.max(from.length,to.length);range=r;tabs.forEach(function(t,i){t.setAttribute('aria-pressed',String(i===r))});function res(a,n){var o=[];for(var i=0;i<n;i++){var f=i/(n-1)*(a.length-1),lo=Math.floor(f),hi=Math.min(a.length-1,lo+1);o.push(a[lo]+(a[hi]-a[lo])*(f-lo))}return o}
+ var A=res(from,n),B=res(to,n),t0=performance.now();if(reduce){cur=to.slice();draw(cur);summary();return}
+ (function step(now){var k=Math.min(1,(now-t0)/600),e=1-Math.pow(1-k,3);var cv=A.map(function(v,i){return v+(B[i]-v)*e});if(k<1){draw(cv);requestAnimationFrame(step)}else{cur=to.slice();draw(cur);summary()}})(t0)}
+tabs.forEach(function(t){t.addEventListener('click',function(){setRange(+t.getAttribute('data-r'))})});
+function at(e){var r=svg.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*W,n=data[range].length,i=Math.round((x-P[3])/(W-P[3]-P[1])*(n-1));show(Math.max(0,Math.min(n-1,i)))}
+svg.addEventListener('pointermove',at);svg.addEventListener('pointerdown',at);svg.addEventListener('pointerleave',hide);
+svg.addEventListener('keydown',function(e){var n=data[range].length;if(e.key==='ArrowLeft'){e.preventDefault();show(sel<0?n-1:Math.max(0,sel-1))}if(e.key==='ArrowRight'){e.preventDefault();show(sel<0?0:Math.min(n-1,sel+1))}if(e.key==='Escape')hide()});svg.addEventListener('blur',hide);
+grids();cur=data[0].slice();draw(cur);summary();
+function play(){line.classList.remove('draw');void line.getBoundingClientRect();line.classList.add('draw')}
+if('IntersectionObserver' in window)new IntersectionObserver(function(es){if(es[0].isIntersecting&&!seen){seen=true;play()}},{threshold:.3}).observe(root);else play();})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

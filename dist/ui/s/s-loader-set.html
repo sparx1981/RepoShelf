@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Loading screens preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,820px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.ld{display:grid;gap:16px;justify-items:center}
+.ld-grid{width:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.ld-cell{display:grid;gap:12px;justify-items:center;align-content:center;height:190px;border:1px solid var(--sc-line);border-radius:22px;background:var(--sc-surface);padding:14px}
+.ld-cell small{font:600 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--sc-muted)}
+.ld-ring{position:relative;width:90px;height:90px}
+.ld-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ld-ring circle{fill:none;stroke-width:6;stroke-linecap:round}
+.ld-ring .t{stroke:var(--sc-line)}.ld-ring .v{stroke:var(--sc-accent);stroke-dasharray:264;stroke-dashoffset:264}
+.ld-ring b{position:absolute;inset:0;display:grid;place-items:center;font:700 18px/1 ui-monospace,SFMono-Regular,Menlo,monospace}
+.ld-bars{display:flex;align-items:center;gap:6px;height:70px}
+.ld-bars i{width:8px;height:100%;border-radius:4px;background:var(--sc-accent);transform-origin:50% 50%;animation:ld-eq 1s ease-in-out infinite;animation-delay:calc(var(--i)*-.17s)}
+.ld-orbit{position:relative;width:90px;height:90px}
+.ld-orbit i{position:absolute;left:50%;top:50%;border-radius:50%;background:var(--sc-accent);box-shadow:0 0 14px var(--sc-accent);animation:ld-spin var(--d) linear infinite}
+.ld-orbit i:nth-child(1){width:12px;height:12px;margin:-6px;--d:1.2s;--r:36px}
+.ld-orbit i:nth-child(2){width:9px;height:9px;margin:-4.5px;--d:1.9s;--r:24px;opacity:.8}
+.ld-orbit i:nth-child(3){width:7px;height:7px;margin:-3.5px;--d:2.6s;--r:12px;opacity:.6}
+.ld-wipe{position:relative;font:900 26px/1 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:.06em}
+.ld-wipe span{display:block;color:transparent;-webkit-text-stroke:1.4px var(--sc-muted)}
+.ld-wipe span+span{position:absolute;left:0;top:0;color:var(--sc-fg);-webkit-text-stroke:0;clip-path:inset(0 100% 0 0);animation:ld-wipe 2.4s cubic-bezier(.6,0,.3,1) infinite}
+.ld-dots b{display:inline-block;width:6px;height:6px;margin:0 3px;border-radius:50%;background:var(--sc-accent);animation:ld-blink 1.2s infinite;animation-delay:calc(var(--i)*.18s)}
+.ld-curtain{position:relative;width:110px;height:78px;border-radius:12px;overflow:hidden;background:var(--sc-bg);border:1px solid var(--sc-line);display:grid;place-items:center}
+.ld-curtain svg{width:34px;height:34px;fill:none;stroke:var(--sc-accent);stroke-width:4;stroke-linecap:round;stroke-linejoin:round;animation:ld-check 3s ease infinite}
+.ld-curtain i{position:absolute;top:0;bottom:0;width:51%;background:var(--sc-accent);animation:ld-open 3s cubic-bezier(.7,0,.3,1) infinite}
+.ld-curtain i:first-child{left:0}.ld-curtain i:last-child{right:0;--s:1}
+.ld.rs *{animation:none!important}
+.ld-btn{padding:8px 16px;border:1px solid var(--sc-line);border-radius:999px;background:var(--sc-bg);cursor:pointer;font-size:13px;font-weight:600}
+.ld-btn:hover{border-color:var(--sc-accent)}
+@keyframes ld-eq{0%,100%{transform:scaleY(.25)}50%{transform:scaleY(1)}}
+@keyframes ld-spin{from{transform:rotate(0) translateX(var(--r))}to{transform:rotate(360deg) translateX(var(--r))}}
+@keyframes ld-wipe{0%{clip-path:inset(0 100% 0 0)}60%,85%{clip-path:inset(0 0 0 0)}100%{clip-path:inset(0 0 0 100%)}}
+@keyframes ld-blink{0%,100%{opacity:.2}50%{opacity:1}}
+@keyframes ld-open{0%,15%{transform:translateX(0)}45%,70%{transform:translateX(var(--o,-102%))}100%{transform:translateX(0)}}
+.ld-curtain i:last-child{--o:102%}
+@keyframes ld-check{0%,30%{transform:scale(0);opacity:0}50%,70%{transform:scale(1);opacity:1}100%{transform:scale(0);opacity:0}}
+@media (prefers-reduced-motion:reduce){.ld-wipe span+span{clip-path:none}.ld-curtain i{display:none}.ld-curtain svg{transform:none;opacity:1}}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="ld"><div class="ld-grid"><div class="ld-cell"><div class="ld-ring" role="status" aria-label="Loading, progress ring"><svg viewBox="0 0 100 100" aria-hidden="true"><circle class="t" cx="50" cy="50" r="42"/><circle class="v" cx="50" cy="50" r="42"/></svg><b>0%</b></div><small>Ring</small></div><div class="ld-cell"><div class="ld-bars" role="status" aria-label="Loading, equaliser"><i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i><i style="--i:4"></i></div><small>Bars</small></div><div class="ld-cell"><div class="ld-orbit" role="status" aria-label="Loading, orbit"><i></i><i></i><i></i></div><small>Orbit</small></div><div class="ld-cell"><div role="status" aria-label="Loading, wipe text"><div class="ld-wipe" aria-hidden="true"><span>LOADING</span><span>LOADING</span></div><div class="ld-dots" aria-hidden="true" style="text-align:center;margin-top:8px"><b style="--i:0"></b><b style="--i:1"></b><b style="--i:2"></b></div></div><small>Wipe</small></div><div class="ld-cell"><div class="ld-curtain" role="status" aria-label="Loading, curtain"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><i></i><i></i></div><small>Curtain</small></div></div><button class="ld-btn" type="button">Restart all</button></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.ld'),ring=root.querySelector('.ld-ring .v'),num=root.querySelector('.ld-ring b'),btn=root.querySelector('.ld-btn');
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,t0=0,raf=0,visible=true;
+function ease(x){return 1-Math.pow(1-x,3)}
+function setP(p){ring.style.strokeDashoffset=(264*(1-p)).toFixed(1);num.textContent=Math.round(p*100)+'%'}
+function frame(now){raf=0;var t=(now-t0)%4200,p=t<3000?ease(t/3000):1;setP(p);if(visible&&!reduce)raf=requestAnimationFrame(frame)}
+function start(){t0=performance.now();if(reduce){setP(1);return}if(!raf)raf=requestAnimationFrame(frame)}
+btn.addEventListener('click',function(){root.classList.add('rs');void root.offsetWidth;root.classList.remove('rs');start()});
+if('IntersectionObserver' in window)new IntersectionObserver(function(es){visible=es[0].isIntersecting;if(visible)start()}).observe(root);start();})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>
