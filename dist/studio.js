@@ -12,8 +12,8 @@ let active='gradient',initialized=false,timer,backgrounds=[],images=[],selectedB
 function status(message,error=false){$('studio-status').textContent=message;$('studio-status').dataset.error=String(error)}
 const gradient=gradientTool({change,status}),ramps=rampTool({change,status}),ascii=asciiTool({change,status});
 const patterns=patternTool({change,status}),motion=motionTool({change,status}),typography=typographyTool({change,status}),live=liveTool({change,status});
-// Live shaders are mixed into the static catalogue, one after another, so the first rows show both.
-function mixCatalogue(fixed){const mixed=[];for(let i=0;i<Math.max(fixed.length,liveItems.length);i++){if(liveItems[i])mixed.push(liveItems[i]);if(fixed[i])mixed.push(fixed[i])}return mixed}
+// Live shaders are mixed into the static catalogue, two live to one static, so the first rows lead with the strongest live ones.
+function mixCatalogue(fixed){const mixed=[];for(let i=0,j=0;i<liveItems.length||j<fixed.length;i+=2,j++){for(const item of [liveItems[i],liveItems[i+1],fixed[j]])if(item)mixed.push(item)}return mixed}
 window.RepoProfileMenu.install({collectionHref:'/#collection',toast:status});
 function currentState(){return {v:1,tool:active,gradient:gradient.get(),ramps:ramps.get(),ascii:ascii.get(),patterns:patterns.get(),motion:motion.get(),typography:typography.get(),background:selectedBackground?.id,live:selectedBackground?.live?live.get():undefined,image:selectedImage?.id}}
 function change(){if(!initialized)return;clearTimeout(timer);timer=setTimeout(()=>writeState(),250)}

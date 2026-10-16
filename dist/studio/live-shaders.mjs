@@ -206,12 +206,13 @@ import * as geometric from './live-pack-geometric.mjs';
 import * as tech from './live-pack-tech.mjs';
 import * as light from './live-pack-light.mjs';
 import * as industrial from './live-pack-industrial.mjs';
-const packs=[nature,geometric,tech,light,industrial];
+import * as more from './live-pack-more.mjs';
+const packs=[nature,geometric,tech,light,industrial,more];
 const shaders=Object.assign({},baseShaders,...packs.map(p=>p.shaders));
 const entries=[...baseEntries,...packs.flatMap(p=>p.entries)];
 const built=entries.map(([id,title,category,colour,description,tags,colors,speed,scale,amount,amountLabel,thumbTime=6.5])=>({id,title,category,colour,dominantColour:colors[1],colors,tags:['live',...tags],description,live:true,ai:false,width:1920,height:1080,amountLabel,thumbTime,defaults:{colors,speed,scale,amount,seed:7}}));
 // Curated gallery order: the strongest and most varied backgrounds come first; everything else follows in pack order.
-const ORDER=['aurora-veil','glow-glyphs','gloss-tiles','wire-ribbons','synthwave-grid','ocean-swell','mercury-pool','digital-rain','lens-flare','sunset-haze','spiral-arms','night-highway','oil-slick','gear-train','nebula-drift','lava-crust','holo-foil','liquid-gold','starfield-warp','voronoi-glass','tach-dial','caustic-pool','neon-ribbons','carbon-weave','kaleido-bloom','rain-glass','hex-pulse','marble-veins','turbine-fan','meteor-night','plasma-bloom','isometric-cubes','bokeh-lights','radar-sweep','satin-folds','hazard-stripes','truchet-weave','fireflies','prism-beams','honeycomb-grille'];
+const ORDER=['aurora-veil','glow-glyphs','gloss-tiles','orb-halo','wire-ribbons','synthwave-grid','ocean-swell','mercury-pool','digital-rain','magic-rings','lens-flare','sunset-haze','spiral-arms','night-highway','brake-disc','oil-slick','gear-train','nebula-drift','electric-arcs','lava-crust','holo-foil','liquid-gold','thread-flow','starfield-warp','voronoi-glass','tach-dial','halftone-vortex','caustic-pool','neon-ribbons','carbon-weave','kaleido-bloom','rain-glass','light-pillars','hex-pulse','marble-veins','turbine-fan','meteor-night','grid-warp','plasma-bloom','isometric-cubes','bokeh-lights','radar-sweep','alloy-wheel','satin-folds','hazard-stripes','truchet-weave','fireflies','prism-beams','honeycomb-grille','speed-lines'];
 const rank=item=>{const i=ORDER.indexOf(item.id);return i<0?ORDER.length:i};
 export const liveItems=built.map((item,i)=>({item,i})).sort((a,b)=>rank(a.item)-rank(b.item)||a.i-b.i).map(x=>x.item);
 export function liveFragment(id){const source=shaders[id];if(!source)throw Error('Unknown live background');return source}
