@@ -52,6 +52,8 @@ try{
  git(recover,'add','--','data/browse/projects');
  const names=execFileSync('git',['diff','--cached','--name-only','-z'],{cwd:recover,maxBuffer:8*1024*1024});assert(names.length>1024*1024,'Fixture exceeds the old buffer');
  const publicChanges=changedPublicFiles(recover);assert(!publicChanges.some(path=>path.startsWith('data/browse/')),'Internal chunks do not request publication');assert(publicChanges.includes('dist/catalog.json.gz'),'Actual public catalogue changes still publish (the packed file is compared by its content)');
+ // A catalogue too large to hold as one string must not crash publication: it falls back to comparing the stored blobs.
+ process.env.REPOSHELF_MAX_COMPARE_BYTES='10';try{assert(changedPublicFiles(recover).includes('dist/catalog.json.gz'),'An oversized catalogue still publishes when its content changed')}finally{delete process.env.REPOSHELF_MAX_COMPARE_BYTES}
  await publishCatalog(recover,{checkpoint:true,completed:true});
  const largeRecover=join(root,'large-recover');git(root,'clone','--branch',CHECKPOINT_BRANCH,remote,largeRecover);
  const largeRecovery=await restoreCheckpoint(largeRecover);assert.equal(largeRecovery.restored,0,'Large checkpoint already present is traversed without truncation or overwrites');assert.equal(largeRecovery.conflicts,0);
