@@ -6,4 +6,4 @@ for(const r of candidates){r.enrichmentAttemptAt=at;try{const res=await fetch(`h
 try{const res=await fetch(`https://raw.githubusercontent.com/${r.full}/${encodeURIComponent(r.branch||'main')}/package.json`,{signal:AbortSignal.timeout(7000)});if(res.ok)r.technologies=S.technologies(r,await res.json())}catch{failed++}
 if(!(r.screenshots||[]).length)try{const res=await fetch(`https://raw.githubusercontent.com/${r.full}/${encodeURIComponent(r.branch||'main')}/README.md`,{signal:AbortSignal.timeout(7000)});if(res.ok)r.screenshots=S.readmeImages(await res.text(),r)}catch{failed++}
 }
-catalog.updatedAt=new Date().toISOString();await writeFile(file,JSON.stringify(catalog,null,2)+'\n');console.log(`Enriched ${candidates.length} projects; ${failed} temporary failures. Historical counts retained for measured trends.`);
+catalog.updatedAt=new Date().toISOString();await writeFile(file,JSON.stringify(catalog)+'\n');console.log(`Enriched ${candidates.length} projects; ${failed} temporary failures. Historical counts retained for measured trends.`);

@@ -25,7 +25,7 @@ export async function runProviderFallback(root=new URL('../',import.meta.url),en
     try{const bytes=await image(id,target,{env,fetcher}),quality=await inspect(bytes);if(!quality.usable){receipt.reasons[quality.reason]=(receipt.reasons[quality.reason]||0)+1;continue}const filename=createHash('sha256').update(r.full).digest('hex').slice(0,24)+'-provider.jpg';await writeFile(new URL('dist/previews/'+filename,root),await compress(bytes));r.previewCandidate={src:'previews/'+filename,kind:'demo',provider:id,capturedAt:r.providerAttemptAt,url:r.demo,reviewRequired:true};receipt.candidates++;break}catch{receipt.reasons.provider_failure=(receipt.reasons.provider_failure||0)+1}
    }
    // Persist after each listing, never wait until a batch's last request.
-   for(let i=0;i<files.length;i++)await writeFile(files[i],JSON.stringify(snapshots[i],null,2)+'\n');
+   for(let i=0;i<files.length;i++)await writeFile(files[i],JSON.stringify(snapshots[i])+'\n');
   }
  }catch{receipt.reason='capture_configuration_unavailable'}
  finally{await writeFile(new URL('data/capture-providers.json',root),JSON.stringify(receipt,null,2)+'\n');await recordStageMetrics('capture_providers',receipt,root);console.log(`Optional providers: ${receipt.attempted} requests, ${receipt.candidates} images awaiting administrator review. ${receipt.reason||''}`)}return receipt;

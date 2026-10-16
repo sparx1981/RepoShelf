@@ -3,7 +3,7 @@ import {collectTrendshift,mergeTrendshift} from './trendshift-sources.mjs';
 import {importListCandidate} from './source-imports.mjs';
 const root=new URL('../',import.meta.url);
 async function read(path,fallback){try{return JSON.parse(await readFile(new URL(path,root),'utf8'))}catch(e){if(e.code!=='ENOENT')throw e;return fallback}}
-async function save(path,data){await writeFile(new URL(path,root),JSON.stringify(data,null,2)+'\n')}
+async function save(path,data){await writeFile(new URL(path,root),JSON.stringify(data,null,/^dist\/(catalog|spaces)\.json$/.test(path)?0:2)+'\n')}
 const now=Date.now(),snapshot=await read('dist/trendshift.json',{entries:{},sources:{}});
 // Trendshift's lists change about once a day, so when every list was read successfully in the last 20 hours nothing is
 // fetched (TRENDSHIFT_FORCE=1 overrides). A list that failed is retried on the next run.

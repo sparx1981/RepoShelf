@@ -17,5 +17,5 @@ const spaces=P.popular(due.filter(P.isSpace)).sort((a,b)=>(Date.parse(a.overview
 const candidates=[...github.slice(0,Number(process.env.OVERVIEW_GITHUB_BATCH||100)),...spaces.slice(0,Number(process.env.OVERVIEW_SPACE_BATCH||40))];
 let checked=0,found=0,failed=0;
 for(const r of candidates){r.overviewAttemptAt=at;try{const {markdown,sourceUrl}=await readOverviewReadme(r);Object.assign(r,withProjectInsights(withOverview(r,markdown,sourceUrl),markdown,sourceUrl),{overviewRepoUpdated:r.updated,readmeSnapshot:await saveReadmeSnapshot(r,markdown,sourceUrl)});checked++;if(r.overview)found++}catch(e){r.overviewError={at,kind:'temporary'};failed++;console.warn(`Overview postponed: ${r.full}: ${e.message}`)}}
-for(let i=0;i<files.length;i++){snapshots[i].updatedAt=new Date().toISOString();await writeFile(files[i],JSON.stringify(snapshots[i],null,2)+'\n')}
+for(let i=0;i<files.length;i++){snapshots[i].updatedAt=new Date().toISOString();await writeFile(files[i],JSON.stringify(snapshots[i])+'\n')}
 console.log(`Overviews: ${checked} READMEs checked, ${found} author overviews saved, ${failed} temporary failures. Saved text retained on failures.`);

@@ -8,7 +8,7 @@ export async function reclassifyCatalog(root=new URL('../',import.meta.url),{met
  for(const name of ['catalog','spaces']){const file=new URL('dist/'+name+'.json',root);let data;try{data=JSON.parse(await readFile(file,'utf8'))}catch(e){if(e.code==='ENOENT')continue;throw e}
  data.repositories=(data.repositories||[]).map(prior=>{const row=T.annotate(prior,{force:true});report.checked++;if(JSON.stringify([prior.category,prior.subjects,prior.classification])!==JSON.stringify([row.category,row.subjects,row.classification]))report.changed++;if(row.classification.reviewRequired)report.reviewRequired++;for(const platform of row.platforms)report.platforms[platform]=(report.platforms[platform]||0)+1;for(const subject of row.subjects)counts[subject]=(counts[subject]||0)+1;return row});
  // Taxonomy-only work must not claim a fresh repository/demo check.
- await writeFile(file,JSON.stringify(data,null,2)+'\n');
+ await writeFile(file,JSON.stringify(data)+'\n');
  }
  await mkdir(new URL('data/',root),{recursive:true});await writeFile(new URL('data/taxonomy-report.json',root),JSON.stringify(report,null,2)+'\n');
  if(metrics)await recordStageMetrics('taxonomy',{...report,attempted:report.checked,temporaryFailures:0},root);
