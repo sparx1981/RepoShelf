@@ -87,7 +87,15 @@ Catalogue quality shows progress towards the **first 5,000 published quality-rea
 
 ## Compressed catalogue files
 
-GitHub rejects any file over 100 MB, and the saved catalogue passed that size (105 MB in October 2026), which stopped every sync from saving its results. The four largest generated files are now stored in Git compressed (`dist/catalog.json.gz`, `dist/spaces.json.gz`, `data/browse/index.json.gz`, `data/catalogue-quality.json.gz`), about six to ten times smaller. Scripts still read and write the plain JSON files, which are not tracked by Git.
+GitHub rejects any file over 100 MB, and the saved catalogue passed that size (105 MB in October 2026), which stopped every sync from saving its results. The largest generated files are now stored in Git compressed (`data/browse/index.json.gz`, `data/browse/search.json.gz`, `data/catalogue-quality.json.gz`), about six to ten times smaller, and without the indentation whitespace (pretty-printing added about 40%). Scripts still read and write the plain JSON files, which are not tracked by Git.
+
+The two project catalogues, `dist/catalog.json` and `dist/spaces.json`, keep growing, so they are not stored as one file. `pack` splits each into 32 parts chosen by a stable hash of the project id (`dist/catalog.part-07.json.gz`, ...) plus a small head part (`dist/catalog.part-head.json.gz`) holding every other member (`schema`, `updatedAt`, `revalidation`, `discovery`, ...). Inside a part the projects are ordered by id, so the stored bytes do not depend on how the plain file was sorted; `unpack` joins the parts again, most-starred first. The effects:
+
+- No stored file can near GitHub's limit (about 2.6 MB per part today, 77 MB in total) and a change to one project rewrites only its part.
+- Publication compares one part at a time, so there is no single string to outgrow Node's ~537 MB limit, and unchanged parts are never re-parsed.
+- Checkpoints and recovery treat each part as its own generated file, so the newer-main conflict guard works per part.
+- An older single-file `dist/catalog.json.gz` (and an older single-file checkpoint) is still read; the next publication or checkpoint writes parts and deletes the old file.
+- Parts are named `dist/catalog.part-*` so the existing `dist/catalog*` deployment exclusions still keep them out of functions. Raising `BUCKETS` in `lib/data-packing.mjs` re-splits on the next pack.
 
 - `node scripts/data-packing.mjs unpack` recreates the plain files after a checkout. Every workflow runs it right after checkout and `npm run build` runs it first, so deployments are unchanged.
 - Publishing and recovery checkpoints pack the files automatically before staging, and compare the unpacked content, so unchanged data never publishes.

@@ -1,13 +1,13 @@
 import {execFileSync} from 'node:child_process';
 import {readFile,writeFile,mkdir,mkdtemp,rm,readdir} from 'node:fs/promises';
-import {existsSync,mkdtempSync,openSync,closeSync,readFileSync,rmSync} from 'node:fs';
+import {existsSync,mkdtempSync,openSync,closeSync,readFileSync,rmSync,readdirSync} from 'node:fs';
 import {tmpdir} from 'node:os';
-import {join,dirname} from 'node:path';
+import {join,dirname,basename} from 'node:path';
 import {scheduledPublicationDue,utcDay} from '../lib/publication-policy.mjs';
-import {PACKED,packedName,isPackedName,logicalName,decompress,pack,unpack} from '../lib/data-packing.mjs';
+import {PACKED,packedPathspecs,isPackedName,logicalName,decompress,pack,unpack} from '../lib/data-packing.mjs';
 export const CHECKPOINT_BRANCH='reposhelf-checkpoints';
-export const generatedPaths=[...PACKED.map(packedName).filter(p=>p.startsWith('dist/')),'dist/community.json','dist/trendshift.json','dist/growth.json','data','dist/previews'];
-export const generated=path=>path.startsWith('data/')||path.startsWith('dist/previews/')||/^dist\/(catalog|spaces|community|trendshift|growth)\.json(\.gz)?$/.test(path);
+export const generatedPaths=[...packedPathspecs.filter(p=>p.startsWith('dist/')),'dist/community.json','dist/trendshift.json','dist/growth.json','data','dist/previews'];
+export const generated=path=>path.startsWith('data/')||path.startsWith('dist/previews/')||/^dist\/(catalog|spaces|community|trendshift|growth)\.json(\.gz)?$/.test(path)||/^dist\/(catalog|spaces)\.part-(\d{2}|head)\.json\.gz$/.test(path);
 const git=(root,args,options={})=>{
  if(options.stdio)return execFileSync('git',args,{cwd:root,encoding:'utf8',...options});
  // File lists grow with the catalogue too. Capture all Git stdout on disk,
@@ -32,11 +32,14 @@ export function publicFileChanged(path,before,after){
  if(/^dist\/(catalog|spaces|community|trendshift)\.json$/.test(path)&&before!==null&&after!==null){try{return publicJson(path,before)!==publicJson(path,after)}catch{return true}}
  return before!==after;
 }
-async function stage(root){pack(root);const paths=generatedPaths.filter(p=>existsSync(join(root,p))||git(root,['ls-files','--',p]).trim());if(paths.length)git(root,['add','-A','--',...paths]);return paths}
+// The catalogue parts are named by pattern, so they are looked up by pattern: files on disk plus anything Git already tracks
+// (a tracked part that was removed still has to be staged as a deletion).
+const hasPaths=(root,p)=>{if(!p.includes('*'))return existsSync(join(root,p))||Boolean(git(root,['ls-files','--',p]).trim());const pattern=new RegExp('^'+basename(p).replace(/[.+?^${}()|[\]\\]/g,'\\$&').replace(/\*/g,'.*')+'$');try{if(readdirSync(join(root,dirname(p))).some(n=>pattern.test(n)))return true}catch(e){if(e.code!=='ENOENT')throw e}return Boolean(git(root,['ls-files','--',p]).trim())};
+async function stage(root){pack(root);const paths=generatedPaths.filter(p=>hasPaths(root,p));if(paths.length)git(root,['add','-A','--',...paths]);return paths}
 // Node cannot hold a string longer than 0x1fffffe8 characters. Once a catalogue file is larger than that it cannot be
 // parsed to compare public fields, so it falls back to a byte comparison of the stored blobs (any change publishes).
 const maxCompareBytes=()=>Number(process.env.REPOSHELF_MAX_COMPARE_BYTES)||0x1fffffe8,TOO_LARGE=Symbol('too-large');
-export function changedPublicFiles(root){const raw=git(root,['diff','--cached','--raw','--no-abbrev','--no-renames','-z']).split('\0'),out=[];for(let i=0;i<raw.length-1;i+=2){const header=/^:\d{6} \d{6} ([a-f0-9]{40}) ([a-f0-9]{40}) [A-Z]$/.exec(raw[i]),path=raw[i+1];if(!header)throw Error('Invalid staged generated change');if(!generated(path))throw Error('Only generated files may be published');if(internalFile(path))continue;const semantic=/^dist\/(catalog|spaces|community|trendshift)\.json(\.gz)?$/.test(path);if(!semantic){if(header[1]!==header[2])out.push(path);continue}const packed=isPackedName(path),read=ref=>{const bytes=blobBytes(root,ref,path);if(bytes===null)return null;const data=packed?decompress(bytes):bytes;return data.length>maxCompareBytes()?TOO_LARGE:data.toString('utf8')},before=read('HEAD'),after=read('');if(before===TOO_LARGE||after===TOO_LARGE){if(header[1]!==header[2])out.push(path);continue}if(publicFileChanged(logicalName(path),before,after))out.push(path)}return out}
+export function changedPublicFiles(root){const raw=git(root,['diff','--cached','--raw','--no-abbrev','--no-renames','-z']).split('\0'),out=[];for(let i=0;i<raw.length-1;i+=2){const header=/^:\d{6} \d{6} ([a-f0-9]{40}) ([a-f0-9]{40}) [A-Z]$/.exec(raw[i]),path=raw[i+1];if(!header)throw Error('Invalid staged generated change');if(!generated(path))throw Error('Only generated files may be published');if(internalFile(path))continue;const semantic=/^dist\/(catalog|spaces|community|trendshift)\.json(\.gz)?$/.test(path)||/^dist\/(catalog|spaces)\.part-(\d{2}|head)\.json\.gz$/.test(path);if(!semantic){if(header[1]!==header[2])out.push(path);continue}const packed=isPackedName(path),read=ref=>{const bytes=blobBytes(root,ref,path);if(bytes===null)return null;const data=packed?decompress(bytes):bytes;return data.length>maxCompareBytes()?TOO_LARGE:data.toString('utf8')},before=read('HEAD'),after=read('');if(before===TOO_LARGE||after===TOO_LARGE){if(header[1]!==header[2])out.push(path);continue}if(publicFileChanged(logicalName(path),before,after))out.push(path)}return out}
 async function report(root,publication,commit=null){const id=process.env.GITHUB_RUN_ID;if(!/^\d+$/.test(id||''))return;const path=join(root,'data/sync-runs',id+'.json');try{const row=JSON.parse(await readFile(path,'utf8'));row.publication=publication;row.publishedCommit=commit;await writeFile(path,JSON.stringify(row,null,2)+'\n')}catch(e){if(e.code!=='ENOENT')throw e}}
 function remoteCheckpoint(root){try{git(root,['ls-remote','--exit-code','--heads','origin',CHECKPOINT_BRANCH])}catch(e){if(e.status===2)return null;throw e}git(root,['fetch','--quiet','origin',`+refs/heads/${CHECKPOINT_BRANCH}:refs/remotes/origin/${CHECKPOINT_BRANCH}`]);return git(root,['rev-parse','refs/remotes/origin/'+CHECKPOINT_BRANCH]).trim()}
 export async function saveCheckpoint(root,{base,phase='checkpoint'}={}){
@@ -51,6 +54,8 @@ export async function saveCheckpoint(root,{base,phase='checkpoint'}={}){
  const tip=remoteCheckpoint(root),commit=git(root,['commit-tree',snapshot,'-p',manifest.base,'-m','Save catalogue recovery checkpoint']).trim();try{git(root,['push','--quiet',`--force-with-lease=refs/heads/${CHECKPOINT_BRANCH}:${tip||''}`,'origin',`${commit}:refs/heads/${CHECKPOINT_BRANCH}`]);console.log('Recovery checkpoint saved to '+CHECKPOINT_BRANCH+' ('+phase+').');return commit}catch(e){if(attempt===3)throw e}}
  }finally{await rm(temporary,{recursive:true,force:true})}
 }
+// ls-tree takes literal paths, not patterns, so the catalogue parts are listed through the directory that holds them.
+const treePaths=[...new Set(generatedPaths.map(p=>p.includes('*')?dirname(p):p))];
 export async function restoreCheckpoint(root){
  unpack(root,PACKED,{force:true});
  const commit=remoteCheckpoint(root);if(!commit){console.log('No recovery checkpoint branch yet.');return {restored:0,conflicts:0}}
@@ -59,13 +64,13 @@ export async function restoreCheckpoint(root){
  const changed=git(root,['diff','--name-only','-z',meta.base,commit]).split('\0').filter(generated),current=git(root,['rev-parse','HEAD']).trim();let restored=0,conflicts=0;
  // Read identities once per tree instead of spawning three Git processes per
  // generated file. Missing/deleted paths remain null for the conflict guard.
- const trees=new Map([meta.base,commit,current].map(ref=>[ref,new Map(git(root,['ls-tree','-r','-z',ref,'--',...generatedPaths]).split('\0').filter(Boolean).map(entry=>{const tab=entry.indexOf('\t'),header=entry.slice(0,tab).split(' ');if(tab<0||header[1]!=='blob')throw Error('Invalid generated tree entry');return [entry.slice(tab+1),header[2]]}))]));
+ const trees=new Map([meta.base,commit,current].map(ref=>[ref,new Map(git(root,['ls-tree','-r','-z',ref,'--',...treePaths]).split('\0').filter(Boolean).map(entry=>{const tab=entry.indexOf('\t'),header=entry.slice(0,tab).split(' ');if(tab<0||header[1]!=='blob')throw Error('Invalid generated tree entry');return [entry.slice(tab+1),header[2]]}))]));
  const blob=(ref,path)=>trees.get(ref).get(path)||null;
  const entries=[];for(const path of changed){if(path.includes('..')||path.startsWith('/'))throw Error('Invalid checkpoint path');const before=blob(meta.base,path),after=blob(commit,path),present=blob(current,path);if(present===after)continue;if(present!==before){conflicts++;continue}if(after===null)await rm(join(root,path),{force:true});else entries.push({path,oid:after});restored++}
  // A separate index lets Git stream all chosen blobs in one checkout. The real
  // index and newer main files remain untouched; only conflict-approved paths enter it.
  if(entries.length){const temporary=await mkdtemp(join(tmpdir(),'reposhelf-restore-index-'));try{const env={...process.env,GIT_INDEX_FILE:join(temporary,'index')};git(root,['read-tree','--empty'],{env});git(root,['update-index','-z','--index-info'],{env,input:entries.map(({path,oid})=>`100644 ${oid}\t${path}\0`).join('')});git(root,['checkout-index','--all','--force'],{env})}finally{await rm(temporary,{recursive:true,force:true})}}
- unpack(root,PACKED.filter(path=>changed.includes(packedName(path))),{force:true});
+ unpack(root,PACKED.filter(path=>changed.some(file=>logicalName(file)===path)),{force:true});
  console.log(`Checkpoint recovery: ${restored} generated files restored; ${conflicts} files kept from newer main changes.`);return {restored,conflicts};
 }
 export async function publishCatalog(root=process.cwd(),{checkpoint=false,completed=false,scheduled=false,now=Date.now()}={}){

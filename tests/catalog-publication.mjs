@@ -4,7 +4,8 @@ import {mkdtemp,mkdir,writeFile,readFile,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';import {join} from 'node:path';
 import {publicFileChanged,changedPublicFiles,publishCatalog,restoreCheckpoint,CHECKPOINT_BRANCH} from '../scripts/catalog-publication.mjs';
 import {createCheckpointStore} from '../lib/checkpoint-store.mjs';
-import {diagnoseSync} from '../lib/sync-diagnostics.mjs';import {pack,decompress} from '../lib/data-packing.mjs';
+import {diagnoseSync} from '../lib/sync-diagnostics.mjs';import {pack,unpack,compress,decompress} from '../lib/data-packing.mjs';
+const remoteRepos=cwd=>execFileSync('git',['ls-tree','--name-only','origin/main','dist/'],{cwd,encoding:'utf8'}).split('\n').filter(n=>/^dist\/catalog\.part-\d\d\.json\.gz$/.test(n)).flatMap(n=>JSON.parse(decompress(execFileSync('git',['show','origin/main:'+n],{cwd,maxBuffer:64*1024*1024})).toString()).repositories);
 const json=value=>JSON.stringify(value),before={updatedAt:'2026-10-04',repositories:[{full:'team/demo',stars:10,lastCheckedAt:'2026-10-03',enrichmentAttemptAt:'old'}]};
 assert.equal(publicFileChanged('data/sync-runs/1.json','a','b'),false);assert.equal(publicFileChanged('data/browser-cycle.json','a','b'),false);assert.equal(publicFileChanged('data/browse/index.json','a','b'),false);
 assert.equal(publicFileChanged('dist/catalog.json',json(before),json({...before,updatedAt:'2026-10-05',revalidation:{checked:0},repositories:[{...before.repositories[0],enrichmentAttemptAt:'new'}]})),false);
@@ -51,17 +52,39 @@ try{
  for(let start=0;start<12000;start+=200)await Promise.all(Array.from({length:Math.min(200,12000-start)},(_,i)=>writeFile(join(chunks,String(start+i).padStart(100,'0')+'.json'),'{}')));
  git(recover,'add','--','data/browse/projects');
  const names=execFileSync('git',['diff','--cached','--name-only','-z'],{cwd:recover,maxBuffer:8*1024*1024});assert(names.length>1024*1024,'Fixture exceeds the old buffer');
- const publicChanges=changedPublicFiles(recover);assert(!publicChanges.some(path=>path.startsWith('data/browse/')),'Internal chunks do not request publication');assert(publicChanges.includes('dist/catalog.json.gz'),'Actual public catalogue changes still publish (the packed file is compared by its content)');
+ const publicChanges=changedPublicFiles(recover);assert(!publicChanges.some(path=>path.startsWith('data/browse/')),'Internal chunks do not request publication');assert(publicChanges.some(path=>/^dist\/catalog\.part-\d\d\.json\.gz$/.test(path)),'Actual public catalogue changes still publish (each stored part is compared by its content)');
  // A catalogue too large to hold as one string must not crash publication: it falls back to comparing the stored blobs.
- process.env.REPOSHELF_MAX_COMPARE_BYTES='10';try{assert(changedPublicFiles(recover).includes('dist/catalog.json.gz'),'An oversized catalogue still publishes when its content changed')}finally{delete process.env.REPOSHELF_MAX_COMPARE_BYTES}
+ process.env.REPOSHELF_MAX_COMPARE_BYTES='10';try{assert(changedPublicFiles(recover).some(path=>/^dist\/catalog\.part-\d\d\.json\.gz$/.test(path)),'An oversized catalogue part still publishes when its content changed')}finally{delete process.env.REPOSHELF_MAX_COMPARE_BYTES}
  await publishCatalog(recover,{checkpoint:true,completed:true});
  const largeRecover=join(root,'large-recover');git(root,'clone','--branch',CHECKPOINT_BRANCH,remote,largeRecover);
  const largeRecovery=await restoreCheckpoint(largeRecover);assert.equal(largeRecovery.restored,0,'Large checkpoint already present is traversed without truncation or overwrites');assert.equal(largeRecovery.conflicts,0);
  git(recover,'reset','--quiet','HEAD','--','data/browse');
  // Newer generated main updates must survive recovery and reject conflicting publication.
  git(other,'pull','--rebase');await writeFile(join(other,'dist/catalog.json'),json({...before,repositories:[{...before.repositories[0],stars:99}]}));pack(other);git(other,'add','.');git(other,'commit','-m','Concurrent catalogue');git(other,'push');git(recover,'reset','--hard','HEAD');git(recover,'pull','--rebase');const guarded=await restoreCheckpoint(recover);assert(guarded.conflicts>=1);assert.equal(JSON.parse(await readFile(join(recover,'dist/catalog.json'))).repositories[0].stars,99);
- await assert.rejects(()=>publishCatalog(work),/conflicts/);assert.equal(JSON.parse(decompress(execFileSync('git',['show','origin/main:dist/catalog.json.gz'],{cwd:other,maxBuffer:64*1024*1024})).toString()).repositories[0].stars,99);
+ await assert.rejects(()=>publishCatalog(work),/conflicts/);assert.equal(remoteRepos(other)[0].stars,99);
 }finally{await rm(root,{recursive:true,force:true,maxRetries:10,retryDelay:200}).catch(e=>console.warn('Could not remove the temporary publication fixture '+root+': '+e.code))}
+}
+// Moving the catalogue from one saved file to parts: an older run's single file and an older checkpoint must still be read,
+// and the next publication replaces them with parts (the old file is deleted, nothing is lost).
+if(subprocesses){const root=await mkdtemp(join(tmpdir(),'reposhelf-migration-')),remote=join(root,'remote.git'),seed=join(root,'seed'),fresh=join(root,'fresh'),later=join(root,'later');const git=(cwd,...args)=>execFileSync('git',args,{cwd,encoding:'utf8',stdio:'pipe'});
+ const rows=stars=>Array.from({length:60},(_,i)=>({full:'team/p'+i,stars:i===7?stars:i,demo:'https://demo.pages.dev/'+i,lastCheckedAt:'2026-10-03'})),legacyDoc=stars=>json({schema:2,updatedAt:'2026-10-04',repositories:rows(stars)});
+ const names=cwd=>git(cwd,'ls-tree','-r','--name-only','HEAD').split('\n').filter(n=>/^dist\/catalog\./.test(n)),starsOf=async cwd=>JSON.parse(await readFile(join(cwd,'dist/catalog.json'),'utf8')).repositories.find(r=>r.full==='team/p7').stars;
+ try{
+  git(root,'init','--bare',remote);await mkdir(seed);git(seed,'init','-b','main');for(const [k,v] of [['user.name','Test'],['user.email','test@example.org']])git(seed,'config',k,v);await mkdir(join(seed,'dist'));await writeFile(join(seed,'.gitignore'),'/dist/catalog.json\n');
+  await writeFile(join(seed,'dist/catalog.json.gz'),compress(Buffer.from(legacyDoc(7))));git(seed,'add','.');git(seed,'commit','-m','Saved as one file');git(seed,'remote','add','origin',remote);git(seed,'push','-u','origin','main');
+  // An older run saved a newer catalogue to the recovery branch as one file.
+  const base=git(seed,'rev-parse','HEAD').trim();git(seed,'checkout','-q','-b','older-checkpoint');await writeFile(join(seed,'dist/catalog.json.gz'),compress(Buffer.from(legacyDoc(500))));await writeFile(join(seed,'.sync-checkpoint.json'),json({schema:1,base,phase:'checkpoint',runId:null,reportIds:[],at:new Date().toISOString()})+'\n');git(seed,'add','-f','.');git(seed,'commit','-m','Save catalogue recovery checkpoint');git(seed,'push','origin','older-checkpoint:'+CHECKPOINT_BRANCH);git(seed,'checkout','-q','main');
+  git(root,'clone','--branch','main',remote,fresh);for(const [k,v] of [['user.name','Test'],['user.email','test@example.org']])git(fresh,'config',k,v);
+  assert.deepEqual(names(fresh),['dist/catalog.json.gz'],'the starting point is a single saved file');
+  const recovery=await restoreCheckpoint(fresh);assert.equal(await starsOf(fresh),500,'an older single-file checkpoint is restored');assert.equal(recovery.conflicts,0);
+  const result=await publishCatalog(fresh);assert.equal(result.published,true,'the catalogue publishes');
+  git(root,'clone','--branch','main',remote,later);const stored=names(later);assert(!stored.includes('dist/catalog.json.gz'),'the single file is removed from main');assert(stored.includes('dist/catalog.part-head.json.gz')&&stored.filter(n=>/part-\d\d/.test(n)).length>8,'main now holds the parts');
+  assert.equal(unpack(later,['dist/catalog.json']).length,1);assert.equal(await starsOf(later),500,'nothing was lost on the way');assert.equal(JSON.parse(await readFile(join(later,'dist/catalog.json'),'utf8')).repositories.length,60);
+  // From here the checkpoints are saved as parts too, and a fresh runner restores them.
+  for(const [k,v] of [['user.name','Test'],['user.email','test@example.org']])git(later,'config',k,v);await writeFile(join(later,'dist/catalog.json'),legacyDoc(900));await publishCatalog(later,{checkpoint:true});
+  const third=join(root,'third');git(root,'clone','--branch','main',remote,third);const again=await restoreCheckpoint(third);assert.equal(await starsOf(third),900,'a checkpoint saved as parts is restored');assert(again.restored>=1);assert.equal(again.conflicts,0);
+  const checkpointTree=git(third,'ls-tree','-r','--name-only','origin/'+CHECKPOINT_BRANCH).split('\n');assert(!checkpointTree.includes('dist/catalog.json.gz')&&checkpointTree.includes('dist/catalog.part-head.json.gz'),'the checkpoint holds parts, not the old file');
+ }finally{await rm(root,{recursive:true,force:true,maxRetries:10,retryDelay:200}).catch(e=>console.warn('Could not remove the temporary migration fixture '+root+': '+e.code))}
 }
 {const failed=diagnoseSync({status:'completed',conclusion:'failure',name:'Scan submitted repositories',path:'.github/workflows/submissions.yml'},[{conclusion:'failure',steps:[{name:'Set up job',conclusion:'success'},{name:'Check submissions database access',conclusion:'failure'}]}],null);assert.equal(failed.kind,'interrupted');assert(/could not read its queue/.test(failed.message)&&/migration 7/.test(failed.message)&&/SYNC_KEY/.test(failed.message)&&/Catalogue syncs are not affected/.test(failed.message),'A failed submissions queue check must be explained in plain language');assert.equal(failed.stage,'Check submissions database access');const other=diagnoseSync({status:'completed',conclusion:'failure'},[{conclusion:'failure',steps:[{name:'Save sync report',conclusion:'failure'}]}],null);assert(!/could not read its queue/.test(other.message),'Other failures keep their own message')}
 console.log('PASS: non-deploying checkpoints, final-only public publication, safe no-op detection, live diagnostics, concurrency protection and binary recovery.');
