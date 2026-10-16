@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gooey toasts preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,640px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.gt2{position:relative;height:420px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface);overflow:hidden}
+.gt2-btn{position:absolute;left:20px;top:20px;padding:10px 18px;border:1px solid var(--sc-line);border-radius:999px;background:var(--sc-bg);cursor:pointer;font-size:14px;font-weight:600}
+.gt2-btn:hover{border-color:var(--sc-accent)}
+.gt2-stack{position:absolute;right:20px;bottom:20px;width:320px;height:290px}
+.gt2-goo,.gt2-txt{position:absolute;inset:0}
+.gt2-goo{filter:url(#gt2-goo);pointer-events:none}
+.gt2-bg,.gt2-it{position:absolute;left:0;bottom:0;width:320px;height:58px;transform:translateY(calc(var(--y,0)*1px));transition:transform .55s cubic-bezier(.3,1.25,.4,1),opacity .35s}
+.gt2-bg{border-radius:29px;background:var(--sc-fg)}
+.gt2-it{display:flex;align-items:center;gap:12px;padding:0 10px 0 14px;color:var(--sc-bg)}
+.gt2-bg.out,.gt2-it.out{opacity:0}
+.gt2-ic{flex:none;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:hsl(var(--h) 80% 62%);color:#fff;font:800 14px/1 system-ui}
+.gt2-tx{min-width:0;flex:1}
+.gt2-tx strong{display:block;font-size:14px;line-height:1.1}
+.gt2-tx span{display:block;font-size:12px;opacity:.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gt2-x{flex:none;width:30px;height:30px;border:0;border-radius:50%;background:rgba(127,127,127,.25);color:inherit;cursor:pointer;font-size:16px;line-height:1}
+.gt2-x:hover{background:rgba(127,127,127,.45)}
+@media (prefers-reduced-motion:reduce){.gt2-bg,.gt2-it{transition:none}}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="gt2"><button class="gt2-btn" type="button">Add toast</button><div class="gt2-stack" role="region" aria-live="polite" aria-label="Notifications"><div class="gt2-goo"></div><div class="gt2-txt"></div></div><svg class="goo-svg" width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute"><filter id="gt2-goo" x="-20%" y="-30%" width="140%" height="160%" color-interpolation-filters="sRGB"><feGaussianBlur in="SourceGraphic" stdDeviation="9" result="b"/><feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -9"/></filter></svg></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.gt2'),stack=root.querySelector('.gt2-stack'),goo=root.querySelector('.gt2-goo'),txt=root.querySelector('.gt2-txt'),btn=root.querySelector('.gt2-btn');
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,T=[],n=0,gap=8,msgs=[['Saved','Your changes are live.',150,'\u2713'],['New comment','Ines replied to your post.',262,'\u2709'],['Build passed','Deploy finished in 1m 12s.',200,'\u2713'],['Invite sent','Theo will get an email.',330,'+'],['Upload done','12 files added to Assets.',40,'\u2191']];
+function layout(){T.forEach(function(t,i){var y=-(i*(58+gap));t.bg.style.setProperty('--y',y);t.it.style.setProperty('--y',y)})}
+function add(){var m=msgs[n++%msgs.length],bg=document.createElement('div');bg.className='gt2-bg';var it=document.createElement('div');it.className='gt2-it';
+ var ic=document.createElement('span');ic.className='gt2-ic';ic.style.setProperty('--h',m[2]);ic.textContent=m[3];var tx=document.createElement('div');tx.className='gt2-tx';var s=document.createElement('strong');s.textContent=m[0];var p=document.createElement('span');p.textContent=m[1];tx.appendChild(s);tx.appendChild(p);var x=document.createElement('button');x.type='button';x.className='gt2-x';x.setAttribute('aria-label','Dismiss '+m[0]);x.textContent='\u00d7';it.appendChild(ic);it.appendChild(tx);it.appendChild(x);
+ bg.style.setProperty('--y',90);it.style.setProperty('--y',90);bg.style.opacity=0;it.style.opacity=0;goo.appendChild(bg);txt.appendChild(it);var t={bg:bg,it:it,timer:0};T.unshift(t);void bg.offsetWidth;bg.style.opacity='';it.style.opacity='';layout();
+ x.addEventListener('click',function(){remove(t)});t.timer=setTimeout(function(){remove(t)},5200);if(T.length>4)remove(T[T.length-1])}
+function remove(t){var i=T.indexOf(t);if(i<0)return;clearTimeout(t.timer);T.splice(i,1);t.bg.classList.add('out');t.it.classList.add('out');layout();setTimeout(function(){t.bg.remove();t.it.remove()},reduce?0:400)}
+btn.addEventListener('click',add);stack.addEventListener('pointerenter',function(){gap=16;layout()});stack.addEventListener('pointerleave',function(){gap=8;layout()});
+add();setTimeout(add,500);var auto=setInterval(function(){if(!root.matches(':hover'))add()},2600);root.addEventListener('pointerenter',function(){clearInterval(auto)});})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

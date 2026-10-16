@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Slab headline preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,760px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.sl{position:relative;height:430px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain}
+.sl-pin{position:sticky;top:0;height:430px;overflow:hidden}
+.sl-track{height:900px}
+.sl-view{position:absolute;inset:0 0 56px;perspective:900px}
+.sl-stack{position:absolute;left:50%;top:50%;width:0;height:0;transform-style:preserve-3d;transform:rotateX(var(--rx,18deg)) rotateY(var(--ry,-28deg)) rotateZ(var(--rz,0deg))}
+.sl-c{position:absolute;left:0;top:0;transform:translate(-50%,-50%);white-space:nowrap;font:900 130px/1 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.04em}
+.sl-c.f{color:var(--sc-fg)}
+.sl-c.b{color:transparent;-webkit-text-stroke:1.6px hsl(calc(262 + var(--k)*3) 85% 62%)}
+.sl-ctl{position:absolute;left:0;right:0;bottom:0;display:flex;gap:18px;justify-content:center;padding:10px 16px;background:linear-gradient(transparent,var(--sc-surface) 40%)}
+.sl-ctl label{display:flex;align-items:center;gap:8px;font:700 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--sc-muted)}
+.sl-ctl input{width:90px;accent-color:var(--sc-accent)}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="sl" tabindex="0" role="region" aria-label="Slab headline, scroll to grow the slab"><div class="sl-track"><div class="sl-pin"><div class="sl-view"><div class="sl-stack"></div></div><div class="sl-ctl"><label>X <input type="range" min="-60" max="60" value="18" aria-label="Tilt X"></label><label>Y <input type="range" min="-60" max="60" value="-28" aria-label="Turn Y"></label><label>Z <input type="range" min="-30" max="30" value="0" aria-label="Roll Z"></label></div></div></div></div>
+</div>
+<script>
+(function(){var box=document.currentScript.previousElementSibling.querySelector('.sl'),stack=box.querySelector('.sl-stack'),ins=box.querySelectorAll('input');
+function ScrollDemo(box,fn,opt){
+ var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,auto=!reduce,dir=1,vis=true,raf=0,last=0,resumeT=0,pause=0,SP=(opt&&opt.speed)||.075;
+ function max(){return Math.max(1,box.scrollHeight-box.clientHeight)}
+ function run(now){var m=max();fn(box.scrollTop/m,box.scrollTop,m,now)}
+ function frame(now){raf=0;var dt=Math.min(40,now-(last||now));last=now;
+  if(auto&&now>pause){var m=max();box.scrollTop+=dir*dt*SP;if(box.scrollTop>=m-1){dir=-1;pause=now+1100}else if(box.scrollTop<=0){dir=1;pause=now+1100}}
+  run(now);if(vis)raf=requestAnimationFrame(frame)}
+ function go(){if(!raf&&vis&&!reduce){last=0;raf=requestAnimationFrame(frame)}}
+ function user(){auto=false;clearTimeout(resumeT);if(!reduce)resumeT=setTimeout(function(){auto=true},4000)}
+ ['wheel','touchstart','pointerdown','keydown'].forEach(function(e){box.addEventListener(e,user,{passive:true})});
+ box.addEventListener('scroll',function(){if(reduce)run(performance.now())},{passive:true});
+ if('IntersectionObserver' in window)new IntersectionObserver(function(es){vis=es[0].isIntersecting;go()}).observe(box);
+ addEventListener('resize',function(){run(performance.now())});
+ run(performance.now());go();return {run:function(){run(performance.now())}}}
+var N=24,C=[];
+for(var i=0;i<N;i++){var c=document.createElement('div');c.className='sl-c '+(i?'b':'f');c.textContent='DEPTH';c.style.setProperty('--k',i);if(i){c.setAttribute('aria-hidden','true');c.style.opacity=Math.max(.04,1-i/N*1.05).toFixed(2)}else c.setAttribute('aria-label','DEPTH');stack.appendChild(c);C.push(c)}
+ins.forEach(function(r,i){var v=['--rx','--ry','--rz'][i];function up(){stack.style.setProperty(v,r.value+'deg')}r.addEventListener('input',up);up()});
+ScrollDemo(box,function(p){var gap=p*11+.5;C.forEach(function(c,i){c.style.transform='translate(-50%,-50%) translateZ('+(-i*gap).toFixed(2)+'px)'})});})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Brand footer preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,760px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.bf2{position:relative;height:430px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain}
+.bf2-blk{height:300px;margin:18px;border-radius:22px;display:grid;place-items:center;font:800 28px/1 system-ui;color:#fff;background:linear-gradient(135deg,hsl(var(--h) 80% 58%),hsl(calc(var(--h) + 40) 80% 42%))}
+.bf2-f{position:relative;margin-top:30px;padding:60px 28px 20px;overflow:hidden;background:#0a0a10;color:#fff;border-radius:22px 22px 0 0}
+.bf2-glow{position:absolute;left:-10%;right:-10%;bottom:-70%;height:140%;background:radial-gradient(ellipse at 50% 100%,hsl(262 90% 60%),hsl(300 85% 50%) 28%,transparent 62%);opacity:var(--g,0);pointer-events:none}
+.bf2-cols{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:34px}
+.bf2-col{opacity:var(--o,0);transform:translateY(calc((1 - var(--o,0))*24px))}
+.bf2-col h4{margin:0 0 12px;font:700 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.16em;text-transform:uppercase;color:#a29fc4}
+.bf2-col a{position:relative;display:block;width:fit-content;margin-bottom:8px;color:#fff;text-decoration:none;font-size:15px}
+.bf2-col a::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:1px;background:currentColor;transform:scaleX(0);transform-origin:100% 50%;transition:transform .4s cubic-bezier(.3,.9,.3,1)}
+.bf2-col a:hover::after,.bf2-col a:focus-visible::after{transform:scaleX(1);transform-origin:0 50%}
+.bf2-brand{position:relative;display:block;margin:0;white-space:nowrap;font-weight:900;letter-spacing:-.05em;line-height:.8;background:linear-gradient(#fff 20%,rgba(255,255,255,.18));-webkit-background-clip:text;background-clip:text;color:transparent;opacity:var(--b,0);transform:translateY(calc((1 - var(--b,0))*30px))}
+.bf2-copy{position:relative;margin:14px 0 0;font-size:12px;color:#8d8aa8}
+@media (max-width:560px){.bf2-cols{grid-template-columns:1fr 1fr}}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="bf2" tabindex="0" role="region" aria-label="Page with footer"><div class="bf2-blk" style="--h:262">Your page content</div><div class="bf2-blk" style="--h:190">More content</div><footer class="bf2-f"><i class="bf2-glow"></i><div class="bf2-cols"></div><p class="bf2-brand" aria-label="Lumen and Co">LUMEN&amp;CO</p><p class="bf2-copy">© 2026 Lumen &amp; Co. All rights reserved.</p></footer></div>
+</div>
+<script>
+(function(){var box=document.currentScript.previousElementSibling.querySelector('.bf2'),f=box.querySelector('.bf2-f'),glow=box.querySelector('.bf2-glow'),cols=box.querySelector('.bf2-cols'),brand=box.querySelector('.bf2-brand');
+function ScrollDemo(box,fn,opt){
+ var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,auto=!reduce,dir=1,vis=true,raf=0,last=0,resumeT=0,pause=0,SP=(opt&&opt.speed)||.075;
+ function max(){return Math.max(1,box.scrollHeight-box.clientHeight)}
+ function run(now){var m=max();fn(box.scrollTop/m,box.scrollTop,m,now)}
+ function frame(now){raf=0;var dt=Math.min(40,now-(last||now));last=now;
+  if(auto&&now>pause){var m=max();box.scrollTop+=dir*dt*SP;if(box.scrollTop>=m-1){dir=-1;pause=now+1100}else if(box.scrollTop<=0){dir=1;pause=now+1100}}
+  run(now);if(vis)raf=requestAnimationFrame(frame)}
+ function go(){if(!raf&&vis&&!reduce){last=0;raf=requestAnimationFrame(frame)}}
+ function user(){auto=false;clearTimeout(resumeT);if(!reduce)resumeT=setTimeout(function(){auto=true},4000)}
+ ['wheel','touchstart','pointerdown','keydown'].forEach(function(e){box.addEventListener(e,user,{passive:true})});
+ box.addEventListener('scroll',function(){if(reduce)run(performance.now())},{passive:true});
+ if('IntersectionObserver' in window)new IntersectionObserver(function(es){vis=es[0].isIntersecting;go()}).observe(box);
+ addEventListener('resize',function(){run(performance.now())});
+ run(performance.now());go();return {run:function(){run(performance.now())}}}
+var data=[['Product',['Overview','Features','Pricing','Changelog']],['Company',['About','Careers','Press','Contact']],['Resources',['Guides','Templates','Community','Support']],['Social',['Instagram','LinkedIn','YouTube','Dribbble']]],C=[];
+data.forEach(function(d){var c=document.createElement('div');c.className='bf2-col';var h=document.createElement('h4');h.textContent=d[0];c.appendChild(h);d[1].forEach(function(t){var a=document.createElement('a');a.href='#';a.textContent=t;a.addEventListener('click',function(e){e.preventDefault()});c.appendChild(a)});cols.appendChild(c);C.push(c)});
+function fit(){brand.style.fontSize='100px';var w=brand.scrollWidth||brand.getBoundingClientRect().width,avail=f.clientWidth-56;brand.style.fontSize=(100*avail/w).toFixed(1)+'px'}
+fit();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(fit);addEventListener('resize',fit);
+ScrollDemo(box,function(p,st){var r=f.getBoundingClientRect(),b=box.getBoundingClientRect(),vis=Math.max(0,Math.min(1,(b.bottom-r.top)/f.offsetHeight));glow.style.setProperty('--g',(vis*.9).toFixed(3));C.forEach(function(c,i){c.style.setProperty('--o',Math.max(0,Math.min(1,vis*1.6-.15-i*.1)).toFixed(3))});brand.style.setProperty('--b',Math.max(0,Math.min(1,vis*1.4-.2)).toFixed(3))},{speed:.1});})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

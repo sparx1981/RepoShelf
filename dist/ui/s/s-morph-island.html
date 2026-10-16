@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Morphing island preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,640px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.mi{position:relative;height:430px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface);overflow:hidden}
+.mi-scroll{position:absolute;inset:0;overflow-y:auto;scroll-behavior:smooth;padding:70px 22px 22px}
+.mi-sec{height:300px;margin-bottom:18px;border-radius:22px;padding:26px;color:#fff;display:flex;flex-direction:column;justify-content:flex-end;background:linear-gradient(135deg,hsl(var(--h) 80% 58%),hsl(calc(var(--h) + 40) 80% 40%))}
+.mi-sec h3{margin:0 0 6px;font:800 30px/1.05 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.02em}
+.mi-sec p{margin:0;opacity:.88;font-size:15px}
+.mi-isl{position:absolute;left:50%;top:14px;z-index:5;width:190px;height:44px;border-radius:22px;margin-left:-95px;background:#0b0b0f;color:#fff;overflow:hidden;box-shadow:0 14px 30px -10px rgba(0,0,0,.5);transition:width .5s cubic-bezier(.3,1.15,.4,1),height .5s cubic-bezier(.3,1.15,.4,1),border-radius .5s,margin-left .5s cubic-bezier(.3,1.15,.4,1)}
+.mi-isl[data-state=list]{width:320px;height:222px;border-radius:28px;margin-left:-160px}
+.mi-isl[data-state=detail]{width:340px;height:132px;border-radius:26px;margin-left:-170px}
+.mi-layer{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .25s,visibility 0s .25s}
+.mi-isl[data-state=pill] .mi-pill,.mi-isl[data-state=list] .mi-list,.mi-isl[data-state=detail] .mi-detail{opacity:1;visibility:visible;transition:opacity .3s .18s,visibility 0s}
+.mi-pill{display:flex;align-items:center;gap:10px;padding:0 18px;width:100%;height:44px;border:0;background:transparent;color:inherit;cursor:pointer;font:600 14px/1 system-ui,-apple-system,"Segoe UI",sans-serif}
+.mi-dot{flex:none;width:9px;height:9px;border-radius:50%;background:hsl(var(--h,262) 90% 66%);box-shadow:0 0 10px hsl(var(--h,262) 90% 66%)}
+.mi-name{position:relative;flex:1;height:18px;overflow:hidden;text-align:left}
+.mi-name span{position:absolute;left:0;top:0;line-height:18px;transition:transform .35s cubic-bezier(.3,.9,.3,1),opacity .35s}
+.mi-list{padding:16px}
+.mi-list p{margin:0 0 8px 4px;font:600 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.16em;color:#8d8da0}
+.mi-item{display:flex;align-items:center;gap:12px;width:100%;padding:10px 12px;border:0;border-radius:14px;background:transparent;color:inherit;cursor:pointer;font:600 15px/1 system-ui,-apple-system,"Segoe UI",sans-serif;text-align:left}
+.mi-item:hover,.mi-item:focus-visible{background:rgba(255,255,255,.1)}
+.mi-item i{width:9px;height:9px;border-radius:50%;background:hsl(var(--h) 90% 66%)}
+.mi-detail{padding:16px 20px}
+.mi-detail h4{margin:0 0 4px;font:800 17px/1.1 system-ui,-apple-system,"Segoe UI",sans-serif}
+.mi-detail p{margin:0 0 12px;font-size:13px;line-height:1.4;color:#c4c4d2}
+.mi-row{display:flex;gap:8px}
+.mi-btn{padding:7px 14px;border:0;border-radius:999px;background:#fff;color:#111;cursor:pointer;font-size:12px;font-weight:700}
+.mi-btn.ghost{background:rgba(255,255,255,.14);color:#fff}
+@media (prefers-reduced-motion:reduce){.mi-isl,.mi-layer,.mi-name span{transition:none}.mi-scroll{scroll-behavior:auto}}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="mi"><div class="mi-scroll" tabindex="0" role="region" aria-label="Sections"></div><div class="mi-isl" data-state="pill"><button class="mi-layer mi-pill" type="button" aria-expanded="false" aria-label="Sections menu"><i class="mi-dot"></i><span class="mi-name"></span></button><div class="mi-layer mi-list" role="menu"><p>JUMP TO</p></div><div class="mi-layer mi-detail"><h4></h4><p></p><div class="mi-row"><button class="mi-btn go" type="button">Scroll to</button><button class="mi-btn ghost back" type="button">Back</button></div></div></div></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.mi'),scroll=root.querySelector('.mi-scroll'),isl=root.querySelector('.mi-isl'),pill=root.querySelector('.mi-pill'),nameEl=root.querySelector('.mi-name'),list=root.querySelector('.mi-list'),det=root.querySelector('.mi-detail');
+var secs=[['Overview',262,'A quick tour of what is inside and where to start.'],['Features',320,'Everything the product does, grouped into short chapters.'],['Pricing',28,'Simple plans with a yearly discount and no hidden extras.'],['Contact',190,'Talk to the team, book a call or send a message.']],els=[],cur=-1,timer=0,pick=0,state='pill';
+secs.forEach(function(s,i){var d=document.createElement('section');d.className='mi-sec';d.style.setProperty('--h',s[1]);var h=document.createElement('h3');h.textContent=s[0];var p=document.createElement('p');p.textContent=s[2];d.appendChild(h);d.appendChild(p);scroll.appendChild(d);els.push(d);
+ var b=document.createElement('button');b.type='button';b.className='mi-item';b.setAttribute('role','menuitem');var dot=document.createElement('i');dot.style.setProperty('--h',s[1]);b.appendChild(dot);b.appendChild(document.createTextNode(s[0]));b.addEventListener('click',function(){pick=i;els[i].scrollIntoView({block:'start'});set('detail')});list.appendChild(b)});
+function set(s){state=s;isl.setAttribute('data-state',s);pill.setAttribute('aria-expanded',String(s!=='pill'));clearTimeout(timer);if(s==='detail'){var q=secs[pick];det.querySelector('h4').textContent=q[0];det.querySelector('p').textContent=q[2];timer=setTimeout(function(){set('pill')},3200)}}
+function label(i){if(i===cur)return;var old=nameEl.querySelector('span:last-child'),n=document.createElement('span');n.textContent=secs[i][0];n.style.transform='translateY(110%)';n.style.opacity=0;nameEl.appendChild(n);void n.offsetWidth;if(old){old.style.transform='translateY(-110%)';old.style.opacity=0;setTimeout(function(){old.remove()},360)}n.style.transform='none';n.style.opacity=1;isl.style.setProperty('--h',secs[i][1]);cur=i}
+function spy(){var st=scroll.scrollTop+90,idx=0;els.forEach(function(e,i){if(e.offsetTop<=st)idx=i});label(idx)}
+scroll.addEventListener('scroll',spy,{passive:true});label(0);
+pill.addEventListener('click',function(){set(state==='pill'?'list':'pill')});
+det.querySelector('.go').addEventListener('click',function(){els[pick].scrollIntoView({block:'start'});set('pill')});det.querySelector('.back').addEventListener('click',function(){set('list')});
+root.addEventListener('keydown',function(e){if(e.key==='Escape')set('pill')});document.addEventListener('pointerdown',function(e){if(state!=='pill'&&!isl.contains(e.target))set('pill')});
+var auto=0,k=0;function tour(){if(state!=='pill')return;k=(k+1)%4;els[k].scrollIntoView({block:'start'})}auto=setInterval(tour,3000);root.addEventListener('pointerenter',function(){clearInterval(auto)});root.addEventListener('focusin',function(){clearInterval(auto)});})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

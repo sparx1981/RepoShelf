@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fill and jelly buttons preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,760px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.fbt{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;padding:22px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface)}
+.fbt-cell{display:grid;gap:12px;justify-items:center;align-content:center;height:190px;border:1px solid var(--sc-line);border-radius:22px;background:var(--sc-bg)}
+.fbt-cell small{font:600 11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.14em;text-transform:uppercase;color:var(--sc-muted)}
+.fbt-b{position:relative;overflow:hidden;padding:15px 30px;border:2px solid var(--sc-fg);border-radius:999px;background:transparent;color:var(--sc-fg);cursor:pointer;font:700 16px/1 system-ui,-apple-system,"Segoe UI",sans-serif;isolation:isolate}
+.fbt-b span{position:relative;z-index:2;transition:color .3s .08s}
+.fbt-fill{position:absolute;z-index:1;border-radius:50%;background:var(--sc-fg);transform:translate(-50%,-50%) scale(0);transition:transform .55s cubic-bezier(.3,.8,.2,1);pointer-events:none}
+.fbt-b.is-on .fbt-fill{transform:translate(-50%,-50%) scale(1)}
+.fbt-b.is-on span{color:var(--sc-bg)}
+.fbt-wave{position:absolute;z-index:1;left:-60%;top:-60%;width:220%;height:220%;border-radius:50%;background:var(--sc-accent);transform:translate(var(--tx,-100%),var(--ty,0));transition:transform .6s cubic-bezier(.3,.8,.2,1);pointer-events:none}
+.fbt-b.wave{border-color:var(--sc-accent)}
+.fbt-b.wave.is-on .fbt-wave{transform:translate(0,0)}
+.fbt-b.wave.is-on span{color:var(--sc-accent-fg)}
+.fbt-jelly{border-color:transparent;background:var(--sc-accent);color:var(--sc-accent-fg);will-change:transform}
+.fbt-jelly span{transition:none}
+.fbt-b:focus-visible{outline:2px solid var(--sc-accent);outline-offset:4px}
+@media (prefers-reduced-motion:reduce){.fbt-fill,.fbt-wave{transition:none}}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="fbt"><div class="fbt-cell"><button class="fbt-b circ" type="button"><i class="fbt-fill"></i><span>Start a project</span></button><small>Circle fill</small></div><div class="fbt-cell"><button class="fbt-b wave" type="button"><i class="fbt-wave"></i><span>See our work</span></button><small>Curve fill</small></div><div class="fbt-cell"><button class="fbt-b fbt-jelly" type="button"><span>Add to bag</span></button><small>Jelly</small></div></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.fbt'),circ=root.querySelector('.circ'),wave=root.querySelector('.wave'),jel=root.querySelector('.fbt-jelly'),fill=circ.querySelector('.fbt-fill'),wv=wave.querySelector('.fbt-wave');
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+function pt(b,e){var r=b.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top,w:r.width,h:r.height}}
+function fillAt(p){var d=Math.max(Math.hypot(p.x,p.y),Math.hypot(p.w-p.x,p.y),Math.hypot(p.x,p.h-p.y),Math.hypot(p.w-p.x,p.h-p.y))*2;fill.style.width=fill.style.height=d+'px';fill.style.left=p.x+'px';fill.style.top=p.y+'px'}
+circ.addEventListener('pointerenter',function(e){var p=pt(circ,e);fill.style.transition='none';fillAt(p);void fill.offsetWidth;fill.style.transition='';circ.classList.add('is-on')});
+circ.addEventListener('pointerleave',function(e){var p=pt(circ,e);fill.style.left=Math.max(0,Math.min(p.w,p.x))+'px';fill.style.top=Math.max(0,Math.min(p.h,p.y))+'px';circ.classList.remove('is-on')});
+circ.addEventListener('focus',function(){fill.style.transition='none';fillAt({x:circ.offsetWidth/2,y:circ.offsetHeight/2,w:circ.offsetWidth,h:circ.offsetHeight});void fill.offsetWidth;fill.style.transition='';circ.classList.add('is-on')});circ.addEventListener('blur',function(){circ.classList.remove('is-on')});
+function side(b,e){var p=pt(b,e),nx=(p.x/p.w-.5)*2,ny=(p.y/p.h-.5)*2;return Math.abs(nx*b.offsetWidth)>Math.abs(ny*b.offsetHeight)?[nx<0?-1:1,0]:[0,ny<0?-1:1]}
+wave.addEventListener('pointerenter',function(e){var s=side(wave,e);wv.style.transition='none';wv.style.setProperty('--tx',(s[0]*110)+'%');wv.style.setProperty('--ty',(s[1]*110)+'%');void wv.offsetWidth;wv.style.transition='';wave.classList.add('is-on')});
+wave.addEventListener('pointerleave',function(e){var s=side(wave,e);wv.style.setProperty('--tx',(s[0]*110)+'%');wv.style.setProperty('--ty',(s[1]*110)+'%');wave.classList.remove('is-on')});
+wave.addEventListener('focus',function(){wv.style.setProperty('--tx','0%');wv.style.setProperty('--ty','0%');wave.classList.add('is-on')});wave.addEventListener('blur',function(){wave.classList.remove('is-on')});
+var sx=1,sy=1,vx=0,vy=0,tx=0,ty=0,px=0,py=0,tsx=1,tsy=1,raf=0;
+function frame(){raf=0;vx+=(tsx-sx)*.22;vx*=.82;sx+=vx;vy+=(tsy-sy)*.22;vy*=.82;sy+=vy;px+=(tx-px)*.3;py+=(ty-py)*.3;tx*=.8;ty*=.8;jel.style.transform='translate('+px.toFixed(2)+'px,'+py.toFixed(2)+'px) scale('+sx.toFixed(3)+','+sy.toFixed(3)+')';if(Math.abs(sx-tsx)>.002||Math.abs(vx)>.002||Math.abs(sy-tsy)>.002||Math.abs(vy)>.002||Math.abs(px)>.05||Math.abs(py)>.05)raf=requestAnimationFrame(frame)}
+function kick(){if(!raf&&!reduce)raf=requestAnimationFrame(frame)}
+jel.addEventListener('pointerdown',function(){tsx=1.14;tsy=.84;kick()});function rel(){tsx=1;tsy=1;vx+=.04;kick()}jel.addEventListener('pointerup',rel);jel.addEventListener('pointerleave',function(e){if(tsx!==1)rel();var s=side(jel,e);tx=-s[0]*4;ty=-s[1]*4;kick()});
+jel.addEventListener('pointerenter',function(e){var s=side(jel,e);vx+=s[0]*.06;vy+=s[1]*.06;tx=s[0]*5;ty=s[1]*5;sx=1+(s[0]?-.06:.05);sy=1+(s[1]?-.1:.05);kick()});
+jel.addEventListener('keydown',function(e){if(e.key===' '||e.key==='Enter'){tsx=1.14;tsy=.84;kick()}});jel.addEventListener('keyup',function(){rel()});
+if(reduce){jel.addEventListener('pointerenter',function(){jel.style.filter='brightness(1.1)'});jel.addEventListener('pointerleave',function(){jel.style.filter=''})}})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

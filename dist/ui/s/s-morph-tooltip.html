@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Morphing tooltip preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,640px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.mt{display:grid;place-items:center;height:260px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface)}
+.mt-wrap{position:relative}
+.mt-bar{display:flex;gap:6px;padding:8px;border:1px solid var(--sc-line);border-radius:20px;background:var(--sc-bg)}
+.mt-btn{display:grid;place-items:center;width:46px;height:46px;border:0;border-radius:14px;background:transparent;color:var(--sc-muted);cursor:pointer;transition:background .2s,color .2s}
+.mt-btn:hover,.mt-btn:focus-visible{background:var(--sc-surface);color:var(--sc-fg)}
+.mt-btn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.mt-tip{position:absolute;left:0;top:0;z-index:3;display:grid;place-items:center;overflow:hidden;background:var(--sc-fg);color:var(--sc-bg);border-radius:14px;font:600 13px/1 system-ui,-apple-system,"Segoe UI",sans-serif;white-space:nowrap;opacity:0;pointer-events:none;transition:left .38s cubic-bezier(.3,.9,.3,1.1),top .38s cubic-bezier(.3,.9,.3,1.1),width .38s cubic-bezier(.3,.9,.3,1.1),height .38s cubic-bezier(.3,.9,.3,1.1),border-radius .38s,opacity .2s}
+.mt-tip.is-on{opacity:1;border-radius:11px}
+.mt-tip span{transition:opacity .16s}
+.mt-tip.swap span{opacity:0}
+.mt-measure{position:absolute;visibility:hidden;white-space:nowrap;font:600 13px/1 system-ui,-apple-system,"Segoe UI",sans-serif}
+.mt-hint{margin:16px 0 0;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--sc-muted);text-align:center}
+@media (prefers-reduced-motion:reduce){.mt-tip,.mt-tip span{transition:none}}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="mt"><div><div class="mt-wrap"><div class="mt-bar" role="toolbar" aria-label="Quick actions"><button class="mt-btn" type="button" data-tip="Home" aria-label="Home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/></svg></button><button class="mt-btn" type="button" data-tip="Search the library" aria-label="Search the library"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg></button><button class="mt-btn" type="button" data-tip="Notifications" aria-label="Notifications"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 17V11a6 6 0 0 1 12 0v6l1.5 2h-15zM10 21h4"/></svg></button><button class="mt-btn" type="button" data-tip="Settings" aria-label="Settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1"/></svg></button><button class="mt-btn" type="button" data-tip="Your profile" aria-label="Your profile"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 20c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></button></div><div class="mt-tip" role="tooltip" id="mt-tip"><span></span></div><span class="mt-measure"></span></div><p class="mt-hint">Hover or focus a button</p></div></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.mt'),wrap=root.querySelector('.mt-wrap'),tip=root.querySelector('.mt-tip'),txt=tip.querySelector('span'),meas=root.querySelector('.mt-measure'),btns=[].slice.call(root.querySelectorAll('.mt-btn'));
+var cur=null,hideT=0;
+function rect(b){var r=b.getBoundingClientRect(),w=wrap.getBoundingClientRect();return {l:r.left-w.left,t:r.top-w.top,w:r.width,h:r.height}}
+function setBox(l,t,w,h){tip.style.left=l+'px';tip.style.top=t+'px';tip.style.width=w+'px';tip.style.height=h+'px'}
+function show(b){clearTimeout(hideT);var r=rect(b);meas.textContent=b.getAttribute('data-tip');var w=Math.ceil(meas.getBoundingClientRect().width)+28,l=r.l+r.w/2-w/2,t=r.t-34-10;
+ if(!cur){tip.style.transition='none';setBox(r.l,r.t,r.w,r.h);txt.textContent='';void tip.offsetWidth;tip.style.transition='';requestAnimationFrame(function(){tip.classList.add('is-on');txt.textContent=b.getAttribute('data-tip');setBox(l,t,w,34)})}
+ else{tip.classList.add('swap');setTimeout(function(){txt.textContent=b.getAttribute('data-tip');tip.classList.remove('swap')},110);tip.classList.add('is-on');setBox(l,t,w,34)}
+ if(cur)cur.removeAttribute('aria-describedby');b.setAttribute('aria-describedby','mt-tip');cur=b}
+function hide(){hideT=setTimeout(function(){if(!cur)return;var r=rect(cur);tip.classList.remove('is-on');setBox(r.l,r.t,r.w,r.h);cur.removeAttribute('aria-describedby');cur=null},60)}
+btns.forEach(function(b){b.addEventListener('pointerenter',function(){show(b)});b.addEventListener('focus',function(){show(b)});b.addEventListener('pointerleave',hide);b.addEventListener('blur',hide)});
+var n=0,auto=setInterval(function(){if(matchMedia('(hover:hover)').matches&&root.matches(':hover'))return;if(document.activeElement&&root.contains(document.activeElement))return;if(n%7<5)show(btns[n%7]);else hide();n++},1700);
+root.addEventListener('pointerenter',function(){clearInterval(auto)});})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

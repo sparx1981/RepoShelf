@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Elastic divider preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,760px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.ed{padding:34px 34px 30px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface)}
+.ed h3{margin:0 0 8px;font:800 30px/1.1 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.03em}
+.ed p{margin:0;max-width:34em;font-size:15px;line-height:1.55;color:var(--sc-muted)}
+.ed-line{position:relative;height:120px;margin:10px -34px;cursor:crosshair;touch-action:pan-y}
+.ed-line svg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.ed-base{stroke:var(--sc-line);stroke-width:1}
+.ed-str{fill:none;stroke:var(--sc-accent);stroke-width:2;stroke-linecap:round}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="ed"><h3>Before the line</h3><p>The first section ends here. Move across the divider below, fast or slow, and listen with your eyes.</p><div class="ed-line"><svg aria-hidden="true"><line class="ed-base"/><path class="ed-str"/></svg></div><h3>After the line</h3><p>The second section begins. The divider never moves unless you touch it, and it settles back to a perfectly straight rule.</p></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.ed'),zone=root.querySelector('.ed-line'),svg=zone.querySelector('svg'),str=svg.querySelector('.ed-str'),base=svg.querySelector('.ed-base');
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,N=90,y=new Float32Array(N),v=new Float32Array(N),W=0,H=0,lastY=null,raf=0,visible=true,idle=0,moving=false;
+function size(){W=zone.clientWidth;H=zone.clientHeight;base.setAttribute('x1',0);base.setAttribute('x2',W);base.setAttribute('y1',H/2);base.setAttribute('y2',H/2);draw()}
+function pluck(x,imp){var c=Math.round(x/W*(N-1));for(var i=-8;i<=8;i++){var k=c+i;if(k>0&&k<N-1)v[k]+=imp*Math.exp(-i*i/16)}moving=true;go()}
+function draw(){var d='M0 '+(H/2),px=0,py=H/2;for(var i=1;i<N;i++){var x=i/(N-1)*W,yy=H/2+y[i],mx=(px+x)/2,my=(py+yy)/2;d+=' Q'+px.toFixed(1)+' '+py.toFixed(1)+' '+mx.toFixed(1)+' '+my.toFixed(1);px=x;py=yy}d+=' L'+W+' '+(H/2);str.setAttribute('d',d)}
+function frame(now){raf=0;var e=0;for(var s=0;s<2;s++){for(var i=1;i<N-1;i++){v[i]+=(y[i-1]+y[i+1]-2*y[i])*.38-y[i]*.004;v[i]*=.985}for(var j=1;j<N-1;j++){y[j]+=v[j];e+=Math.abs(v[j])+Math.abs(y[j])}}draw();if(e<.4&&moving){moving=false;y.fill(0);v.fill(0);draw()}if(visible&&(moving))raf=requestAnimationFrame(frame)}
+function go(){if(!raf&&visible)raf=requestAnimationFrame(frame)}
+zone.addEventListener('pointermove',function(e){var r=zone.getBoundingClientRect(),py=e.clientY-r.top-r.height/2,x=e.clientX-r.left;if(lastY!==null&&((lastY<0&&py>=0)||(lastY>0&&py<=0))){var sp=Math.max(-40,Math.min(40,(py-lastY)*.9));pluck(x,sp*1.2)}lastY=py;idle=0});zone.addEventListener('pointerleave',function(){lastY=null});
+if('IntersectionObserver' in window)new IntersectionObserver(function(es){visible=es[0].isIntersecting;go()}).observe(root);
+if(!reduce)setInterval(function(){if(!visible||zone.matches(':hover'))return;pluck(W*(.2+Math.random()*.6),(Math.random()<.5?-1:1)*(14+Math.random()*16))},3500);
+size();addEventListener('resize',size);if('ResizeObserver' in window)new ResizeObserver(size).observe(zone);setTimeout(function(){pluck(W*.5,22)},600);})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

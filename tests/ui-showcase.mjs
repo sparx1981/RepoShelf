@@ -12,7 +12,7 @@ const pages=new Set(await readdir(new URL('../dist/ui/s/',import.meta.url)));
 
 assert.ok(showcase.length>=24,'A substantial showcase ships');
 assert.equal(showcaseIds.size,showcase.length,'Unique showcase ids');
-const families=new Set(showcase.map(i=>i.family));assert.ok(families.has('Expressive components')&&families.has('Micro-interactions')&&families.has('Hover & cursor effects')&&families.has('Text effects')&&families.has('Cursor effects')&&families.has('3D & galleries'));
+const families=new Set(showcase.map(i=>i.family));assert.ok(families.has('Expressive components')&&families.has('Micro-interactions')&&families.has('Hover & cursor effects')&&families.has('Text effects')&&families.has('Cursor effects')&&families.has('3D & galleries')&&['Morphing UI','Menus & buttons','Scroll & text','Sections & components'].every(f=>families.has(f)));
 
 // Catalogue: rows exist, are mixed into the front of the list, and nothing existing was dropped.
 const positions=showcase.map(i=>index.findIndex(r=>r.id===i.id));

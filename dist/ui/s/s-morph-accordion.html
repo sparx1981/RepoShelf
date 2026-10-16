@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pouring accordion preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,640px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.ma{display:grid;gap:12px;padding:22px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface)}
+.ma-item{position:relative}
+.ma-goo{position:absolute;inset:0;filter:url(#ma-goo);pointer-events:none}
+.ma-pill,.ma-pan{position:absolute;left:6px;right:6px;background:var(--sc-line)}
+.ma-pill{top:0;height:56px;border-radius:28px}
+.ma-pan{top:36px;bottom:0;border-radius:24px;transform:scaleY(0);transform-origin:50% 0;opacity:0;transition:transform .5s cubic-bezier(.3,1.1,.4,1),opacity .2s}
+.ma-item.open .ma-pan{transform:scaleY(1);opacity:1}
+.ma-q{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;height:56px;padding:0 22px 0 26px;border:0;border-radius:28px;background:transparent;color:inherit;cursor:pointer;text-align:left;font:700 16px/1.2 system-ui,-apple-system,"Segoe UI",sans-serif}
+.ma-q i{position:relative;flex:none;width:18px;height:18px;transition:transform .45s cubic-bezier(.3,1.3,.4,1)}
+.ma-q i::before,.ma-q i::after{content:"";position:absolute;left:0;right:0;top:8px;height:2px;border-radius:2px;background:currentColor}
+.ma-q i::after{transform:rotate(90deg)}
+.ma-item.open .ma-q i{transform:rotate(135deg)}
+.ma-a{position:relative;z-index:2;display:grid;grid-template-rows:0fr;transition:grid-template-rows .5s cubic-bezier(.3,1.1,.4,1)}
+.ma-item.open .ma-a{grid-template-rows:1fr}
+.ma-a>div{overflow:hidden}
+.ma-a p{margin:0;padding:18px 28px 22px;font-size:15px;line-height:1.55;color:var(--sc-muted);opacity:0;transition:opacity .3s}
+.ma-item.open .ma-a p{opacity:1;transition-delay:.15s}
+@media (prefers-reduced-motion:reduce){.ma-pan,.ma-a,.ma-a p,.ma-q i{transition:none}}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="ma"><svg class="goo-svg" width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute"><filter id="ma-goo" x="-20%" y="-30%" width="140%" height="160%" color-interpolation-filters="sRGB"><feGaussianBlur in="SourceGraphic" stdDeviation="8" result="b"/><feColorMatrix in="b" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -9"/></filter></svg></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.ma'),items=[];
+var faq=[['How do I get started?','Create a free account, pick a template and publish your first page in a few minutes. No card is needed.'],['Can I use my own domain?','Yes. Add your domain in settings, point the records we show you and we handle the certificate.'],['What happens to my data?','Everything is stored in the region you choose and you can export it as files at any time.'],['Is there a team plan?','Teams get shared libraries, roles and review workflows from the second seat onwards.']];
+faq.forEach(function(f,i){var it=document.createElement('div');it.className='ma-item';var g=document.createElement('div');g.className='ma-goo';g.setAttribute('aria-hidden','true');var a=document.createElement('i');a.className='ma-pill';var b=document.createElement('i');b.className='ma-pan';g.appendChild(a);g.appendChild(b);
+ var q=document.createElement('button');q.type='button';q.className='ma-q';q.setAttribute('aria-expanded','false');q.id='ma-q'+i;q.setAttribute('aria-controls','ma-a'+i);var sp=document.createElement('span');sp.textContent=f[0];var ic=document.createElement('i');ic.setAttribute('aria-hidden','true');q.appendChild(sp);q.appendChild(ic);
+ var an=document.createElement('div');an.className='ma-a';an.id='ma-a'+i;an.setAttribute('role','region');an.setAttribute('aria-labelledby','ma-q'+i);var inn=document.createElement('div');var p=document.createElement('p');p.textContent=f[1];inn.appendChild(p);an.appendChild(inn);
+ it.appendChild(g);it.appendChild(q);it.appendChild(an);root.appendChild(it);items.push({it:it,q:q});
+ q.addEventListener('click',function(){var open=it.classList.contains('open');items.forEach(function(o){o.it.classList.remove('open');o.q.setAttribute('aria-expanded','false')});if(!open){it.classList.add('open');q.setAttribute('aria-expanded','true')}})});
+items[0].it.classList.add('open');items[0].q.setAttribute('aria-expanded','true');})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

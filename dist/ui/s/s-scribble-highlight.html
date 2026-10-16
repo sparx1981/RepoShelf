@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Scribble highlighter preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,760px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.sc2{display:grid;gap:22px;justify-items:center;padding:50px 28px 30px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface)}
+.sc2-h{position:relative;margin:0;max-width:14em;text-align:center;font:800 clamp(34px,6.5vw,58px)/1.28 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.03em}
+.sc2-w{position:relative;display:inline-block}
+.sc2-ov{position:absolute;pointer-events:none;overflow:visible}
+.sc2-ov path{fill:none;stroke:var(--sc-accent);stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1;stroke-dashoffset:1}
+.sc2-ov.draw path{animation:sc2-d .9s cubic-bezier(.5,0,.3,1) forwards}
+.sc2-ov.ul path:nth-child(2){animation-delay:.4s}
+.sc2-ov.ul.draw path{animation-duration:.5s}
+.sc2-bar{display:flex;gap:8px;align-items:center}
+.sc2-b{padding:7px 14px;border:1px solid var(--sc-line);border-radius:999px;background:var(--sc-bg);cursor:pointer;font-size:13px;font-weight:600}
+.sc2-b[aria-pressed=true]{border-color:var(--sc-accent);background:var(--sc-ring)}
+@keyframes sc2-d{to{stroke-dashoffset:0}}
+@media (prefers-reduced-motion:reduce){.sc2-ov path{stroke-dashoffset:0!important;animation:none!important}}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="sc2"><h2 class="sc2-h" aria-label="Make it feel alive, not just animated">Make it feel <span class="sc2-w" data-k="c">alive</span>, not just <span class="sc2-w" data-k="u">animated</span></h2><div class="sc2-bar"><button class="sc2-b" type="button" data-m="circle" aria-pressed="false">Circle</button><button class="sc2-b" type="button" data-m="underline" aria-pressed="false">Underline</button><button class="sc2-b" type="button" data-m="both" aria-pressed="true">Both</button><button class="sc2-b" type="button" data-m="replay">Replay</button></div></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.sc2'),words=root.querySelectorAll('.sc2-w'),btns=root.querySelectorAll('.sc2-b'),NS='http://www.w3.org/2000/svg';
+var mode='both',seen=false,timer=0,ovs=[];
+function rnd(a,b){return a+Math.random()*(b-a)}
+function svgEl(w,h){var s=document.createElementNS(NS,'svg');s.setAttribute('class','sc2-ov');s.setAttribute('aria-hidden','true');s.setAttribute('width',w);s.setAttribute('height',h);return s}
+function mk(){ovs.forEach(function(o){o.remove()});ovs=[];words.forEach(function(w){var W=w.offsetWidth,H=w.offsetHeight,k=w.getAttribute('data-k');
+ if(k==='c'){var padx=22,pady=8,s=svgEl(W+padx*2,H+pady*2);s.style.left=-padx+'px';s.style.top=-pady+'px';var cx=(W+padx*2)/2,cy=(H+pady*2)/2,rx=(W+padx*2)/2-4,ry=(H+pady*2)/2-3,d='',n=64,start=-2.5;for(var i=0;i<=n*1.15;i++){var a=start+i/n*6.283,jx=rnd(-3,3),jy=rnd(-2.5,2.5),taper=1+i/n*.06;d+=(i?'L':'M')+(cx+Math.cos(a)*(rx*taper)+jx).toFixed(1)+' '+(cy+Math.sin(a)*(ry*taper)+jy).toFixed(1)+' '}
+  var p=document.createElementNS(NS,'path');p.setAttribute('d',d);p.setAttribute('pathLength',1);s.appendChild(p);s.setAttribute('data-k','c');w.appendChild(s);ovs.push(s)}
+ else{var s2=svgEl(W+16,24);s2.style.left='-8px';s2.style.top=(H-6)+'px';s2.classList.add('ul');s2.setAttribute('data-k','u');for(var j=0;j<2;j++){var y=6+j*9,dd='M2 '+(y+rnd(-1,1)).toFixed(1),x=2;while(x<W+12){x+=rnd(14,24);dd+=' Q'+(x-8).toFixed(1)+' '+(y+rnd(-4,4)).toFixed(1)+' '+Math.min(x,W+12).toFixed(1)+' '+(y+rnd(-2,2)).toFixed(1)}var pp=document.createElementNS(NS,'path');pp.setAttribute('d',dd);pp.setAttribute('pathLength',1);s2.appendChild(pp)}w.appendChild(s2);ovs.push(s2)}});show()}
+function show(){ovs.forEach(function(o){var k=o.getAttribute('data-k'),on=mode==='both'||(mode==='circle'&&k==='c')||(mode==='underline'&&k==='u');o.style.display=on?'':'none'})}
+function play(){clearTimeout(timer);ovs.forEach(function(o){o.classList.remove('draw')});void root.offsetWidth;ovs.forEach(function(o){o.classList.add('draw')});timer=setTimeout(play,6500)}
+btns.forEach(function(b){b.addEventListener('click',function(){var m=b.getAttribute('data-m');if(m!=='replay'){mode=m;btns.forEach(function(q){if(q.getAttribute('data-m')!=='replay')q.setAttribute('aria-pressed',String(q===b))});show()}play()})});
+mk();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){mk();if(seen)play()});addEventListener('resize',function(){mk();if(seen)play()});
+if('IntersectionObserver' in window)new IntersectionObserver(function(es){if(es[0].isIntersecting&&!seen){seen=true;play()}},{threshold:.6}).observe(root);else{seen=true;play()}})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

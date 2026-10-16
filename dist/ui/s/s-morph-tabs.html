@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Morphing tabs preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,640px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.mtb{position:relative;padding:20px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface)}
+.mtb-in{position:relative;width:min(100%,520px);margin:0 auto}
+.mtb-svg{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.mtb-svg *{fill:color-mix(in srgb,var(--sc-accent) 16%,var(--sc-bg))}
+.mtb-bar{position:relative;display:flex;gap:4px;height:44px;margin-bottom:8px}
+.mtb-tab{position:relative;z-index:2;padding:0 20px;border:0;border-radius:22px;background:transparent;color:var(--sc-muted);cursor:pointer;font:700 14px/1 system-ui,-apple-system,"Segoe UI",sans-serif;transition:color .25s}
+.mtb-tab[aria-selected=true]{color:var(--sc-fg)}
+.mtb-panel{position:relative;z-index:2;min-height:178px;padding:26px 24px 24px;overflow:hidden}
+.mtb-pane{transition:transform .4s cubic-bezier(.3,.9,.3,1),opacity .3s}
+.mtb-pane h3{margin:0 0 8px;font:800 22px/1.1 system-ui,-apple-system,"Segoe UI",sans-serif}
+.mtb-pane p{margin:0 0 14px;font-size:15px;line-height:1.5;color:var(--sc-muted)}
+.mtb-kv{display:flex;justify-content:space-between;padding:9px 0;border-top:1px solid var(--sc-line);font-size:14px}
+.mtb-kv b{font-weight:700}
+@media (prefers-reduced-motion:reduce){.mtb-pane{transition:none}}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="mtb"><div class="mtb-in"><svg class="mtb-svg" aria-hidden="true"><rect class="p" rx="22"/><path class="n"/><rect class="r" rx="22"/></svg><div class="mtb-bar" role="tablist" aria-label="Product details"></div><div class="mtb-panel" role="tabpanel" id="mtb-panel"></div></div></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.mtb'),inn=root.querySelector('.mtb-in'),bar=root.querySelector('.mtb-bar'),panel=root.querySelector('.mtb-panel'),rp=root.querySelector('.p'),rn=root.querySelector('.n'),rr=root.querySelector('.r');
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,data=[['Overview','A compact studio lamp that stays out of the way and lights up the whole desk.',[['Finish','Matte graphite'],['Weight','1.2 kg']]],['Specs','Built from machined aluminium with a diffused, flicker-free light source.',[['Output','900 lumens'],['Colour','2700\u20136500 K']]],['Pricing','One price, two years of cover and free replacement parts.',[['Lamp','$129'],['Care plan','$19 / year']]],['Reviews','Rated 4.8 out of 5 by more than two thousand owners.',[['Build','4.9'],['Value','4.7']]]],tabs=[],cur=0,x=0,w=80,vx=0,vw=0,tx=0,tw=80,raf=0,P=52;
+data.forEach(function(d,i){var b=document.createElement('button');b.type='button';b.className='mtb-tab';b.setAttribute('role','tab');b.setAttribute('aria-controls','mtb-panel');b.textContent=d[0];b.addEventListener('click',function(){go(i)});b.addEventListener('keydown',function(e){var n=e.key==='ArrowRight'?(i+1)%4:e.key==='ArrowLeft'?(i+3)%4:e.key==='Home'?0:e.key==='End'?3:-1;if(n>=0){e.preventDefault();go(n);tabs[n].focus()}});bar.appendChild(b);tabs.push(b)});
+function pane(i){var d=data[i],p=document.createElement('div');p.className='mtb-pane';var h=document.createElement('h3');h.textContent=d[0];var t=document.createElement('p');t.textContent=d[1];p.appendChild(h);p.appendChild(t);d[2].forEach(function(kv){var r=document.createElement('div');r.className='mtb-kv';var a=document.createElement('span');a.textContent=kv[0];var b=document.createElement('b');b.textContent=kv[1];r.appendChild(a);r.appendChild(b);p.appendChild(r)});return p}
+function draw(){var H=inn.offsetHeight,W=inn.offsetWidth;rp.setAttribute('x',x);rp.setAttribute('y',0);rp.setAttribute('width',Math.max(0,w));rp.setAttribute('height',44);rr.setAttribute('x',0);rr.setAttribute('y',P);rr.setAttribute('width',W);rr.setAttribute('height',Math.max(0,H-P));
+ rn.setAttribute('d','M '+x+' 30 L '+x+' 44 L '+(x+w)+' 44 L '+(x+w)+' 30 L '+(x+w)+' 44 Q '+(x+w)+' '+P+' '+(x+w+18)+' '+P+' L '+(x-18)+' '+P+' Q '+x+' '+P+' '+x+' 44 Z')}
+function frame(){raf=0;if(reduce){x=tx;w=tw}else{vx+=(tx-x)*.16;vx*=.72;x+=vx;vw+=(tw-w)*.16;vw*=.72;w+=vw}draw();if(!reduce&&(Math.abs(tx-x)>.1||Math.abs(vx)>.1||Math.abs(tw-w)>.1||Math.abs(vw)>.1))raf=requestAnimationFrame(frame)}
+function target(){var b=tabs[cur];tx=b.offsetLeft;tw=b.offsetWidth;if(!raf)raf=requestAnimationFrame(frame)}
+function go(n,first){var dir=n>=cur?1:-1;tabs.forEach(function(t,i){t.setAttribute('aria-selected',String(i===n));t.tabIndex=i===n?0:-1});var old=panel.firstChild,np=pane(n);
+ if(first||reduce){panel.textContent='';panel.appendChild(np)}else{np.style.transform='translateX('+dir*40+'px)';np.style.opacity=0;panel.appendChild(np);if(old){old.style.position='absolute';old.style.left='24px';old.style.right='24px';old.style.top='26px'}void np.offsetWidth;if(old){old.style.transform='translateX('+(-dir*40)+'px)';old.style.opacity=0;setTimeout(function(){old.remove()},400)}np.style.transform='none';np.style.opacity=1}
+ cur=n;target();setTimeout(draw,0)}
+go(0,true);x=tabs[0].offsetLeft;w=tabs[0].offsetWidth;tx=x;tw=w;draw();addEventListener('resize',function(){target()});if(document.fonts&&document.fonts.ready)document.fonts.ready.then(function(){target()});
+var auto=setInterval(function(){go((cur+1)%4)},3200);root.addEventListener('pointerenter',function(){clearInterval(auto)});root.addEventListener('focusin',function(){clearInterval(auto)});})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

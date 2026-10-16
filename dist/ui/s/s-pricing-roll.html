@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rolling pricing preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,780px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.pc3{display:grid;gap:22px;padding:26px 22px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface)}
+.pc3-top{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap}
+.pc3-lab{font-size:14px;font-weight:700;color:var(--sc-muted);transition:color .2s}
+.pc3-lab.on{color:var(--sc-fg)}
+.pc3-sw{position:relative;width:56px;height:30px;padding:0;border:0;border-radius:999px;background:var(--sc-line);cursor:pointer;transition:background .3s}
+.pc3-sw[aria-checked=true]{background:var(--sc-accent)}
+.pc3-sw i{position:absolute;left:3px;top:3px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.3);transition:transform .45s cubic-bezier(.34,1.7,.5,1)}
+.pc3-sw[aria-checked=true] i{transform:translateX(26px)}
+.pc3-chip{padding:5px 11px;border-radius:999px;background:var(--sc-ring);color:var(--sc-accent);font:800 12px/1 system-ui;transform:scale(0);transition:transform .5s cubic-bezier(.34,1.8,.5,1)}
+.pc3-chip.on{transform:scale(1)}
+.pc3-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.pc3-plan{position:relative;display:grid;gap:8px;padding:20px;border:1px solid var(--sc-line);border-radius:22px;background:var(--sc-bg)}
+.pc3-plan.pop{border-color:var(--sc-accent);box-shadow:0 18px 34px -20px var(--sc-accent)}
+.pc3-tag{position:absolute;right:14px;top:14px;padding:4px 9px;border-radius:999px;background:var(--sc-accent);color:var(--sc-accent-fg);font:800 10px/1 system-ui;letter-spacing:.08em;text-transform:uppercase}
+.pc3-name{width:fit-content;margin:0;font:900 20px/1.1 system-ui,-apple-system,"Segoe UI",sans-serif;background:linear-gradient(100deg,var(--sc-fg) 30%,var(--sc-accent) 45%,#ff7ac8 52%,var(--sc-fg) 66%) 0 0/250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:pc3-sh 3.4s linear infinite}
+.pc3-price{display:flex;align-items:baseline;font:900 44px/1.05 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.04em}
+.pc3-price small{margin-left:4px;font:600 14px/1 system-ui;letter-spacing:0;color:var(--sc-muted)}
+.pc3-slot{position:relative;display:inline-block;height:1.05em;overflow:hidden}
+.pc3-slot.d{width:.58em}.pc3-slot.s{width:.5em}
+.pc3-slot span{position:absolute;left:0;right:0;top:0;text-align:center;transition:transform .45s cubic-bezier(.3,.9,.3,1),opacity .45s}
+.pc3-bill{margin:0;min-height:1.2em;font-size:12px;color:var(--sc-muted)}
+.pc3-plan ul{margin:6px 0 4px;padding:0;list-style:none;display:grid;gap:8px;font-size:14px}
+.pc3-plan li{display:flex;gap:8px;align-items:center}
+.pc3-plan li svg{flex:none;width:16px;height:16px;padding:2px;border-radius:50%;background:var(--sc-ring);fill:none;stroke:var(--sc-accent);stroke-width:3.2;stroke-linecap:round;stroke-linejoin:round}
+.pc3-btn{padding:11px;border:1px solid var(--sc-line);border-radius:12px;background:var(--sc-surface);color:inherit;cursor:pointer;font-weight:700;font-size:14px}
+.pc3-plan.pop .pc3-btn{background:var(--sc-accent);color:var(--sc-accent-fg);border-color:transparent}
+.pc3-live{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@keyframes pc3-sh{to{background-position:-250% 0}}
+@media (prefers-reduced-motion:reduce){.pc3-name{animation:none;background:none;color:var(--sc-fg)}.pc3-slot span,.pc3-chip,.pc3-sw i{transition:none}}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="pc3"><div class="pc3-top"><span class="pc3-lab on" data-l="m">Monthly</span><button class="pc3-sw" type="button" role="switch" aria-checked="false" aria-label="Bill yearly"><i></i></button><span class="pc3-lab" data-l="y">Yearly</span><span class="pc3-chip">Save 20%</span></div><div class="pc3-grid"></div><p class="pc3-live" aria-live="polite"></p></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.pc3'),sw=root.querySelector('.pc3-sw'),chip=root.querySelector('.pc3-chip'),grid=root.querySelector('.pc3-grid'),live=root.querySelector('.pc3-live'),labs=root.querySelectorAll('.pc3-lab');
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,plans=[['Starter',12,['3 projects','Basic analytics','Email support']],['Studio',29,['Unlimited projects','Shared libraries','Priority support']],['Scale',79,['Everything in Studio','SSO and audit logs','Dedicated manager']]],yearly=false,P=[];
+function price(i,y){var m=plans[i][1];return y?Math.round(m*.8):m}
+function slot(ch){var s=document.createElement('span');s.className='pc3-slot '+(ch==='$'?'s':'d');var c=document.createElement('span');c.textContent=ch;s.appendChild(c);return s}
+function setPrice(el,str,dir,delay){var slots=el.querySelectorAll('.pc3-slot');if(slots.length!==str.length){el.querySelectorAll('.pc3-slot').forEach(function(s){s.remove()});for(var i=0;i<str.length;i++)el.insertBefore(slot(str.charAt(i)),el.querySelector('small'));return}
+ slots.forEach(function(s,j){var cur=s.lastElementChild;if(cur.textContent===str.charAt(j))return;if(reduce){cur.textContent=str.charAt(j);return}var n=document.createElement('span');n.textContent=str.charAt(j);n.style.transition='none';n.style.transform='translateY('+(dir>0?'100%':'-100%')+')';n.style.opacity=0;s.appendChild(n);void n.offsetWidth;var d=(delay+j*40)+'ms';n.style.transition='';n.style.transitionDelay=d;cur.style.transitionDelay=d;cur.style.transform='translateY('+(dir>0?'-100%':'100%')+')';cur.style.opacity=0;setTimeout(function(){cur.remove()},delay+j*40+500);n.style.transform='none';n.style.opacity=1})}
+plans.forEach(function(pl,i){var d=document.createElement('div');d.className='pc3-plan'+(i===1?' pop':'');if(i===1){var t=document.createElement('span');t.className='pc3-tag';t.textContent='Popular';d.appendChild(t)}
+ var h=document.createElement('h3');h.className='pc3-name';h.textContent=pl[0];var pr=document.createElement('div');pr.className='pc3-price';pr.setAttribute('aria-hidden','true');var sm=document.createElement('small');sm.textContent='/ month';pr.appendChild(sm);var bill=document.createElement('p');bill.className='pc3-bill';var ul=document.createElement('ul');pl[2].forEach(function(f){var li=document.createElement('li');var sp=document.createElement('span');sp.textContent=f;li.appendChild(document.createElementNS('http://www.w3.org/2000/svg','svg'));var svg=li.firstChild;svg.setAttribute('viewBox','0 0 24 24');svg.setAttribute('aria-hidden','true');var pa=document.createElementNS('http://www.w3.org/2000/svg','path');pa.setAttribute('d','M5 12.5l4.5 4.5L19 7.5');svg.appendChild(pa);li.appendChild(sp);ul.appendChild(li)});
+ var b=document.createElement('button');b.type='button';b.className='pc3-btn';b.textContent='Choose '+pl[0];d.appendChild(h);d.appendChild(pr);d.appendChild(bill);d.appendChild(ul);d.appendChild(b);grid.appendChild(d);P.push({pr:pr,bill:bill});setPrice(pr,'$'+price(i,false),1,0);bill.textContent=' '})
+function apply(y,animate){var dir=y?-1:1;P.forEach(function(p,i){var n=price(i,y);setPrice(p.pr,'$'+n,dir,animate?i*70:0);p.bill.textContent=y?'billed $'+(n*12)+' yearly':' '});chip.classList.toggle('on',y);labs.forEach(function(l){l.classList.toggle('on',(l.getAttribute('data-l')==='y')===y)});sw.setAttribute('aria-checked',String(y));live.textContent=(y?'Yearly':'Monthly')+' prices: '+plans.map(function(p,i){return p[0]+' $'+price(i,y)+' per month'}).join(', ')}
+sw.addEventListener('click',function(){yearly=!yearly;apply(yearly,true);clearInterval(ai)});labs.forEach(function(l){l.addEventListener('click',function(){yearly=l.getAttribute('data-l')==='y';apply(yearly,true);clearInterval(ai)})});
+apply(false,false);var ai=setInterval(function(){yearly=!yearly;apply(yearly,true)},3200);root.addEventListener('pointerenter',function(){clearInterval(ai)});})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>
