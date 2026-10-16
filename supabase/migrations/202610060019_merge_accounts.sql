@@ -37,6 +37,12 @@ begin
  moved:=verdict->'counts';
 
  insert into public.user_likes(user_id,project_id,created_at,project_snapshot) select p_target,project_id,created_at,project_snapshot from public.user_likes where user_id=p_source on conflict(user_id,project_id) do nothing;
+ -- Boards follow the person (only when the boards migration has run). They move before the source likes are deleted,
+ -- because a board item depends on its like; the move cascades to the items. A clashing name gets a short suffix.
+ if to_regclass('public.boards') is not null then
+  execute 'update public.boards b set name=left(b.name,60)||'' (merged ''||left(b.id::text,4)||'')'' where b.user_id=$2 and exists(select 1 from public.boards t where t.user_id=$1 and lower(t.name)=lower(b.name))' using p_target,p_source;
+  execute 'update public.boards set user_id=$1 where user_id=$2' using p_target,p_source;
+ end if;
  delete from public.user_likes where user_id=p_source;
 
  insert into public.user_project_history(user_id,project_id,project_snapshot,viewed_at) select p_target,project_id,project_snapshot,viewed_at from public.user_project_history where user_id=p_source

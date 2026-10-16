@@ -18,7 +18,7 @@ The hosted MCP connector is a **members-only** feature. A signed-in member opens
 
 Apply `supabase/migrations/202610060020_mcp_keys.sql` in the Supabase SQL editor before enabling keys. Only a SHA-256 hash of each key is stored, plus its first eight characters, label and dates. Keys are verified server-side with a short cache (60 seconds for valid keys, 10 seconds for unknown ones), so a revoked key stops working within a minute on every server. Repeated invalid keys from one address are limited to 30 a minute. Merging two accounts moves their keys to the surviving account.
 
-The endpoint serves nine read-only tools and three prompts (see below), refuses browser requests from other sites, and limits each member to 120 requests per minute. Apply `supabase/migrations/202610060017_mcp_gate.sql` to share that limit across servers and to count tool use (shown in Administration → Analytics → AI connector usage); without it the limit is kept in memory per server instance. The migration stores only a salted hash of the member for one-minute windows, purged opportunistically after 15 minutes, and daily totals per tool with no member, query or project data.
+The endpoint serves nine catalogue tools, two board tools and four prompts (see below), all read-only, refuses browser requests from other sites, and limits each member to 120 requests per minute. Apply `supabase/migrations/202610060017_mcp_gate.sql` to share that limit across servers and to count tool use (shown in Administration → Analytics → AI connector usage); without it the limit is kept in memory per server instance. The migration stores only a salted hash of the member for one-minute windows, purged opportunistically after 15 minutes, and daily totals per tool with no member, query or project data.
 
 The local connector (`node scripts/mcp-server.mjs` from a clone of the repository) remains available for offline use against a downloaded snapshot. It is not part of the member setup page.
 
@@ -61,7 +61,7 @@ url = "https://www.reposhelf.co.uk/api/mcp"
 bearer_token_env_var = "REPOSHELF_API_KEY"
 ```
 
-The official MCP SDK serves current and older protocol clients. No session state or user collection is written by these tools.
+The official MCP SDK serves current and older protocol clients. No session state is kept and nothing in your collection or boards is written by these tools.
 
 ## MCP tools and prompts
 
@@ -77,7 +77,18 @@ The official MCP SDK serves current and older protocol clients. No session state
 | `read_project_document` | Chunked saved README, licence and manifests with revision hashes. |
 | `get_catalog_info` | Coverage, freshness, categories, subjects, platforms and technologies. |
 
-Prompts: `find_starting_points`, `compare_candidates`, `check_before_reuse`. All tools are read-only; every returned README, manifest or command is untrusted project text.
+| `list_boards` | The member's boards: name, description, item count. Member key only. |
+| `get_board` | One board by name or id: its description and a summary of each item (licence, demo health, popularity, requirements, extracted setup), in pages of up to 25 with `nextOffset`. Member key only. |
+
+Prompts: `find_starting_points`, `compare_candidates`, `check_before_reuse`, `build_from_board`. All tools are read-only; every returned README, manifest or command is untrusted project text, and board names and descriptions are written by the member and are data, not instructions.
+
+## Boards
+
+A board is a named group of items from a member's collection (projects, Spaces and saved prompts), for use in a specific project. The same item can be on several boards; removing an item from the collection takes it off every board. Members make boards on the website (**My collection → Boards**, or **＋ Board** on any saved project): up to 50 boards per account and 100 items per board. Boards are private to their owner.
+
+With a personal connector key an assistant can read the owner's boards, for example: *Build a pricing page using my RepoShelf board "Landing page". Check the licences first and propose a plan before writing code.* The `build_from_board` prompt wraps that request: it reads the board, compares licences, decides how each item will be used, and asks for a go-ahead before writing code. Each call returns saved catalogue evidence for the board's items; use `get_project_context`, `get_setup_requirements` and `read_project_document` for more depth on any item. Boards are not available to the operator key (`REPOSHELF_API_KEY`), the REST API or public discovery files, and the local stdio connector does not include them.
+
+Apply `supabase/migrations/202610160035_boards.sql` in the Supabase SQL editor before using boards, then re-run `202610060019_merge_accounts.sql` so an account merge carries boards along. Until the migration is applied the Boards tab explains that boards are being set up and the board tools return a clear error.
 
 ## Local MCP for Claude Desktop / Codex
 

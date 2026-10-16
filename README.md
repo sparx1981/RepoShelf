@@ -11,6 +11,7 @@ An app-store-style catalog for public GitHub repositories. Browse real open-sour
 - Fork through GitHub and track projects in your browser.
 - Import and verify public forks using a GitHub username.
 - Responsive dark storefront inspired by Fab.
+- Boards: group saved projects into private boards for a specific project (**My collection → Boards**). An item can be on several boards, and an assistant connected with a personal key can build from a board.
 
 ## Run locally
 
@@ -125,11 +126,19 @@ Repositories not yet in the catalogue are imported best-ranked first (up to 40 p
 
 The point is to find where to look, not to republish Trendshift's rankings. Each repository gets one derived score (`dist/trendshift.json` stores only the repository, the time it was last seen, and that number): the best of `weight / (1 + ln position)` across the lists, with weights daily 0.5, weekly 0.35, monthly 0.2 and GitHub daily 0.4, plus a small bonus per extra list. List positions and list names are not stored or shown. The score decides which new repositories are imported first, lifts **Trending now** (`1.5 * score`, fading over three days after the repository was last seen, added to measured star and fork growth rather than replacing it), and orders the built-in **Trending on Trendshift** ribbon, which shows only repositories currently on a list and hides itself when empty. Apply `supabase/migrations/202610100029_trendshift_ribbon.sql` once so the ribbon appears in the editor and can be reordered or hidden there. Engagement-spike data is only available through the paid API and is not used.
 
+## Boards
+
+Members group items from My collection into named boards to use in a specific project, for example "Landing page" or "Internal dashboard". An item can be on several boards; removing an item from the collection takes it off every board. Limits: 50 boards per account, 100 items per board. Boards are private to their owner.
+
+- Website: **My collection → Boards** lists, creates, edits and deletes boards; **＋ Board** on a saved project's card adds it to any boards. The browser requests are `/api/collection?action=boards` and `action=board-items` (members only, site origin, accepted terms), served by `lib/boards.mjs` through server-only database functions.
+- Assistant: the hosted connector adds `list_boards`, `get_board` and the `build_from_board` prompt for member keys. They are read-only; `get_board` returns the board description and a summary of each item (licence, demo health, setup) with paging. See [the connection guide](docs/AGENT_API.md#boards).
+- Setup: apply `supabase/migrations/202610160035_boards.sql`, then re-run `202610060019_merge_accounts.sql` so merged accounts keep their boards. Account export includes boards, and deleting an account deletes them. `tests/database-boards.sql` and `tests/boards.mjs` cover the database rules and the API/connector; `scripts/verify-boards-ui.mjs` drives the Boards tab in a browser.
+
 ## Agent API and MCP
 
 A read-only agent API is available under `/api/v1/` and an official-SDK MCP server under `/api/mcp`, both disabled until a private `REPOSHELF_API_KEY` is configured in Vercel and the app is redeployed. The same tools run locally over stdio without a hosted key, or bridge to the deployed API with the key in the client environment. See [the connection guide](docs/AGENT_API.md), the hosted `/agent-guide.html`, and `/openapi.json` for exact Codex/Claude setup, endpoints, safeguards, and context limits.
 
-Scheduled indexing saves full README snapshots and progressively adds licence files and available dependency manifests, with original source links, content hashes and dates. API search is keyword-based and returns compact results; document endpoints allow complete reading in chunks. Missing or unusually large documents are explicitly identified. The server never fetches live repositories on a client request, executes project code, modifies a repository, or manages the user's browser collection. `npm test` covers the catalog/API/security service; `npm run test:mcp` verifies the official MCP client over HTTP and local/remote stdio.
+Scheduled indexing saves full README snapshots and progressively adds licence files and available dependency manifests, with original source links, content hashes and dates. API search is keyword-based and returns compact results; document endpoints allow complete reading in chunks. Missing or unusually large documents are explicitly identified. The server never fetches live repositories on a client request, executes project code, modifies a repository, or changes the user's collection. A member's own connector key can read, but never edit, that member's boards (see below). `npm test` covers the catalog/API/security service; `npm run test:mcp` verifies the official MCP client over HTTP and local/remote stdio.
 
 ## Accounts, administration and analytics
 
