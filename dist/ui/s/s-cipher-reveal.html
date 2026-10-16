@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Cipher reveal preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,760px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.cx{display:grid;gap:20px;justify-items:start;padding:48px 42px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface)}
+.cx-kicker{display:flex;align-items:center;gap:10px;margin:0;font:600 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.2em;text-transform:uppercase;color:var(--sc-muted)}
+.cx-kicker::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--sc-accent);box-shadow:0 0 0 4px var(--sc-ring)}
+.cx-line{margin:0;min-height:2.3em;max-width:15em;font:800 clamp(30px,6.2vw,54px)/1.1 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.03em}
+.cx-w{display:inline-block;white-space:nowrap}
+.cx-l{display:inline-block;text-align:center;transition:color .3s}
+.cx-s{color:var(--sc-muted);opacity:.7;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:600}
+.cx-hit{color:var(--sc-accent);text-shadow:0 0 .6em var(--sc-ring),0 0 .12em var(--sc-accent)}
+.cx-btn{padding:10px 18px;border:1px solid var(--sc-line);border-radius:999px;background:var(--sc-bg);cursor:pointer;font-size:14px;font-weight:600;transition:transform .2s,border-color .2s}
+.cx-btn:hover{border-color:var(--sc-accent);transform:translateY(-1px)}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="cx"><p class="cx-kicker">Incoming transmission</p><h2 class="cx-line"></h2><button class="cx-btn" type="button">Decode again</button></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.cx'),line=root.querySelector('.cx-line'),btn=root.querySelector('.cx-btn');
+var phrases=['Signal found beyond the noise.','Every word was once a secret.','Decoded one letter at a time.'],glyphs='!<>-_/[]{}=+*^?#%&01',reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,idx=0,raf=0,timer=0,letters=[];
+function build(text){line.textContent='';line.setAttribute('aria-label',text);letters=[];text.split(' ').forEach(function(word,wi){if(wi)line.appendChild(document.createTextNode(' '));var w=document.createElement('span');w.className='cx-w';w.setAttribute('aria-hidden','true');for(var i=0;i<word.length;i++){var s=document.createElement('span');s.className='cx-l';s.textContent=word[i];w.appendChild(s);letters.push({el:s,ch:word[i]})}line.appendChild(w)});
+ letters.forEach(function(l){l.el.style.width=l.el.getBoundingClientRect().width+'px'})}
+function pick(){return glyphs.charAt(Math.random()*glyphs.length|0)}
+function run(text){cancelAnimationFrame(raf);clearTimeout(timer);build(text);if(reduce)return;var t0=performance.now();
+ letters.forEach(function(l,i){l.at=i*36+Math.random()*280+140;l.done=false;l.last=0;l.el.className='cx-l cx-s';l.el.textContent=pick()});
+ (function step(now){var t=now-t0,left=0;letters.forEach(function(l){if(l.done)return;if(t>=l.at){l.done=true;l.el.textContent=l.ch;l.el.className='cx-l cx-hit';setTimeout(function(){l.el.className='cx-l'},320);return}left++;if(t-l.last>55){l.last=t;l.el.textContent=pick()}});
+  if(left)raf=requestAnimationFrame(step);else timer=setTimeout(next,2800)})(t0)}
+function next(){idx=(idx+1)%phrases.length;run(phrases[idx])}
+btn.addEventListener('click',next);run(phrases[0]);})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

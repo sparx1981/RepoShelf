@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Flashlight text preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,780px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.fl{--x:50%;--y:50%;--r:170px;position:relative;border:1px solid #1c1c24;border-radius:28px;background:#060608;overflow:hidden;cursor:none}
+.fl::after{content:"";position:absolute;inset:0;background:radial-gradient(circle calc(var(--r)*1.5) at var(--x) var(--y),rgba(255,160,90,.14),transparent 70%);pointer-events:none}
+.fl-base,.fl-lit{margin:0;padding:52px 44px;font:800 clamp(28px,5.8vw,52px)/1.14 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.03em}
+.fl-base{color:transparent;-webkit-text-stroke:1px #2c2c36}
+.fl-lit{position:absolute;inset:0;color:transparent;background:linear-gradient(100deg,#ffd166 0%,#ff7a59 45%,#ff4fa0 100%);-webkit-background-clip:text;background-clip:text;-webkit-mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),#000 0,rgba(0,0,0,.72) 45%,transparent 100%);mask-image:radial-gradient(circle var(--r) at var(--x) var(--y),#000 0,rgba(0,0,0,.72) 45%,transparent 100%)}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="fl"><p class="fl-base">Some things only show themselves when you hold the light just right.</p><p class="fl-lit" aria-hidden="true">Some things only show themselves when you hold the light just right.</p></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.fl');
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,x=0,y=0,tx=0,ty=0,r=170,tr=170,ptr=false,raf=0,visible=true;
+function frame(now){raf=0;var w=root.offsetWidth,h=root.offsetHeight,t=now/1000;if(!ptr){tx=w*(.5+.4*Math.sin(t*.55));ty=h*(.5+.32*Math.sin(t*.83+1))}
+ x+=(tx-x)*.12;y+=(ty-y)*.12;r+=(tr-r)*.14;root.style.setProperty('--x',x.toFixed(1)+'px');root.style.setProperty('--y',y.toFixed(1)+'px');root.style.setProperty('--r',r.toFixed(1)+'px');if(visible)raf=requestAnimationFrame(frame)}
+function go(){if(!raf&&visible&&!reduce)raf=requestAnimationFrame(frame)}
+root.addEventListener('pointermove',function(e){var b=root.getBoundingClientRect();ptr=true;tx=e.clientX-b.left;ty=e.clientY-b.top});
+root.addEventListener('pointerleave',function(){ptr=false;tr=170});root.addEventListener('pointerdown',function(){tr=300});root.addEventListener('pointerup',function(){tr=170});
+if(reduce){root.style.setProperty('--r','900px');root.style.cursor='default'}
+if('IntersectionObserver' in window)new IntersectionObserver(function(es){visible=es[0].isIntersecting;go()}).observe(root);go();})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

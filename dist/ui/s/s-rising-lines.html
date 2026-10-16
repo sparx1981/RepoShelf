@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rising lines preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,780px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.rl{display:grid;gap:22px;justify-items:start;padding:44px 40px 34px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface)}
+.rl-text{margin:0;font:700 clamp(24px,4.6vw,40px)/1.28 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.025em}
+.rl-line{display:block;overflow:hidden;padding:.08em 0 .14em;margin:-.08em 0 -.14em}
+.rl-in{display:block;transform:translateY(115%) rotate(3deg);transform-origin:0 100%;filter:blur(6px);opacity:0;transition:transform .9s cubic-bezier(.2,.8,.2,1) calc(var(--n)*110ms),filter .9s ease calc(var(--n)*110ms),opacity .5s ease calc(var(--n)*110ms)}
+.rl.in .rl-in{transform:none;filter:none;opacity:1}
+.rl-hl{color:var(--sc-accent);background:linear-gradient(currentColor,currentColor) 0 100%/0 .09em no-repeat;transition:background-size .7s ease calc(var(--n)*110ms + 700ms)}
+.rl.in .rl-hl{background-size:100% .09em}
+.rl-btn{padding:9px 18px;border:1px solid var(--sc-line);border-radius:999px;background:var(--sc-bg);cursor:pointer;font-size:14px;font-weight:600}
+.rl-btn:hover{border-color:var(--sc-accent)}
+@media (prefers-reduced-motion:reduce){.rl-in{transform:none;filter:none;opacity:1;transition:none}.rl-hl{background-size:100% .09em;transition:none}}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="rl"><p class="rl-text"></p><button class="rl-btn" type="button">Replay</button></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.rl'),p=root.querySelector('.rl-text'),btn=root.querySelector('.rl-btn');
+var text='Good typography is invisible until it moves. A line that rises into place gives the eye a rhythm, and a rhythm turns reading into a small pleasure.',hl={'invisible':1,'rhythm':1,'pleasure.':1},seen=false,timer=0,last=0;
+p.setAttribute('aria-label',text);
+function build(){p.textContent='';var words=text.split(' '),spans=[];words.forEach(function(w,i){if(i)p.appendChild(document.createTextNode(' '));var s=document.createElement('span');s.textContent=w;if(hl[w])s.className='rl-hl';p.appendChild(s);spans.push(s)});
+ var groups=[],top=null;spans.forEach(function(s,i){var t=s.offsetTop;if(top===null||Math.abs(t-top)>4){groups.push([]);top=t}groups[groups.length-1].push(i)});
+ p.textContent='';groups.forEach(function(g,n){var line=document.createElement('span');line.className='rl-line';line.setAttribute('aria-hidden','true');var inner=document.createElement('span');inner.className='rl-in';inner.style.setProperty('--n',n);
+  g.forEach(function(i,k){if(k)inner.appendChild(document.createTextNode(' '));var s=document.createElement('span');s.textContent=words[i];if(hl[words[i]]){s.className='rl-hl';s.style.setProperty('--n',n)}inner.appendChild(s)});line.appendChild(inner);p.appendChild(line)})}
+function layout(){var in_=root.classList.contains('in');root.classList.remove('in');build();void root.offsetWidth;if(in_)requestAnimationFrame(function(){root.classList.add('in')})}
+function play(){root.classList.remove('in');void root.offsetWidth;requestAnimationFrame(function(){requestAnimationFrame(function(){root.classList.add('in')})})}
+btn.addEventListener('click',play);
+if('IntersectionObserver' in window)new IntersectionObserver(function(es){if(es[0].isIntersecting&&!seen){seen=true;play()}},{threshold:.35}).observe(root);else root.classList.add('in');
+if('ResizeObserver' in window)new ResizeObserver(function(){var w=root.clientWidth;if(w===last)return;last=w;clearTimeout(timer);timer=setTimeout(layout,120)}).observe(root);
+(document.fonts&&document.fonts.ready?document.fonts.ready:Promise.resolve()).then(layout);})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

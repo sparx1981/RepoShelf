@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Split-flap board preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,780px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.sf{padding:2.4cqw;border:1px solid #2a2a30;border-radius:24px;background:#0d0d10;container-type:inline-size;cursor:pointer;overflow:hidden}
+.sf-wrap{container-type:inline-size}
+.sf-board{--c:min(6.5cqw,48px);display:grid;gap:calc(var(--c)*.14);justify-content:center}
+.sf-row{display:flex;gap:calc(var(--c)*.08)}
+.sf-cell{position:relative;width:var(--c);height:calc(var(--c)*1.46);perspective:calc(var(--c)*6);font:700 calc(var(--c)*1.02)/1 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:#f3ead7}
+.sf-half{position:absolute;left:0;right:0;height:50%;overflow:hidden;background:#1b1b20;backface-visibility:hidden}
+.sf-half span{position:absolute;left:0;right:0;height:200%;display:grid;place-items:center}
+.sf-top,.sf-ft{top:0;border-radius:calc(var(--c)*.1) calc(var(--c)*.1) 0 0;background:linear-gradient(#202026,#1a1a1f)}
+.sf-bot,.sf-fb{bottom:0;border-radius:0 0 calc(var(--c)*.1) calc(var(--c)*.1);background:linear-gradient(#17171b,#1e1e24)}
+.sf-bot span,.sf-fb span{bottom:0}
+.sf-ft{transform-origin:50% 100%;z-index:3}.sf-fb{transform-origin:50% 0;z-index:3;transform:rotateX(90deg)}
+.sf-cell::after{content:"";position:absolute;left:0;right:0;top:50%;height:2px;margin-top:-1px;background:#050507;z-index:5}
+.sf-live{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.sf-title{margin:0 0 calc(var(--c,40px)*.4);text-align:center;font:600 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.3em;color:#7d7a72}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="sf" role="group" aria-label="Departures board"><p class="sf-title">DEPARTURES</p><div class="sf-board"></div><p class="sf-live" aria-live="polite"></p></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.sf'),board=root.querySelector('.sf-board'),live=root.querySelector('.sf-live');
+var SET=' ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789:',sets=[['LONDON    0940','TOKYO     1115','NEW YORK  1305'],['PARIS     0955','LISBON    1130','OSLO      1320'],['SYDNEY    0715','DUBAI     0830','LAGOS     0945']],COLS=14,reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,cells=[],cur=-1,timer=0;
+function half(cls){var d=document.createElement('div');d.className='sf-half '+cls;var s=document.createElement('span');d.appendChild(s);return d}
+for(var r=0;r<3;r++){var row=document.createElement('div');row.className='sf-row';row.setAttribute('aria-hidden','true');for(var c=0;c<COLS;c++){var cell=document.createElement('div');cell.className='sf-cell';var top=half('sf-top'),bot=half('sf-bot'),ft=half('sf-ft'),fb=half('sf-fb');ft.style.visibility=fb.style.visibility='hidden';
+  [top,bot,ft,fb].forEach(function(h){cell.appendChild(h)});row.appendChild(cell);cells.push({el:cell,top:top.firstChild,bot:bot.firstChild,ft:ft,ftS:ft.firstChild,fb:fb,fbS:fb.firstChild,ch:' ',busy:0,target:' '})}board.appendChild(row)}
+function show(c,ch){c.top.textContent=c.bot.textContent=c.ftS.textContent=c.fbS.textContent=ch===' '?String.fromCharCode(160):ch;c.ch=ch}
+cells.forEach(function(c){show(c,' ')});
+function flip(c,next,done){var old=c.ch;c.top.textContent=next===' '?String.fromCharCode(160):next;c.ftS.textContent=old===' '?String.fromCharCode(160):old;c.fbS.textContent=next===' '?String.fromCharCode(160):next;
+ c.ft.style.visibility=c.fb.style.visibility='visible';
+ var a=c.ft.animate([{transform:'rotateX(0deg)'},{transform:'rotateX(-90deg)'}],{duration:85,easing:'ease-in',fill:'forwards'});
+ a.onfinish=function(){var b=c.fb.animate([{transform:'rotateX(90deg)'},{transform:'rotateX(0deg)'}],{duration:95,easing:'ease-out',fill:'forwards'});
+  b.onfinish=function(){c.bot.textContent=next===' '?String.fromCharCode(160):next;c.ch=next;c.ft.style.visibility=c.fb.style.visibility='hidden';a.cancel();b.cancel();done()}}}
+function settle(c,delay){clearTimeout(c.timer);var ti=Math.max(0,SET.indexOf(c.target)),ci=Math.max(0,SET.indexOf(c.ch)),dist=(ti-ci+SET.length)%SET.length;if(!dist)return;if(dist>10){ci=(ti-10+SET.length)%SET.length;show(c,SET.charAt(ci))}
+ function step(){var ci2=SET.indexOf(c.ch);if(c.ch===c.target)return;flip(c,SET.charAt((ci2+1)%SET.length),function(){step()})}
+ c.timer=setTimeout(step,delay)}
+function setBoard(n){cur=n%sets.length;var rows=sets[cur];cells.forEach(function(c,i){var rr=Math.floor(i/COLS),cc=i%COLS,ch=rows[rr].charAt(cc)||' ';c.target=ch;if(reduce){show(c,ch)}else settle(c,cc*28+rr*70)});live.textContent=rows.map(function(s){return s.replace(/ +/g,' ')}).join('. ');
+ clearTimeout(timer);if(!reduce)timer=setTimeout(function(){setBoard(cur+1)},5200)}
+root.addEventListener('click',function(){setBoard(cur+1)});
+setBoard(0);})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

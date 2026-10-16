@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Letter cubes preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,780px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.lc{display:grid;gap:26px;justify-items:center;padding:56px 20px 36px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface);container-type:inline-size;cursor:pointer;overflow:hidden}
+.lc-row{--u:min(12cqw,84px);--ch:calc(var(--u)*1.5);--r:0;display:flex;gap:calc(var(--u)*.1);perspective:calc(var(--u)*9)}
+.lc-cube{position:relative;width:calc(var(--u)*1.02);height:var(--ch);transform-style:preserve-3d;transform:translateZ(calc(var(--ch)*-.5)) rotateX(calc(var(--r)*-90deg));transition:transform .9s cubic-bezier(.65,0,.25,1) calc(var(--n)*70ms)}
+.lc-face{position:absolute;inset:0;display:grid;place-items:center;border-radius:calc(var(--u)*.16);color:#fff;font:900 calc(var(--u)*.95)/1 system-ui,-apple-system,"Segoe UI",sans-serif;background:linear-gradient(160deg,hsl(var(--hue) 84% 64%),hsl(var(--hue) 78% 46%));backface-visibility:hidden;transform:rotateX(calc(var(--k)*90deg)) translateZ(calc(var(--ch)*.5));box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
+.lc-cap{margin:0;font:600 12px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:.2em;text-transform:uppercase;color:var(--sc-muted)}
+@media (prefers-reduced-motion:reduce){.lc-cube{transition:none}}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="lc" tabindex="0" role="button" aria-label="Roll to the next word"><div class="lc-row" aria-hidden="true"></div><p class="lc-cap" aria-live="polite">Create</p></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.lc'),row=root.querySelector('.lc-row'),cap=root.querySelector('.lc-cap');
+var words=['CREATE','REFINE','LAUNCH','REPEAT'],hues=[262,300,336,20],reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,step=0,timer=0,hover=false;
+for(var n=0;n<6;n++){var cube=document.createElement('div');cube.className='lc-cube';cube.style.setProperty('--n',n);for(var k=0;k<4;k++){var f=document.createElement('div');f.className='lc-face';f.style.setProperty('--k',k);f.style.setProperty('--hue',hues[k]);f.textContent=words[k].charAt(n);cube.appendChild(f)}row.appendChild(cube)}
+function advance(){step++;row.style.setProperty('--r',step);var w=words[step%4];cap.textContent=w.charAt(0)+w.slice(1).toLowerCase()}
+function loop(){clearTimeout(timer);if(reduce)return;timer=setTimeout(function(){if(!hover)advance();loop()},2800)}
+root.addEventListener('click',function(){advance();loop()});root.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();advance();loop()}});
+root.addEventListener('pointerenter',function(){hover=true});root.addEventListener('pointerleave',function(){hover=false});loop();})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

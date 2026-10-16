@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Velocity marquee preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,780px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.vm{display:grid;gap:6px;padding:34px 0;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface);overflow:hidden;cursor:grab;touch-action:pan-y;user-select:none}
+.vm.drag{cursor:grabbing}
+.vm-row{overflow:hidden;white-space:nowrap}
+.vm-track{display:inline-flex;will-change:transform}
+.vm-track span{padding-right:.5em;font:900 clamp(52px,13vw,110px)/1.02 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.045em;text-transform:uppercase}
+.vm-row:nth-child(2) .vm-track span{color:transparent;-webkit-text-stroke:2px var(--sc-fg)}
+.vm-row:nth-child(1) .vm-track span:nth-child(3n+2){color:var(--sc-accent)}
+.vm-hint{margin:10px 0 0;text-align:center;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--sc-muted)}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="vm" role="img" aria-label="Marquee reading: keep moving, never stop"><div class="vm-row" aria-hidden="true"><div class="vm-track"></div></div><div class="vm-row" aria-hidden="true"><div class="vm-track"></div></div><p class="vm-hint">Drag, fling or scroll</p></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.vm'),tracks=[].slice.call(root.querySelectorAll('.vm-track')),words=['Keep moving','Never stop','Full speed'];
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,BASE=1.2,vel=BASE,x=[0,0],period=[800,800],dragging=false,lastX=0,raf=0,visible=true;
+tracks.forEach(function(tr,ti){for(var k=0;k<4;k++)words.forEach(function(w){var s=document.createElement('span');s.textContent=w+' \u2726';tr.appendChild(s)})});
+function measure(){tracks.forEach(function(tr,i){var n=tr.children.length/4,w=0;for(var k=0;k<n;k++)w+=tr.children[k].getBoundingClientRect().width;period[i]=w||800})}
+function frame(){raf=0;if(!dragging)vel+=(BASE-vel)*.04;
+ tracks.forEach(function(tr,i){var dir=i?1:-1,v=dir===-1?vel:-vel*.88;x[i]+=(dragging?0:v);while(x[i]<-period[i])x[i]+=period[i];while(x[i]>0)x[i]-=period[i];var sk=Math.max(-22,Math.min(22,-vel*.9*(i?-1:1)));tr.style.transform='translateX('+x[i].toFixed(1)+'px) skewX('+sk.toFixed(1)+'deg)'});
+ if(visible)raf=requestAnimationFrame(frame)}
+function go(){if(!raf&&visible&&!reduce)raf=requestAnimationFrame(frame)}
+root.addEventListener('pointerdown',function(e){dragging=true;lastX=e.clientX;root.classList.add('drag');try{root.setPointerCapture(e.pointerId)}catch(_){}});
+root.addEventListener('pointermove',function(e){if(!dragging)return;var dx=e.clientX-lastX;lastX=e.clientX;x[0]+=dx;x[1]-=dx*.88;vel=vel*.6+(-dx)*.4;if(Math.abs(vel)<BASE&&dx)vel=dx<0?BASE:-BASE});
+function up(){if(!dragging)return;dragging=false;root.classList.remove('drag')}
+root.addEventListener('pointerup',up);root.addEventListener('pointercancel',up);
+root.addEventListener('wheel',function(e){vel+=Math.max(-16,Math.min(16,e.deltaY*.05))},{passive:true});
+if('IntersectionObserver' in window)new IntersectionObserver(function(es){visible=es[0].isIntersecting;go()}).observe(root);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(measure);addEventListener('resize',measure);measure();if(reduce){tracks.forEach(function(tr){tr.style.transform='none'})}go();})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Type wall preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,780px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.tw{position:relative;height:420px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface);overflow:hidden;padding:10px 0}
+.tw-row{display:block;overflow:hidden;line-height:1;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-weight:900;letter-spacing:-.04em;text-transform:uppercase;white-space:nowrap}
+.tw-track{display:inline-flex;animation:tw-slide var(--d,30s) linear infinite;animation-direction:var(--dir,normal);will-change:transform}
+.tw-track span{padding-right:.45em;color:transparent;-webkit-text-stroke:1.2px var(--sc-muted);transition:color .25s,-webkit-text-stroke-color .25s}
+.tw-row.on .tw-track span{color:var(--sc-accent);-webkit-text-stroke-color:transparent}
+@keyframes tw-slide{to{transform:translateX(-50%)}}
+@media (prefers-reduced-motion:reduce){.tw-track{animation:none}}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="tw" role="img" aria-label="A wall of sliding words: type, form, shape, scale, rhythm, weight, contrast, space, voice"></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.tw'),words=['TYPE','FORM','SHAPE','SCALE','RHYTHM','WEIGHT','CONTRAST','SPACE','VOICE'];
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,rows=[],pos=4,tpos=4,ptr=false,raf=0,visible=true,g=[],cur=[];
+words.forEach(function(w,i){var row=document.createElement('div');row.className='tw-row';row.setAttribute('aria-hidden','true');var track=document.createElement('div');track.className='tw-track';track.style.setProperty('--d',(24+i*5)+'s');track.style.setProperty('--dir',i%2?'reverse':'normal');
+ for(var k=0;k<2;k++)for(var j=0;j<10;j++){var s=document.createElement('span');s.textContent=w;track.appendChild(s)}row.appendChild(track);root.appendChild(row);rows.push(row);g.push(1);cur.push(1)});
+function sm(x){x=Math.max(0,Math.min(1,x));return x*x*(3-2*x)}
+function frame(now){raf=0;if(!ptr)tpos=4+3.6*Math.sin(now/2300);pos+=(tpos-pos)*.1;var H=root.clientHeight-20,sum=0,t=[];
+ for(var i=0;i<rows.length;i++){t[i]=1+2.4*sm(1-Math.abs(i-pos)/2.4);cur[i]+=(t[i]-cur[i])*.15;sum+=cur[i]}
+ for(i=0;i<rows.length;i++){var h=H*cur[i]/sum;rows[i].style.height=h.toFixed(1)+'px';rows[i].style.fontSize=(h*.86).toFixed(1)+'px';var on=Math.abs(i-pos)<.5;if(on!==rows[i].classList.contains('on'))rows[i].classList.toggle('on',on)}
+ if(visible)raf=requestAnimationFrame(frame)}
+function go(){if(!raf&&visible&&!reduce)raf=requestAnimationFrame(frame)}
+root.addEventListener('pointermove',function(e){var b=root.getBoundingClientRect();ptr=true;tpos=Math.max(0,Math.min(rows.length-1,(e.clientY-b.top-10)/(b.height-20)*rows.length-.5))});
+root.addEventListener('pointerleave',function(){ptr=false});
+if('IntersectionObserver' in window)new IntersectionObserver(function(es){visible=es[0].isIntersecting;go()}).observe(root);
+if(reduce){var hh=(root.clientHeight-20)/rows.length;rows.forEach(function(r,i){r.style.height=hh+'px';r.style.fontSize=hh*.86+'px';r.classList.toggle('on',i===4)})}go();})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

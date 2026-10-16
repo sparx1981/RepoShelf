@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Scatter type preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,780px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.sct{display:grid;place-items:center;min-height:320px;padding:40px 28px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface);overflow:hidden;cursor:crosshair;user-select:none}
+.sct-line{position:relative;margin:0;text-align:center;font:900 clamp(40px,10vw,92px)/1.02 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.045em}
+.sct-w{display:inline-block;white-space:nowrap}
+.sct-l{display:inline-block;will-change:transform;color:color-mix(in srgb,var(--sc-accent) calc(var(--p,0)*100%),var(--sc-fg))}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="sct"><h2 class="sct-line"></h2></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.sct'),line=root.querySelector('.sct-line'),lines=['Scatter','& settle'];
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,L=[],ptr=null,raf=0,visible=true;
+line.setAttribute('aria-label',lines.join(' '));
+lines.forEach(function(txt,li){if(li)line.appendChild(document.createElement('br'));var w=document.createElement('span');w.className='sct-w';w.setAttribute('aria-hidden','true');for(var i=0;i<txt.length;i++){var s=document.createElement('span');s.className='sct-l';s.textContent=txt.charAt(i)===' '?String.fromCharCode(160):txt.charAt(i);w.appendChild(s);L.push({el:s,x:0,y:0,vx:0,vy:0,r:0,hx:0,hy:0})}line.appendChild(w)});
+function measure(){L.forEach(function(l){l.hx=l.el.offsetLeft+l.el.offsetWidth/2;l.hy=l.el.offsetTop+l.el.offsetHeight/2})}
+function frame(now){raf=0;var t=now/1000,w=line.offsetWidth,h=line.offsetHeight,px,py,R=130;if(ptr){px=ptr.x;py=ptr.y}else{px=w*(.5+.46*Math.sin(t*.8));py=h*(.5+.3*Math.sin(t*1.7+1));R=100}
+ L.forEach(function(l){var cx=l.hx+l.x,cy=l.hy+l.y,dx=cx-px,dy=cy-py,d=Math.sqrt(dx*dx+dy*dy)+.001;if(d<R){var f=(1-d/R);f=f*f*9;l.vx+=dx/d*f;l.vy+=dy/d*f}
+  l.vx+=-l.x*.07;l.vy+=-l.y*.07;l.vx*=.84;l.vy*=.84;l.x+=l.vx;l.y+=l.vy;var tr=Math.max(-70,Math.min(70,l.vx*5));l.r+=(tr-l.r)*.2;
+  var m=Math.min(1,Math.sqrt(l.x*l.x+l.y*l.y)/90);l.el.style.transform='translate('+l.x.toFixed(2)+'px,'+l.y.toFixed(2)+'px) rotate('+l.r.toFixed(2)+'deg)';l.el.style.setProperty('--p',m.toFixed(2))});
+ if(visible)raf=requestAnimationFrame(frame)}
+function go(){if(!raf&&visible&&!reduce)raf=requestAnimationFrame(frame)}
+root.addEventListener('pointermove',function(e){var r=line.getBoundingClientRect();ptr={x:e.clientX-r.left,y:e.clientY-r.top}});
+root.addEventListener('pointerleave',function(){ptr=null});
+root.addEventListener('pointerdown',function(){L.forEach(function(l){var a=Math.random()*6.283,s=9+Math.random()*16;l.vx+=Math.cos(a)*s;l.vy+=Math.sin(a)*s-6})});
+if('IntersectionObserver' in window)new IntersectionObserver(function(es){visible=es[0].isIntersecting;go()}).observe(root);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(measure);addEventListener('resize',measure);measure();go();})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

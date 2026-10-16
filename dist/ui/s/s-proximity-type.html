@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Proximity type preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,780px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.px{display:grid;place-items:center;min-height:300px;padding:44px 32px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface);overflow:hidden}
+.px-line{position:relative;margin:0;max-width:14em;text-align:center;font:800 clamp(32px,6.6vw,60px)/1.2 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.035em;cursor:default}
+.px-w{display:inline-block;white-space:nowrap}
+.px-l{display:inline-block;transform-origin:50% 85%;color:color-mix(in srgb,var(--sc-accent) calc(var(--p,0)*100%),var(--sc-fg));will-change:transform}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="px"><h2 class="px-line"></h2></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.px'),line=root.querySelector('.px-line'),text='Move closer to read between the lines.';
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,L=[],ptr=null,raf=0,visible=true;
+line.setAttribute('aria-label',text);
+text.split(' ').forEach(function(word,wi){if(wi)line.appendChild(document.createTextNode(' '));var w=document.createElement('span');w.className='px-w';w.setAttribute('aria-hidden','true');for(var i=0;i<word.length;i++){var s=document.createElement('span');s.className='px-l';s.textContent=word[i];w.appendChild(s);L.push({el:s,p:0,x:0,cx:0,cy:0})}line.appendChild(w)});
+function measure(){L.forEach(function(l){l.cx=l.el.offsetLeft+l.el.offsetWidth/2;l.cy=l.el.offsetTop+l.el.offsetHeight/2})}
+function frame(now){raf=0;var t=now/1000,w=line.offsetWidth,px,py;if(ptr){px=ptr.x;py=ptr.y}else{px=w*(.5+.48*Math.sin(t*.65));py=line.offsetHeight*(.5+.3*Math.sin(t*1.1))}
+ var R=Math.max(120,w*.2);
+ L.forEach(function(l){var dx=l.cx-px,dy=l.cy-py,d=Math.sqrt(dx*dx+dy*dy),k=Math.max(0,1-d/R);k=k*k*(3-2*k);l.p+=(k-l.p)*.16;l.x=0;
+  l.el.style.transform='translate('+l.x.toFixed(2)+'px,'+(-l.p*11).toFixed(2)+'px) scale('+(1+l.p*.3).toFixed(3)+')';l.el.style.setProperty('--p',l.p.toFixed(3))});
+ if(visible)raf=requestAnimationFrame(frame)}
+function go(){if(!raf&&visible&&!reduce)raf=requestAnimationFrame(frame)}
+line.addEventListener('pointermove',function(e){var r=line.getBoundingClientRect();ptr={x:e.clientX-r.left,y:e.clientY-r.top}});
+line.addEventListener('pointerleave',function(){ptr=null});
+if('IntersectionObserver' in window)new IntersectionObserver(function(es){visible=es[0].isIntersecting;go()}).observe(root);
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(measure);
+addEventListener('resize',measure);measure();go();})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

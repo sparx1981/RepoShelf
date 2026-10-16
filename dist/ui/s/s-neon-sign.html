@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Neon sign preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,780px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.nn{--c:#ff3fa4;--c2:#34d5ff;position:relative;display:grid;gap:30px;justify-items:center;padding:56px 24px 34px;border:1px solid #2a1f36;border-radius:28px;background:radial-gradient(ellipse at 50% 120%,#1f1229,#08060d 72%);overflow:hidden;color:#fff}
+.nn::before{content:"";position:absolute;left:50%;top:44%;width:86%;height:78%;transform:translate(-50%,-50%);background:radial-gradient(closest-side,rgba(255,63,164,.3),transparent);opacity:0;transition:opacity .6s;pointer-events:none}
+.nn.is-on::before{opacity:1}
+.nn-sign{position:relative;padding:22px 46px 26px;border:4px solid #25414a;border-radius:30px;transition:border-color .3s,box-shadow .3s}
+.nn.is-on .nn-sign{border-color:var(--c2);box-shadow:0 0 5px var(--c2),0 0 20px var(--c2),0 0 44px rgba(52,213,255,.5),inset 0 0 5px var(--c2),inset 0 0 22px rgba(52,213,255,.45)}
+.nn-text{margin:0;text-align:center;font:800 italic clamp(40px,10.5vw,92px)/1.04 ui-rounded,"SF Pro Rounded","Arial Rounded MT Bold","Segoe UI",system-ui,sans-serif;letter-spacing:.01em}
+.nn-w{display:inline-block;white-space:nowrap}
+.nn-l{display:inline-block;color:#4a3345;text-shadow:none;transition:color .08s,text-shadow .08s}
+.nn.is-on .nn-l{color:#fff4fb;text-shadow:0 0 3px #fff,0 0 10px var(--c),0 0 22px var(--c),0 0 46px var(--c),0 0 90px var(--c)}
+.nn.is-on .nn-l.is-dim{color:#6e4a63;text-shadow:none}
+.nn-btn{position:relative;padding:10px 20px;border:1px solid #3b2c4a;border-radius:999px;background:#150e1c;color:#e9dff5;cursor:pointer;font-size:14px;font-weight:600}
+.nn-btn[aria-pressed=true]{border-color:var(--c);box-shadow:0 0 14px rgba(255,63,164,.45)}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="nn"><div class="nn-sign"><h2 class="nn-text"></h2></div><button class="nn-btn" type="button" aria-pressed="true">Power</button></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.nn'),text=root.querySelector('.nn-text'),btn=root.querySelector('.nn-btn'),lines=['Open','all night'];
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,L=[],timers=[],on=true,stutter=0;
+text.setAttribute('aria-label',lines.join(' '));
+lines.forEach(function(txt,li){if(li)text.appendChild(document.createElement('br'));txt.split(' ').forEach(function(word,wi){if(wi)text.appendChild(document.createTextNode(' '));var w=document.createElement('span');w.className='nn-w';w.setAttribute('aria-hidden','true');for(var i=0;i<word.length;i++){var s=document.createElement('span');s.className='nn-l';s.textContent=word.charAt(i);w.appendChild(s);L.push(s)}text.appendChild(w)})});
+function later(fn,ms){timers.push(setTimeout(fn,ms))}
+function clear(){timers.forEach(clearTimeout);timers=[];clearTimeout(stutter);L.forEach(function(l){l.classList.remove('is-dim')})}
+function ignite(){root.classList.remove('is-on');clear();L.forEach(function(l){l.style.color=''});var order=L.map(function(_,i){return i}).sort(function(){return Math.random()-.5});
+ if(reduce){root.classList.add('is-on');return}
+ L.forEach(function(l){l.classList.add('is-dim')});later(function(){root.classList.add('is-on')},120);
+ order.forEach(function(i,n){var t=260+n*95;later(function(){L[i].classList.remove('is-dim')},t);later(function(){L[i].classList.add('is-dim')},t+70);later(function(){L[i].classList.remove('is-dim')},t+140);later(function(){L[i].classList.add('is-dim')},t+190);later(function(){L[i].classList.remove('is-dim')},t+260)});
+ later(hum,260+L.length*95+400)}
+function hum(){if(!on)return;var l=L[Math.floor(Math.random()*L.length)];l.classList.add('is-dim');setTimeout(function(){l.classList.remove('is-dim');if(Math.random()<.5)setTimeout(function(){l.classList.add('is-dim');setTimeout(function(){l.classList.remove('is-dim')},60)},90)},80+Math.random()*60);stutter=setTimeout(hum,1800+Math.random()*3600)}
+function power(state){on=state;btn.setAttribute('aria-pressed',String(on));if(on)ignite();else{clear();root.classList.remove('is-on')}}
+btn.addEventListener('click',function(){power(!on)});power(true);})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

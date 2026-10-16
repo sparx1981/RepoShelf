@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Vapour type preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,780px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.vp{position:relative;display:grid;gap:26px;justify-items:center;place-content:center;min-height:340px;padding:44px 24px 30px;border:1px solid #232733;border-radius:28px;background:radial-gradient(ellipse at 50% 70%,#20263a,#0b0d14 72%);color:#e9ecff;overflow:hidden;cursor:pointer}
+.vp-word{margin:0;white-space:nowrap;font:900 clamp(48px,14vw,128px)/1.05 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.04em;filter:url(#vp-f)}
+.vp-l{display:inline-block;will-change:transform,opacity,filter}
+.vp-svg{position:absolute;width:0;height:0}
+.vp-btn{padding:9px 18px;border:1px solid #343a52;border-radius:999px;background:#12151f;color:#e9ecff;cursor:pointer;font-size:14px;font-weight:600}
+.vp-btn:hover,.vp-btn[aria-pressed=true]{border-color:#9aa6ff}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="vp"><svg class="vp-svg" aria-hidden="true" focusable="false"><filter id="vp-f" x="-20%" y="-80%" width="140%" height="260%"><feTurbulence type="fractalNoise" baseFrequency="0.012 0.05" numOctaves="2" seed="7" result="n"/><feDisplacementMap id="vp-d" in="SourceGraphic" in2="n" scale="0" xChannelSelector="R" yChannelSelector="G"/></filter></svg><h2 class="vp-word"></h2><button class="vp-btn" type="button" aria-pressed="false">Evaporate</button></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.vp'),word=root.querySelector('.vp-word'),btn=root.querySelector('.vp-btn'),disp=root.querySelector('#vp-d'),text='Evaporate';
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,L=[],P=0,target=0,raf=0,visible=true,lastUser=-1e9,auto=0;
+word.setAttribute('aria-label',text);
+for(var i=0;i<text.length;i++){var s=document.createElement('span');s.className='vp-l';s.setAttribute('aria-hidden','true');s.textContent=text.charAt(i);s.dx=-12+Math.random()*44;word.appendChild(s);L.push(s)}
+function paint(){disp.setAttribute('scale',reduce?'0':(P*150).toFixed(1));L.forEach(function(l,i){var q=Math.max(0,Math.min(1,P*1.5-i/L.length*.5));
+  if(reduce){l.style.opacity=(1-P).toFixed(3);return}
+  l.style.opacity=(1-Math.pow(q,1.4)).toFixed(3);l.style.transform='translate('+(l.dx*q).toFixed(1)+'px,'+(-70*q).toFixed(1)+'px) scale('+(1+q*.4).toFixed(3)+')';l.style.filter='blur('+(q*10).toFixed(1)+'px)'})}
+function frame(now){raf=0;P+=(target-P)*.03;if(Math.abs(target-P)<.002)P=target;paint();
+ if(now-lastUser>6000&&now-auto>3200){auto=now;target=target?0:1;btn.setAttribute('aria-pressed',String(!!target))}
+ if(visible&&!reduce)raf=requestAnimationFrame(frame)}
+function go(){if(!raf&&visible)raf=requestAnimationFrame(frame)}
+function set(v){target=v;lastUser=performance.now();btn.setAttribute('aria-pressed',String(!!v));if(reduce){P=v;paint()}go()}
+word.addEventListener('pointerenter',function(){set(1)});root.addEventListener('pointerleave',function(){set(0)});
+btn.addEventListener('click',function(){set(target?0:1)});
+if('IntersectionObserver' in window)new IntersectionObserver(function(es){visible=es[0].isIntersecting;go()}).observe(root);paint();go();})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>
