@@ -15,6 +15,17 @@ vec3 voronoi(vec2 p){vec2 n=floor(p),f=fract(p);float d1=8.,d2=8.,id=0.;for(int 
 float sdSeg(vec2 p,vec2 a,vec2 b){vec2 pa=p-a,ba=b-a;float h=clamp(dot(pa,ba)/dot(ba,ba),0.,1.);return length(pa-ba*h);}
 float smin(float a,float b,float k){float h=max(k-abs(a-b),0.)/k;return min(a,b)-h*h*k*.25;}
 float lum(vec3 c){return dot(c,vec3(.299,.587,.114));}
+float gseg(vec2 f,vec2 a,vec2 b,float w){return smoothstep(w,w*.4,sdSeg(f,a,b));}
+float gchar(vec2 f,float lv){float w=.075;vec2 c=f-.5;float m=0.;
+ if(lv>=1.&&lv<2.)m=smoothstep(.11,.06,length(f-vec2(.5,.22)));
+ else if(lv>=2.&&lv<3.)m=max(smoothstep(.1,.06,length(f-vec2(.5,.3))),smoothstep(.1,.06,length(f-vec2(.5,.7))));
+ else if(lv>=3.&&lv<4.)m=gseg(f,vec2(.2,.5),vec2(.8,.5),w);
+ else if(lv>=4.&&lv<5.)m=max(gseg(f,vec2(.2,.36),vec2(.8,.36),w),gseg(f,vec2(.2,.64),vec2(.8,.64),w));
+ else if(lv>=5.&&lv<6.)m=max(gseg(f,vec2(.2,.5),vec2(.8,.5),w),gseg(f,vec2(.5,.2),vec2(.5,.8),w));
+ else if(lv>=6.&&lv<7.)m=max(max(gseg(f,vec2(.2,.5),vec2(.8,.5),w),gseg(f,vec2(.5,.2),vec2(.5,.8),w)),max(gseg(f,vec2(.28,.28),vec2(.72,.72),w),gseg(f,vec2(.28,.72),vec2(.72,.28),w)));
+ else if(lv>=7.&&lv<8.)m=max(max(gseg(f,vec2(.36,.18),vec2(.36,.82),w),gseg(f,vec2(.64,.18),vec2(.64,.82),w)),max(gseg(f,vec2(.18,.36),vec2(.82,.36),w),gseg(f,vec2(.18,.64),vec2(.82,.64),w)));
+ else if(lv>=8.)m=max(smoothstep(w,w*.4,abs(length(c)-.3)),smoothstep(.1,.06,length(c)));
+ return m;}
 float rect(vec2 p,vec2 b){vec2 d=abs(p)-b;return length(max(d,0.))+min(max(d.x,d.y),0.);}
 `;
 export const main=body=>PRELUDE+'void main(){'+body+'}';
