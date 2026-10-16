@@ -85,6 +85,10 @@ Fallback is limited to missing captures whose demo independently passed a fresh 
 
 Catalogue quality shows progress towards the **first 5,000 published quality-ready listings**. Pending and quarantined references do not count. The counter can exceed 100% and intake never stops at 5,000. There is no total-record cap. Per-run time, concurrency, free-provider allowance and GitHub rate limits remain operational budgets. Growth snapshots now retain `published` counts; older history without this field remains unknown rather than reconstructed.
 
+## Runtime project index
+
+`data/runtime/projects.json.gz` is the small index the saved-collection and promotion functions read (one project's name, short description, category, language, demo, availability, last check and demo health). It had grown to 36.7 MB for 63,000 projects and broke the 30 MB function budget in `scripts/verify-function-bundles.mjs`. It now keeps only those fields (`runtimeEntry` in `scripts/build-runtime-data.mjs`), drops the demo url a health record repeats (`lib/project-store.mjs` puts it back) and is stored gzip-compressed, about 6 MB. `tests/runtime-entry.mjs` checks that every project reads back exactly as before. The functions' `excludeFiles` in `vercel.json` use `[cs]*.gz` so the big catalogue archives stay out while this file is included.
+
 ## Compressed catalogue files
 
 GitHub rejects any file over 100 MB, and the saved catalogue passed that size (105 MB in October 2026), which stopped every sync from saving its results. The largest generated files are now stored in Git compressed (`data/browse/index.json.gz`, `data/browse/search.json.gz`, `data/catalogue-quality.json.gz`), about six to ten times smaller, and without the indentation whitespace (pretty-printing added about 40%). Scripts still read and write the plain JSON files, which are not tracked by Git.
