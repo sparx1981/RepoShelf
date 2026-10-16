@@ -182,6 +182,7 @@ jobs:
             scripts/verify-deployed-discovery.mjs
             scripts/data-packing.mjs
             lib/data-packing.mjs
+            lib/readme-terms.mjs
           sparse-checkout-cone-mode: false
       - name: Unpack saved catalogue data
         run: node scripts/data-packing.mjs unpack
