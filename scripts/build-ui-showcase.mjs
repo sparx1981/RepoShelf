@@ -26,7 +26,7 @@ if(!skipThumbs){
   const sheet=[];
   for(const item of showcase.filter(i=>!only.length||only.includes(i.id))){
    await page.goto(base+'/ui/s/'+item.id+'.html');await page.waitForTimeout(120);
-   const t=item.thumb||{};if(t.hover)await page.hover(t.hover,t.pos?{position:t.pos}:undefined);if(t.click)await page.click(t.click,t.pos?{position:t.pos}:undefined);
+   const t=item.thumb||{};if(t.path)for(const pt of t.path)await page.mouse.move(pt[0],pt[1],{steps:t.steps||12});if(t.hover)await page.hover(t.hover,t.pos?{position:t.pos}:undefined);if(t.click)await page.click(t.click,t.pos?{position:t.pos}:undefined);
    await page.waitForTimeout(t.wait??700);
    const png=await page.screenshot();let quality=80,webp;do{webp=await sharp(png).resize(520,325).webp({quality}).toBuffer();quality-=10}while(webp.length>24000&&quality>30);
    await writeFile(new URL(item.id+'.webp',thumbs),webp);sheet.push(await sharp(png).resize(346,216).png().toBuffer());console.log(item.id.padEnd(28),webp.length);

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stardust wake preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,780px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.sw{position:relative;height:380px;border:1px solid #1a1d2c;border-radius:28px;background:radial-gradient(ellipse at 50% 70%,#101a2e,#05070e 75%);overflow:hidden;cursor:crosshair;touch-action:pan-y}
+.sw canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.sw-hint{position:absolute;left:0;right:0;bottom:14px;margin:0;text-align:center;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#5f6f94;pointer-events:none}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="sw"><canvas aria-hidden="true"></canvas><p class="sw-hint">Drag through the dust · click to puff</p></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.sw'),cv=root.querySelector('canvas');
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+function Stage(root,cv,draw,resize){
+ var s={W:0,H:0,dpr:1,x:0,y:0,vx:0,vy:0,px:0,py:0,inside:false,down:false,t:0,dt:16,ctx:cv.getContext('2d'),click:null,first:true},raf=0,visible=true,last=0,until=0;
+ function size(){s.dpr=Math.min(2,window.devicePixelRatio||1);s.W=cv.clientWidth;s.H=cv.clientHeight;cv.width=Math.round(s.W*s.dpr);cv.height=Math.round(s.H*s.dpr);s.ctx.setTransform(s.dpr,0,0,s.dpr,0,0);if(resize)resize(s);s.first=true}
+ function frame(now){raf=0;s.dt=Math.min(48,now-(last||now-16));last=now;s.t=now;var tx,ty;
+  if(s.inside){tx=s.px;ty=s.py}else{tx=s.W*(.5+.34*Math.sin(now*.00071)+.1*Math.sin(now*.0023));ty=s.H*(.5+.3*Math.sin(now*.00097+1)+.08*Math.cos(now*.0021))}
+  if(s.first){s.x=tx;s.y=ty;s.first=false}
+  s.vx=tx-s.x;s.vy=ty-s.y;s.x=tx;s.y=ty;draw(s);
+  if(visible&&(!reduce||now<until))raf=requestAnimationFrame(frame)}
+ function go(){if(!raf&&visible){last=0;raf=requestAnimationFrame(frame)}}
+ function poke(){until=performance.now()+900;go()}
+ function at(e){var r=cv.getBoundingClientRect();s.px=e.clientX-r.left;s.py=e.clientY-r.top;s.inside=true}
+ root.addEventListener('pointermove',function(e){at(e);if(reduce)poke()});
+ root.addEventListener('pointerleave',function(){s.inside=false;s.down=false});
+ root.addEventListener('pointerdown',function(e){at(e);s.down=true;if(s.click)s.click(s.px,s.py);if(reduce)poke()});
+ root.addEventListener('pointerup',function(){s.down=false});
+ if('IntersectionObserver' in window)new IntersectionObserver(function(es){visible=es[0].isIntersecting;if(visible)go()}).observe(root);
+ if('ResizeObserver' in window){var lw=0;new ResizeObserver(function(){if(cv.clientWidth&&cv.clientWidth!==lw){lw=cv.clientWidth;size();go()}}).observe(cv)}else{size();go()}
+ if(!reduce)go();else poke();
+ return s}
+var P=[],rings=[];
+function emit(x,y,vx,vy,n){for(var i=0;i<n;i++)P.push({x:x+(Math.random()-.5)*6,y:y+(Math.random()-.5)*6,vx:vx*.12+(Math.random()-.5)*.8,vy:vy*.12+(Math.random()-.5)*.8,l:0,m:100+Math.random()*80,h:190+Math.random()*100,s:1.3+Math.random()*1.3});if(P.length>1400)P.splice(0,P.length-1400)}
+var s=Stage(root,cv,function(s){var c=s.ctx,t=s.t,sp=Math.hypot(s.vx,s.vy);c.clearRect(0,0,s.W,s.H);if(sp>.4)emit(s.x,s.y,s.vx,s.vy,Math.min(14,5+Math.floor(sp/4)));c.globalCompositeOperation='lighter';
+ for(var i=P.length-1;i>=0;i--){var p=P[i];p.vx+=Math.sin(p.y*.02+t*.001)*.02;p.vy+=Math.cos(p.x*.02+t*.0012)*.02-.01;p.vx*=.985;p.vy*=.985;p.x+=p.vx;p.y+=p.vy;p.l++;if(p.l>p.m){P.splice(i,1);continue}
+  var a=1-p.l/p.m;c.fillStyle='hsla('+p.h+',90%,'+(62+a*18)+'%,'+(Math.min(1,a*1.4))+')';c.beginPath();c.arc(p.x,p.y,p.s*(.7+a*.7),0,6.283);c.fill()}
+ rings=rings.filter(function(r){return t-r.t<900});rings.forEach(function(r){var a=1-(t-r.t)/900;c.strokeStyle='rgba(150,190,255,'+(a*.35)+')';c.lineWidth=2;c.beginPath();c.arc(r.x,r.y,8+(1-a)*90,0,6.283);c.stroke()});c.globalCompositeOperation='source-over'});
+s.click=function(x,y){rings.push({x:x,y:y,t:s.t});for(var i=0;i<120;i++){var a=Math.random()*6.283,sp=2+Math.random()*3;P.push({x:x,y:y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp*.7-.4,l:0,m:90+Math.random()*60,h:190+Math.random()*100,s:1+Math.random()})}
+ for(var j=0;j<40;j++){P.push({x:x+(Math.random()-.5)*8,y:y,vx:(Math.random()-.5)*.8,vy:-(2.5+Math.random()*3),l:0,m:110+Math.random()*60,h:250+Math.random()*60,s:1.3})}};})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

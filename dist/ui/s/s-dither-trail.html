@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dither trail preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,780px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.dt{position:relative;height:380px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface);overflow:hidden;cursor:crosshair;touch-action:pan-y}
+.dt canvas{position:absolute;inset:0;width:100%;height:100%;display:block;image-rendering:pixelated}
+.dt-hint{position:absolute;left:0;right:0;bottom:14px;margin:0;text-align:center;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--sc-muted);pointer-events:none}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="dt"><canvas aria-hidden="true"></canvas><p class="dt-hint">Draw in dither</p></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.dt'),cv=root.querySelector('canvas');
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,SC=5,cw=0,ch=0,field=null,img=null,px=0,py=0,inside=false,raf=0,visible=true,until=0,ink=[17,17,19],lastInk=0,first=true,cx=0,cy=0,ctx=cv.getContext('2d'),bayer=[0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5];
+function size(){cw=Math.max(1,Math.ceil(cv.clientWidth/SC));ch=Math.max(1,Math.ceil(cv.clientHeight/SC));cv.width=cw;cv.height=ch;field=new Float32Array(cw*ch);img=ctx.createImageData(cw,ch);first=true}
+function readInk(){var m=getComputedStyle(root).color.match(/[0-9.]+/g);if(m)ink=[+m[0],+m[1],+m[2]]}
+function frame(now){raf=0;if(!img)return;if(now-lastInk>600){lastInk=now;readInk()}var tx,ty,W=cv.clientWidth,H=cv.clientHeight;if(inside){tx=px;ty=py}else{tx=W*(.5+.34*Math.sin(now*.00071)+.1*Math.sin(now*.0023));ty=H*(.5+.3*Math.sin(now*.00097+1)+.08*Math.cos(now*.0021))}
+ if(first){cx=tx;cy=ty;first=false}
+ var steps=Math.max(1,Math.ceil(Math.hypot(tx-cx,ty-cy)/(SC*2)));for(var k=1;k<=steps;k++){var x=(cx+(tx-cx)*k/steps)/SC,y=(cy+(ty-cy)*k/steps)/SC,R=7;
+  for(var j=Math.max(0,Math.floor(y-R));j<=Math.min(ch-1,Math.ceil(y+R));j++)for(var i=Math.max(0,Math.floor(x-R));i<=Math.min(cw-1,Math.ceil(x+R));i++){var d=Math.hypot(i+.5-x,j+.5-y);if(d<R){var v=1-d/R,idx=j*cw+i;if(v>field[idx])field[idx]=v}}}
+ cx=tx;cy=ty;var data=img.data;
+ for(var y2=0;y2<ch;y2++)for(var x2=0;x2<cw;x2++){var f=field[y2*cw+x2]*=.972,o=(y2*cw+x2)*4;if(f>(bayer[(y2&3)*4+(x2&3)]+.5)/16){data[o]=ink[0];data[o+1]=ink[1];data[o+2]=ink[2];data[o+3]=255}else data[o+3]=0}
+ ctx.putImageData(img,0,0);if(visible&&(!reduce||now<until))raf=requestAnimationFrame(frame)}
+function go(){if(!raf&&visible)raf=requestAnimationFrame(frame)}
+function poke(){until=performance.now()+1200;go()}
+root.addEventListener('pointermove',function(e){var r=cv.getBoundingClientRect();px=e.clientX-r.left;py=e.clientY-r.top;inside=true;if(reduce)poke()});
+root.addEventListener('pointerleave',function(){inside=false});
+if('IntersectionObserver' in window)new IntersectionObserver(function(es){visible=es[0].isIntersecting;go()}).observe(root);
+if('ResizeObserver' in window){var lw=0;new ResizeObserver(function(){if(cv.clientWidth&&cv.clientWidth!==lw){lw=cv.clientWidth;size();go()}}).observe(cv)}else{size();go()}
+if(!reduce)go();else poke();})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

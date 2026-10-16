@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Heading cursor preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,780px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.hc{position:relative;height:380px;border:1px solid #1d1d28;border-radius:28px;background:radial-gradient(ellipse at 50% 45%,#16162a,#07070d 72%);overflow:hidden;cursor:none;touch-action:pan-y}
+.hc canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.hc-hint{position:absolute;left:0;right:0;bottom:14px;margin:0;text-align:center;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#6c6c86;pointer-events:none}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="hc"><canvas aria-hidden="true"></canvas><p class="hc-hint">Steer the arrow</p></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.hc'),cv=root.querySelector('canvas');
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+function Stage(root,cv,draw,resize){
+ var s={W:0,H:0,dpr:1,x:0,y:0,vx:0,vy:0,px:0,py:0,inside:false,down:false,t:0,dt:16,ctx:cv.getContext('2d'),click:null,first:true},raf=0,visible=true,last=0,until=0;
+ function size(){s.dpr=Math.min(2,window.devicePixelRatio||1);s.W=cv.clientWidth;s.H=cv.clientHeight;cv.width=Math.round(s.W*s.dpr);cv.height=Math.round(s.H*s.dpr);s.ctx.setTransform(s.dpr,0,0,s.dpr,0,0);if(resize)resize(s);s.first=true}
+ function frame(now){raf=0;s.dt=Math.min(48,now-(last||now-16));last=now;s.t=now;var tx,ty;
+  if(s.inside){tx=s.px;ty=s.py}else{tx=s.W*(.5+.34*Math.sin(now*.00071)+.1*Math.sin(now*.0023));ty=s.H*(.5+.3*Math.sin(now*.00097+1)+.08*Math.cos(now*.0021))}
+  if(s.first){s.x=tx;s.y=ty;s.first=false}
+  s.vx=tx-s.x;s.vy=ty-s.y;s.x=tx;s.y=ty;draw(s);
+  if(visible&&(!reduce||now<until))raf=requestAnimationFrame(frame)}
+ function go(){if(!raf&&visible){last=0;raf=requestAnimationFrame(frame)}}
+ function poke(){until=performance.now()+900;go()}
+ function at(e){var r=cv.getBoundingClientRect();s.px=e.clientX-r.left;s.py=e.clientY-r.top;s.inside=true}
+ root.addEventListener('pointermove',function(e){at(e);if(reduce)poke()});
+ root.addEventListener('pointerleave',function(){s.inside=false;s.down=false});
+ root.addEventListener('pointerdown',function(e){at(e);s.down=true;if(s.click)s.click(s.px,s.py);if(reduce)poke()});
+ root.addEventListener('pointerup',function(){s.down=false});
+ if('IntersectionObserver' in window)new IntersectionObserver(function(es){visible=es[0].isIntersecting;if(visible)go()}).observe(root);
+ if('ResizeObserver' in window){var lw=0;new ResizeObserver(function(){if(cv.clientWidth&&cv.clientWidth!==lw){lw=cv.clientWidth;size();go()}}).observe(cv)}else{size();go()}
+ if(!reduce)go();else poke();
+ return s}
+var ang=0,av=0,trail=[],R=48;
+function arrow(c,x,y,a,k,fill,stretch){c.save();c.translate(x,y);c.rotate(a);c.scale(k*stretch,k);c.beginPath();c.moveTo(20,0);c.lineTo(-13,12);c.lineTo(-6,0);c.lineTo(-13,-12);c.closePath();c.fillStyle=fill;c.fill();c.restore()}
+Stage(root,cv,function(s){var c=s.ctx,sp=Math.hypot(s.vx,s.vy);c.clearRect(0,0,s.W,s.H);
+ if(sp>.8){var tg=Math.atan2(s.vy,s.vx),df=tg-ang;df=Math.atan2(Math.sin(df),Math.cos(df));av+=df*.12}av*=.78;ang+=av;
+ trail.push([s.x,s.y,ang]);if(trail.length>13)trail.shift();
+ for(var i=0;i<trail.length-1;i++){var p=trail[i],a=(i+1)/trail.length;arrow(c,p[0],p[1],p[2],.7+.4*a,'rgba(160,140,255,'+(a*.38)+')',1)}
+ c.strokeStyle='rgba(255,255,255,.3)';c.lineWidth=1.2;c.beginPath();c.arc(s.x,s.y,R,0,6.283);c.stroke();
+ for(var k=0;k<24;k++){var th=k/24*6.283-Math.PI/2,l=k%6===0?9:4;c.strokeStyle='rgba(255,255,255,'+(k%6===0?.5:.22)+')';c.beginPath();c.moveTo(s.x+Math.cos(th)*(R-l),s.y+Math.sin(th)*(R-l));c.lineTo(s.x+Math.cos(th)*R,s.y+Math.sin(th)*R);c.stroke()}
+ c.fillStyle='rgba(255,255,255,.7)';c.font='600 10px ui-monospace,SFMono-Regular,Menlo,monospace';c.textAlign='center';c.textBaseline='middle';[['N',0,-1],['E',1,0],['S',0,1],['W',-1,0]].forEach(function(l){c.fillText(l[0],s.x+l[1]*(R+11),s.y+l[2]*(R+11))});
+ c.strokeStyle='#a99bff';c.lineWidth=3;c.lineCap='round';c.beginPath();c.arc(s.x,s.y,R,ang-.35,ang+.35);c.stroke();
+ var g=c.createLinearGradient(-13,0,20,0);arrow(c,s.x,s.y,ang,1.25,'#e4dcff',1+Math.min(.5,sp/50));
+ var deg=Math.round(((ang*180/Math.PI+90)%360+360)%360);c.fillStyle='rgba(220,215,255,.85)';c.font='600 11px ui-monospace,SFMono-Regular,Menlo,monospace';c.fillText('HDG '+(deg<100?'0':'')+(deg<10?'0':'')+deg+'\u00b0  '+sp.toFixed(1)+' px/f',s.x,s.y+R+30)});})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Morph cursor preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,780px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.mc{position:relative;display:grid;gap:24px;justify-items:center;padding:44px 28px 40px;height:380px;border:1px solid var(--sc-line);border-radius:28px;background:var(--sc-surface);overflow:hidden;cursor:none;align-content:center}
+.mc *{cursor:none}
+.mc-title{margin:0;font:800 clamp(28px,5vw,44px)/1.1 system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.03em}
+.mc-row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center}
+.mc-pill{padding:11px 22px;border:1px solid var(--sc-line);border-radius:999px;background:var(--sc-bg);font-weight:600;font-size:15px;color:inherit;text-decoration:none}
+.mc-card{width:min(100%,380px);padding:18px 22px;border-radius:20px;background:linear-gradient(120deg,#7c5cff,#d64bff 60%,#ff7a59);color:#fff;font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.mc-ring,.mc-dot{position:absolute;left:0;top:0;pointer-events:none;z-index:5}
+.mc-dot{width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:var(--sc-accent);transition:opacity .2s,transform .2s}
+.mc-ring{border:1.5px solid var(--sc-accent);width:34px;height:34px;border-radius:17px;transition:width .4s cubic-bezier(.2,.9,.3,1.15),height .4s cubic-bezier(.2,.9,.3,1.15),border-radius .4s,background .3s,border-color .3s;mix-blend-mode:normal}
+.mc-ring.is-box{background:var(--sc-ring);border-color:transparent}
+.mc-ring.is-text{border-color:transparent;background:var(--sc-accent);border-radius:2px}
+.mc-dot.is-hide{opacity:0;transform:scale(.2)}
+@media (prefers-reduced-motion:reduce){.mc-ring,.mc-dot{transition:none}}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="mc"><h2 class="mc-title" data-cursor="text">Hover anything.</h2><div class="mc-row"><a class="mc-pill" href="#" data-cursor="box">Work</a><a class="mc-pill" href="#" data-cursor="box">Studio</a><a class="mc-pill" href="#" data-cursor="box">Contact</a></div><div class="mc-card" data-cursor="box"><span>View the project</span><span aria-hidden="true">→</span></div><span class="mc-ring" aria-hidden="true"></span><span class="mc-dot" aria-hidden="true"></span></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.mc'),ring=root.querySelector('.mc-ring'),dot=root.querySelector('.mc-dot'),items=[].slice.call(root.querySelectorAll('[data-cursor]'));
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches,px=-100,py=-100,rx=-100,ry=-100,dx=-100,dy=-100,inside=false,raf=0,visible=true,tour=0,tourAt=0,tx=0,ty=0;
+root.querySelectorAll('a').forEach(function(a){a.addEventListener('click',function(e){e.preventDefault()})});
+function hit(x,y){for(var i=0;i<items.length;i++){var b=items[i].getBoundingClientRect(),r=root.getBoundingClientRect();if(x>=b.left-r.left&&x<=b.right-r.left&&y>=b.top-r.top&&y<=b.bottom-r.top)return items[i]}return null}
+function frame(now){raf=0;var x=px,y=py;
+ if(!inside){if(now-tourAt>1700){tourAt=now;tour=(tour+1)%items.length;var b=items[tour].getBoundingClientRect(),r=root.getBoundingClientRect();tx=b.left-r.left+b.width*(.3+Math.random()*.4);ty=b.top-r.top+b.height*(.3+Math.random()*.4)}x=tx;y=ty}
+ dx+=(x-dx)*.45;dy+=(y-dy)*.45;var el=hit(x,y),mode=el?el.getAttribute('data-cursor'):'',w=34,h=34,rad=17,cx=x,cy=y;
+ if(mode==='box'){var b2=el.getBoundingClientRect(),r2=root.getBoundingClientRect();w=b2.width+16;h=b2.height+12;rad=parseFloat(getComputedStyle(el).borderTopLeftRadius)+8||10;cx=b2.left-r2.left+b2.width/2+(x-(b2.left-r2.left+b2.width/2))*.3;cy=b2.top-r2.top+b2.height/2+(y-(b2.top-r2.top+b2.height/2))*.3}
+ else if(mode==='text'){w=3;h=32;rad=2}
+ rx+=(cx-rx)*.22;ry+=(cy-ry)*.22;ring.style.width=w+'px';ring.style.height=h+'px';ring.style.borderRadius=rad+'px';ring.style.transform='translate('+(rx-w/2).toFixed(1)+'px,'+(ry-h/2).toFixed(1)+'px)';
+ ring.className='mc-ring'+(mode==='box'?' is-box':mode==='text'?' is-text':'');dot.className='mc-dot'+(mode?' is-hide':'');dot.style.transform=(mode?'scale(.2) ':'')+'translate('+dx.toFixed(1)+'px,'+dy.toFixed(1)+'px)';
+ if(visible&&!reduce)raf=requestAnimationFrame(frame)}
+function go(){if(!raf&&visible)raf=requestAnimationFrame(frame)}
+root.addEventListener('pointermove',function(e){var r=root.getBoundingClientRect();px=e.clientX-r.left;py=e.clientY-r.top;inside=true;if(reduce)go()});
+root.addEventListener('pointerleave',function(){inside=false});
+if('IntersectionObserver' in window)new IntersectionObserver(function(es){visible=es[0].isIntersecting;go()}).observe(root);go();})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

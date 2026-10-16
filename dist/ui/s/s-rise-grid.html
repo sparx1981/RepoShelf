@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Rise grid preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,780px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.rs{position:relative;height:400px;border:1px solid #1d1d28;border-radius:28px;background:radial-gradient(ellipse at 50% 60%,#171428,#07070d 75%);overflow:hidden;cursor:crosshair;touch-action:pan-y}
+.rs canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.rs-hint{position:absolute;left:0;right:0;bottom:14px;margin:0;text-align:center;font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:#6c6c86;pointer-events:none}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="rs"><canvas aria-hidden="true"></canvas><p class="rs-hint">Raise the city · click for a wave</p></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling.querySelector('.rs'),cv=root.querySelector('canvas');
+var reduce=matchMedia('(prefers-reduced-motion:reduce)').matches;
+function Stage(root,cv,draw,resize){
+ var s={W:0,H:0,dpr:1,x:0,y:0,vx:0,vy:0,px:0,py:0,inside:false,down:false,t:0,dt:16,ctx:cv.getContext('2d'),click:null,first:true},raf=0,visible=true,last=0,until=0;
+ function size(){s.dpr=Math.min(2,window.devicePixelRatio||1);s.W=cv.clientWidth;s.H=cv.clientHeight;cv.width=Math.round(s.W*s.dpr);cv.height=Math.round(s.H*s.dpr);s.ctx.setTransform(s.dpr,0,0,s.dpr,0,0);if(resize)resize(s);s.first=true}
+ function frame(now){raf=0;s.dt=Math.min(48,now-(last||now-16));last=now;s.t=now;var tx,ty;
+  if(s.inside){tx=s.px;ty=s.py}else{tx=s.W*(.5+.34*Math.sin(now*.00071)+.1*Math.sin(now*.0023));ty=s.H*(.5+.3*Math.sin(now*.00097+1)+.08*Math.cos(now*.0021))}
+  if(s.first){s.x=tx;s.y=ty;s.first=false}
+  s.vx=tx-s.x;s.vy=ty-s.y;s.x=tx;s.y=ty;draw(s);
+  if(visible&&(!reduce||now<until))raf=requestAnimationFrame(frame)}
+ function go(){if(!raf&&visible){last=0;raf=requestAnimationFrame(frame)}}
+ function poke(){until=performance.now()+900;go()}
+ function at(e){var r=cv.getBoundingClientRect();s.px=e.clientX-r.left;s.py=e.clientY-r.top;s.inside=true}
+ root.addEventListener('pointermove',function(e){at(e);if(reduce)poke()});
+ root.addEventListener('pointerleave',function(){s.inside=false;s.down=false});
+ root.addEventListener('pointerdown',function(e){at(e);s.down=true;if(s.click)s.click(s.px,s.py);if(reduce)poke()});
+ root.addEventListener('pointerup',function(){s.down=false});
+ if('IntersectionObserver' in window)new IntersectionObserver(function(es){visible=es[0].isIntersecting;if(visible)go()}).observe(root);
+ if('ResizeObserver' in window){var lw=0;new ResizeObserver(function(){if(cv.clientWidth&&cv.clientWidth!==lw){lw=cv.clientWidth;size();go()}}).observe(cv)}else{size();go()}
+ if(!reduce)go();else poke();
+ return s}
+var N=13,tw=40,th=20,ox=0,oy=0,H0=[],rings=[];
+function build(s){tw=Math.min(56,s.W*.9/N);th=tw/2;ox=s.W/2;oy=s.H*.5-N*th/2+26;H0=[];for(var i=0;i<N*N;i++)H0.push(0)}
+function shade(h,l){return 'hsl('+(252+Math.min(1,h/90)*88)+',78%,'+l+'%)'}
+var s=Stage(root,cv,function(s){var c=s.ctx,t=s.t;c.clearRect(0,0,s.W,s.H);rings=rings.filter(function(r){return t-r.t<1800});
+ for(var sum=0;sum<=2*N-2;sum++)for(var gx=Math.max(0,sum-N+1);gx<=Math.min(N-1,sum);gx++){var gy=sum-gx,sx=ox+(gx-gy)*tw/2,sy=oy+(gx+gy)*th/2,d=Math.hypot(sx-s.x,sy-s.y+14),
+  target=4+80*Math.exp(-d*d/20000)*(.7+.3*Math.sin(d*.04-t*.004))+Math.sin(d*.03-t*.003)*5*Math.exp(-d*.004);
+  for(var k=0;k<rings.length;k++){var r=rings[k],dd=Math.hypot(sx-r.x,sy-r.y)-(t-r.t)*.28;target+=48*Math.exp(-dd*dd/1500)*(1-(t-r.t)/1800)}
+  var idx=gy*N+gx,h=H0[idx];h+=(target-h)*.14;H0[idx]=h;var w=tw/2*.9,q=th/2*.9;
+  c.fillStyle=shade(h,40);c.beginPath();c.moveTo(sx-w,sy-h);c.lineTo(sx,sy-h+q);c.lineTo(sx,sy+q);c.lineTo(sx-w,sy);c.closePath();c.fill();
+  c.fillStyle=shade(h,49);c.beginPath();c.moveTo(sx+w,sy-h);c.lineTo(sx,sy-h+q);c.lineTo(sx,sy+q);c.lineTo(sx+w,sy);c.closePath();c.fill();
+  c.fillStyle=shade(h,63);c.beginPath();c.moveTo(sx,sy-h-q);c.lineTo(sx+w,sy-h);c.lineTo(sx,sy-h+q);c.lineTo(sx-w,sy-h);c.closePath();c.fill()}
+ c.strokeStyle='rgba(190,170,255,.8)';c.lineWidth=1.4;c.beginPath();c.ellipse(s.x,s.y+14,16,8,0,0,6.283);c.stroke()},build);
+s.click=function(x,y){rings.push({x:x,y:y+14,t:s.t})};})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>
