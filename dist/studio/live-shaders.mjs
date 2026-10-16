@@ -1,22 +1,9 @@
 // Original RepoShelf fragment shaders for Studio's live backgrounds (WebGL 1, no dependencies).
 // Every shader is written from standard techniques (value-noise fbm, domain warping, Bayer
 // dithering, metaball fields, polar coordinates). No third-party shader source is included.
-export const PRELUDE=`precision highp float;
-uniform vec2 uRes;uniform float uTime;uniform float uScale;uniform float uAmount;uniform float uSeed;uniform vec2 uPointer;
-uniform vec3 uC0;uniform vec3 uC1;uniform vec3 uC2;uniform vec3 uC3;
-float hash(vec2 p){p=fract(p*vec2(123.34,456.21));p+=dot(p,p+45.32);return fract(p.x*p.y);}
-float noise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hash(i),hash(i+vec2(1.,0.)),f.x),mix(hash(i+vec2(0.,1.)),hash(i+vec2(1.,1.)),f.x),f.y);}
-float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<5;i++){v+=a*noise(p);p=p*2.03+vec2(17.1,9.7);a*=.5;}return v;}
-mat2 rot(float a){float c=cos(a),s=sin(a);return mat2(c,-s,s,c);}
-vec3 ramp(float t){t=clamp(t,0.,1.)*3.;if(t<1.)return mix(uC0,uC1,t);if(t<2.)return mix(uC1,uC2,t-1.);return mix(uC2,uC3,t-2.);}
-vec2 frag(){return (gl_FragCoord.xy-.5*uRes)/uRes.y;}
-float aspect(){return uRes.x/uRes.y;}
-vec3 finish(vec3 c){return clamp(c+(hash(gl_FragCoord.xy+fract(uTime))-.5)/180.,0.,1.);}
-`;
-const main=body=>PRELUDE+'void main(){'+body+'}';
-const withHelpers=(helpers,body)=>PRELUDE+helpers+'\nvoid main(){'+body+'}';
-
-const shaders={
+import {PRELUDE,main,withHelpers} from './live-prelude.mjs';
+export {PRELUDE};
+const baseShaders={
 'aurora-veil':withHelpers(`float ribbon(vec2 uv,float k,float t){
  float x=uv.x*aspect()*uScale;
  float y0=.3+k*.07+.12*sin(x*1.4+t+k*2.)+.16*(fbm(vec2(x*.8+k*7.+uSeed,t*.5))-.5);
@@ -192,7 +179,7 @@ float bayer4(vec2 a){return b2(.5*a)*.25+b2(a);}`,
  gl_FragColor=vec4(finish(col),1.);`)
 };
 
-const entries=[
+const baseEntries=[
  ['aurora-veil','Aurora Veil','Live shaders','Green','Curtains of northern light drifting above a starry night.',['aurora','night','glow'],['#06141a','#2fe39a','#4fa8ff','#b88cff'],.9,1,.55,'Glow reach'],
  ['mercury-pool','Mercury Pool','Live shaders','Neutral','Slow-moving liquid metal with soft specular ripples.',['chrome','metal','liquid'],['#0c0d12','#59606e','#c6ccd8','#ffffff'],.8,1,.5,'Warp'],
  ['oil-slick','Oil Slick','Live shaders','Purple','Thin-film colour bands rolling across a dark surface.',['iridescent','film','rainbow'],['#120b25','#6a3df0','#18c5c9','#f4a7d8'],.8,1,.5,'Band density'],
@@ -214,7 +201,19 @@ const entries=[
  ['light-tunnel','Light Tunnel','Live fluid & light','Purple','Rings of light rushing towards the viewer.',['tunnel','speed','hyperspace'],['#050310','#4a2cc8','#b05cff','#ffffff'],1,1,.5,'Ring density'],
  ['line-waves','Line Waves','Live fluid & light','Green','Stacked flowing lines with a soft glow.',['lines','waves','minimal'],['#050b09','#0f6b4a','#33d69f','#c8ffe9'],.9,1,.45,'Wave height']
 ];
-export const liveItems=entries.map(([id,title,category,colour,description,tags,colors,speed,scale,amount,amountLabel,thumbTime=6.5])=>({id,title,category,colour,dominantColour:colors[1],colors,tags:['live',...tags],description,live:true,ai:false,width:1920,height:1080,amountLabel,thumbTime,defaults:{colors,speed,scale,amount,seed:7}}));
+import * as nature from './live-pack-nature.mjs';
+import * as geometric from './live-pack-geometric.mjs';
+import * as tech from './live-pack-tech.mjs';
+import * as light from './live-pack-light.mjs';
+import * as industrial from './live-pack-industrial.mjs';
+const packs=[nature,geometric,tech,light,industrial];
+const shaders=Object.assign({},baseShaders,...packs.map(p=>p.shaders));
+const entries=[...baseEntries,...packs.flatMap(p=>p.entries)];
+const built=entries.map(([id,title,category,colour,description,tags,colors,speed,scale,amount,amountLabel,thumbTime=6.5])=>({id,title,category,colour,dominantColour:colors[1],colors,tags:['live',...tags],description,live:true,ai:false,width:1920,height:1080,amountLabel,thumbTime,defaults:{colors,speed,scale,amount,seed:7}}));
+// Curated gallery order: the strongest and most varied backgrounds come first; everything else follows in pack order.
+const ORDER=['aurora-veil','glow-glyphs','gloss-tiles','wire-ribbons','synthwave-grid','ocean-swell','mercury-pool','digital-rain','lens-flare','sunset-haze','spiral-arms','night-highway','oil-slick','gear-train','nebula-drift','lava-crust','holo-foil','liquid-gold','starfield-warp','voronoi-glass','tach-dial','caustic-pool','neon-ribbons','carbon-weave','kaleido-bloom','rain-glass','hex-pulse','marble-veins','turbine-fan','meteor-night','plasma-bloom','isometric-cubes','bokeh-lights','radar-sweep','satin-folds','hazard-stripes','truchet-weave','fireflies','prism-beams','honeycomb-grille'];
+const rank=item=>{const i=ORDER.indexOf(item.id);return i<0?ORDER.length:i};
+export const liveItems=built.map((item,i)=>({item,i})).sort((a,b)=>rank(a.item)-rank(b.item)||a.i-b.i).map(x=>x.item);
 export function liveFragment(id){const source=shaders[id];if(!source)throw Error('Unknown live background');return source}
 export function liveItem(id){return liveItems.find(i=>i.id===id)}
 export const LIVE_IDS=liveItems.map(i=>i.id);

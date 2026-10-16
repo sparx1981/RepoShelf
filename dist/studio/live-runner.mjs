@@ -17,9 +17,9 @@ export function createRunner(canvas,fragment,options){
  const at=gl.getAttribLocation(program,'a');gl.enableVertexAttribArray(at);gl.vertexAttribPointer(at,2,gl.FLOAT,false,0,0);
  const u={};for(const name of ['uRes','uTime','uScale','uAmount','uSeed','uPointer','uC0','uC1','uC2','uC3'])u[name]=gl.getUniformLocation(program,name);
  let params={colors:['#000000','#444444','#aaaaaa','#ffffff'],speed:1,scale:1,amount:.5,seed:1,...(o.params||{})};
- let clock=o.time||0,last=0,frame=0,running=false,visible=true,pointer=[.5,.5],target=[.5,.5],observer=null;
+ let clock=o.time||0,last=0,frame=0,running=false,visible=true,pointer=[.5,.5],target=[.5,.5],observer=null,quality=1,slow=0,fast=0;
  const reduce=typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)');
- function size(){const ratio=Math.min(o.maxRatio||2,window.devicePixelRatio||1),w=Math.max(2,Math.round((canvas.clientWidth||canvas.width)*ratio)),h=Math.max(2,Math.round((canvas.clientHeight||canvas.height)*ratio));if(!o.fixed&&(canvas.width!==w||canvas.height!==h)){canvas.width=w;canvas.height=h}gl.viewport(0,0,canvas.width,canvas.height)}
+ function size(){const ratio=Math.min(o.maxRatio||2,window.devicePixelRatio||1)*quality,w=Math.max(2,Math.round((canvas.clientWidth||canvas.width)*ratio)),h=Math.max(2,Math.round((canvas.clientHeight||canvas.height)*ratio));if(!o.fixed&&(canvas.width!==w||canvas.height!==h)){canvas.width=w;canvas.height=h}gl.viewport(0,0,canvas.width,canvas.height)}
  function draw(time){
   if(typeof time==='number')clock=time;
   size();
@@ -32,6 +32,7 @@ export function createRunner(canvas,fragment,options){
  function tick(now){
   frame=0;if(!running)return;
   const dt=last?Math.min(.1,(now-last)/1000):0;last=now;
+  if(!o.fixed&&o.adaptive!==false&&dt>0){if(dt>.028){slow++;fast=0;if(slow>=20&&quality>.45){quality=Math.max(.45,quality*.85);slow=0}}else if(dt<.02){fast++;slow=0;if(fast>=240&&quality<1){quality=Math.min(1,quality*1.1);fast=0}}else{slow=0;fast=0}}
   clock+=dt*params.speed;pointer[0]+=(target[0]-pointer[0])*Math.min(1,dt*6);pointer[1]+=(target[1]-pointer[1])*Math.min(1,dt*6);
   draw();frame=requestAnimationFrame(tick);
  }
@@ -48,6 +49,7 @@ export function createRunner(canvas,fragment,options){
   start(){running=true;schedule()},
   stop(){running=false;schedule()},
   time:()=>clock,
+  quality:()=>quality,
   destroy(){running=false;cancelAnimationFrame(frame);document.removeEventListener('visibilitychange',onVisibility);if(observer)observer.disconnect()},
   release(){this.destroy();const lose=gl.getExtension('WEBGL_lose_context');if(lose)lose.loseContext()}
  };

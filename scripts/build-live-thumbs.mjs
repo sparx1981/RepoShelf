@@ -20,17 +20,18 @@ const browser=await chromium.launch({headless:true,executablePath:process.env.RE
 try{
  const page=await browser.newPage({viewport:{width:700,height:420}}),errors=[];page.on('pageerror',e=>errors.push(e.message));page.on('console',m=>{if(m.type()==='error'&&!/404/.test(m.text()))errors.push(m.text())});
  await page.goto(base+'/__thumb');await page.waitForFunction(()=>window.ready);
- const only=process.argv.slice(2),selected=liveItems.filter(i=>!only.length||only.includes(i.id));
+ const flags=process.argv.slice(2).filter(a=>a.startsWith('--')),sheetName=(flags.find(a=>a.startsWith('--sheet='))||'--sheet=contact-sheet').slice(8),only=process.argv.slice(2).filter(a=>!a.startsWith('--')),selected=liveItems.filter(i=>!only.length||only.includes(i.id)||only.includes('pack:'+i.category));
  await mkdir(out,{recursive:true});await mkdir(sheets,{recursive:true});
  const tiles=[];
  for(const item of selected){
   const url=await page.evaluate(([id,params,time])=>window.renderShader(id,params,time),[item.id,item.defaults,item.thumbTime]);
   const png=Buffer.from(url.split(',')[1],'base64');
   let quality=78,webp;do{webp=await sharp(png).webp({quality,effort:6}).toBuffer();quality-=8}while(webp.length>19000&&quality>20);
+  for(let blur=.5;webp.length>28000&&blur<3;blur+=.5)webp=await sharp(png).blur(blur).webp({quality:40,effort:6}).toBuffer();
   await writeFile(new URL(item.id+'.webp',out),webp);tiles.push({input:await sharp(png).resize(320,180).png().toBuffer()});
   console.log(item.id.padEnd(16),webp.length,'bytes');
  }
  if(errors.length)throw Error('Browser errors: '+errors.join('; '));
- const cols=4,rows=Math.ceil(tiles.length/cols);
- await sharp({create:{width:cols*320,height:rows*180,channels:3,background:'#000'}}).composite(tiles.map((t,i)=>({...t,left:(i%cols)*320,top:Math.floor(i/cols)*180}))).png().toFile(new URL('contact-sheet.png',sheets).pathname);
+ const cols=4,rows=Math.ceil(tiles.length/cols);console.log('sheet',sheetName);
+ await sharp({create:{width:cols*320,height:rows*180,channels:3,background:'#000'}}).composite(tiles.map((t,i)=>({...t,left:(i%cols)*320,top:Math.floor(i/cols)*180}))).png().toFile(new URL(sheetName+'.png',sheets).pathname);
 }finally{await browser.close();server.close()}
