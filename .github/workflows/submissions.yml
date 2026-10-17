@@ -11,6 +11,9 @@ on:
   push:
     branches: [main]
     paths: ['scripts/import-submissions.mjs', 'scripts/submission-imports.mjs', 'scripts/submission-quality.mjs', '.github/workflows/submissions.yml']
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true' # GitHub is retiring Node 20 for JavaScript actions: run them on Node 24 already
+
 permissions:
   contents: write
   actions: read

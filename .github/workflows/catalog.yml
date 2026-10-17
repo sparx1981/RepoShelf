@@ -101,6 +101,7 @@ on:
       - 'scripts/import-trendshift.mjs'
       - '.github/workflows/catalog.yml'
 env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true' # GitHub is retiring Node 20 for JavaScript actions: run them on Node 24 already
   BROWSER_SHARD_COUNT: '4'
 permissions:
   contents: write

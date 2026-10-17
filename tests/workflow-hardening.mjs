@@ -30,4 +30,5 @@ assert.doesNotMatch(step('checkpoint_report'),/steps\.validate/,'the failure is 
 {const checks=await readFile(new URL('checks.yml',dir),'utf8'),scripts=(await readdir(new URL('../../scripts/',dir))).filter(n=>/^verify-.*-ui\.mjs$|^verify-sync-layout\.mjs$/.test(n));
  for(const script of scripts)assert(checks.includes('scripts/'+script),script+' is not run by checks.yml')}
 for(const name of PUSHERS){const text=await readFile(new URL(name,dir),'utf8');assert.match(text,/publish-catalog\.mjs/,name+' is a pushing workflow')}
+for(const name of files)assert.match(await readFile(new URL(name,dir),'utf8'),/FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'/,name+' runs JavaScript actions on Node 24 (Node 20 is being retired)');
 console.log(`PASS: ${files.length} workflows install from the lockfile without install scripts, read-only jobs keep no token, and no free-text input reaches a shell command.`);

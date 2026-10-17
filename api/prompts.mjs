@@ -26,7 +26,7 @@ function publicItem(row){
   const own=row.source==='siteshelf',kind=row.kind==='text'?'text':'page';
   return {
     source:row.source,id:row.source_id,title:row.title,category:row.category||'Other',description:row.description||'',type:row.type||'free',kind,
-    thumbnail:own?(kind==='text'?row.thumbnail||null:`/api/prompts?area=thumb&source=${row.source}&id=${row.source_id}`):row.thumbnail||null,
+    thumbnail:own?(kind==='text'?row.thumbnail||null:`/api/prompts?area=thumb&source=${row.source}&id=${row.source_id}${row.updated_at?'&v='+Date.parse(row.updated_at):''}`):row.thumbnail||null,
     animated:own?null:row.animated_thumbnail||null,
     credit:own?(row.source_url?{name:CREDIT_NAME,url:row.source_url}:null):{name:'SceneAI',url:row.source_url||'https://sceneai.art'},
     updatedAt:row.updated_at||row.created_at
@@ -138,7 +138,7 @@ export function createPromptsHandler({accounts=createAccounts(),github=fetch,stu
         const {source,id}=target(params),row=await find(source,id,'id');
         const [thumb]=await rows(`ss_thumbs?prompt_id=eq.${q(row.id)}&select=mime,data_b64&limit=1`);
         if(!thumb||!/^image\/(jpeg|png|webp)$/.test(thumb.mime))fail(404,'not_found','No thumbnail.');
-        res.writeHead(200,{'Content-Type':thumb.mime,'Cache-Control':'public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800','X-Content-Type-Options':'nosniff'});
+        res.writeHead(200,{'Content-Type':thumb.mime,'Cache-Control':'public, max-age=300, s-maxage=3600, stale-while-revalidate=3600','X-Content-Type-Options':'nosniff'});
         res.end(Buffer.from(thumb.data_b64,'base64'));return;
       }
       if(area==='preview'){

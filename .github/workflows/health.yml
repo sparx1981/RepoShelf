@@ -10,6 +10,9 @@ on:
   push:
     branches: [main]
     paths: ['scripts/monitor-health.mjs', 'scripts/sync-watchdog.mjs', '.github/workflows/health.yml']
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true' # GitHub is retiring Node 20 for JavaScript actions: run them on Node 24 already
+
 permissions:
   contents: read
   actions: write

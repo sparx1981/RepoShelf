@@ -46,14 +46,14 @@ assert(!r.body.toString().includes('SECRET-PROMPT'),'the list never carries prom
 assert(!('prompt' in r.data.items[0]));
 assert.match(r.headers['cache-control'],/public/);
 const mine=r.data.items.find(i=>i.id==='budget-planner'),theirs=r.data.items.find(i=>i.source==='sceneai');
-assert.equal(mine.thumbnail,'/api/prompts?area=thumb&source=siteshelf&id=budget-planner');assert.equal(mine.credit,null);
+assert.match(mine.thumbnail,/^\/api\/prompts\?area=thumb&source=siteshelf&id=budget-planner&v=\d+$/,'the thumbnail address carries a version, so a replaced picture is fetched again');assert.equal(mine.credit,null);
 assert.deepEqual(theirs.credit,{name:'SceneAI',url:'https://sceneai.art'},'SceneAI prompts are credited and linked back');
 // Text prompts have no generated page: no thumbnail request, and page prompts keep their default kind.
 const film=r.data.items.find(i=>i.id==='motion-film-director');assert.equal(film.kind,'text');assert.equal(film.thumbnail,null,'a text prompt has no stored thumbnail to request');assert.equal(mine.kind,'page');assert.equal(theirs.kind,'page');
 
 // 2. Guests can see the live page and the thumbnail, but not the prompt or the code.
 r=await run('/api/prompts?area=preview&source=siteshelf&id=budget-planner');assert.equal(r.status,200);assert.equal(r.data.html,PAGE);
-r=await run('/api/prompts?area=thumb&source=siteshelf&id=budget-planner');assert.equal(r.status,200);assert.equal(r.headers['content-type'],'image/jpeg');assert.equal(r.body.toString(),'JPEGBYTES');
+r=await run('/api/prompts?area=thumb&source=siteshelf&id=budget-planner');assert.equal(r.status,200);assert.equal(r.headers['content-type'],'image/jpeg');assert.equal(r.body.toString(),'JPEGBYTES');assert.match(r.headers['cache-control'],/s-maxage=3600/,'a thumbnail of a prompt that is later unpublished leaves the CDN within hours');
 for(const area of ['detail','bundle']){
   r=await run(`/api/prompts?area=${area}&source=siteshelf&id=budget-planner`);
   assert.equal(r.status,401,`${area} needs sign-in`);assert.equal(r.data.error.code,'sign_in_required');assert(!r.body.toString().includes('SECRET-PROMPT'));

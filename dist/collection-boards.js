@@ -66,14 +66,21 @@ function render(){
  panel.append(status)}
 
 // ---- data -------------------------------------------------------------------------------------------------------
+let inflight=null;
+// A load that arrives while another is running waits for it; a forced one then runs again, so a board that was just created is in the
+// list before anything is added to it (it used to be missed, and the first item silently not added).
 async function load(force=false){
  const id=A.user?.id||null;
  if(!id){boards=[];loadedFor=null;render();return}
- if(loading||(!force&&id===loadedFor))return;
+ while(inflight)await inflight;
+ if(A.user?.id!==id)return;
+ if(!force&&id===loadedFor)return;
  loading=true;render();
- try{const data=await A.request(API);if(A.user?.id!==id)return;boards=data.boards||[];loadedFor=id;ready=true}
- catch(e){if(e?.status===503||e?.code==='migration_required'||e?.code==='boards_unavailable'){ready=false}else setNotice(e.message||'Boards could not be loaded.',true)}
- finally{loading=false}
+ const run=inflight=(async()=>{
+  try{const data=await A.request(API);if(A.user?.id!==id)return;boards=data.boards||[];loadedFor=id;ready=true}
+  catch(e){if(e?.status===503||e?.code==='migration_required'||e?.code==='boards_unavailable'){ready=false}else setNotice(e.message||'Boards could not be loaded.',true)}
+  finally{loading=false}})();
+ try{await run}finally{if(inflight===run)inflight=null}
  render();decorate()}
 // Names and categories of the items on a board come from the board's detail, loaded when the board is opened.
 async function openBoard(id){
@@ -135,7 +142,7 @@ pickDialog.addEventListener('close',()=>{pickerFor=null;render()});
 // ---- "＋ Board" on collection cards ------------------------------------------------------------------------------
 function decorate(){
  const cards=grid.querySelectorAll('.card');
- const active=inCollection()&&activeMode()!=='boards'&&Boolean(A.user)&&ready;
+ const active=inCollection()&&['all','likes'].includes(activeMode())&&Boolean(A.user)&&ready; // only saved projects can go on a board: not Forks or Recently viewed
  for(const card of cards){
   let button=card.querySelector('[data-board-add]');
   const id=card.querySelector('[data-details]')?.dataset.details;

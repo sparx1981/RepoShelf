@@ -4,6 +4,9 @@ on:
     - cron: '47 * * * *'
     - cron: '17 1-23/2 * * *'
   workflow_dispatch:
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true' # GitHub is retiring Node 20 for JavaScript actions: run them on Node 24 already
+
 permissions:
   contents: read
   actions: write

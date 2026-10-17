@@ -17,6 +17,9 @@ on:
       - '.github/workflows/checks.yml'
   pull_request:
   workflow_dispatch:
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true' # GitHub is retiring Node 20 for JavaScript actions: run them on Node 24 already
+
 permissions:
   contents: read
   statuses: read
@@ -153,6 +156,12 @@ jobs:
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610180038_prompt_edits_and_deletions.sql
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610180038_prompt_edits_and_deletions.sql
           psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-prompt-edits.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610180039_advisor_fixes.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610180039_advisor_fixes.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-advisor-fixes.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610180040_export_and_merge_counts.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f supabase/migrations/202610180040_export_and_merge_counts.sql
+          psql -h localhost -U postgres -d reposhelf_test -v ON_ERROR_STOP=1 -f tests/database-export-merge.sql
       - name: Install browser
         run: |
           npm install --no-save --ignore-scripts playwright@1.56.1

@@ -13,6 +13,9 @@ on:
         default: '50'
   schedule:
     - cron: '20 6 * * *'
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true' # GitHub is retiring Node 20 for JavaScript actions: run them on Node 24 already
+
 permissions:
   contents: write
 jobs:
