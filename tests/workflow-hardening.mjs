@@ -15,5 +15,10 @@ for(const name of files){
 assert(files.length>=10,'the workflows were found');
 const catalog=await readFile(new URL('catalog.yml',dir),'utf8');
 const browser=catalog.slice(catalog.indexOf('  browser:'),catalog.indexOf('  refresh:'));assert.match(browser,/persist-credentials: false/,'the browser shards never push, so they keep no token');
+// When the catalogue tests or build fail, nothing may change or hand off data; the failure itself is still recorded.
+const prepare=catalog.slice(catalog.indexOf('  prepare:'),catalog.indexOf('  browser:')),stepsOf=prepare.split(/\n(?=      - )/);
+const step=id=>stepsOf.find(t=>new RegExp('\\n        id: '+id+'(\\n|$)').test(t))||assert.fail('step '+id+' exists');
+for(const id of ['taxonomy','growth_checkpoint','browser_cycle','handoff'])assert.match(step(id),/if: always\(\) && steps\.baseline\.outcome == 'success' && steps\.validate\.outcome == 'success'/,id+' needs the catalogue tests to have passed');
+assert.doesNotMatch(step('checkpoint_report'),/steps\.validate/,'the failure is still written to the sync report');
 for(const name of PUSHERS){const text=await readFile(new URL(name,dir),'utf8');assert.match(text,/publish-catalog\.mjs/,name+' is a pushing workflow')}
 console.log(`PASS: ${files.length} workflows install from the lockfile without install scripts, read-only jobs keep no token, and no free-text input reaches a shell command.`);

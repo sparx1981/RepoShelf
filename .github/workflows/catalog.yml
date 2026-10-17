@@ -147,6 +147,8 @@ jobs:
       - name: Install agent server dependencies
         id: dependencies
         run: npm ci --ignore-scripts
+      # When this fails the code on main is broken. Nothing after it may change or hand off catalogue data: the conditions below that
+      # use always() (so a failed import still saves its progress) also require this step to have succeeded.
       - name: Validate catalog logic
         id: validate
         run: npm test && npm run test:mcp && npm run build
@@ -261,13 +263,13 @@ jobs:
           node scripts/generate-ai-overviews.mjs 2>&1 | tee .sync-logs/ai.log
       - name: Refresh all saved category and subject assignments
         id: taxonomy
-        if: always() && steps.baseline.outcome == 'success'
+        if: always() && steps.baseline.outcome == 'success' && steps.validate.outcome == 'success'
         run: |
           mkdir -p .sync-logs
           set -o pipefail
           node scripts/reclassify-catalog.mjs 2>&1 | tee .sync-logs/taxonomy.log
       - name: Record growth before browser checks
-        if: always() && steps.baseline.outcome == 'success'
+        if: always() && steps.baseline.outcome == 'success' && steps.validate.outcome == 'success'
         id: growth_checkpoint
         run: node scripts/record-growth.mjs
       - name: Save discovery checkpoint report
@@ -285,14 +287,14 @@ jobs:
         run: node scripts/publish-catalog.mjs
       - name: Check eligible demo and screenshot queues
         id: browser_cycle
-        if: always() && steps.baseline.outcome == 'success'
+        if: always() && steps.baseline.outcome == 'success' && steps.validate.outcome == 'success'
         env:
           GITHUB_TOKEN: ${{ github.token }}
           FORCE_BROWSER_REFRESH: ${{ github.event_name == 'workflow_dispatch' && inputs.refresh_previews }}
         run: node scripts/browser-cycle.mjs decide
       - name: Prepare parallel browser handoff
         id: handoff
-        if: always() && steps.baseline.outcome == 'success'
+        if: always() && steps.baseline.outcome == 'success' && steps.validate.outcome == 'success'
         env:
           SYNC_STEP_RESULTS: ${{ toJSON(steps) }}
         run: |
