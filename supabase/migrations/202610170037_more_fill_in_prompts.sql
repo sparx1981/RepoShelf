@@ -3,7 +3,8 @@
 -- becomes labelled boxes on the website (see dist/prompt-fields.js).
 -- Needs migration 0036 first (it adds ss_prompts.kind). Run it in the Supabase SQL editor at any time: the site works before
 -- and after (until it runs, these prompts are simply not listed).
--- Safe to run more than once; a listing is only inserted if it is not there already, so later edits made in Administration are kept.
+-- Safe to run more than once. A listing is inserted if it is not there already; one that has not been edited in Administration
+-- is brought up to the text below (so re-running picks up wording changes), and one that has been edited is left alone.
 begin;
 
 with p(t) as (select $rs_landing_page_builder$<role>
@@ -21,13 +22,19 @@ brand:           [logo, colours, fonts, or "derive from the product"]
 proof:           [real numbers, customers, quotes and logos. Blank means none are shown.]
 sections:        [e.g. hero, problem, how it works, features, pricing, FAQ, final call to action]
 style:           [reference sites or a visual direction, or blank]
+board:           [one of your RepoShelf boards to take reference from or build with, or blank]
 stack:           [single HTML file | React + Tailwind | Next.js | Astro | Vue]
 motion:          [none | subtle | expressive]
 language:        [language and locale, e.g. English (UK)]
 autonomy:        [unattended: never stop | gated: stop at each ◆]
 </brief>
 
+<board>
+No board chosen. Ignore this section.
+</board>
+
 <principles>
+- A chosen board is the brief's list of starting points. Follow <board> before you design or write code, and never use a project's code, text or assets without checking its licence.
 - One page, one job. Everything on the page serves the goal and the call to action; anything that does not is cut.
 - The hero answers three questions in five seconds: what is it, who is it for, and why should I care. The headline states the outcome, not the category.
 - Write for the reader's problem first and the product second, in the audience's own words. Plain, specific sentences beat adjectives.
@@ -71,7 +78,8 @@ insert into public.ss_prompts(source,source_id,title,category,description,type,o
 select 'siteshelf','landing-page-builder','Landing page builder','Websites & apps',
  'Turn a product brief into a finished, accessible landing page: the message, the copy, the design and the code. Fill in the boxes for product, audience, goal, tone, brand and stack, then copy the finished prompt.',
  'free',rtrim(t,E'\n'),rtrim(t,E'\n'),true,false,'text' from p
-on conflict (source,source_id) do nothing;
+on conflict (source,source_id) do update set prompt=excluded.prompt,original_prompt=excluded.original_prompt
+where public.ss_prompts.prompt=public.ss_prompts.original_prompt and public.ss_prompts.prompt is distinct from excluded.prompt;
 
 with p(t) as (select $rs_app_from_spec$<role>
 You are a staff product engineer and designer. You turn a short product brief into a working application: the scope, the data model, the interface, the code and the tests. Judge every choice against well-built software of the same kind and any references in the brief. An app that compiles is not finished; it is finished when a new user can complete every core flow without help and a new developer can run it from a clean checkout. These instructions are the floor, not the ceiling. If anything conflicts, the brief wins, then these defaults.
@@ -87,6 +95,7 @@ platform:        [web | mobile web (PWA) | desktop | iOS | Android | cross-platf
 stack:           [e.g. Next.js + Postgres, or "choose the simplest that fits"]
 auth:            [none | email and password | OAuth sign-in | magic link | single sign-on]
 design:          [style, reference apps, brand assets, or blank]
+board:           [one of your RepoShelf boards to take reference from or build with, or blank]
 scope:           [prototype | MVP | production-ready]
 integrations:    [APIs, payments, email, or none]
 constraints:     [hosting, budget, compliance, deadline, or none]
@@ -94,7 +103,12 @@ testing:         [none | unit tests | unit and end-to-end tests]
 autonomy:        [unattended: never stop | gated: stop at each ◆]
 </brief>
 
+<board>
+No board chosen. Ignore this section.
+</board>
+
 <principles>
+- A chosen board is the brief's list of starting points. Follow <board> before you design or write code, and never use a project's code, text or assets without checking its licence.
 - Build the smallest thing that fully serves the core flows. Cut features before cutting quality.
 - Work in vertical slices. Each slice goes from interface to data and back, runs on its own, and is committed before the next begins.
 - Data model first. Name the entities, their relationships and the rules that must always hold before writing screens.
@@ -139,7 +153,8 @@ insert into public.ss_prompts(source,source_id,title,category,description,type,o
 select 'siteshelf','app-from-spec','App builder from a spec','Websites & apps',
  'Turn a short product brief into a working app: scope, data model, interface, code and tests, built in small runnable slices. Fill in the boxes for app, users, core flows, platform, stack and scope, then copy the finished prompt.',
  'free',rtrim(t,E'\n'),rtrim(t,E'\n'),true,false,'text' from p
-on conflict (source,source_id) do nothing;
+on conflict (source,source_id) do update set prompt=excluded.prompt,original_prompt=excluded.original_prompt
+where public.ss_prompts.prompt=public.ss_prompts.original_prompt and public.ss_prompts.prompt is distinct from excluded.prompt;
 
 with p(t) as (select $rs_brand_identity_kit$<role>
 You are a brand strategist and identity designer. You turn a short brief into a working brand: a clear position, a name if one is needed, a logo, colours, type, a voice and the guidelines that let other people use them well. Judge every choice against the strongest brands in the category and any references in the brief. A brand that looks good is not finished; it is finished when a stranger could recognise it without the logo and a new team member could apply it correctly without asking. These instructions are the floor, not the ceiling. If anything conflicts, the brief wins, then these defaults.
@@ -206,7 +221,8 @@ insert into public.ss_prompts(source,source_id,title,category,description,type,o
 select 'siteshelf','brand-identity-kit','Brand identity kit','Brand & marketing',
  'Build a complete brand identity from a short brief: positioning, name ideas, logo, palette, type, voice and guidelines. Fill in the boxes for business, audience, personality, competitors and deliverable, then copy the finished prompt.',
  'free',rtrim(t,E'\n'),rtrim(t,E'\n'),true,false,'text' from p
-on conflict (source,source_id) do nothing;
+on conflict (source,source_id) do update set prompt=excluded.prompt,original_prompt=excluded.original_prompt
+where public.ss_prompts.prompt=public.ss_prompts.original_prompt and public.ss_prompts.prompt is distinct from excluded.prompt;
 
 with p(t) as (select $rs_social_content_engine$<role>
 You are a social media strategist and copywriter. You turn a short brief into a complete content plan: what to say, to whom, where, when and in what form, with the posts written and the pictures briefed. Judge every choice against the best accounts in the category and any references in the brief. A calendar that is full is not finished; it is finished when each post has a reason to exist, sounds like the brand, and could be published tomorrow. These instructions are the floor, not the ceiling. If anything conflicts, the brief wins, then these defaults.
@@ -273,7 +289,8 @@ insert into public.ss_prompts(source,source_id,title,category,description,type,o
 select 'siteshelf','social-content-engine','Social content calendar','Brand & marketing',
  'Plan and write a full social content calendar: pillars, a post-by-post schedule, copy, visual briefs and a measurement plan. Fill in the boxes for brand, goal, channels, period, pillars and voice, then copy the finished prompt.',
  'free',rtrim(t,E'\n'),rtrim(t,E'\n'),true,false,'text' from p
-on conflict (source,source_id) do nothing;
+on conflict (source,source_id) do update set prompt=excluded.prompt,original_prompt=excluded.original_prompt
+where public.ss_prompts.prompt=public.ss_prompts.original_prompt and public.ss_prompts.prompt is distinct from excluded.prompt;
 
 with p(t) as (select $rs_explainer_video_script$<role>
 You are a scriptwriter and motion director. You turn a short brief into a finished plan for an explainer video: the idea, the words, the pictures and the timing. Judge every choice against the best explainers in the field and any references in the brief. A script that reads well is not finished; it is finished when the picture and the words each do their own job, the timing is exact, and a stranger watching with the sound off still gets the point. These instructions are the floor, not the ceiling. If anything conflicts, the brief wins, then these defaults.
@@ -340,7 +357,8 @@ insert into public.ss_prompts(source,source_id,title,category,description,type,o
 select 'siteshelf','explainer-video-script','Explainer video script and storyboard','Video & motion',
  'Write a complete explainer video: the idea, a word-timed script, a storyboard table, a shot list, captions and a thumbnail brief. Fill in the boxes for topic, viewer, length, style and facts, then copy the finished prompt.',
  'free',rtrim(t,E'\n'),rtrim(t,E'\n'),true,false,'text' from p
-on conflict (source,source_id) do nothing;
+on conflict (source,source_id) do update set prompt=excluded.prompt,original_prompt=excluded.original_prompt
+where public.ss_prompts.prompt=public.ss_prompts.original_prompt and public.ss_prompts.prompt is distinct from excluded.prompt;
 
 with p(t) as (select $rs_market_research_brief$<role>
 You are a research analyst and strategist. You turn a short brief into a sourced market research brief that helps a real decision get made. Judge every choice against the best analyst work in the field and any references in the brief. A brief full of facts is not finished; it is finished when each number can be checked, the uncertainty is stated honestly, and the reader knows what to do next. These instructions are the floor, not the ceiling. If anything conflicts, the brief wins, then these defaults.
@@ -406,6 +424,7 @@ insert into public.ss_prompts(source,source_id,title,category,description,type,o
 select 'siteshelf','market-research-brief','Market research brief','Research & writing',
  'Produce a sourced market research brief that answers a real decision: market, segments, competitors, trends, risks and a recommendation. Fill in the boxes for topic, decision, audience, region, sources and depth, then copy the finished prompt.',
  'free',rtrim(t,E'\n'),rtrim(t,E'\n'),true,false,'text' from p
-on conflict (source,source_id) do nothing;
+on conflict (source,source_id) do update set prompt=excluded.prompt,original_prompt=excluded.original_prompt
+where public.ss_prompts.prompt=public.ss_prompts.original_prompt and public.ss_prompts.prompt is distinct from excluded.prompt;
 
 commit;

@@ -13,6 +13,9 @@ begin
   select count(*) into n from public.ss_prompts where source='siteshelf' and source_id=i;
   if n<>1 then raise exception 'exactly one % listing expected',i;end if;
  end loop;
+ foreach i in array array['landing-page-builder','app-from-spec'] loop
+  if (select prompt from public.ss_prompts where source='siteshelf' and source_id=i) not like '%board:%[one of your RepoShelf boards%</brief>%<board>%No board chosen. Ignore this section.%</board>%' then raise exception '% is missing the reference board line or block',i;end if;
+ end loop;
  select count(*) into n from public.ss_prompts where kind='text';
  if n<7 then raise exception 'expected at least 7 text prompts, found %',n;end if;
 end$$;

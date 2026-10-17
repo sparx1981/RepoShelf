@@ -3,7 +3,8 @@ import {spawn} from 'node:child_process';import {readFile} from 'node:fs/promise
 const port=4399,base=`http://127.0.0.1:${port}`,server=spawn(process.execPath,['scripts/serve.mjs'],{env:{...process.env,PORT:String(port)},stdio:['ignore','pipe','inherit']});let browser;
 const sql=await readFile(new URL('../supabase/migrations/202610170036_text_prompts.sql',import.meta.url),'utf8'),TAG='$reposhelf_prompt$',from=sql.indexOf(TAG)+TAG.length,PROMPT=sql.slice(from,sql.indexOf(TAG,from)).replace(/\n$/,'');
 const more=await readFile(new URL('../supabase/migrations/202610170037_more_fill_in_prompts.sql',import.meta.url),'utf8'),MORE=[...more.matchAll(/\$rs_([a-z_]+)\$([\s\S]*?)\n\$rs_\1\$/g)].map(m=>({id:m[1].replace(/_/g,'-'),text:m[2]})),TITLES={'landing-page-builder':'Landing page builder','app-from-spec':'App builder from a spec','brand-identity-kit':'Brand identity kit','social-content-engine':'Social content calendar','explainer-video-script':'Explainer video script and storyboard','market-research-brief':'Market research brief'};
-let showMore=false;
+let showMore=false,boardsMode='ok';const boardGets=[];
+const BOARDS=[{id:'11111111-1111-4111-8111-111111111111',name:'Launch pages',description:'Pages to learn from',items:[{id:'owner/nice-landing',addedAt:'2026-10-01T00:00:00Z',snapshot:{name:'Nice Landing',language:'TypeScript',description:'A clean landing template.'}},{id:'ss:bg/aurora',addedAt:'2026-10-02T00:00:00Z',snapshot:{name:'Aurora background',description:'Soft gradient.'}}]},{id:'22222222-2222-4222-8222-222222222222',name:'Empty board',description:'',items:[]}];
 const list=[
  {source:'siteshelf',id:'motion-film-director',title:'Motion film director',category:'Video & motion',description:'A brief-to-MP4 prompt.',type:'free',kind:'text',thumbnail:null,credit:null},
  {source:'siteshelf',id:'budget-planner',title:'Budget planner',category:'Tools',description:'Plan a month.',type:'free',kind:'page',thumbnail:null,credit:null}];
@@ -17,6 +18,12 @@ try{
   // The unbuilt dev server does not list every page; a production build serves hashed /assets files instead.
   const file=/^\/([a-z0-9.-]+\.(?:html|js|css))$/.exec(u.pathname);if(file&&existsSync(new URL('../dist/'+file[1],import.meta.url)))return route.fulfill({body:await readFile(new URL('../dist/'+file[1],import.meta.url)),contentType:types[file[1].slice(file[1].lastIndexOf('.'))]});
   if(u.pathname==='/api/auth')return route.fulfill({json:{enabled:true,analyticsEnabled:false,user:signedIn?{id:'owner',name:'owner',githubConnected:true,admin}:null}});
+  if(u.pathname==='/api/collection'&&u.searchParams.get('action')==='boards'){
+   if(boardsMode==='error')return route.fulfill({status:503,json:{error:{code:'migration_required',message:'A database update is required before boards can be used.'}}});
+   if(boardsMode==='none')return route.fulfill({json:{boards:[]}});
+   const ref=u.searchParams.get('board');boardGets.push(ref);
+   if(!ref)return route.fulfill({json:{boards:BOARDS.map(b=>({id:b.id,name:b.name,description:b.description,items:b.items.map(i=>i.id)}))}});
+   const found=BOARDS.find(b=>b.id===ref);return found?route.fulfill({json:{board:found}}):route.fulfill({status:404,json:{error:{code:'not_found',message:'That board no longer exists.'}}})}
   if(u.pathname==='/api/collection')return route.fulfill({json:{items:[],nextCursor:null}});
   if(u.pathname==='/api/analytics')return route.fulfill({json:{configured:false}});
   if(u.pathname==='/api/prompts'){
@@ -115,6 +122,37 @@ try{
   assert(shown.includes('Zeta Test')&&shown.includes(opt),m.id+' preview reflects the boxes');assert(!/\n[a-z -]+:\s+\[/.test(shown.split('<brief>')[1].split('</brief>')[0]),m.id+' leaves no placeholders');
   await all.locator('#prompt-close').click();await all.evaluate(k=>{try{localStorage.removeItem('reposhelf.promptfields.v1')}catch{}});
  }
+
+ // Reference board dropdown (Landing page builder and App builder only)
+ for(const m of MORE){const has=['landing-page-builder','app-from-spec'].includes(m.id);
+  await all.locator('.prompt-card',{hasText:TITLES[m.id]}).first().click();await all.waitForSelector('#panel-prompt .prompt-fields');
+  assert.equal(await all.locator('#pf-board').count(),has?1:0,m.id+(has?' has':' has no')+' board dropdown');
+  if(has){
+   await all.waitForFunction(()=>!document.querySelector('#pf-board').disabled);
+   assert.deepEqual(await all.locator('#pf-board option').allTextContents(),['No board','Launch pages (2 items)','Empty board (0 items)']);
+   await all.locator('#pf-board').selectOption({label:'Launch pages (2 items)'});await all.locator('#panel-prompt .prompt-preview summary').click();
+   await all.waitForFunction(()=>/board:\s+Launch pages/.test(document.querySelector('#panel-prompt .prompt-preview pre').textContent));
+   const shown=await all.locator('#panel-prompt .prompt-preview pre').textContent();
+   assert(shown.includes('- Nice Landing (GitHub, TypeScript): A clean landing template. https://github.com/owner/nice-landing'));assert(shown.includes('https://www.reposhelf.co.uk/studio.html#bg/aurora'));assert(!shown.includes('No board chosen'));assert(shown.includes('Ask me to confirm or change that list'));
+   assert.match(await all.locator('#panel-prompt .prompt-field-hint').textContent(),/Added 2 items/);
+   // remembered on reopening, and clearing the boxes removes it
+   await all.locator('#prompt-close').click();await all.locator('.prompt-card',{hasText:TITLES[m.id]}).first().click();await all.waitForSelector('#pf-board');await all.waitForFunction(()=>document.querySelector('#pf-board').value==='11111111-1111-4111-8111-111111111111');
+   await all.locator('#panel-prompt .prompt-preview summary').click();await all.waitForFunction(()=>/board:\s+Launch pages/.test(document.querySelector('#panel-prompt .prompt-preview pre').textContent));
+   await all.locator('#pf-board').selectOption({label:'Empty board (0 items)'});await all.waitForFunction(()=>/has no items yet/.test(document.querySelector('#panel-prompt .prompt-preview pre').textContent));
+   await all.getByRole('button',{name:'Clear all boxes'}).click();assert.equal(await all.locator('#pf-board').inputValue(),'');
+   assert(!(await all.locator('#panel-prompt .prompt-preview pre').textContent()).includes('Launch pages'));
+  }
+  await all.locator('#prompt-close').click()}
+ // no boards yet, and boards unavailable: the dropdown is disabled with a short hint
+ for(const mode of ['none','error']){boardsMode=mode;
+  await all.locator('.prompt-card',{hasText:'Landing page builder'}).first().click();await all.waitForSelector('#pf-board');
+  await all.waitForFunction(()=>document.querySelector('#pf-board option').textContent!=='Loading your boards…');
+  assert(await all.locator('#pf-board').isDisabled(),mode+': the dropdown is disabled');
+  if(mode==='none'){assert.equal(await all.locator('#pf-board option').textContent(),'No boards yet');assert.equal(await all.locator('#panel-prompt .prompt-field-hint a').getAttribute('href'),'/#collection')}
+  else assert.equal(await all.locator('#pf-board option').textContent(),'Boards are unavailable right now');
+  await all.locator('#panel-prompt .prompt-preview summary').click();assert((await all.locator('#panel-prompt .prompt-preview pre').textContent()).includes('No board chosen'));
+  await all.locator('#prompt-close').click()}
+ boardsMode='ok';
  // administration: New prompt creates a text prompt
  signedIn=true;admin=true;const adm=await context.newPage();adm.on('pageerror',noteError);await adm.goto(base+'/admin.html?tab=prompts');await adm.waitForFunction(()=>RepoAccount.ready&&RepoAccount.user?.admin);
  await adm.waitForSelector('#prompts-new',{state:'visible'});await adm.waitForSelector('#prompts-rows tr');
@@ -124,5 +162,5 @@ try{
  assert.deepEqual(created,[{title:'Launch teaser',category:'Video & motion',description:'',prompt:'Make a teaser.',published:true}]);assert(await adm.locator('#prompts-rows tr',{hasText:'Launch teaser'}).isVisible());
  await adm.locator('#prompts-rows tr',{hasText:'Budget planner'}).getByRole('button',{name:/^Edit/}).click();assert.equal(await adm.locator('#prompt-edit-title').textContent(),'Edit prompt');
  assert.equal(errors.length,0,errors.join('\n'));
- console.log('PASS: the six more fill-in prompts open with boxes, dropdowns and a live preview; text prompt card and Prompt-only view, 14 fill-in boxes with dropdowns and hints, live preview and finished-prompt copy, remembered and clearable values, mobile layout, unchanged page prompts, sign-in lock and the admin New prompt form.');
+ console.log('PASS: the Reference board dropdown (choose, remember, clear, empty and unavailable states) on the two build prompts; the six more fill-in prompts open with boxes, dropdowns and a live preview; text prompt card and Prompt-only view, 14 fill-in boxes with dropdowns and hints, live preview and finished-prompt copy, remembered and clearable values, mobile layout, unchanged page prompts, sign-in lock and the admin New prompt form.');
 }finally{await browser?.close();server.kill('SIGTERM')}
