@@ -159,7 +159,7 @@ const supported=id=>Object.hasOwn(SPECS,id);
 function mount(id,promptText,{onChange=()=>{},document:doc=globalThis.document,boards=null}={}){
  const parsed=parse(promptText,id);if(!parsed)return null;
  const values={...load(id)},el=(tag,props={},...kids)=>{const n=doc.createElement(tag);for(const[k,v]of Object.entries(props)){if(k==='text')n.textContent=v;else if(k==='class')n.className=v;else if(v===true)n.setAttribute(k,'');else if(v!==false&&v!=null)n.setAttribute(k,v)}n.append(...kids);return n};
- const controls=new Map();let board=null,boardRun=0;const text=()=>fill(parsed,values,{board});
+ const controls=new Map();let board=null,boardRun=0,boardReady=false;const text=()=>fill(parsed,values,{board});
  const pre=el('pre',{class:'prompt-text','aria-label':'The finished prompt'}),details=el('details',{class:'prompt-preview'},el('summary',{text:'Preview the finished prompt'}),pre);
  const grid=el('div',{class:'prompt-field-grid'});let boardUi=null;
  for(const f of parsed.fields){
@@ -184,7 +184,7 @@ function mount(id,promptText,{onChange=()=>{},document:doc=globalThis.document,b
  }
 
  const fail=(msg,label='Boards are unavailable right now')=>{const {control,hint}=boardUi;control.replaceChildren(el('option',{value:'',text:label}));control.disabled=true;hint.textContent=msg||''};
- function setBoard(data){board=data?{name:data.name,lines:boardLines(data)}:null;paint();onChange()}
+ function setBoard(data){board=data?{name:clean(data.name,80)||'Untitled board',lines:boardLines(data)}:null;paint();onChange()}
  async function pickBoard(boardId){
   const run=++boardRun,{control,hint}=boardUi;hint.textContent='';
   if(!boardId){board=null;delete values.board;save(id,values);paint();onChange();return}
@@ -198,7 +198,7 @@ function mount(id,promptText,{onChange=()=>{},document:doc=globalThis.document,b
   try{
    const list=(await boards.list()).boards||[];
    if(!list.length){fail('',  'No boards yet');hint.replaceChildren('Group saved projects into a board to use them here. ',el('a',{href:'/#collection',text:'Create one in My collection'}),'.');delete values.board;return}
-   control.replaceChildren(el('option',{value:'',text:'No board'}),...list.map(b=>el('option',{value:b.id,text:`${b.name} (${b.items.length} item${b.items.length===1?'':'s'})`})));control.disabled=false;
+   control.replaceChildren(el('option',{value:'',text:'No board'}),...list.map(b=>el('option',{value:b.id,text:`${oneLine(b.name)} (${b.items.length} item${b.items.length===1?'':'s'})`})));control.disabled=false;boardReady=true;
    hint.textContent='Optional. Choose one of your boards to build with or take reference from.';
    if(values.board&&list.some(b=>b.id===values.board)){control.value=values.board;await pickBoard(values.board)}
    else if(values.board){delete values.board;save(id,values);paint()}
@@ -207,7 +207,7 @@ function mount(id,promptText,{onChange=()=>{},document:doc=globalThis.document,b
  const reset=el('button',{class:'button outline',type:'button',text:'Clear all boxes'});
  const note=el('p',{class:'prompt-note',text:'Every box is optional. A box left empty tells the AI to decide that line itself and note its choice.'});
  function paint(){pre.textContent=text();reset.disabled=!Object.keys(values).length}
- function clear(){boardRun++;board=null;for(const k of Object.keys(values))delete values[k];for(const c of controls.values())c.value='';save(id,values);paint();onChange()}
+ function clear(){boardRun++;board=null;if(boardUi&&boardReady)boardUi.control.disabled=false;for(const k of Object.keys(values))delete values[k];for(const c of controls.values())c.value='';save(id,values);paint();onChange()}
  reset.addEventListener('click',clear);
  const node=el('div',{class:'prompt-fields'},el('h3',{text:'Fill in your brief'}),note,grid,el('div',{class:'prompt-field-actions'},reset),details);
  paint();

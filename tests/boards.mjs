@@ -111,4 +111,8 @@ try{
  const built=await me.getPrompt({name:'build_from_board',arguments:{board:'Landing page',goal:'a pricing page'}});const text=built.messages[0].content.text;assert.match(text,/Landing page/);assert.match(text,/a pricing page/);assert.match(text,/get_board/);assert.match(text,/licence/i);assert.match(text,/wait for my go-ahead/i);assert.match(text,/do not run any commands/i);
  await Promise.all([me.close(),other.close(),operator.close()]);
 }finally{http.close()}
+// the connector and privacy pages must say that boards are readable through a personal key
+{const {readFile}=await import('node:fs/promises');const connect=await readFile(new URL('../dist/connect.html',import.meta.url),'utf8'),privacy=await readFile(new URL('../dist/privacy.html',import.meta.url),'utf8');
+assert.match(connect,/that member's boards/);assert.doesNotMatch(connect,/cannot see your account, collection or submissions/,'the connector can now read boards, so it must not claim to see no collection data');
+assert.match(privacy,/<strong>Your boards:<\/strong>/);assert.match(privacy,/read that member's own boards/)}
 console.log('PASS: boards are private, limited and tied to the collection; the website API validates input and maps errors; the connector reads boards read-only per key owner with summaries, paging, fallbacks and a build prompt.');

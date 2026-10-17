@@ -21,6 +21,8 @@ if(browseCandidates.length){const searchResponse=await fetch(base+'/api/editoria
 const guide=await fetch(base+'/agent-guide.html',{signal:AbortSignal.timeout(10000)});
 const response=await fetch(base+'/api/v1/catalog',{signal:AbortSignal.timeout(10000)});
 const body=await response.json();
+for(const path of ['/catalog.json','/spaces.json','/catalog.part-00.json.gz','/spaces.part-00.json.gz']){const exposed=await fetch(base+path,{method:'HEAD',signal:AbortSignal.timeout(10000)});if(exposed.ok)throw Error('Production publishes the private catalogue file '+path)}
+const home=await fetch(base+'/',{method:'HEAD',signal:AbortSignal.timeout(10000)});if(!/frame-ancestors 'self'/.test(home.headers.get('content-security-policy')||''))throw Error('Production does not yet restrict framing');
 if(guide.ok&&[401,503].includes(response.status)&&body.error?.code&&/private/.test(response.headers.get('cache-control')||'')){
 const mcp=await fetch(base+'/api/mcp',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}',signal:AbortSignal.timeout(10000)});
 const mcpBody=await mcp.json();

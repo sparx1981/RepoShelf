@@ -27,6 +27,20 @@ How to read the evidence column:
 - **Code**: traced through the code but not reproduced.
 - **Likely**: the code path is confirmed, but whether it happens depends on timing or data.
 
+## Fix status
+
+Updated as phases are completed. "Fixed" means changed, covered by a new or extended test, and passing; it is live only after the commit reaches `main` and Vercel deploys it.
+
+| ID | Status | What changed | Test |
+|---|---|---|---|
+| QA-01 | Fixed (Phase 1) | `scripts/prune-public-data.mjs` runs at the end of the production build (`vercel.json`) and removes `catalog.json`, `spaces.json` and their 64 shard files from the published output. The CI build is unchanged, because later checks read them. | `tests/public-data.mjs`; `verify-deployed-api.mjs` fails if `/catalog.json`, `/spaces.json` or a shard is still served |
+| QA-02 | Fixed (Phase 1) | The sort box gained "Trending on Trendshift", unknown shelf rankings fall back to Popular, and a blank sort box no longer stops the page from redrawing. | `tests/sort-options.mjs` |
+| QA-05 | Fixed (Phase 1) | One-letter searches now run, and the grid shows its loading state while a search waits for its short delay. | `tests/sort-options.mjs`; `verify-browsing-ui.mjs` |
+| QA-14 | Partly fixed (Phase 1) | `frame-ancestors 'self'` and `X-Frame-Options: SAMEORIGIN` on every response, so other sites cannot frame pages but same-site previews still work. A full script policy is still open. | `tests/security-headers.mjs`; `verify-deployed-api.mjs` checks the live header |
+| QA-22 | Fixed (Phase 1) | `connect.html` and `privacy.html` now say the connector can read the owner's boards, and the policy has a "Your boards" paragraph. The legal version was not bumped; that is your decision. | `tests/boards.mjs` |
+| QA-27 | Fixed (Phase 1) | The board name on the `board:` line is cleaned like the item lines, and dropdown labels are one line. | `verify-prompt-fields-ui.mjs` |
+| QA-28 | Fixed (Phase 1) | "Clear all boxes" re-enables the Reference board dropdown, and a board that finishes loading after Clear is not applied. | `verify-prompt-fields-ui.mjs` |
+
 ## 2. What was run
 
 | Check | Result |
