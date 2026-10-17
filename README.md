@@ -132,7 +132,7 @@ Members group items from My collection into named boards to use in a specific pr
 
 - Website: **My collection → Boards** lists, creates, edits and deletes boards; **＋ Board** on a saved project's card adds it to any boards. The browser requests are `/api/collection?action=boards` and `action=board-items` (members only, site origin, accepted terms), served by `lib/boards.mjs` through server-only database functions.
 - Assistant: the hosted connector adds `list_boards`, `get_board` and the `build_from_board` prompt for member keys. They are read-only; `get_board` returns the board description and a summary of each item (licence, demo health, setup) with paging. See [the connection guide](docs/AGENT_API.md#boards).
-- Setup: apply `supabase/migrations/202610160035_boards.sql`, then re-run `202610060019_merge_accounts.sql` so merged accounts keep their boards. Account export includes boards, and deleting an account deletes them. `tests/database-boards.sql` and `tests/boards.mjs` cover the database rules and the API/connector; `scripts/verify-boards-ui.mjs` drives the Boards tab in a browser.
+- Setup: run `supabase/verify_migrations.sql` in the Supabase SQL editor at any time for a true/false row per migration (read-only). Apply `supabase/migrations/202610160035_boards.sql`, then re-run `202610060019_merge_accounts.sql` so merged accounts keep their boards. Account export includes boards, and deleting an account deletes them. `tests/database-boards.sql` and `tests/boards.mjs` cover the database rules and the API/connector; `scripts/verify-boards-ui.mjs` drives the Boards tab in a browser.
 
 ## Agent API and MCP
 
