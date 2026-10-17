@@ -38,6 +38,9 @@ jobs:
           echo "Found $(wc -l < artifacts.tsv) artifacts, about ${total} MB, before cleaning."
           deleted=0; freed=0
           while IFS=$'\t' read -r id created size name; do
+            # Publication recovery data is uploaded only when a publication fails, and holds the work that has to be recovered by hand;
+            # it keeps its declared seven days. The per-sync artifacts (about 3 GB each) are what fill the allowance.
+            if [[ "$name" == publication-recovery-* ]]; then continue; fi
             if [[ "$created" < "$cutoff" ]]; then
               if gh api -X DELETE "repos/$REPO/actions/artifacts/$id" --silent; then deleted=$((deleted+1)); freed=$((freed+size)); fi
             fi

@@ -1,8 +1,5 @@
-begin;
-create extension http with schema extensions;
-do $$declare f regprocedure;begin
-for f in select p.oid::regprocedure from pg_proc p join pg_depend d on d.objid=p.oid and d.classid='pg_proc'::regclass join pg_extension e on e.oid=d.refobjid where e.extname='http' and d.deptype='e' loop
-execute format('revoke execute on function %s from public,anon,authenticated',f);
-execute format('grant execute on function %s to postgres',f);
-end loop;end$$;
-commit;
+-- Temporary helper used once to import Studio images: the `http` extension, callable only by the database owner.
+-- The import is finished and 20261013203704 / 20261014053615 remove the extension again, so nothing creates it any more: a new
+-- project (or the test database) does not need an extension that may not even be installed there. Projects that already ran the
+-- original version are unaffected: the end state, no `http` extension, is the same.
+select 1;

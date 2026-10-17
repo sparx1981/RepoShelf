@@ -15,7 +15,7 @@ export async function requestLaunch({fetcher=fetch,token=process.env.GITHUB_TOKE
  if(!token)throw Error('Launch scheduler token missing');
  const base='https://api.github.com/repos/sparx1981/RepoShelf/actions/workflows/';
  const headers={Accept:'application/vnd.github+json',Authorization:'Bearer '+token,'Content-Type':'application/json','X-GitHub-Api-Version':'2022-11-28'};
- const groups=await Promise.all(['catalog.yml','publication.yml','submissions.yml','recovery.yml'].map(async name=>{
+ const groups=await Promise.all(['catalog.yml','publication.yml','submissions.yml','recovery.yml','x-intake.yml'].map(async name=>{
   const res=await fetcher(base+name+'/runs?branch=main&per_page=10',{headers,redirect:'error',signal:AbortSignal.timeout(10000)});
   if(!res.ok)throw Error('Launch history unavailable: '+res.status);const data=await res.json();
   if(!Array.isArray(data.workflow_runs))throw Error('Launch history malformed');return data.workflow_runs;

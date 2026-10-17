@@ -43,12 +43,23 @@ const maxCompareBytes=()=>Number(process.env.REPOSHELF_MAX_COMPARE_BYTES)||0x1ff
 export function changedPublicFiles(root){const raw=git(root,['diff','--cached','--raw','--no-abbrev','--no-renames','-z']).split('\0'),out=[];for(let i=0;i<raw.length-1;i+=2){const header=/^:\d{6} \d{6} ([a-f0-9]{40}) ([a-f0-9]{40}) [A-Z]$/.exec(raw[i]),path=raw[i+1];if(!header)throw Error('Invalid staged generated change');if(!generated(path))throw Error('Only generated files may be published');if(internalFile(path))continue;const semantic=/^dist\/(catalog|spaces|community|trendshift)\.json(\.gz)?$/.test(path)||/^dist\/(catalog|spaces)\.part-(\d{2}|head)\.json\.gz$/.test(path);if(!semantic){if(header[1]!==header[2])out.push(path);continue}const packed=isPackedName(path),read=ref=>{const bytes=blobBytes(root,ref,path);if(bytes===null)return null;const data=packed?decompress(bytes):bytes;return data.length>maxCompareBytes()?TOO_LARGE:data.toString('utf8')},before=read('HEAD'),after=read('');if(before===TOO_LARGE||after===TOO_LARGE){if(header[1]!==header[2])out.push(path);continue}if(publicFileChanged(logicalName(path),before,after))out.push(path)}return out}
 async function report(root,publication,commit=null){const id=process.env.GITHUB_RUN_ID;if(!/^\d+$/.test(id||''))return;const path=join(root,'data/sync-runs',id+'.json');try{const row=JSON.parse(await readFile(path,'utf8'));row.publication=publication;row.publishedCommit=commit;await writeFile(path,JSON.stringify(row,null,2)+'\n')}catch(e){if(e.code!=='ENOENT')throw e}}
 function remoteCheckpoint(root){try{git(root,['ls-remote','--exit-code','--heads','origin',CHECKPOINT_BRANCH])}catch(e){if(e.status===2)return null;throw e}git(root,['fetch','--quiet','origin',`+refs/heads/${CHECKPOINT_BRANCH}:refs/remotes/origin/${CHECKPOINT_BRANCH}`]);return git(root,['rev-parse','refs/remotes/origin/'+CHECKPOINT_BRANCH]).trim()}
+// The checkpoint is a commit on `base`, but the working tree can be newer than base: main may have moved on between a sync's first
+// job and its last. GitHub refuses to let an Actions token create or update a workflow file, so a checkpoint that differs from its
+// base in .github/ cannot be pushed ("refusing to allow a GitHub App to create or update workflow ... without `workflows`
+// permission"), and the sync fails at its last step. Workflow files are never generated data, so they stay exactly as in base.
+export function keepWorkflowsOfBase(root,base,env){
+ let listing;try{listing=git(root,['ls-tree','-r','-z',base,'--','.github'])}catch{return false} // base not available here: nothing to compare with
+ git(root,['rm','-r','--cached','-q','--ignore-unmatch','--','.github'],{env});
+ const entries=listing.split('\0').filter(Boolean).map(line=>{const m=/^(\d+) \w+ ([0-9a-f]+)\t([\s\S]*)$/.exec(line);return m?`${m[1]} ${m[2]}\t${m[3]}`:null}).filter(Boolean);
+ if(entries.length)git(root,['update-index','--add','-z','--index-info'],{env,input:entries.join('\0')+'\0'});
+ return true;
+}
 export async function saveCheckpoint(root,{base,phase='checkpoint'}={}){
  const stateFile=join(root,'data/publication.json');if(!existsSync(stateFile)){await mkdir(dirname(stateFile),{recursive:true});await writeFile(stateFile,JSON.stringify({lastPublishedAt:null,commit:null,lastScheduledDay:null})+'\n')}
  await stage(root);const tree=git(root,['write-tree']).trim(),temporary=await mkdtemp(join(tmpdir(),'reposhelf-index-'));
  let reportIds=[];try{reportIds=(await readdir(join(root,'data/sync-runs'))).filter(n=>/^\d+\.json$/.test(n)).map(n=>n.slice(0,-5)).sort((a,b)=>b.length-a.length||b.localeCompare(a)).slice(0,20)}catch(e){if(e.code!=='ENOENT')throw e}
  const manifest={schema:1,base:base||git(root,['rev-parse','HEAD']).trim(),phase,runId:process.env.GITHUB_RUN_ID||null,reportIds,at:new Date().toISOString()};
- try{const env={...process.env,GIT_INDEX_FILE:join(temporary,'index')};git(root,['read-tree',tree],{env});const blob=git(root,['hash-object','-w','--stdin'],{input:JSON.stringify(manifest)+'\n'}).trim();git(root,['update-index','--add','--cacheinfo',`100644,${blob},.sync-checkpoint.json`],{env});const snapshot=git(root,['write-tree'],{env}).trim();
+ try{const env={...process.env,GIT_INDEX_FILE:join(temporary,'index')};git(root,['read-tree',tree],{env});const blob=git(root,['hash-object','-w','--stdin'],{input:JSON.stringify(manifest)+'\n'}).trim();git(root,['update-index','--add','--cacheinfo',`100644,${blob},.sync-checkpoint.json`],{env});keepWorkflowsOfBase(root,manifest.base,env);const snapshot=git(root,['write-tree'],{env}).trim();
  for(let attempt=1;attempt<=3;attempt++){// Each checkpoint replaces the last: it hangs off the main-branch commit it was taken from, not off the previous
  // checkpoint, so the branch stays one commit long and old copies of the generated data can be discarded. Recovery only
  // needs the tip and that base. The lease stops a run from overwriting a checkpoint it has not seen.

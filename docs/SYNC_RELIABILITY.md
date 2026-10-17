@@ -44,3 +44,11 @@ longer starts that work unless it has to:
    problems, such as the website being unreachable, leave submissions queued for the next check.
 
 A catalogue sync does not read the submissions queue, so it neither exercises nor depends on this check.
+
+## Shared queue, X import and live checks (QA fixes, October 2026)
+
+- Catalogue sync, publication, recovery, submissions and the X import share the `reposhelf-catalog` concurrency group. GitHub keeps only one *waiting* run per group, so a second waiting run replaces the first. Every dispatcher (`lib/workflow-control.mjs`, `scripts/launch-cadence.mjs`) treats a running or waiting run of any of them as busy.
+- The X import waits for the external collector in its own job, outside the group, then joins the group to import. If the scheduled run is still replaced or missing at 08:30 UTC, the maintenance timer requests it once (`lib/x-import-policy.mjs`). A real failure, such as the collector failing, is not retried.
+- A checkpoint is a commit on the main commit a sync started from. Its tree is that commit plus the generated data; `.github/` is always taken from the base commit, because GitHub refuses an Actions token's push if a checkpoint changes a workflow file.
+- On a push, `checks.yml` waits for Vercel's build status of the commit (`scripts/wait-for-deployment.mjs`, up to 35 minutes) before the live checks. It steps aside when Vercel skipped the build or a newer commit has taken over.
+- The Vercel deploy filter (`scripts/deployment-policy.mjs`) looks at everything since the last successful deployment, not just the newest commit.

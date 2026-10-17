@@ -15,13 +15,42 @@ on:
     - cron: '20 6 * * *'
 permissions:
   contents: write
-concurrency:
-  group: reposhelf-catalog
-  cancel-in-progress: false
 jobs:
+  # Waiting for the external collector can take twenty minutes. It happens here, outside the reposhelf-catalog concurrency group, so
+  # an idle wait does not hold the group (and does not leave this run sitting as the group's single waiting slot).
+  collector:
+    if: github.event_name == 'schedule' || inputs.not_before != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: false
+          sparse-checkout: |
+            scripts/wait-x-collector.mjs
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Wait for successful X collection and validation
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          X_NOT_BEFORE: ${{ inputs.not_before }}
+        run: |
+          mkdir -p data
+          node scripts/wait-x-collector.mjs
   intake:
+    needs: collector
+    # The collector job is skipped for a manual run that asks for the existing candidates; that must still import.
+    if: always() && (needs.collector.result == 'success' || needs.collector.result == 'skipped')
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    concurrency:
+      group: reposhelf-catalog
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
         with:
@@ -31,7 +60,8 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Wait for successful X collection and validation
+      - name: Record the successful X collection run
+        # The collector has already finished, so this returns at once; it records the run id the import needs.
         if: github.event_name == 'schedule' || inputs.not_before != ''
         env:
           GITHUB_TOKEN: ${{ github.token }}
