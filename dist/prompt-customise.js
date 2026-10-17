@@ -5,10 +5,10 @@
 // brand name, quoted on-screen copy, links, optional sections and output rules can be found in the browser and swapped
 // in place. Nothing is sent anywhere. Every edit is a span of the original text replaced exactly once, so changing
 // one colour into another colour that is also used never cascades.
-const STORE='reposhelf.promptfields.v1',MAX_SAVED=60;
+const STORE='reposhelf.promptcustomise.v2',MAX_SAVED=60;
 const FONTS=['Inter','DM Sans','Manrope','Poppins','Roboto','Open Sans','Lato','Montserrat','Work Sans','Outfit','Plus Jakarta Sans','Space Grotesk','Sora','Figtree','Lexend','Rubik','Urbanist','Epilogue','Hanken Grotesk','Albert Sans','Bricolage Grotesque','Syne','Unbounded','Archivo','Barlow','Public Sans','Nunito','Mulish','Raleway','Quicksand','Playfair Display','Fraunces','Cormorant Garamond','Instrument Serif','DM Serif Display','Lora','Merriweather','EB Garamond','Newsreader','Spectral','Libre Baskerville','Bodoni Moda','Abril Fatface','Oswald','Bebas Neue','Anton','Big Shoulders Display','Orbitron','Rajdhani','Audiowide','Press Start 2P','DM Mono','JetBrains Mono','IBM Plex Mono','Space Mono','Fira Code','Roboto Mono','Source Code Pro','Caveat','Pacifico'];
 // More Google Fonts that are recognised in a prompt (the dropdown offers the shorter list above).
-const KNOWN=[...FONTS,'Cormorant','Karla','Libre Franklin','Mukta','Oxygen','PT Sans','PT Serif','Noto Sans','Noto Serif','Source Sans 3','Source Serif 4','Crimson Text','Crimson Pro','Cinzel','Marcellus','Tenor Sans','Josefin Sans','Jost','Questrial','Varela Round','Comfortaa','Fredoka','Baloo 2','Bungee','Righteous','Staatliches','Teko','Saira','Chakra Petch','Exo 2','Michroma','Zen Dots','Gloock','Young Serif','Caprasimo','Italiana','Gilda Display','Prata','Yeseva One','Alegreya','Vollkorn','Cardo','Domine','Bitter','Zilla Slab','Roboto Slab','Roboto Condensed','Barlow Condensed','Fjalla One','Archivo Black','Archivo Narrow','League Spartan','Schibsted Grotesk','Familjen Grotesk','Red Hat Display','Red Hat Text','Onest','Geist','Geist Mono','Instrument Sans','Inter Tight','Kumbh Sans','Lexend Deca','Be Vietnam Pro','Heebo','Assistant','Noto Sans Mono','Ubuntu','Ubuntu Mono','Courier Prime','Inconsolata','VT323','Share Tech Mono','Special Elite','Permanent Marker','Dancing Script','Great Vibes','Sacramento','Satisfy','Amatic SC','Lobster','Rubik','Poppins','Roboto'].filter((f,i,a)=>a.indexOf(f)===i).sort((a,b)=>b.length-a.length);
+const KNOWN=[...FONTS,'Cormorant','Karla','Libre Franklin','Mukta','Oxygen','PT Sans','PT Serif','Noto Sans','Noto Serif','Source Sans 3','Source Serif 4','Crimson Text','Crimson Pro','Cinzel','Marcellus','Tenor Sans','Josefin Sans','Jost','Questrial','Varela Round','Comfortaa','Fredoka','Baloo 2','Bungee','Righteous','Staatliches','Teko','Saira','Chakra Petch','Exo 2','Michroma','Zen Dots','Gloock','Young Serif','Caprasimo','Italiana','Gilda Display','Prata','Yeseva One','Alegreya','Vollkorn','Cardo','Domine','Bitter','Zilla Slab','Roboto Slab','Roboto Condensed','Barlow Condensed','Fjalla One','Archivo Black','Archivo Narrow','League Spartan','Schibsted Grotesk','Familjen Grotesk','Red Hat Display','Red Hat Text','Onest','Geist','Geist Mono','Instrument Sans','Inter Tight','Kumbh Sans','Lexend Deca','Be Vietnam Pro','Heebo','Assistant','Noto Sans Mono','Ubuntu','Ubuntu Mono','Courier Prime','Inconsolata','VT323','Share Tech Mono','Special Elite','Permanent Marker','Dancing Script','Great Vibes','Sacramento','Satisfy','Amatic SC','Lobster','Rubik','Poppins','Roboto','Inter Tight','Roboto Mono','Roboto Slab','Roboto Condensed','Roboto Flex','Geist','Geist Mono','Barlow Condensed','Barlow Semi Condensed','Archivo Black','Archivo Narrow','Open Sans Condensed','Noto Sans Mono','Source Code Pro','Space Mono','IBM Plex Mono','IBM Plex Sans','IBM Plex Serif','JetBrains Mono','DM Mono','DM Serif Display','DM Serif Text','Work Sans Mono'].filter((f,i,a)=>a.indexOf(f)===i).sort((a,b)=>b.length-a.length);
 const FORMATS=[
  ['','As written (single HTML file)'],
  ['react','React component with Tailwind CSS'],
@@ -26,6 +26,7 @@ const STOP=new Set(['a','an','the','and','or','with','on','of','for','is','are',
 const esc=s=>String(s).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 const oneLine=s=>String(s??'').replace(/[\u0000-\u001f\u007f]+/g,' ').replace(/\s+/g,' ').trim();
 const title=s=>s.replace(/(^|[\s-])([a-z])/g,(m,a,b)=>a+b.toUpperCase());
+const longerFonts=(name,names)=>[...new Set([...KNOWN,...names])].filter(n=>n.length>name.length&&n.startsWith(name+' '));
 const wordRe=name=>new RegExp('(?<![A-Za-z0-9])'+esc(name)+'(?![A-Za-z0-9])','g');
 
 // ---- reading the prompt -------------------------------------------------------------------------------------------
@@ -88,8 +89,10 @@ function detectFonts(text,paras){
  for(const m of text.matchAll(/\b(?:fonts?|typefaces?)\b[^.\n]{0,40}/gi))for(const f of KNOWN){const i=m[0].search(wordRe(f));if(i>=0)add(f,m.index+i)}
  const out=[];
  for(const [name,first] of names){
-  const spans=[...text.matchAll(wordRe(name))].map(m=>[m.index,m.index+name.length]);if(!spans.length)continue;
-  const ctx=text.slice(first+name.length,first+name.length+80).toLowerCase();
+  // "Inter Tight" is a font of its own: a swap for Inter must leave it alone, and a prompt that only says "Inter Tight" has no Inter.
+  const longer=longerFonts(name,names.keys()).map(n=>[...text.matchAll(wordRe(n))].map(m=>m.index)).flat(),
+   spans=[...text.matchAll(wordRe(name))].filter(m=>!longer.includes(m.index)).map(m=>[m.index,m.index+name.length]);if(!spans.length)continue;
+  const ctx=text.slice(spans[0][0]+name.length,spans[0][0]+name.length+80).toLowerCase();
   const near=ctx.slice(0,42);
   let label=/mono|code/i.test(name)?'Label font':/\b(headings?|headlines?|display|titles?|numerals?|prices?|logo|wordmark)\b/.test(near)?'Heading font':/\b(body|paragraph|ui|text|copy|hints?)\b/.test(near)?'Body font':/\b(labels?|captions?|stats?)\b/.test(near)?'Label font':'Font';
   out.push({id:'f:'+name,type:'font',group:'fonts',orig:name,label,spans,order:first});
@@ -184,6 +187,7 @@ function active(analysis,values){
 const brandCase=(c,found,v)=>found===c.orig?v:found===c.orig.toUpperCase()?v.toUpperCase():found===c.orig.toLowerCase()?v.toLowerCase():v;
 function prompt(analysis,values={}){
  const {text,controls}=analysis,act=active(analysis,values),edits=[];
+ if(!act.size)return text; // nothing edited: hand back the prompt exactly as written
  for(const c of controls){
   if(!act.has(c.id))continue;const v=act.get(c.id);
   if(c.spans)for(const [s,e] of c.spans)edits.push({s,e,v:c.type==='brand'?brandCase(c,text.slice(s,e),v):v});
@@ -201,27 +205,71 @@ function prompt(analysis,values={}){
  return extra.length?out+'\n\n'+extra.join('\n'):out;
 }
 const htmlEsc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-// The same colour, font, brand, text and link swaps applied to the page's own code, so the Live view can follow.
-function html(analysis,source,values={}){
- if(typeof source!=='string')return source;
- const act=active(analysis,values),pairs=[];
- for(const c of analysis.controls){
-  if(!act.has(c.id))continue;const v=act.get(c.id);
-  if(c.type==='colour')pairs.push({re:new RegExp(esc(c.orig)+'(?![0-9A-Za-z_-])','gi'),to:v});
-  else if(c.type==='font'){pairs.push({re:wordRe(c.orig),to:v},{re:new RegExp(esc(c.orig.replace(/ /g,'+'))+'(?![A-Za-z0-9])','g'),to:v.replace(/ /g,'+')},{re:new RegExp(esc(c.orig.replace(/ /g,'%20'))+'(?![A-Za-z0-9])','g'),to:v.replace(/ /g,'%20')})}
-  else if(c.type==='brand'){for(const from of new Set([c.orig,htmlEsc(c.orig)]))pairs.push({re:new RegExp('(?<![A-Za-z0-9])'+esc(from)+'(?![A-Za-z0-9])','gi'),fn:m=>brandCase(c,m===htmlEsc(c.orig).toUpperCase()?c.orig.toUpperCase():m===htmlEsc(c.orig).toLowerCase()?c.orig.toLowerCase():c.orig,htmlEsc(v))})}
-  else if(c.type==='text'){for(const from of new Set([c.orig,htmlEsc(c.orig)]))pairs.push({re:new RegExp(esc(from),'g'),to:htmlEsc(v)})}
-  else if(c.type==='url')pairs.push({re:new RegExp(esc(c.orig),'g'),to:v});
- }
- // Park every match behind a placeholder first, so one swap can never be swapped again by the next.
- const done=[];let out=source;
+// The same colour, font, brand, text and link swaps applied to the page's own code, so the Live view can follow. The page is
+// read as markup, not as one long string: brand names and quoted copy change only in visible text and in the alt, title,
+// aria-label, placeholder and value attributes, never in scripts, styles, class names or ids ("View" must not become
+// "See work" inside scrollIntoView(). Colours, fonts and links are specific values, so they also change inside styles,
+// attribute values and the quoted strings of a script.
+const COPY_ATTRS=/(\s(?:alt|title|aria-label|placeholder|value)\s*=\s*)(?:"([^"]*)"|'([^']*)')/gi;
+const MARKUP=/<!--[\s\S]*?-->|<(script|style)\b((?:"[^"]*"|'[^']*'|[^>"'])*)>([\s\S]*?)(<\/\1\s*>|$)|<\/?[a-zA-Z][^\s>\/]*(?:"[^"]*"|'[^']*'|[^>"'])*>/gi;
+const STRING_LITERAL=/(["'`])(?:\\.|(?!\1)[^\\\n])*\1/g;
+// Park every match behind a placeholder first, so one swap can never be swapped again by the next.
+function swap(str,pairs){
+ if(!pairs.length||!str)return str;
+ const done=[];let out=str;
  pairs.forEach(p=>{out=out.replace(p.re,m=>{done.push(p.fn?p.fn(m):p.to);return '\u0000'+(done.length-1)+'\u0000'})});
  return out.replace(/\u0000(\d+)\u0000/g,(m,i)=>done[Number(i)]);
 }
+// A font name for a swap, written as it appears in prose ("Inter Tight"), in a Google Fonts link ("Inter+Tight") or in a URL ("Inter%20Tight").
+function fontPair(name,to,longer){
+ // A name of one word reads the same in all three; a longer name is swapped in each spelling. Either way a longer family that
+ // starts with the same words ("Inter Tight") is skipped, whichever way its words are joined.
+ const forms=name.includes(' ')?[[' ',' '],['+','+'],['%20','%20']]:[[' ',' ']],tail=longer.map(l=>esc(l.slice(name.length+1)).replace(/ /g,'(?: |\\+|%20)'));
+ const ahead=tail.length?`(?!(?: |\\+|%20)(?:${tail.join('|')})(?![A-Za-z0-9]))`:'';
+ return forms.map(([sep,joiner])=>({re:new RegExp(`(?<![A-Za-z0-9])${esc(name.replace(/ /g,sep))}(?![A-Za-z0-9])${ahead}`,'g'),to:to.replace(/ /g,joiner)}));
+}
+function html(analysis,source,values={}){
+ if(typeof source!=='string')return source;
+ const act=active(analysis,values),texts=[],brands=[],value=[],fontNames=analysis.controls.filter(c=>c.type==='font').map(c=>c.orig);
+ for(const c of analysis.controls){
+  if(!act.has(c.id))continue;const v=act.get(c.id);
+  if(c.type==='colour')value.push({re:new RegExp(esc(c.orig)+'(?![0-9A-Za-z_-])','gi'),to:v});
+  else if(c.type==='font')value.push(...fontPair(c.orig,v,longerFonts(c.orig,fontNames)));
+  else if(c.type==='brand'){for(const from of new Set([c.orig,htmlEsc(c.orig)]))brands.push({re:new RegExp('(?<![A-Za-z0-9])'+esc(from)+'(?![A-Za-z0-9])','gi'),fn:m=>brandCase(c,m===htmlEsc(c.orig).toUpperCase()?c.orig.toUpperCase():m===htmlEsc(c.orig).toLowerCase()?c.orig.toLowerCase():c.orig,htmlEsc(v))})}
+  else if(c.type==='text'){
+   // Whole words only, and not the start of a longer line the prompt also quotes ("View" inside "View all").
+   const longer=analysis.controls.filter(o=>o.type==='text'&&o.orig.length>c.orig.length&&o.orig.startsWith(c.orig));
+   for(const from of new Set([c.orig,htmlEsc(c.orig)])){
+    const tails=longer.map(o=>esc(from===c.orig?o.orig.slice(c.orig.length):htmlEsc(o.orig).slice(from.length)));
+    texts.push({re:new RegExp((/^\w/.test(from)?'(?<![A-Za-z0-9])':'')+esc(from)+(/\w$/.test(from)?'(?![A-Za-z0-9])':'')+(tails.length?`(?!(?:${tails.join('|')}))`:''),'g'),to:htmlEsc(v)});
+   }
+  }
+  else if(c.type==='url')value.push({re:new RegExp(esc(c.orig),'g'),to:v});
+ }
+ // Changed lines are swapped before the brand name, so a brand inside a changed line does not change that line twice.
+ const copy=[...texts.sort((a,b)=>b.re.source.length-a.re.source.length),...brands],visible=[...copy,...value];
+ // Visible-copy attributes take every swap; all other attribute values take only the colour, font and link swaps.
+ const tag=t=>{
+  const kept=[],w=swap(t.replace(COPY_ATTRS,(x,head,dq,sq)=>{kept.push(head+(dq!==undefined?'"'+swap(dq,visible)+'"':"'"+swap(sq,visible)+"'"));return '\u0001'+(kept.length-1)+'\u0001'}),value);
+  return w.replace(/\u0001(\d+)\u0001/g,(x,i)=>kept[Number(i)]);
+ };
+ let out='',at=0,m;MARKUP.lastIndex=0;
+ while((m=MARKUP.exec(source))){
+  out+=swap(source.slice(at,m.index),visible);at=m.index+m[0].length;
+  if(m[0].startsWith('<!--'))out+=m[0];
+  else if(m[1]){const body=m[3],open=m[0].slice(0,m[0].length-body.length-m[4].length);out+=tag(open)+(m[1].toLowerCase()==='style'?swap(body,value):body.replace(STRING_LITERAL,lit=>swap(lit,value)))+m[4]}
+  else out+=tag(m[0]);
+ }
+ return out+swap(source.slice(at),visible);
+}
 
 // ---- remembering ---------------------------------------------------------------------------------------------------------
-function load(id){try{const all=JSON.parse(localStorage.getItem(STORE)||'{}');const v=all&&all[id];return v&&typeof v==='object'?v:{}}catch{return {}}}
-function save(id,values){try{const all=JSON.parse(localStorage.getItem(STORE)||'{}')||{};delete all[id];if(Object.keys(values).length)all[id]=values;const keys=Object.keys(all);for(const k of keys.slice(0,Math.max(0,keys.length-MAX_SAVED)))delete all[k];localStorage.setItem(STORE,JSON.stringify(all))}catch{}}
+// Kept on this browser for the signed-in member only (its own key, apart from the fill-in boxes), and removed on sign-out.
+const slot=()=>{const user=globalThis.RepoAccount?.user?.id;return user?STORE+'.'+user:null};
+function load(id){const key=slot();if(!key)return {};try{const all=JSON.parse(localStorage.getItem(key)||'{}');const v=all&&all[id];return v&&typeof v==='object'?v:{}}catch{return {}}}
+function save(id,values){const key=slot();if(!key)return;try{const all=JSON.parse(localStorage.getItem(key)||'{}')||{};delete all[id];if(Object.keys(values).length)all[id]=values;const keys=Object.keys(all);for(const k of keys.slice(0,Math.max(0,keys.length-MAX_SAVED)))delete all[k];localStorage.setItem(key,JSON.stringify(all))}catch{}}
+function forgetAll(){try{for(const k of Object.keys(localStorage))if(k.startsWith('reposhelf.promptcustomise.')||k.startsWith('reposhelf.promptfields.'))localStorage.removeItem(k)}catch{}}
+if(typeof window!=='undefined')window.addEventListener('reposhelf-account',()=>{if(globalThis.RepoAccount?.ready&&!globalThis.RepoAccount.user)forgetAll()});
 
 // ---- the boxes -----------------------------------------------------------------------------------------------------------
 const GROUPS=[['text','Brand and text'],['colours','Colours'],['fonts','Fonts'],['links','Links'],['sections','Sections and rules'],['output','Output']];

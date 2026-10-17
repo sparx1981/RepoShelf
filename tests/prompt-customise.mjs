@@ -88,6 +88,31 @@ const t0=performance.now(),bigAnalysis=C.analyse(big),bigOut=C.prompt(bigAnalysi
 assert(big.length>60000&&ms<400,`analysing ${big.length} characters took ${Math.round(ms)}ms`);
 assert(bigAnalysis.controls.filter(c=>c.type==='colour').length<=30&&bigAnalysis.controls.filter(c=>c.type==='text').length<=40&&bigAnalysis.controls.filter(c=>c.type==='url').length<=6,'boxes are capped');
 assert.equal(bigOut.length<=big.length,true);
+// QA-17/18/35/36: the page is swapped as markup, font families are not split, an unedited prompt is returned as written, and changed lines win over the brand
+{
+ const page='<!doctype html><html><head><title>Nova</title><link href="https://fonts.googleapis.com/css2?family=Inter+Tight&family=Inter&display=swap" rel="stylesheet"><style>body{font-family:"Inter","Inter Tight",sans-serif;display:grid;color:#0b0b0d}.nova{color:#fff}</style></head><body class="nova"><h1 id="Nova">Nova</h1><button aria-label="View all" title="Nova">View</button><p>Nova launches today. Use Inter or Inter Tight.</p><script>const nova=1;el.scrollIntoView({behavior:"smooth"});ctx.font="14px Inter";ctx.fillStyle="#0b0b0d"</script></body></html>';
+ const text='Invented brand "Nova".\n\nTypography: "Inter" (400) for body and "Inter Tight" (700) for headings.\n\nColours: background #0b0b0d, text #ffffff.\n\nButtons: "View" and "View all".\n\nRules: Single HTML file.';
+ const a=C.analyse(text);
+ const fonts=a.controls.filter(c=>c.type==='font').map(c=>c.orig);assert(fonts.includes('Inter')&&fonts.includes('Inter Tight'),'both fonts are found: '+fonts);
+ assert.equal(a.controls.find(c=>c.id==='f:Inter').spans.length,1,'Inter does not claim the Inter in Inter Tight');
+ let out=C.prompt(a,{'f:Inter':'Poppins'});assert(out.includes('"Poppins" (400)')&&out.includes('"Inter Tight" (700)'),'the prompt keeps Inter Tight: '+out);
+ let live=C.html(a,page,{'f:Inter':'Poppins'});
+ assert(live.includes('"Poppins","Inter Tight"')&&live.includes('family=Inter+Tight&family=Poppins&')&&live.includes('Use Poppins or Inter Tight.')&&live.includes('ctx.font="14px Poppins"'),'only Inter changes: '+live);
+ live=C.html(a,page,{'b':'Blue Fox'});
+ assert(live.includes('<title>Blue Fox</title>')&&live.includes('<h1 id="Nova">Blue Fox</h1>')&&live.includes('title="Blue Fox"')&&live.includes('<p>Blue Fox launches today.'),'visible copy follows the brand');
+ assert(live.includes('class="nova"')&&live.includes('const nova=1;')&&live.includes('.nova{color:#fff}')&&live.includes('id="Nova"'),'class names, ids, styles and scripts are left alone');
+ live=C.html(a,page,{'t:View':'See work'});
+ assert(live.includes('>See work</button>')&&live.includes('scrollIntoView(')&&live.includes('aria-label="View all"'),'a text swap does not reach into scripts or longer phrases: '+live);
+ live=C.html(a,page,{'c:#0b0b0d':'#101820'});assert(live.includes('color:#101820')&&live.includes('fillStyle="#101820"'),'colours follow into styles and quoted script strings');
+ assert(!C.html(a,page,{'b':'Grid'}).includes('display:Grid'),'a brand named like a CSS word leaves the CSS alone');
+ assert.equal(C.prompt(a,{}),text,'an unedited prompt comes back exactly as written');
+ const spaced='Invented brand "Nova".\n\n\nTypography:  "Inter" (400).   \nRules: Single HTML file.\n';
+ assert.equal(C.prompt(C.analyse(spaced),{}),spaced,'blank lines and trailing spaces are not normalised when nothing changed');
+ const both='<h1>Nova ships</h1><p>Nova launches today.</p>';
+ const b=C.analyse('Invented brand "Nova". Headline "Nova launches today." and "Nova ships".');
+ const swapped=C.html(b,both,{'b':'Blue Fox','t:Nova launches today.':'Hello there.'});
+ assert(swapped.includes('<p>Hello there.</p>')&&swapped.includes('Blue Fox ships'),'a changed line is kept when the brand changes too: '+swapped);
+}
 // text that merely looks risky never breaks the matching
 for(const odd of ['"((((((((((((','#','Invented ','Invented a "','Typography: "','Rules:\n\nRules:','\n\n\n','"" "" ""','\u0000#abcdef\u0000'])assert.doesNotThrow(()=>C.prompt(C.analyse(odd+' x')||{controls:[],byId:new Map(),text:''},{}),JSON.stringify(odd));
 console.log('PASS: prompt customiser finds brand, text, colours, fonts, links, sections, rules and output in library prompts, swaps each exactly once without cascades, keeps values safe, drops edits inside removed sections and applies the same swaps to the live page.');

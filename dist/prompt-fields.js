@@ -107,7 +107,7 @@ const SPECS={
   {key:'format',label:'Format',type:'select'},
   {key:'must answer',label:'Must answer',type:'area'},
   {key:'constraints',label:'Constraints',type:'area'}]}};
-const STORE='reposhelf.promptfields.v1',LINE=/^([a-z][a-z -]*):(\s+)\[(.*)\]\s*$/;
+const STORE='reposhelf.promptfields.v2',LINE=/^([a-z][a-z -]*):(\s+)\[(.*)\]\s*$/;
 const oneLine=v=>String(v??'').replace(/\s*[\r\n]+\s*/g,' ').trim();
 // Finds the field lines inside the block, in order. Lines that no longer look like "key: [hint]" are left alone.
 function parse(text,id){
@@ -150,8 +150,13 @@ function fill(parsed,values={},extras={}){
  if(board)lines.splice(parsed.board.open+1,parsed.board.close-parsed.board.open-1,...board.lines);
  return lines.join('\n');
 }
-function load(id){try{const all=JSON.parse(localStorage.getItem(STORE)||'{}');return all&&typeof all==='object'&&all[id]&&typeof all[id]==='object'?all[id]:{}}catch{return {}}}
-function save(id,values){try{const all=JSON.parse(localStorage.getItem(STORE)||'{}')||{};all[id]=values;localStorage.setItem(STORE,JSON.stringify(all))}catch{}}
+// What a member types is kept on this browser for that member only, and removed when they sign out. The customiser keeps its own
+// values under a different key, so neither can trim or overwrite the other.
+const slot=()=>{const user=globalThis.RepoAccount?.user?.id;return user?STORE+'.'+user:null};
+function load(id){const key=slot();if(!key)return {};try{const all=JSON.parse(localStorage.getItem(key)||'{}');return all&&typeof all==='object'&&all[id]&&typeof all[id]==='object'?all[id]:{}}catch{return {}}}
+function save(id,values){const key=slot();if(!key)return;try{const all=JSON.parse(localStorage.getItem(key)||'{}')||{};all[id]=values;localStorage.setItem(key,JSON.stringify(all))}catch{}}
+function forgetAll(){try{for(const k of Object.keys(localStorage))if(k.startsWith('reposhelf.promptfields.'))localStorage.removeItem(k)}catch{}}
+if(typeof window!=='undefined')window.addEventListener('reposhelf-account',()=>{if(globalThis.RepoAccount?.ready&&!globalThis.RepoAccount.user)forgetAll()});
 const supported=id=>Object.hasOwn(SPECS,id);
 // Builds the boxes for one prompt. Returns null when the prompt has no boxes (so the caller shows it as plain text).
 // {node, text(), reset()}: text() is the finished prompt; onChange is called after every edit.

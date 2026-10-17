@@ -41,6 +41,8 @@ export function createPromptsHandler({accounts=createAccounts(),github=fetch,stu
   // Reads ask for the 'kind' column. If the database update that adds it has not been applied yet, retry without it
   // (every prompt is then a page prompt) so deploying the site before running the migration cannot break the library.
   const rows=async path=>{try{return await accounts.request('/rest/v1/'+path,{service:true})}catch(e){if(e.code==='migration_required'&&/,kind(?=[,&]|$)/.test(path))return accounts.request('/rest/v1/'+path.replace(/,kind(?=[,&]|$)/,''),{service:true});throw e}};
+  // Same idea for the column that records admin edits (migration 0038): without it, reads and writes carry on without it.
+  const editRows=async path=>{try{return await rows('ss_prompts?'+path.replace(/^ss_prompts\?/,''))}catch(e){if(e.code==='migration_required'&&/,edited_fields(?=[,&]|$)/.test(path))return rows('ss_prompts?'+path.replace(/^ss_prompts\?/,'').replace(/,edited_fields(?=[,&]|$)/,''));throw e}};
   async function find(source,id,columns){
     const [row]=await rows(`ss_prompts?source=eq.${q(source)}&source_id=eq.${q(id)}&published=eq.true&select=${columns}&limit=1`);
     if(!row)fail(404,'not_found','That prompt is not available.');
@@ -80,17 +82,30 @@ export function createPromptsHandler({accounts=createAccounts(),github=fetch,stu
     const where=`ss_prompts?source=eq.${q(body.source)}&source_id=eq.${q(body.id)}`;
     if(area==='admin-delete'){
       if(body.confirm!==body.id)fail(400,'confirm_required','Type the prompt id to confirm deletion.');
+      // An imported prompt that is deleted here stays deleted: its id is remembered so the next import skips it.
+      try{await accounts.request('/rest/v1/ss_prompt_tombstones',{service:true,method:'POST',body:{source:body.source,source_id:body.id}})}
+      catch(e){if(e.code!=='migration_required'&&e.code!=='edit_conflict')throw e} // not migrated yet, or already remembered
       await accounts.request('/rest/v1/'+where,{service:true,method:'DELETE'});
       return respond(res,200,{ok:true});
     }
     if(area==='admin-save'){
-      const patch={};
-      if(body.title!==undefined){patch.title=text(body.title,200,'Title').trim();if(!patch.title)fail(400,'invalid_field','A title is required.')}
-      if(body.category!==undefined)patch.category=text(body.category,80,'Category').trim()||null;
-      if(body.description!==undefined)patch.description=text(body.description,1000,'Description');
-      if(body.prompt!==undefined){patch.prompt=text(body.prompt,60000,'Prompt');if(!patch.prompt.trim())fail(400,'invalid_field','A prompt is required.')}
-      if(body.published!==undefined){if(typeof body.published!=='boolean')fail(400,'invalid_field','Published must be true or false.');patch.published=body.published}
-      if(!Object.keys(patch).length)fail(400,'nothing_to_save','Nothing to save.');
+      const incoming={};
+      if(body.title!==undefined){incoming.title=text(body.title,200,'Title').trim();if(!incoming.title)fail(400,'invalid_field','A title is required.')}
+      if(body.category!==undefined)incoming.category=text(body.category,80,'Category').trim()||null;
+      if(body.description!==undefined)incoming.description=text(body.description,1000,'Description');
+      if(body.prompt!==undefined){incoming.prompt=text(body.prompt,60000,'Prompt');if(!incoming.prompt.trim())fail(400,'invalid_field','A prompt is required.')}
+      if(body.published!==undefined&&typeof body.published!=='boolean')fail(400,'invalid_field','Published must be true or false.');
+      if(!Object.keys(incoming).length&&body.published===undefined)fail(400,'nothing_to_save','Nothing to save.');
+      // Only fields that really changed are written, and each one is remembered as edited so the weekly SceneAI import leaves it alone.
+      // (The edit dialog sends every box every time, and a browser changes line endings in a textarea: those are not edits.)
+      const [current]=Object.keys(incoming).length?await editRows(`${where}&select=title,category,description,prompt,edited_fields&limit=1`):[null];
+      if(!current&&Object.keys(incoming).length)fail(404,'not_found','That prompt is not available.');
+      const same=(a,b)=>String(a??'').replace(/\r\n?/g,'\n')===String(b??'').replace(/\r\n?/g,'\n'),changed=Object.keys(incoming).filter(k=>!same(incoming[k],current[k])),patch={};
+      for(const k of changed)patch[k]=incoming[k];
+      if(body.published!==undefined)patch.published=body.published;
+      if(!Object.keys(patch).length)return respond(res,200,{ok:true,unchanged:true});
+      const fields=changed.filter(k=>k!=='prompt');
+      if(fields.length&&Array.isArray(current?.edited_fields))patch.edited_fields=[...new Set([...current.edited_fields,...fields])];
       patch.updated_at=new Date().toISOString();patch.is_new=false;
       await accounts.request('/rest/v1/'+where,{service:true,method:'PATCH',body:patch});
       return respond(res,200,{ok:true});
@@ -166,8 +181,8 @@ export function createPromptsHandler({accounts=createAccounts(),github=fetch,stu
         const {source,id}=target(params),row=await find(source,id,'id,title,prompt,kind');
         if(row.kind==='text')return respond(res,200,{title:row.title,prompt:row.prompt,html:null,kind:'text'});
         const [page]=await rows(`ss_previews?prompt_id=eq.${q(row.id)}&select=html&order=created_at.desc&limit=1`);
-        if(!page)fail(404,'no_preview','This prompt has no generated page yet.');
-        return respond(res,200,{title:row.title,prompt:row.prompt,html:page.html});
+        // A page prompt that has no generated page yet (a new import) still has its prompt: the viewer hides the Live and Code views.
+        return respond(res,200,{title:row.title,prompt:row.prompt,html:page?.html??null});
       }
       fail(400,'unknown_area','Unknown request.');
     }catch(e){accountFailure(res,e)}

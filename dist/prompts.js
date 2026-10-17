@@ -1,7 +1,7 @@
 'use strict';
 (()=>{
 const A=window.RepoAccount,$=s=>document.querySelector(s),API='/api/prompts',PAGE=48,KEEP='reposhelf.prompts.open';
-let saved=new Set(),savedFor=null,items=[],shown=PAGE,current=null,full=null,fullFor=null,tab='live',liveFor=null,customiser=null,liveBase=null,liveDirty=false;
+let saved=new Set(),savedFor=null,items=[],shown=PAGE,current=null,full=null,fullFor=null,tab='live',liveFor=null,customiser=null,liveBase=null,liveDirty=false,customiserFor=null,onCustom=()=>{liveDirty=true};
 const el=(tag,props={},...kids)=>{const n=document.createElement(tag);for(const[k,v]of Object.entries(props)){if(k==='text')n.textContent=v;else if(k==='class')n.className=v;else n.setAttribute(k,v)}n.append(...kids);return n};
 const key=i=>i.source+'/'+i.id;
 const signedIn=()=>Boolean(A?.user),track=(kind,item)=>{try{A?.track?.(kind,key(item||current))}catch{}};
@@ -31,22 +31,37 @@ const dialog=$('#prompt-dialog'),tabs=['live','prompt','code'];
 function setTab(name,focus){tab=name;for(const t of tabs){const on=t===name;$('#tab-'+t).setAttribute('aria-selected',on);$('#tab-'+t).tabIndex=on?0:-1;$('#panel-'+t).hidden=!on}if(focus)$('#tab-'+name).focus();if(name!=='live')void showGated(name);else if(liveDirty)applyLive()}
 const shownTabs=()=>tabs.filter(t=>!$('#tab-'+t).hidden);
 for(const t of tabs){$('#tab-'+t).onclick=()=>setTab(t);$('#tab-'+t).onkeydown=e=>{const list=shownTabs(),i=list.indexOf(t),n=e.key==='ArrowRight'?(i+1)%list.length:e.key==='ArrowLeft'?(i+list.length-1)%list.length:-1;if(n>=0){e.preventDefault();setTab(list[n],true)}}}
-function open(item){current=item;full=null;fullFor=null;liveFor=null;customiser=null;liveBase=null;liveDirty=false;$('#prompt-title').textContent=item.title;$('#prompt-like-slot').replaceChildren(heart(item,'prompt-like inline'));const credit=$('#prompt-credit');credit.hidden=!item.credit;credit.replaceChildren();if(item.credit){credit.append('Originally made by ',el('a',{href:item.credit.url,rel:'noopener noreferrer',target:'_blank',text:item.credit.name}),'. Shown here with a link back.')}
+function open(item){current=item;full=null;fullFor=null;liveFor=null;customiser=null;customiserFor=null;onCustom=()=>{liveDirty=true};liveBase=null;liveDirty=false;$('#prompt-title').textContent=item.title;$('#prompt-like-slot').replaceChildren(heart(item,'prompt-like inline'));const credit=$('#prompt-credit');credit.hidden=!item.credit;credit.replaceChildren();if(item.credit){credit.append('Originally made by ',el('a',{href:item.credit.url,rel:'noopener noreferrer',target:'_blank',text:item.credit.name}),'. Shown here with a link back.')}
  try{history.replaceState(null,'','#'+key(item))}catch{}
  const textOnly=item.kind==='text';$('#tab-live').hidden=textOnly;$('#tab-code').hidden=textOnly;
- if(!dialog.open)dialog.showModal();setTab(textOnly?'prompt':'live');track('prompt_view',item);if(!textOnly)void loadLive(item)}
+ if(!dialog.open)dialog.showModal();setTab(textOnly?'prompt':'live');track('prompt_view',item);if(!textOnly){void loadLive(item);void prepare(item)}}
 dialog.addEventListener('close',()=>{$('#live-frame').srcdoc='';liveFor=null;try{history.replaceState(null,'',location.pathname)}catch{}});
 $('#prompt-close').onclick=()=>dialog.close();
-dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close()});
+// Only a click on the backdrop closes the dialog. The dialog's own padding is part of the dialog element, so a tap there has the dialog as
+// its target too: compare where the click landed with the dialog's box. A click with no position (the keyboard) never closes it.
+dialog.addEventListener('click',e=>{if(e.target!==dialog||(!e.clientX&&!e.clientY))return;const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close()});
 const LIVE_NOTE='This is a live page. It runs in a sealed frame.';
 // The Live page follows the Customise boxes (colours, fonts, words and links) using only what the browser already has.
 function applyLive(){if(!customiser||liveBase==null)return;$('#live-frame').srcdoc=customiser.html(liveBase);liveDirty=false;$('#live-status').textContent=customiser.changed()?'Showing your colours, fonts, words and links where this page uses the same ones. It runs in a sealed frame.':LIVE_NOTE}
-async function loadLive(item){const status=$('#live-status'),frame=$('#live-frame');frame.srcdoc='';status.textContent='Loading the page…';liveFor=key(item);try{const d=await getJson(`${API}?area=preview&source=${item.source}&id=${encodeURIComponent(item.id)}`);if(liveFor!==key(item))return;liveBase=d.html;if(customiser&&customiser.changed()){applyLive()}else{frame.srcdoc=d.html;status.textContent=LIVE_NOTE}}catch(e){if(liveFor===key(item))status.textContent=e.status===404?'This page has no live version yet.':e.message}}
+async function loadLive(item){const status=$('#live-status'),frame=$('#live-frame');frame.srcdoc='';status.textContent='Loading the page…';liveFor=key(item);try{const d=await getJson(`${API}?area=preview&source=${item.source}&id=${encodeURIComponent(item.id)}`);if(liveFor!==key(item))return;liveBase=d.html;if(customiser&&customiser.changed()){applyLive()}else{frame.srcdoc=d.html;status.textContent=LIVE_NOTE}}catch(e){if(liveFor!==key(item))return;if(e.status===404){noPage(item);return}status.textContent=e.message}}
+// A page prompt without a generated page yet (a new import) is a prompt-only listing: hide the Live and Code views and show the prompt.
+function noPage(item){if(current!==item)return;$('#live-status').textContent='This page has no live version yet.';$('#tab-live').hidden=true;$('#tab-code').hidden=true;if(tab==='live'||tab==='code')setTab('prompt')}
 
-function lock(panel,what){panel.replaceChildren(el('div',{class:'prompt-lock'},el('h3',{text:'Sign in to see '+what}),el('p',{text:'Browsing is open to everyone. Signing in with GitHub unlocks the prompt, the code and the download.'}),el('a',{class:'button lime',href:'/api/auth?action=start&return=%2Fprompts.html',text:'Sign in with GitHub'})));const a=panel.querySelector('a');a.onclick=()=>{track('lock_signin');try{sessionStorage.setItem(KEEP,JSON.stringify({key:key(current),tab,at:Date.now()}))}catch{}}}
+function lock(panel,what){panel.replaceChildren(el('div',{class:'prompt-lock'},el('h3',{text:what==='the code'?'Sign in to copy the code':'Sign in to see '+what}),el('p',{text:what==='the code'?'The live page is open to everyone, so a browser can already show its source. Signing in with GitHub gives you the code with a copy button and the download.':'Browsing is open to everyone. Signing in with GitHub unlocks the prompt, the code and the download.'}),el('a',{class:'button lime',href:'/api/auth?action=start&return=%2Fprompts.html',text:'Sign in with GitHub'})));const a=panel.querySelector('a');a.onclick=()=>{track('lock_signin');try{sessionStorage.setItem(KEEP,JSON.stringify({key:key(current),tab,at:Date.now()}))}catch{}}}
 // The member's own boards (My collection), for the Reference board dropdown on prompts that have one.
 const boardSource={list:()=>getJson('/api/collection?action=boards'),get:id=>getJson('/api/collection?action=boards&board='+encodeURIComponent(id))};
 async function ensureFull(){if(full&&fullFor===key(current))return full;const item=current;const d=await getJson(`${API}?area=bundle&source=${item.source}&id=${encodeURIComponent(item.id)}`);if(current!==item)return null;full=d;fullFor=key(item);return d}
+// The Customise boxes are read from the prompt as soon as a member opens a page prompt, so the Live page already shows their saved colours,
+// fonts and words, and the Code tab and the download carry them too, without opening the Prompt tab first.
+function customiserOf(item,d){
+ if(item.kind==='text'||d.html==null||window.RepoPromptFields?.supported(key(item)))return null;
+ if(customiser&&customiserFor===key(item))return customiser;
+ customiser=window.RepoPromptCustomise?.mount(key(item),d.prompt,{html:d.html,onChange:()=>onCustom()})||null;customiserFor=customiser?key(item):null;return customiser}
+async function prepare(item){
+ if(!signedIn())return;
+ try{const d=await ensureFull();if(!d||current!==item)return;if(d.html==null){noPage(item);return}
+  const c=customiserOf(item,d);if(c){liveBase??=d.html;if(c.changed()){liveDirty=true;if(tab==='live'&&liveFor===key(item))applyLive()}}}catch{}}
+const pageHtml=d=>customiser&&customiserFor===key(current)&&customiser.changed()?customiser.html(d.html):d.html;
 function download(name,blob){const a=el('a',{href:URL.createObjectURL(blob),download:name});document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),10000)}
 async function copy(text,status,msg){try{await navigator.clipboard.writeText(text);status.textContent=msg}catch{status.textContent='Copy was unavailable. Select the text and copy it manually.'}}
 function aiLinks(prompt){const wrap=document.createDocumentFragment(),enc=encodeURIComponent(prompt);const long=enc.length>6000;for(const[name,base]of[['Claude','https://claude.ai/new?q='],['ChatGPT','https://chatgpt.com/?q=']]){const a=el('a',{class:'button outline',href:long?base.split('?')[0]:base+enc,text:'Open in '+name,rel:'noopener noreferrer',target:'_blank'});a.addEventListener('click',()=>track('ai_open'));if(long)a.title='This prompt is long. Copy it first, then paste it in.';wrap.append(a)}return wrap}
@@ -55,13 +70,14 @@ async function showGated(name){const panel=$('#panel-'+name);if(!signedIn()){loc
  try{const d=await ensureFull();if(!d||current!==item||tab!==name)return;track(name==='prompt'?'prompt_reveal':'code_reveal',item);const status=el('p',{class:'prompt-note',role:'status'});
   if(name==='prompt'){
    // Motion film director has its own brief boxes; other page prompts get boxes built from their own text.
-   const fields=window.RepoPromptFields?.mount(key(item),d.prompt,{onChange:refresh,boards:boardSource}),custom=fields||item.kind==='text'?null:window.RepoPromptCustomise?.mount(key(item),d.prompt,{html:d.html,onChange:refresh}),form=fields||custom;
+   const fields=window.RepoPromptFields?.mount(key(item),d.prompt,{onChange:refresh,boards:boardSource}),custom=fields?null:customiserOf(item,d),form=fields||custom;
    const now=()=>form?form.text():d.prompt,pre=fields?null:el('pre',{class:'prompt-text',text:now()}),links=el('span',{class:'prompt-actions-links'},aiLinks(now()));
    const copyLabel=()=>fields?'Copy finished prompt':custom&&custom.changed()?'Copy customised prompt':'Copy prompt',copyButton=Object.assign(el('button',{class:'button lime',type:'button',text:copyLabel()}),{onclick:()=>{track('prompt_copy',item);copy(now(),status,fields?'Finished prompt copied.':custom&&custom.changed()?'Customised prompt copied.':'Prompt copied.')}});
    function refresh(){if(pre)pre.textContent=now();links.replaceChildren(aiLinks(now()));copyButton.textContent=copyLabel();status.textContent='';if(custom){liveBase??=d.html;liveDirty=true}}
-   if(custom){customiser=custom;liveBase??=d.html;liveDirty=custom.changed()>0}
+   if(custom){onCustom=refresh;liveBase??=d.html;liveDirty=custom.changed()>0}
    panel.replaceChildren(...(fields?[fields.node]:custom?[custom.node,pre]:[pre]),el('div',{class:'prompt-actions'},copyButton,links),status)}
-  else{panel.replaceChildren(el('pre',{class:'prompt-code'},el('code',{text:d.html})),el('div',{class:'prompt-actions'},Object.assign(el('button',{class:'button lime',type:'button',text:'Copy code'}),{onclick:()=>{track('code_copy',item);copy(d.html,status,'Code copied.')}}),Object.assign(el('button',{class:'button outline',type:'button',text:'Download zip'}),{onclick:()=>{track('zip_download',item);download((item.id||'page')+'.zip',zip(d,item));status.textContent='Download started.'}})),status)}
+  else{customiserOf(item,d);const code=pageHtml(d),mine=code!==d.html;if(mine)status.textContent='Includes your Customise changes.';
+   panel.replaceChildren(el('pre',{class:'prompt-code'},el('code',{text:code})),el('div',{class:'prompt-actions'},Object.assign(el('button',{class:'button lime',type:'button',text:'Copy code'}),{onclick:()=>{track('code_copy',item);copy(pageHtml(d),status,mine?'Code copied, with your Customise changes.':'Code copied.')}}),Object.assign(el('button',{class:'button outline',type:'button',text:'Download zip'}),{onclick:()=>{track('zip_download',item);download((item.id||'page')+'.zip',zip({...d,html:pageHtml(d),prompt:customiser&&customiserFor===key(item)?customiser.text():d.prompt},item));status.textContent='Download started.'}})),status)}
  }catch(e){if(e.status===401){panel.replaceChildren();lock(panel,name==='prompt'?'the prompt':'the code')}else if(e.status===428||e.code==='legal_required'){location.href='/legal.html'}else panel.replaceChildren(el('p',{class:'legal-feedback','data-tone':'error',role:'alert',text:e.message}))}}
 
 /* ---------- zip (stored, no compression) ---------- */
