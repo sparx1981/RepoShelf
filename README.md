@@ -126,6 +126,14 @@ Repositories not yet in the catalogue are imported best-ranked first (up to 40 p
 
 The point is to find where to look, not to republish Trendshift's rankings. Each repository gets one derived score (`dist/trendshift.json` stores only the repository, the time it was last seen, and that number): the best of `weight / (1 + ln position)` across the lists, with weights daily 0.5, weekly 0.35, monthly 0.2 and GitHub daily 0.4, plus a small bonus per extra list. List positions and list names are not stored or shown. The score decides which new repositories are imported first, lifts **Trending now** (`1.5 * score`, fading over three days after the repository was last seen, added to measured star and fork growth rather than replacing it), and orders the built-in **Trending on Trendshift** ribbon, which shows only repositories currently on a list and hides itself when empty. Apply `supabase/migrations/202610100029_trendshift_ribbon.sql` once so the ribbon appears in the editor and can be reordered or hidden there. Engagement-spike data is only available through the paid API and is not used.
 
+## Text prompts and fill-in boxes
+
+The Prompt library mostly holds prompts that produce a live page (Live, Prompt and Code views). A prompt can instead be a **text prompt** (`ss_prompts.kind = 'text'`): it has only the Prompt view and no generated page or thumbnail. Signed-in members read and copy it; guests see the card and a sign-in lock.
+
+- **Motion film director** is the first one. Its 14 brief lines (mode, subject, viewer, length, brand, sound and so on) become fill-in boxes, with dropdowns for mode, sound and autonomy and the prompt's own hint text as each placeholder. A live preview shows the finished prompt and **Copy finished prompt** copies it; boxes left empty stay blank, which is how the prompt tells the AI to decide that line. Values are remembered on the visitor's device only. The boxes are defined for this one prompt in `dist/prompt-fields.js` and read the real prompt text, so editing the prompt in Administration keeps working.
+- **Administration → Prompts → New prompt** creates further text prompts (title, category, description, prompt, published); the id comes from the title.
+- Setup: apply `supabase/migrations/202610170036_text_prompts.sql` **before** deploying (the library list selects the new column). `tests/database-text-prompts.sql`, `tests/prompts*.mjs`, `tests/prompt-fields.mjs` and `scripts/verify-prompt-fields-ui.mjs` cover it.
+
 ## Boards
 
 Members group items from My collection into named boards to use in a specific project, for example "Landing page" or "Internal dashboard". An item can be on several boards; removing an item from the collection takes it off every board. Limits: 50 boards per account, 100 items per board. Boards are private to their owner.

@@ -139,7 +139,10 @@ with
   (41,'202610160035_boards', nullif(array_to_string(array(select x from unnest(array['boards_owner_name','board_items_project']) x where x <> all(coalesce((select a from idxs),'{}'))),', '),''), 'indexes'),
   (41,'202610160035_boards', case when coalesce((select count(*) from pg_class where oid in(to_regclass('public.boards'),to_regclass('public.board_items')) and relrowsecurity)=2,false) then null else 'row-level security on boards and board_items' end, null),
   (41,'202610160035_boards', case when coalesce(to_regclass('public.boards') is not null and not has_table_privilege('authenticated',to_regclass('public.boards'),'select') and not has_table_privilege('authenticated',to_regclass('public.board_items'),'select') and not has_function_privilege('authenticated',to_regprocedure('public.reposhelf_boards_list(uuid)'),'execute'),false) then null else 'boards are server-only (members cannot read tables or call functions)' end, null),
-  (41,'202610160035_boards', case when coalesce(exists(select 1 from pg_proc where pronamespace='public'::regnamespace and proname='reposhelf_export_account' and prosrc like '%boards%'),false) then null else 'account export includes boards' end, null)
+  (41,'202610160035_boards', case when coalesce(exists(select 1 from pg_proc where pronamespace='public'::regnamespace and proname='reposhelf_export_account' and prosrc like '%boards%'),false) then null else 'account export includes boards' end, null),
+  (42,'202610170036_text_prompts', nullif(array_to_string(array(select x from unnest(array['ss_prompts.kind']) x where x <> all(coalesce((select a from cols),'{}'))),', '),''), 'columns'),
+  (42,'202610170036_text_prompts', case when coalesce(exists(select 1 from pg_constraint where conrelid=to_regclass('public.ss_prompts') and pg_get_constraintdef(oid) like '%kind%page%text%'),false) then null else 'constraint: kind must be page or text' end, null),
+  (42,'202610170036_text_prompts', case when coalesce((select count(*) from public.ss_prompts where source='siteshelf' and source_id='motion-film-director' and kind='text')=1,false) then null else 'Motion film director listing (deleting it in the admin shows false)' end, null)
  ),
  findings as (
   select ord, migration, case when problem is null then null when kind is null then problem else 'missing '||kind||': '||problem end as problem from checks),

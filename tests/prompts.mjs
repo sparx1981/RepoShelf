@@ -7,6 +7,7 @@ const SECRET='SECRET-PROMPT-TEXT-do-not-leak',PAGE='<!doctype html><title>Demo</
 const rows={
   mine:{id:'11111111-1111-1111-1111-111111111111',source:'siteshelf',source_id:'budget-planner',title:'Budget planner',category:'Tools',description:'Plan a month.',type:'free',thumbnail:'/api/thumb?id=x',animated_thumbnail:null,source_url:null,created_at:'2026-10-01T00:00:00Z',updated_at:'2026-10-02T00:00:00Z',prompt:SECRET,published:true},
   theirs:{id:'22222222-2222-2222-2222-222222222222',source:'sceneai',source_id:'6a61a4ae0cd891fdf74d708a',title:'Paradiso',category:'Hero',description:'',type:'free',thumbnail:'https://cdn.sceneai.art/t.png',animated_thumbnail:'https://cdn.sceneai.art/t.mp4',source_url:null,created_at:'2026-10-03T00:00:00Z',updated_at:null,prompt:SECRET+'-2',published:true},
+  film:{id:'44444444-4444-4444-4444-444444444444',source:'siteshelf',source_id:'motion-film-director',title:'Motion film director',category:'Video & motion',description:'A brief-to-MP4 prompt.',type:'free',kind:'text',thumbnail:null,animated_thumbnail:null,source_url:null,created_at:'2026-10-06T00:00:00Z',updated_at:null,prompt:SECRET+'-4',published:true},
   hidden:{id:'33333333-3333-3333-3333-333333333333',source:'siteshelf',source_id:'hidden-one',title:'Hidden',category:'Tools',description:'',type:'free',thumbnail:null,animated_thumbnail:null,source_url:null,created_at:'2026-10-04T00:00:00Z',updated_at:null,prompt:SECRET+'-3',published:false}
 };
 const users={member:{id:'00000000-0000-0000-0000-000000000002',identities:[{provider:'github',identity_data:{sub:'102',user_name:'member'}}],user_metadata:{}}};
@@ -39,13 +40,15 @@ async function run(url,{token,method='GET'}={}){
 
 // 1. The public list names every published prompt and never contains prompt text.
 let r=await run('/api/prompts');
-assert.equal(r.status,200);assert.equal(r.data.items.length,2,'unpublished prompts stay out');
+assert.equal(r.status,200);assert.equal(r.data.items.length,3,'unpublished prompts stay out');
 assert(!r.body.toString().includes('SECRET-PROMPT'),'the list never carries prompt text');
 assert(!('prompt' in r.data.items[0]));
 assert.match(r.headers['cache-control'],/public/);
 const mine=r.data.items.find(i=>i.id==='budget-planner'),theirs=r.data.items.find(i=>i.source==='sceneai');
 assert.equal(mine.thumbnail,'/api/prompts?area=thumb&source=siteshelf&id=budget-planner');assert.equal(mine.credit,null);
 assert.deepEqual(theirs.credit,{name:'SceneAI',url:'https://sceneai.art'},'SceneAI prompts are credited and linked back');
+// Text prompts have no generated page: no thumbnail request, and page prompts keep their default kind.
+const film=r.data.items.find(i=>i.id==='motion-film-director');assert.equal(film.kind,'text');assert.equal(film.thumbnail,null,'a text prompt has no stored thumbnail to request');assert.equal(mine.kind,'page');assert.equal(theirs.kind,'page');
 
 // 2. Guests can see the live page and the thumbnail, but not the prompt or the code.
 r=await run('/api/prompts?area=preview&source=siteshelf&id=budget-planner');assert.equal(r.status,200);assert.equal(r.data.html,PAGE);
@@ -62,6 +65,12 @@ r=await run('/api/prompts?area=detail&source=siteshelf&id=budget-planner',{token
 assert.equal(r.status,200);assert.equal(r.data.prompt,SECRET);assert.equal(r.headers['cache-control'],'private, no-store');
 r=await run('/api/prompts?area=bundle&source=sceneai&id=6a61a4ae0cd891fdf74d708a',{token:'member'});
 assert.equal(r.status,200);assert.equal(r.data.html,PAGE);assert.equal(r.data.prompt,SECRET+'-2');assert.equal(r.data.title,'Paradiso');
+
+// A text prompt's bundle is the prompt alone: no generated page is looked up, and guests still cannot read it.
+r=await run('/api/prompts?area=bundle&source=siteshelf&id=motion-film-director');assert.equal(r.status,401);assert(!r.body.toString().includes('SECRET-PROMPT'));
+const previewCalls=calls.length;r=await run('/api/prompts?area=bundle&source=siteshelf&id=motion-film-director',{token:'member'});
+assert.equal(r.status,200);assert.equal(r.data.kind,'text');assert.equal(r.data.html,null);assert.equal(r.data.prompt,SECRET+'-4');assert.equal(r.data.title,'Motion film director');
+assert(!calls.slice(previewCalls).some(c=>c.path==='/rest/v1/ss_previews'),'no page lookup for a text prompt');
 
 // 4. Unpublished, unknown and malformed requests fail cleanly, and the browser key never reads the tables.
 assert.equal((await run('/api/prompts?area=detail&source=siteshelf&id=hidden-one',{token:'member'})).status,404);

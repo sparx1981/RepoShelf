@@ -5,12 +5,13 @@ import {createSceneAiSync,planSync,mergeUpdate} from '../lib/sceneai-sync.mjs';
 
 const config={url:'https://fixture.supabase.co',key:'public-test-key',serviceKey:'server-test-secret',origin:'https://reposhelf.test'};
 const people={admin:{id:'a',identities:[],user_metadata:{}},member:{id:'m',identities:[],user_metadata:{}}};
-const writes=[];
+const writes=[],taken=new Set(['my-new-film']);
 const accounts=createAccounts({legal:{active:false},config,fetcher:async(url,opts)=>{
   const u=new URL(url),token=opts.headers.Authorization?.replace('Bearer ',''),json=(d,s=200)=>new Response(JSON.stringify(d),{status:s,headers:{'Content-Type':'application/json'}});
   if(u.pathname==='/auth/v1/user')return people[token]?json(people[token]):json({},401);
   if(u.pathname==='/rest/v1/rpc/reposhelf_is_admin')return json(token==='admin');
   if(opts.method==='PATCH'||opts.method==='DELETE'||opts.method==='POST'){writes.push({method:opts.method,path:u.pathname,search:u.search,body:opts.body?JSON.parse(opts.body):null,apikey:opts.headers.apikey});return new Response(null,{status:204})}
+  if(u.pathname==='/rest/v1/ss_prompts'&&u.searchParams.get('select')==='id')return json(taken.has(u.searchParams.get('source_id').replace('eq.',''))?[{id:'row'}]:[]);
   if(u.pathname==='/rest/v1/ss_prompts')return json([{source:'siteshelf',source_id:'x',title:'X',prompt:'P',published:false}]);
   if(u.pathname==='/rest/v1/ss_sync_runs')return json([]);
   return json({},404);
@@ -45,6 +46,23 @@ assert.equal((await run('/api/prompts?area=admin-delete',{token:'admin',method:'
 assert.equal(writes.length,before);
 assert.equal((await run('/api/prompts?area=admin-delete',{token:'admin',method:'POST',body:{source:'siteshelf',id:'x',confirm:'x'}})).status,200);
 assert.equal(writes.at(-1).method,'DELETE');
+
+// New prompts: text prompts only, the id comes from the title and never collides, and bad input writes nothing.
+const make={title:'My New Film!',prompt:'A prompt with <brief>',category:'  ',description:'About it'};
+for(const t of [undefined,'member'])assert([401,403].includes((await run('/api/prompts?area=admin-create',{token:t,method:'POST',body:make})).status),'creating is closed');
+assert.equal((await run('/api/prompts?area=admin-create',{token:'admin',method:'POST',body:make,origin:'https://evil.test'})).status,403);
+let w=writes.length;
+for(const bad of [{...make,title:'   '},{...make,title:5},{...make,prompt:'  '},{...make,prompt:'x'.repeat(60001)},{...make,published:'yes'},{...make,description:'d'.repeat(1001)},{...make,category:'c'.repeat(81)}])
+  assert.equal((await run('/api/prompts?area=admin-create',{token:'admin',method:'POST',body:bad})).status,400,JSON.stringify(bad).slice(0,60));
+assert.equal(writes.length,w,'invalid prompts write nothing');
+r=await run('/api/prompts?area=admin-create',{token:'admin',method:'POST',body:make});assert.equal(r.status,200);assert.deepEqual(r.data,{ok:true,source:'siteshelf',id:'my-new-film-2'},'a taken id gets a numbered suffix');
+let made=writes.at(-1);assert.equal(made.method,'POST');assert.equal(made.path,'/rest/v1/ss_prompts');assert.equal(made.apikey,'server-test-secret');
+assert.deepEqual(made.body,{source:'siteshelf',source_id:'my-new-film-2',title:'My New Film!',category:null,description:'About it',type:'free',kind:'text',prompt:'A prompt with <brief>',original_prompt:'A prompt with <brief>',published:false,is_new:false},'created unpublished unless asked, as a text prompt');
+taken.clear();r=await run('/api/prompts?area=admin-create',{token:'admin',method:'POST',body:{title:'  Ünïcode — Tëst  ',prompt:'p',published:true}});assert.equal(r.data.id,'unicode-test');assert.equal(writes.at(-1).body.published,true);
+r=await run('/api/prompts?area=admin-create',{token:'admin',method:'POST',body:{title:'日本語',prompt:'p'}});assert.equal(r.data.id,'prompt','a title with no latin letters still gets a valid id');
+r=await run('/api/prompts?area=admin-create',{token:'admin',method:'POST',body:{title:'a'.repeat(200),prompt:'p'}});assert(/^[a-z0-9-]{1,80}$/.test(r.data.id)&&r.data.id.length<=60,'long titles give a bounded id');
+taken.add('prompt');for(let n=2;n<=20;n++)taken.add('prompt-'+n);w=writes.length;
+assert.equal((await run('/api/prompts?area=admin-create',{token:'admin',method:'POST',body:{title:'日本語',prompt:'p'}})).status,409,'a title that cannot get a free id is refused');assert.equal(writes.length,w);
 
 // The importer: free prompts only, edits kept, new prompts arrive unpublished.
 const list=[{_id:'a'.repeat(24),type:'free',title:'New',category:'Hero',description:'d',thumbnail:'https://cdn.sceneai.art/t.jpg',updatedAt:'2026-10-01'},

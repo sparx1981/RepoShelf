@@ -10,9 +10,9 @@ async function getJson(url){const r=await fetch(url,{credentials:'same-origin'})
 /* ---------- browse ---------- */
 function filtered(){const q=$('#prompt-search').value.trim().toLowerCase(),c=$('#prompt-category').value;return items.filter(i=>(!c||i.category===c)&&(!q||(i.title+' '+i.description+' '+i.category).toLowerCase().includes(q)))}
 function render(){const list=filtered(),grid=$('#prompt-grid');grid.replaceChildren();for(const i of list.slice(0,shown)){const card=el('button',{class:'prompt-card',type:'button','aria-label':'Open '+i.title});
- card.append(i.thumbnail?Object.assign(el('img',{alt:'',loading:'lazy',decoding:'async',referrerpolicy:'no-referrer'}),{src:i.thumbnail}):el('div',{class:'no-thumb'}),el('div',{class:'body'},el('span',{class:'tag',text:i.category}),el('h3',{text:i.title}),el('p',{text:i.description})));
+ card.append(i.thumbnail?Object.assign(el('img',{alt:'',loading:'lazy',decoding:'async',referrerpolicy:'no-referrer'}),{src:i.thumbnail}):el('div',{class:'no-thumb'+(i.kind==='text'?' text':'')},...(i.kind==='text'?[el('span',{text:window.RepoPromptFields?.supported(key(i))?'Fill-in prompt':'Prompt'})]:[])),el('div',{class:'body'},el('span',{class:'tag',text:i.category}),el('h3',{text:i.title}),el('p',{text:i.description})));
  card.onclick=()=>open(i);grid.append(el('li',{class:'prompt-item'},card,heart(i,'prompt-like')))}
- $('#prompt-count').textContent=list.length?`${list.length} ${list.length===1?'page':'pages'}`:'Nothing matches that search.';$('#prompt-more').hidden=list.length<=shown}
+ $('#prompt-count').textContent=list.length?`${list.length} ${list.length===1?'prompt':'prompts'}`:'Nothing matches that search.';$('#prompt-more').hidden=list.length<=shown}
 $('#prompt-filters').addEventListener('submit',e=>e.preventDefault());
 $('#prompt-search').addEventListener('input',()=>{shown=PAGE;render()});$('#prompt-category').addEventListener('change',()=>{shown=PAGE;render()});
 $('#prompt-more').onclick=()=>{shown+=PAGE;render()};
@@ -29,10 +29,12 @@ async function loadSaved(){const id=A?.user?.id||null;if(id===savedFor)return;sa
 /* ---------- detail ---------- */
 const dialog=$('#prompt-dialog'),tabs=['live','prompt','code'];
 function setTab(name,focus){tab=name;for(const t of tabs){const on=t===name;$('#tab-'+t).setAttribute('aria-selected',on);$('#tab-'+t).tabIndex=on?0:-1;$('#panel-'+t).hidden=!on}if(focus)$('#tab-'+name).focus();if(name!=='live')void showGated(name)}
-for(const t of tabs){$('#tab-'+t).onclick=()=>setTab(t);$('#tab-'+t).onkeydown=e=>{const i=tabs.indexOf(t),n=e.key==='ArrowRight'?(i+1)%3:e.key==='ArrowLeft'?(i+2)%3:-1;if(n>=0){e.preventDefault();setTab(tabs[n],true)}}}
+const shownTabs=()=>tabs.filter(t=>!$('#tab-'+t).hidden);
+for(const t of tabs){$('#tab-'+t).onclick=()=>setTab(t);$('#tab-'+t).onkeydown=e=>{const list=shownTabs(),i=list.indexOf(t),n=e.key==='ArrowRight'?(i+1)%list.length:e.key==='ArrowLeft'?(i+list.length-1)%list.length:-1;if(n>=0){e.preventDefault();setTab(list[n],true)}}}
 function open(item){current=item;full=null;fullFor=null;liveFor=null;$('#prompt-title').textContent=item.title;$('#prompt-like-slot').replaceChildren(heart(item,'prompt-like inline'));const credit=$('#prompt-credit');credit.hidden=!item.credit;credit.replaceChildren();if(item.credit){credit.append('Originally made by ',el('a',{href:item.credit.url,rel:'noopener noreferrer',target:'_blank',text:item.credit.name}),'. Shown here with a link back.')}
  try{history.replaceState(null,'','#'+key(item))}catch{}
- if(!dialog.open)dialog.showModal();setTab('live');track('prompt_view',item);void loadLive(item)}
+ const textOnly=item.kind==='text';$('#tab-live').hidden=textOnly;$('#tab-code').hidden=textOnly;
+ if(!dialog.open)dialog.showModal();setTab(textOnly?'prompt':'live');track('prompt_view',item);if(!textOnly)void loadLive(item)}
 dialog.addEventListener('close',()=>{$('#live-frame').srcdoc='';liveFor=null;try{history.replaceState(null,'',location.pathname)}catch{}});
 $('#prompt-close').onclick=()=>dialog.close();
 dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close()});
@@ -46,7 +48,9 @@ function aiLinks(prompt){const wrap=document.createDocumentFragment(),enc=encode
 async function showGated(name){const panel=$('#panel-'+name);if(!signedIn()){lock(panel,name==='prompt'?'the prompt':'the code');return}
  panel.replaceChildren(el('p',{class:'prompt-note',text:'Loading…',role:'status'}));const item=current;
  try{const d=await ensureFull();if(!d||current!==item||tab!==name)return;track(name==='prompt'?'prompt_reveal':'code_reveal',item);const status=el('p',{class:'prompt-note',role:'status'});
-  if(name==='prompt'){panel.replaceChildren(el('pre',{class:'prompt-text',text:d.prompt}),el('div',{class:'prompt-actions'},Object.assign(el('button',{class:'button lime',type:'button',text:'Copy prompt'}),{onclick:()=>{track('prompt_copy',item);copy(d.prompt,status,'Prompt copied.')}}),aiLinks(d.prompt)),status)}
+  if(name==='prompt'){
+   const form=window.RepoPromptFields?.mount(key(item),d.prompt,{onChange:()=>{links.replaceChildren(aiLinks(now()));status.textContent=''}}),now=()=>form?form.text():d.prompt,links=el('span',{class:'prompt-actions-links'},aiLinks(now()));
+   panel.replaceChildren(...(form?[form.node]:[el('pre',{class:'prompt-text',text:d.prompt})]),el('div',{class:'prompt-actions'},Object.assign(el('button',{class:'button lime',type:'button',text:form?'Copy finished prompt':'Copy prompt'}),{onclick:()=>{track('prompt_copy',item);copy(now(),status,form?'Finished prompt copied.':'Prompt copied.')}}),links),status)}
   else{panel.replaceChildren(el('pre',{class:'prompt-code'},el('code',{text:d.html})),el('div',{class:'prompt-actions'},Object.assign(el('button',{class:'button lime',type:'button',text:'Copy code'}),{onclick:()=>{track('code_copy',item);copy(d.html,status,'Code copied.')}}),Object.assign(el('button',{class:'button outline',type:'button',text:'Download zip'}),{onclick:()=>{track('zip_download',item);download((item.id||'page')+'.zip',zip(d,item));status.textContent='Download started.'}})),status)}
  }catch(e){if(e.status===401){panel.replaceChildren();lock(panel,name==='prompt'?'the prompt':'the code')}else if(e.status===428||e.code==='legal_required'){location.href='/legal.html'}else panel.replaceChildren(el('p',{class:'legal-feedback','data-tone':'error',role:'alert',text:e.message}))}}
 
@@ -63,7 +67,7 @@ function zip(d,item){const enc=new TextEncoder(),credit=item.credit?`\n\nOrigina
 
 /* ---------- start ---------- */
 function fromHash(){const m=/^#(siteshelf|sceneai)\/([a-z0-9-]{1,80})$/.exec(location.hash);return m?items.find(i=>i.source===m[1]&&i.id===m[2]):null}
-function resume(){let saved=null;try{saved=JSON.parse(sessionStorage.getItem(KEEP)||'null');sessionStorage.removeItem(KEEP)}catch{}if(!saved||Date.now()-saved.at>1800000||!signedIn())return false;const item=items.find(i=>key(i)===saved.key);if(!item)return false;open(item);if(tabs.includes(saved.tab)&&saved.tab!=='live')setTab(saved.tab);return true}
+function resume(){let saved=null;try{saved=JSON.parse(sessionStorage.getItem(KEEP)||'null');sessionStorage.removeItem(KEEP)}catch{}if(!saved||Date.now()-saved.at>1800000||!signedIn())return false;const item=items.find(i=>key(i)===saved.key);if(!item)return false;open(item);if(tabs.includes(saved.tab)&&saved.tab!=='live'&&!$('#tab-'+saved.tab).hidden)setTab(saved.tab);return true}
 let resumed=false;
 window.addEventListener('reposhelf-account',()=>{if(A.ready)void loadSaved();if(!A.ready||!items.length)return;if(!resumed){resumed=true;if(resume())return}if(dialog.open&&tab!=='live'){full=null;void showGated(tab)}});
 (async()=>{try{const d=await getJson(API);items=d.items||[];const cats=[...new Set(items.map(i=>i.category))].sort();for(const c of cats)$('#prompt-category').append(el('option',{value:c,text:c}));render();const hit=fromHash();if(hit)open(hit);if(A?.ready&&!resumed){resumed=true;if(!hit)resume()}}catch(e){$('#prompt-count').textContent=e.message}})();
