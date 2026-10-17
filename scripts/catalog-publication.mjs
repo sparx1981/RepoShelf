@@ -42,7 +42,7 @@ async function stage(root){pack(root);const paths=generatedPaths.filter(p=>hasPa
 const maxCompareBytes=()=>Number(process.env.REPOSHELF_MAX_COMPARE_BYTES)||0x1fffffe8,TOO_LARGE=Symbol('too-large');
 export function changedPublicFiles(root){const raw=git(root,['diff','--cached','--raw','--no-abbrev','--no-renames','-z']).split('\0'),out=[];for(let i=0;i<raw.length-1;i+=2){const header=/^:\d{6} \d{6} ([a-f0-9]{40}) ([a-f0-9]{40}) [A-Z]$/.exec(raw[i]),path=raw[i+1];if(!header)throw Error('Invalid staged generated change');if(!generated(path))throw Error('Only generated files may be published');if(internalFile(path))continue;const semantic=/^dist\/(catalog|spaces|community|trendshift)\.json(\.gz)?$/.test(path)||/^dist\/(catalog|spaces)\.part-(\d{2}|head)\.json\.gz$/.test(path);if(!semantic){if(header[1]!==header[2])out.push(path);continue}const packed=isPackedName(path),read=ref=>{const bytes=blobBytes(root,ref,path);if(bytes===null)return null;const data=packed?decompress(bytes):bytes;return data.length>maxCompareBytes()?TOO_LARGE:data.toString('utf8')},before=read('HEAD'),after=read('');if(before===TOO_LARGE||after===TOO_LARGE){if(header[1]!==header[2])out.push(path);continue}if(publicFileChanged(logicalName(path),before,after))out.push(path)}return out}
 async function report(root,publication,commit=null){const id=process.env.GITHUB_RUN_ID;if(!/^\d+$/.test(id||''))return;const path=join(root,'data/sync-runs',id+'.json');try{const row=JSON.parse(await readFile(path,'utf8'));row.publication=publication;row.publishedCommit=commit;await writeFile(path,JSON.stringify(row,null,2)+'\n')}catch(e){if(e.code!=='ENOENT')throw e}}
-function remoteCheckpoint(root){try{git(root,['ls-remote','--exit-code','--heads','origin',CHECKPOINT_BRANCH])}catch(e){if(e.status===2)return null;throw e}git(root,['fetch','--quiet','origin',`+refs/heads/${CHECKPOINT_BRANCH}:refs/remotes/origin/${CHECKPOINT_BRANCH}`]);return git(root,['rev-parse','refs/remotes/origin/'+CHECKPOINT_BRANCH]).trim()}
+function remoteCheckpoint(root,branch=CHECKPOINT_BRANCH){try{git(root,['ls-remote','--exit-code','--heads','origin',branch])}catch(e){if(e.status===2)return null;throw e}git(root,['fetch','--quiet','origin',`+refs/heads/${branch}:refs/remotes/origin/${branch}`]);return git(root,['rev-parse','refs/remotes/origin/'+branch]).trim()}
 // The checkpoint is a commit on `base`, but the working tree can be newer than base: main may have moved on between a sync's first
 // job and its last. GitHub refuses to let an Actions token create or update a workflow file, so a checkpoint that differs from its
 // base in .github/ cannot be pushed ("refusing to allow a GitHub App to create or update workflow ... without `workflows`
@@ -54,6 +54,19 @@ export function keepWorkflowsOfBase(root,base,env){
  if(entries.length)git(root,['update-index','--add','-z','--index-info'],{env,input:entries.join('\0')+'\0'});
  return true;
 }
+// GitHub's refusal compares the pushed branch with the tip it replaces, not only with the new commit's parent. After main's workflow files
+// change, the saved checkpoint (taken on an older main) differs from any new one in .github/workflows, so even a checkpoint that matches
+// its own base exactly is refused when it replaces the old tip. A branch that does not exist yet is only compared with its parents, so
+// the new checkpoint goes up under a spare name first (it is safe from then on), the old branch is deleted, and the checkpoint takes its name.
+const refusedForWorkflows=e=>/workflow/i.test(String(e?.stderr||'')+String(e?.message||''))&&/permission/i.test(String(e?.stderr||'')+String(e?.message||''));
+const SPARE_BRANCH=CHECKPOINT_BRANCH+'-next';
+export function replaceCheckpoint(root,commit,tip){
+ try{git(root,['push','--quiet','origin',':refs/heads/'+SPARE_BRANCH])}catch{} // a spare left by an interrupted run; nothing to delete is fine
+ git(root,['push','--quiet','--force','origin',`${commit}:refs/heads/${SPARE_BRANCH}`]);
+ git(root,['push','--quiet',`--force-with-lease=refs/heads/${CHECKPOINT_BRANCH}:${tip}`,'origin',':refs/heads/'+CHECKPOINT_BRANCH]);
+ git(root,['push','--quiet','origin',`${commit}:refs/heads/${CHECKPOINT_BRANCH}`]);
+ try{git(root,['push','--quiet','origin',':refs/heads/'+SPARE_BRANCH])}catch{}
+}
 export async function saveCheckpoint(root,{base,phase='checkpoint'}={}){
  const stateFile=join(root,'data/publication.json');if(!existsSync(stateFile)){await mkdir(dirname(stateFile),{recursive:true});await writeFile(stateFile,JSON.stringify({lastPublishedAt:null,commit:null,lastScheduledDay:null})+'\n')}
  await stage(root);const tree=git(root,['write-tree']).trim(),temporary=await mkdtemp(join(tmpdir(),'reposhelf-index-'));
@@ -63,14 +76,15 @@ export async function saveCheckpoint(root,{base,phase='checkpoint'}={}){
  for(let attempt=1;attempt<=3;attempt++){// Each checkpoint replaces the last: it hangs off the main-branch commit it was taken from, not off the previous
  // checkpoint, so the branch stays one commit long and old copies of the generated data can be discarded. Recovery only
  // needs the tip and that base. The lease stops a run from overwriting a checkpoint it has not seen.
- const tip=remoteCheckpoint(root),commit=git(root,['commit-tree',snapshot,'-p',manifest.base,'-m','Save catalogue recovery checkpoint']).trim();try{git(root,['push','--quiet',`--force-with-lease=refs/heads/${CHECKPOINT_BRANCH}:${tip||''}`,'origin',`${commit}:refs/heads/${CHECKPOINT_BRANCH}`]);console.log('Recovery checkpoint saved to '+CHECKPOINT_BRANCH+' ('+phase+').');return commit}catch(e){if(attempt===3)throw e}}
+ const tip=remoteCheckpoint(root),commit=git(root,['commit-tree',snapshot,'-p',manifest.base,'-m','Save catalogue recovery checkpoint']).trim();try{try{git(root,['push','--quiet',`--force-with-lease=refs/heads/${CHECKPOINT_BRANCH}:${tip||''}`,'origin',`${commit}:refs/heads/${CHECKPOINT_BRANCH}`])}catch(e){if(!tip||!refusedForWorkflows(e))throw e;replaceCheckpoint(root,commit,tip)}console.log('Recovery checkpoint saved to '+CHECKPOINT_BRANCH+' ('+phase+').');return commit}catch(e){if(attempt===3)throw e}}
  }finally{await rm(temporary,{recursive:true,force:true})}
 }
 // ls-tree takes literal paths, not patterns, so the catalogue parts are listed through the directory that holds them.
 const treePaths=[...new Set(generatedPaths.map(p=>p.includes('*')?dirname(p):p))];
 export async function restoreCheckpoint(root){
  unpack(root,PACKED,{force:true});migrateReadmeTerms(root);
- const commit=remoteCheckpoint(root);if(!commit){console.log('No recovery checkpoint branch yet.');return {restored:0,conflicts:0}}
+ const commit=remoteCheckpoint(root)||remoteCheckpoint(root,SPARE_BRANCH); // the spare only exists if a replacement was interrupted between its steps
+ if(!commit){console.log('No recovery checkpoint branch yet.');return {restored:0,conflicts:0}}
  const meta=JSON.parse(git(root,['show',commit+':.sync-checkpoint.json']));if(meta.schema!==1||!/^[a-f0-9]{40}$/.test(meta.base))throw Error('Invalid checkpoint baseline');
  try{git(root,['cat-file','-e',meta.base+'^{commit}'])}catch{git(root,['fetch','--quiet','origin',meta.base])}
  const changed=git(root,['diff','--name-only','-z',meta.base,commit]).split('\0').filter(generated),current=git(root,['rev-parse','HEAD']).trim();let restored=0,conflicts=0;
