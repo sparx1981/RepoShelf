@@ -156,3 +156,6 @@ a.nav:hover{color:var(--text)}
 @media(max-width:400px){header{gap:10px;padding:0 3%}header nav{min-width:0}.nav{font-size:11.5px;padding:1px 4px}#fork-count{margin-left:3px;padding:2px 4px}header a.nav{padding:1px 4px}}
 /* Studio joins the shared navigation without pushing the profile button off a narrow screen. */
 @media(max-width:760px){header:has(nav a[href="/studio.html"]){gap:12px;min-height:72px;height:auto;padding-top:8px;padding-bottom:8px}header:has(nav a[href="/studio.html"]) nav{flex:1;min-width:0;height:auto;flex-wrap:wrap;gap:4px 12px;align-content:center}header:has(nav a[href="/studio.html"]) .nav{display:inline-flex;align-items:center;min-height:44px;height:44px;white-space:nowrap}header:has(nav a[href="/studio.html"]) #account-button{flex-shrink:0}}
+
+.hero-controls{display:flex;gap:6px}.hero-control{min-width:36px;min-height:36px;padding:0 10px;border:1px solid var(--line-strong);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:15px;line-height:1;cursor:pointer}.hero-control:hover{border-color:var(--lime)}.hero-control[aria-pressed="true"]{background:var(--surface-raised);border-color:var(--lime)}
+.fork-button{min-height:24px;padding:6px 8px;margin-right:-8px}

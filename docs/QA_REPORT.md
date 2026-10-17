@@ -56,6 +56,17 @@ Updated as phases are completed. "Fixed" means changed, covered by a new or exte
 | QA-47 | Fixed (Phase 3) | Artifact cleanup no longer deletes `publication-recovery-*` artifacts (uploaded only when a publication fails). The large per-sync artifacts are still removed after 3 hours. | `tests/workflow-hardening.mjs` |
 | QA-40 | Fixed (Phase 3) | `verify-studio-ui.mjs` starts its own server, expects the real background count (static plus live), and accepts the current ASCII text detail. It and `verify-sync-layout.mjs` now run in CI, and a test fails if any `verify-*-ui` script is not in `checks.yml`. | `tests/workflow-hardening.mjs`; the script itself |
 | QA-41 | Fixed (Phase 3) | The two Studio migrations that created the temporary `http` extension are now no-ops for it (the import is finished and later migrations remove it). All five Studio migrations run twice in the CI chain against a small Storage stand-in, with a new `tests/database-studio.sql`. The production migration check is now 123 of 123 on the test database. | `tests/database-studio.sql` |
+| QA-10 | Fixed (Phase 4) | A shelf service version that keeps changing restarts the home page at most twice a minute, then carries on with what it has. | `scripts/verify-shelves-ui.mjs` |
+| QA-11 | Fixed (Phase 4) | A shelf the service leaves out is treated as empty instead of loading forever. | `scripts/verify-shelves-ui.mjs` |
+| QA-12 | Fixed (Phase 4) | A deep link to a listing that has not passed the publication checks shows its details, says it is unverified, and offers no demo link, evidence or screenshots. | `tests/detail-unverified.mjs` |
+| QA-16 | Fixed (Phase 4) | Opening a project with "hide seen" on no longer resets "Show more"; later pages reuse the exclusion list their first page used. | `scripts/verify-shelves-ui.mjs` |
+| QA-13 | Fixed (Phase 4) | The featured-project banner has previous, pause and next buttons (hidden when there is only one project) and stops rotating while paused. | `scripts/verify-shelves-ui.mjs` |
+| QA-15 | Fixed (Phase 4) | Keyboard focus survives a re-render after liking or saving a project (the shelves and the detail panel). | `scripts/verify-shelves-ui.mjs` |
+| QA-30 | Fixed (Phase 4) | The scrollable code blocks on the connect page and the tables on the cookies page can be reached by keyboard and are named regions. | `tests/accessibility-markup.mjs` |
+| QA-31 | Fixed (Phase 4) | View toggles, filters, rank buttons and gallery thumbnails report `aria-pressed`; the shelf placeholders are no longer live regions. | `scripts/verify-shelves-ui.mjs` |
+| QA-32 | Fixed (Phase 4) | Fork buttons meet the 24 px target size; Studio has a single `<h1>`. | `scripts/verify-shelves-ui.mjs`, `tests/accessibility-markup.mjs` |
+| QA-48 | Fixed (Phase 4) | Unknown addresses, including unknown `/projects/…` pages, show a branded noindex 404 page with links back. | `tests/not-found-page.mjs` |
+| QA-53 (part) | Fixed (Phase 4) | Project detail responses are cached at the edge for 5 minutes (plus 5 minutes stale-while-revalidate) and purged with the shelves. | `tests/detail-cache.mjs` |
 | QA-25 | Open: needs your decision | Where the SketchUp Shelf data should live. |  |
 
 ## 2. What was run
