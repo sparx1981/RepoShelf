@@ -78,8 +78,8 @@ try{
   const pause=page.locator('#hero-pause');assert.equal(await pause.getAttribute('aria-pressed'),'false','the banner is not paused to start with');
   await pause.click();assert.equal(await pause.getAttribute('aria-pressed'),'true','pressing pause is reported');
   await pause.click();assert.equal(await pause.getAttribute('aria-pressed'),'false');
-  const before=await page.locator('#hero').innerText();await page.locator('[data-hero-step="1"]').click();await page.waitForTimeout(300);
-  assert.notEqual(await page.locator('#hero').innerText(),before,'the next button moves the banner on');
+  const before=await page.locator('#hero-track').evaluate(n=>n.scrollLeft);await page.locator('[data-hero-step="1"]').click();await page.waitForTimeout(1200);
+  assert.notEqual(await page.locator('#hero-track').evaluate(n=>n.scrollLeft),before,'the next button moves the banner on');
  }
  assert(await page.locator('#curated, #github').evaluateAll(nodes=>nodes.every(n=>n.hasAttribute('aria-pressed'))),'view toggles report their state');
  assert.equal(await page.locator('.shelf-loading[role="status"]').count(),0,'shelf placeholders are not live regions');
