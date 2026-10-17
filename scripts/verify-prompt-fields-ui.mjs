@@ -1,3 +1,4 @@
+import {QUOTED,PAGE} from '../tests/fixtures/prompts.mjs';
 import {spawn} from 'node:child_process';import {readFile} from 'node:fs/promises';import {existsSync} from 'node:fs';import assert from 'node:assert/strict';import {chromium} from 'playwright';
 const port=4399,base=`http://127.0.0.1:${port}`,server=spawn(process.execPath,['scripts/serve.mjs'],{env:{...process.env,PORT:String(port)},stdio:['ignore','pipe','inherit']});let browser;
 const sql=await readFile(new URL('../supabase/migrations/202610170036_text_prompts.sql',import.meta.url),'utf8'),TAG='$reposhelf_prompt$',from=sql.indexOf(TAG)+TAG.length,PROMPT=sql.slice(from,sql.indexOf(TAG,from)).replace(/\n$/,'');
@@ -19,8 +20,8 @@ try{
   if(u.pathname==='/api/prompts'){
    const area=u.searchParams.get('area')||'list';
    if(area==='list')return route.fulfill({json:{items:list}});
-   if(area==='preview')return route.fulfill({json:{html:'<!doctype html><title>Live</title><p>live page</p>',createdAt:'2026-10-05T00:00:00Z'}});
-   if(area==='bundle'){const id=u.searchParams.get('id');bundles.push(id);if(!signedIn)return route.fulfill({status:401,json:{error:{code:'sign_in_required',message:'Sign in'}}});return route.fulfill({json:id==='motion-film-director'?{title:'Motion film director',prompt:PROMPT,html:null,kind:'text'}:{title:'Budget planner',prompt:'Plain prompt text',html:'<p>code</p>'}})}
+   if(area==='preview')return route.fulfill({json:{html:PAGE,createdAt:'2026-10-05T00:00:00Z'}});
+   if(area==='bundle'){const id=u.searchParams.get('id');bundles.push(id);if(!signedIn)return route.fulfill({status:401,json:{error:{code:'sign_in_required',message:'Sign in'}}});return route.fulfill({json:id==='motion-film-director'?{title:'Motion film director',prompt:PROMPT,html:null,kind:'text'}:{title:'Budget planner',prompt:QUOTED,html:PAGE}})}
    if(area==='admin-list')return route.fulfill({json:{items:adminRows,runs:[]}});
    if(area==='admin-create'){const body=route.request().postDataJSON();created.push(body);const id=body.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');adminRows.unshift({source:'siteshelf',source_id:id,title:body.title,category:body.category||null,type:'free',kind:'text',published:body.published,is_new:false,created_at:new Date().toISOString()});return route.fulfill({json:{ok:true,source:'siteshelf',id}})}
   }
@@ -60,9 +61,40 @@ try{
  await page.setViewportSize({width:390,height:844});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'no horizontal scroll');
  const columns=await page.evaluate(()=>getComputedStyle(document.querySelector('.prompt-field-grid')).gridTemplateColumns.split(' ').length);assert.equal(columns,1);await page.screenshot({path:'prompt-fields-mobile.png'});
  await page.setViewportSize({width:1280,height:1000});await page.locator('#prompt-close').click();
- // a page prompt is unchanged: three tabs, Live first, plain prompt text
+ // a page prompt keeps three tabs, Live first, and gets Customise boxes built from its own text
  await page.locator('.prompt-card',{hasText:'Budget planner'}).click();assert(await page.locator('#tab-live').isVisible()&&await page.locator('#tab-code').isVisible());assert.equal(await page.locator('#tab-live').getAttribute('aria-selected'),'true');
- await page.locator('#tab-prompt').click();await page.waitForSelector('#panel-prompt pre.prompt-text');assert.equal(await page.locator('#panel-prompt .prompt-fields').count(),0);assert.equal(await page.locator('#panel-prompt pre').textContent(),'Plain prompt text');assert(await page.getByRole('button',{name:'Copy prompt',exact:true}).isVisible());
+ await page.waitForFunction(()=>/clay-loop|Clay you/.test(document.querySelector('#live-frame').srcdoc||''));
+ await page.locator('#tab-prompt').click();await page.waitForSelector('#panel-prompt .prompt-customise');assert.equal(await page.locator('#panel-prompt .prompt-fields').count(),0,'the film brief boxes are only for the film prompt');
+ const cz=page.locator('#panel-prompt .prompt-customise');assert.equal(await cz.evaluate(n=>n.open),false,'collapsed until asked for');assert.match(await cz.locator(':scope > summary').textContent(),/^Customise this prompt$/);
+ const promptText=()=>page.locator('#panel-prompt pre.prompt-text').textContent();assert.equal(await promptText(),QUOTED,'the prompt reads as written until something changes');
+ await cz.locator(':scope > summary').click();
+ assert.deepEqual(await cz.locator('legend').allTextContents(),['Brand and text','Colours','Fonts','Links','Sections and rules','Output']);
+ assert.equal(await cz.getByLabel('Brand name').inputValue(),'Kiln & Co');assert.equal(await cz.locator('input[type=color]').count(),7);assert.equal(await cz.locator('.prompt-group select',{hasText:'(as written)'}).count(),3,'one dropdown per font');assert.equal(await cz.locator('.prompt-toggle input').count(),4);
+ assert.equal(await cz.getByLabel('Output format').inputValue(),'');assert.equal(await cz.getByLabel('Language of the on-screen copy').inputValue(),'');assert(await page.getByRole('button',{name:'Copy prompt',exact:true}).isVisible());assert(await page.getByRole('button',{name:'Reset all changes'}).isDisabled());
+ // change a colour, the brand, a font, a section, the output format and the language
+ await cz.locator('.prompt-swatch',{hasText:'Accent'}).locator('input[type=color]').fill('#2a9d8f');
+ await cz.getByLabel('Brand name').fill('Ember Works');
+ await cz.getByLabel('Heading font',{exact:true}).selectOption('Sora');
+ await cz.getByLabel('Interaction and animation').uncheck();
+ await cz.getByLabel('Output format').selectOption('react');await cz.getByLabel('Language of the on-screen copy').selectOption('French');
+ let edited=await promptText();
+ assert(edited.includes('Accent kiln orange #2a9d8f')&&edited.includes('visible focus 3px #2a9d8f'.replace('visible','Visible')),'one colour change reaches every use');assert(!edited.includes('Kiln & Co')&&edited.includes('wordmark "Ember Works"'));assert(edited.includes('"Sora" 600/700')&&!edited.includes('Fraunces'));
+ assert(!edited.includes('Interaction:')&&edited.includes('Responsive:'));assert(edited.includes('Rules: Deliver a React 18 function component')&&edited.endsWith('Keep the brand name, numbers and code unchanged.'));
+ assert.match(await cz.locator(':scope > summary').textContent(),/6 changed/);assert(await page.getByRole('button',{name:'Copy customised prompt'}).isVisible());
+ // the copy button gives exactly what is shown
+ await page.getByRole('button',{name:'Copy customised prompt'}).click();await page.waitForFunction(()=>window.__copied.length===2);assert.equal(await page.evaluate(()=>window.__copied[1]),edited);
+ // the Live page follows: same colours, fonts, brand name, wherever the page uses them
+ await page.locator('#tab-live').click();await page.waitForFunction(()=>/#2a9d8f/.test(document.querySelector('#live-frame').srcdoc||''));
+ const live=await page.locator('#live-frame').evaluate(f=>f.srcdoc);assert(live.includes('--a:#2a9d8f')&&live.includes('family=Sora')&&live.includes('Ember Works')&&!/d9582b/i.test(live));assert.match(await page.locator('#live-status').textContent(),/Showing your colours/);
+ // remembered on this device: closing and reopening keeps the choices and opens the panel
+ await page.locator('#prompt-close').click();await page.locator('.prompt-card',{hasText:'Budget planner'}).click();await page.locator('#tab-prompt').click();await page.waitForSelector('#panel-prompt .prompt-customise');
+ assert.equal(await page.locator('#panel-prompt .prompt-customise').evaluate(n=>n.open),true);assert.equal(await promptText(),edited);assert.equal(await page.locator('#panel-prompt .prompt-customise').getByLabel('Brand name').inputValue(),'Ember Works');
+ await page.locator('#tab-live').click();await page.waitForFunction(()=>/#2a9d8f/.test(document.querySelector('#live-frame').srcdoc||''));
+ // reset puts everything back, in the prompt and the Live page
+ await page.locator('#tab-prompt').click();await page.getByRole('button',{name:'Reset all changes'}).click();assert.equal(await promptText(),QUOTED);assert.equal(await page.locator('#panel-prompt .prompt-customise').getByLabel('Brand name').inputValue(),'Kiln & Co');assert(await page.getByRole('button',{name:'Copy prompt',exact:true}).isVisible());
+ await page.locator('#tab-live').click();await page.waitForFunction(()=>!/#2a9d8f/.test(document.querySelector('#live-frame').srcdoc||''));assert.equal(await page.locator('#live-status').textContent(),'This is a live page. It runs in a sealed frame.');
+ // phone layout for the customise panel
+ await page.locator('#tab-prompt').click();await page.setViewportSize({width:390,height:844});assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'no horizontal scroll with the panel open');await page.locator('#panel-prompt .prompt-swatch').first().scrollIntoViewIfNeeded();await page.screenshot({path:'prompt-customise-mobile.png'});await page.setViewportSize({width:1280,height:1000});
  await page.locator('#prompt-close').click();
  // signed out: the prompt and its boxes stay behind the sign-in lock
  signedIn=false;const out=await context.newPage();out.on('pageerror',noteError);await out.goto(base+'/prompts.html');await out.waitForSelector('.prompt-card');await out.waitForFunction(()=>RepoAccount.ready);

@@ -1,7 +1,7 @@
 'use strict';
 (()=>{
 const A=window.RepoAccount,$=s=>document.querySelector(s),API='/api/prompts',PAGE=48,KEEP='reposhelf.prompts.open';
-let saved=new Set(),savedFor=null,items=[],shown=PAGE,current=null,full=null,fullFor=null,tab='live',liveFor=null;
+let saved=new Set(),savedFor=null,items=[],shown=PAGE,current=null,full=null,fullFor=null,tab='live',liveFor=null,customiser=null,liveBase=null,liveDirty=false;
 const el=(tag,props={},...kids)=>{const n=document.createElement(tag);for(const[k,v]of Object.entries(props)){if(k==='text')n.textContent=v;else if(k==='class')n.className=v;else n.setAttribute(k,v)}n.append(...kids);return n};
 const key=i=>i.source+'/'+i.id;
 const signedIn=()=>Boolean(A?.user),track=(kind,item)=>{try{A?.track?.(kind,key(item||current))}catch{}};
@@ -28,17 +28,20 @@ async function loadSaved(){const id=A?.user?.id||null;if(id===savedFor)return;sa
 
 /* ---------- detail ---------- */
 const dialog=$('#prompt-dialog'),tabs=['live','prompt','code'];
-function setTab(name,focus){tab=name;for(const t of tabs){const on=t===name;$('#tab-'+t).setAttribute('aria-selected',on);$('#tab-'+t).tabIndex=on?0:-1;$('#panel-'+t).hidden=!on}if(focus)$('#tab-'+name).focus();if(name!=='live')void showGated(name)}
+function setTab(name,focus){tab=name;for(const t of tabs){const on=t===name;$('#tab-'+t).setAttribute('aria-selected',on);$('#tab-'+t).tabIndex=on?0:-1;$('#panel-'+t).hidden=!on}if(focus)$('#tab-'+name).focus();if(name!=='live')void showGated(name);else if(liveDirty)applyLive()}
 const shownTabs=()=>tabs.filter(t=>!$('#tab-'+t).hidden);
 for(const t of tabs){$('#tab-'+t).onclick=()=>setTab(t);$('#tab-'+t).onkeydown=e=>{const list=shownTabs(),i=list.indexOf(t),n=e.key==='ArrowRight'?(i+1)%list.length:e.key==='ArrowLeft'?(i+list.length-1)%list.length:-1;if(n>=0){e.preventDefault();setTab(list[n],true)}}}
-function open(item){current=item;full=null;fullFor=null;liveFor=null;$('#prompt-title').textContent=item.title;$('#prompt-like-slot').replaceChildren(heart(item,'prompt-like inline'));const credit=$('#prompt-credit');credit.hidden=!item.credit;credit.replaceChildren();if(item.credit){credit.append('Originally made by ',el('a',{href:item.credit.url,rel:'noopener noreferrer',target:'_blank',text:item.credit.name}),'. Shown here with a link back.')}
+function open(item){current=item;full=null;fullFor=null;liveFor=null;customiser=null;liveBase=null;liveDirty=false;$('#prompt-title').textContent=item.title;$('#prompt-like-slot').replaceChildren(heart(item,'prompt-like inline'));const credit=$('#prompt-credit');credit.hidden=!item.credit;credit.replaceChildren();if(item.credit){credit.append('Originally made by ',el('a',{href:item.credit.url,rel:'noopener noreferrer',target:'_blank',text:item.credit.name}),'. Shown here with a link back.')}
  try{history.replaceState(null,'','#'+key(item))}catch{}
  const textOnly=item.kind==='text';$('#tab-live').hidden=textOnly;$('#tab-code').hidden=textOnly;
  if(!dialog.open)dialog.showModal();setTab(textOnly?'prompt':'live');track('prompt_view',item);if(!textOnly)void loadLive(item)}
 dialog.addEventListener('close',()=>{$('#live-frame').srcdoc='';liveFor=null;try{history.replaceState(null,'',location.pathname)}catch{}});
 $('#prompt-close').onclick=()=>dialog.close();
 dialog.addEventListener('click',e=>{if(e.target===dialog)dialog.close()});
-async function loadLive(item){const status=$('#live-status'),frame=$('#live-frame');frame.srcdoc='';status.textContent='Loading the page…';liveFor=key(item);try{const d=await getJson(`${API}?area=preview&source=${item.source}&id=${encodeURIComponent(item.id)}`);if(liveFor!==key(item))return;frame.srcdoc=d.html;status.textContent='This is a live page. It runs in a sealed frame.'}catch(e){if(liveFor===key(item))status.textContent=e.status===404?'This page has no live version yet.':e.message}}
+const LIVE_NOTE='This is a live page. It runs in a sealed frame.';
+// The Live page follows the Customise boxes (colours, fonts, words and links) using only what the browser already has.
+function applyLive(){if(!customiser||liveBase==null)return;$('#live-frame').srcdoc=customiser.html(liveBase);liveDirty=false;$('#live-status').textContent=customiser.changed()?'Showing your colours, fonts, words and links where this page uses the same ones. It runs in a sealed frame.':LIVE_NOTE}
+async function loadLive(item){const status=$('#live-status'),frame=$('#live-frame');frame.srcdoc='';status.textContent='Loading the page…';liveFor=key(item);try{const d=await getJson(`${API}?area=preview&source=${item.source}&id=${encodeURIComponent(item.id)}`);if(liveFor!==key(item))return;liveBase=d.html;if(customiser&&customiser.changed()){applyLive()}else{frame.srcdoc=d.html;status.textContent=LIVE_NOTE}}catch(e){if(liveFor===key(item))status.textContent=e.status===404?'This page has no live version yet.':e.message}}
 
 function lock(panel,what){panel.replaceChildren(el('div',{class:'prompt-lock'},el('h3',{text:'Sign in to see '+what}),el('p',{text:'Browsing is open to everyone. Signing in with GitHub unlocks the prompt, the code and the download.'}),el('a',{class:'button lime',href:'/api/auth?action=start&return=%2Fprompts.html',text:'Sign in with GitHub'})));const a=panel.querySelector('a');a.onclick=()=>{track('lock_signin');try{sessionStorage.setItem(KEEP,JSON.stringify({key:key(current),tab,at:Date.now()}))}catch{}}}
 async function ensureFull(){if(full&&fullFor===key(current))return full;const item=current;const d=await getJson(`${API}?area=bundle&source=${item.source}&id=${encodeURIComponent(item.id)}`);if(current!==item)return null;full=d;fullFor=key(item);return d}
@@ -49,8 +52,13 @@ async function showGated(name){const panel=$('#panel-'+name);if(!signedIn()){loc
  panel.replaceChildren(el('p',{class:'prompt-note',text:'Loading…',role:'status'}));const item=current;
  try{const d=await ensureFull();if(!d||current!==item||tab!==name)return;track(name==='prompt'?'prompt_reveal':'code_reveal',item);const status=el('p',{class:'prompt-note',role:'status'});
   if(name==='prompt'){
-   const form=window.RepoPromptFields?.mount(key(item),d.prompt,{onChange:()=>{links.replaceChildren(aiLinks(now()));status.textContent=''}}),now=()=>form?form.text():d.prompt,links=el('span',{class:'prompt-actions-links'},aiLinks(now()));
-   panel.replaceChildren(...(form?[form.node]:[el('pre',{class:'prompt-text',text:d.prompt})]),el('div',{class:'prompt-actions'},Object.assign(el('button',{class:'button lime',type:'button',text:form?'Copy finished prompt':'Copy prompt'}),{onclick:()=>{track('prompt_copy',item);copy(now(),status,form?'Finished prompt copied.':'Prompt copied.')}}),links),status)}
+   // Motion film director has its own brief boxes; other page prompts get boxes built from their own text.
+   const fields=window.RepoPromptFields?.mount(key(item),d.prompt,{onChange:refresh}),custom=fields||item.kind==='text'?null:window.RepoPromptCustomise?.mount(key(item),d.prompt,{html:d.html,onChange:refresh}),form=fields||custom;
+   const now=()=>form?form.text():d.prompt,pre=fields?null:el('pre',{class:'prompt-text',text:now()}),links=el('span',{class:'prompt-actions-links'},aiLinks(now()));
+   const copyLabel=()=>fields?'Copy finished prompt':custom&&custom.changed()?'Copy customised prompt':'Copy prompt',copyButton=Object.assign(el('button',{class:'button lime',type:'button',text:copyLabel()}),{onclick:()=>{track('prompt_copy',item);copy(now(),status,fields?'Finished prompt copied.':custom&&custom.changed()?'Customised prompt copied.':'Prompt copied.')}});
+   function refresh(){if(pre)pre.textContent=now();links.replaceChildren(aiLinks(now()));copyButton.textContent=copyLabel();status.textContent='';if(custom){liveBase??=d.html;liveDirty=true}}
+   if(custom){customiser=custom;liveBase??=d.html;liveDirty=custom.changed()>0}
+   panel.replaceChildren(...(fields?[fields.node]:custom?[custom.node,pre]:[pre]),el('div',{class:'prompt-actions'},copyButton,links),status)}
   else{panel.replaceChildren(el('pre',{class:'prompt-code'},el('code',{text:d.html})),el('div',{class:'prompt-actions'},Object.assign(el('button',{class:'button lime',type:'button',text:'Copy code'}),{onclick:()=>{track('code_copy',item);copy(d.html,status,'Code copied.')}}),Object.assign(el('button',{class:'button outline',type:'button',text:'Download zip'}),{onclick:()=>{track('zip_download',item);download((item.id||'page')+'.zip',zip(d,item));status.textContent='Download started.'}})),status)}
  }catch(e){if(e.status===401){panel.replaceChildren();lock(panel,name==='prompt'?'the prompt':'the code')}else if(e.status===428||e.code==='legal_required'){location.href='/legal.html'}else panel.replaceChildren(el('p',{class:'legal-feedback','data-tone':'error',role:'alert',text:e.message}))}}
 
