@@ -30,8 +30,8 @@ jobs:
       - name: Install dependencies and browser
         id: browser
         run: |
-          npm install --package-lock=false
-          npm install --no-save --package-lock=false playwright@1.56.1
+          npm ci --ignore-scripts
+          npm install --no-save --ignore-scripts playwright@1.56.1
           npx playwright install --with-deps chromium
       - name: Verify isolated browser workers
         id: verify

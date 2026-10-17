@@ -92,7 +92,7 @@ jobs:
           node-version: '22'
       - name: Install submission validation browser
         run: |
-          npm install --no-save --package-lock=false playwright@1.56.1
+          npm install --no-save --ignore-scripts playwright@1.56.1
           npx playwright install --with-deps chromium
       - name: Restore accumulated catalogue changes
         run: node scripts/publish-catalog.mjs restore

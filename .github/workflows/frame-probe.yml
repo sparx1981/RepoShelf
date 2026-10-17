@@ -22,20 +22,28 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - name: Unpack saved catalogue data
         run: node scripts/data-packing.mjs unpack
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
       - name: Install dependencies
-        run: npm install --package-lock=false
+        run: npm ci --ignore-scripts
       - name: Install Chromium
         if: ${{ inputs.browser }}
         run: |
-          npm install --no-save --package-lock=false playwright@1.56.1
+          npm install --no-save --ignore-scripts playwright@1.56.1
           npx playwright install --with-deps chromium
       - name: Probe demos
-        run: node scripts/frame-probe.mjs --sample=${{ inputs.sample }} ${{ inputs.browser && '--browser=60' || '' }} --out=frame-probe-result.json
+        env:
+          SAMPLE: ${{ inputs.sample }}
+          BROWSER: ${{ inputs.browser }}
+        run: |
+          args=(--sample="$SAMPLE")
+          if [ "$BROWSER" = "true" ]; then args+=(--browser=60); fi
+          node scripts/frame-probe.mjs "${args[@]}" --out=frame-probe-result.json
       - uses: actions/upload-artifact@v4
         with:
           name: frame-probe-result

@@ -17,6 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           ref: main
       - name: Unpack saved catalogue data
         run: node scripts/data-packing.mjs unpack

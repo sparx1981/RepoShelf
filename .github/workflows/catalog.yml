@@ -146,7 +146,7 @@ jobs:
           restore-keys: demo-catalog-
       - name: Install agent server dependencies
         id: dependencies
-        run: npm install --package-lock=false
+        run: npm ci --ignore-scripts
       - name: Validate catalog logic
         id: validate
         run: npm test && npm run test:mcp && npm run build
@@ -329,6 +329,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          persist-credentials: false
           ref: ${{ needs.prepare.outputs.sha }}
       - name: Unpack saved catalogue data
         run: node scripts/data-packing.mjs unpack
@@ -339,7 +340,7 @@ jobs:
         with:
           name: browser-input-${{ github.run_id }}-${{ github.run_attempt }}
       - name: Install dependencies
-        run: npm install --package-lock=false
+        run: npm ci --ignore-scripts
       - uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
@@ -347,7 +348,7 @@ jobs:
       - name: Install screenshot browser
         id: browser
         run: |
-          npm install --no-save --package-lock=false playwright@1.56.1
+          npm install --no-save --ignore-scripts playwright@1.56.1
           npx playwright install --with-deps chromium
       - name: Verify isolated browser workers
         id: verify
@@ -398,7 +399,7 @@ jobs:
         with:
           node-version: '22'
       - name: Install merge dependencies
-        run: npm install --package-lock=false
+        run: npm ci --ignore-scripts
       - name: Restore existing preview files from the saved checkpoint
         run: node scripts/publish-catalog.mjs restore
       - uses: actions/download-artifact@v4

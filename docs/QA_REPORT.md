@@ -40,6 +40,15 @@ Updated as phases are completed. "Fixed" means changed, covered by a new or exte
 | QA-22 | Fixed (Phase 1) | `connect.html` and `privacy.html` now say the connector can read the owner's boards, and the policy has a "Your boards" paragraph. The legal version was not bumped; that is your decision. | `tests/boards.mjs` |
 | QA-27 | Fixed (Phase 1) | The board name on the `board:` line is cleaned like the item lines, and dropdown labels are one line. | `verify-prompt-fields-ui.mjs` |
 | QA-28 | Fixed (Phase 1) | "Clear all boxes" re-enables the Reference board dropdown, and a board that finishes loading after Clear is not applied. | `verify-prompt-fields-ui.mjs` |
+| QA-03 | Fixed (Phase 2) | `/api/open` now shows a "You are leaving RepoShelf" page, naming the destination, for any link that does not come from a RepoShelf page (the browser's `Sec-Fetch-Site` header; a missing header counts as outside). Links from RepoShelf pages go straight through. Sign-in can now return only to fork and duplicate links, so the page cannot be reached through a sign-in. I did not use a catalogue lookup, because README, community and documentation links go to arbitrary sites. | `tests/open-redirect.mjs`; `tests/accounts.mjs`; `verify-deployed-api.mjs` checks the live page |
+| QA-06 | Fixed (Phase 2) | JSON-RPC batches are refused with `-32600` before the rate limit and before any tool runs. | `tests/mcp-batch.mjs` |
+| QA-21 | Fixed (Phase 2) | A failed or cancelled Google or GitHub link clears only its one-off cookies, so the member stays signed in and sees the explanation. Link and merge starts from another site are refused. | `tests/session-robustness.mjs` |
+| QA-42 | Fixed (Phase 2) | A 403 from the sign-in service for a deleted or merged user is treated as an expired session: the cookies are cleared and the member is asked to sign in again. | `tests/session-robustness.mjs` |
+| QA-44 | Fixed (Phase 2) | Linking Google leaves the stored GitHub token alone. | `tests/session-robustness.mjs`; `tests/google-signin.mjs` |
+| QA-26 | Fixed (Phase 2) | Every workflow installs with `npm ci --ignore-scripts` from the lockfile (Playwright with `--ignore-scripts`), and read-only workflows and the catalogue browser shards no longer keep the token on disk. | `tests/workflow-hardening.mjs` |
+| QA-52 (part) | Fixed (Phase 2) | The manual-run inputs of `viewer-diagnose.yml` and `frame-probe.yml` now go through `env:` and are quoted. The wording on the connect page about revocation is still open. | `tests/workflow-hardening.mjs` |
+| QA-53 (part) | Fixed (Phase 2) | A badly encoded cookie on the host can no longer break sign-in, every account route, or sign-out. | `tests/session-robustness.mjs` |
+| QA-25 | Open: needs your decision | Where the SketchUp Shelf data should live. |  |
 
 ## 2. What was run
 
