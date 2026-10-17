@@ -142,7 +142,8 @@ with
   (41,'202610160035_boards', case when coalesce(exists(select 1 from pg_proc where pronamespace='public'::regnamespace and proname='reposhelf_export_account' and prosrc like '%boards%'),false) then null else 'account export includes boards' end, null),
   (42,'202610170036_text_prompts', nullif(array_to_string(array(select x from unnest(array['ss_prompts.kind']) x where x <> all(coalesce((select a from cols),'{}'))),', '),''), 'columns'),
   (42,'202610170036_text_prompts', case when coalesce(exists(select 1 from pg_constraint where conrelid=to_regclass('public.ss_prompts') and pg_get_constraintdef(oid) like '%kind%page%text%'),false) then null else 'constraint: kind must be page or text' end, null),
-  (42,'202610170036_text_prompts', case when coalesce((select count(*) from public.ss_prompts s where s.source='siteshelf' and s.source_id='motion-film-director' and to_jsonb(s)->>'kind'='text')=1,false) then null else 'Motion film director listing (deleting it in the admin shows false)' end, null)
+  (42,'202610170036_text_prompts', case when coalesce((select count(*) from public.ss_prompts s where s.source='siteshelf' and s.source_id='motion-film-director' and to_jsonb(s)->>'kind'='text')=1,false) then null else 'Motion film director listing (deleting it in the admin shows false)' end, null),
+  (43,'202610170037_more_fill_in_prompts', case when coalesce((select count(*) from public.ss_prompts s where s.source='siteshelf' and s.source_id in('landing-page-builder','app-from-spec','brand-identity-kit','social-content-engine','explainer-video-script','market-research-brief') and to_jsonb(s)->>'kind'='text')=6,false) then null else 'the six fill-in prompt listings (deleting one in the admin shows false)' end, null)
  ),
  findings as (
   select ord, migration, case when problem is null then null when kind is null then problem else 'missing '||kind||': '||problem end as problem from checks),

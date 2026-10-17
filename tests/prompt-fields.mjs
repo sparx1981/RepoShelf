@@ -39,4 +39,24 @@ assert(!F.parse(edited,ID).fields.some(f=>f.key==='subject'),'a line without a b
 assert.equal(F.parse('just some text',ID),null);assert.equal(F.parse(prompt.replace('<brief>','<intro>'),ID),null);assert.equal(F.parse(null,ID),null);
 // Lines with the same key outside the brief block are never touched.
 const outside=prompt+'\nmode:        [outside]\n';assert(F.fill(F.parse(outside,ID),{mode:'product'}).endsWith('mode:        [outside]\n'));
+// Every hand-defined prompt: all brief lines become boxes, in order, with dropdowns only where the hint lists choices.
+const more=await readFile(new URL('../supabase/migrations/202610170037_more_fill_in_prompts.sql',import.meta.url),'utf8');
+const texts={[ID]:prompt};
+for(const m of more.matchAll(/\$(rs_[a-z_]+)\$([\s\S]*?)\n\$\1\$/g))texts['siteshelf/'+m[1].slice(3).replace(/_/g,'-')]=m[2];
+assert.deepEqual(Object.keys(texts).sort(),Object.keys(F.SPECS).sort(),'every prompt with boxes has its text in a migration, and the reverse');
+for(const [id,text] of Object.entries(texts)){
+ const spec=F.SPECS[id],p=F.parse(text,id);
+ assert(p,id+' parses');
+ assert.deepEqual(p.fields.map(f=>f.key),spec.fields.map(f=>f.key),id+': every field is a line in the prompt, in the same order');
+ for(const f of p.fields){
+  if(f.type==='select'){assert(f.options.length>=2,id+' '+f.key+' has choices');assert(f.hint.includes(' | '))}
+  else assert.equal(f.options,null,id+' '+f.key+' is free text')}
+ assert(text.includes('Leave any line blank'),id+' tells the AI what a blank line means');
+ assert(!/\$/.test(text),id+' has no dollar signs');assert(!/[ \t]+$/m.test(text),id+' has no trailing spaces');
+ const blank=F.fill(p,{});assert(!/\n[a-z -]+:\s+\[/.test(blank.split('<brief>')[1].split('</brief>')[0]),id+' leaves no placeholders when blank');
+ const vals=Object.fromEntries(p.fields.map(f=>[f.key,f.options?f.options[0]:'value for '+f.key]));
+ const done=F.fill(p,vals);
+ for(const f of p.fields)assert(done.includes(f.key+':'+f.gap+vals[f.key]+'\n'),id+' '+f.key+' keeps its alignment');
+ assert.equal(done.split('\n').length,text.split('\n').length,id+' keeps its line count');
+}
 console.log('PASS: prompt fill-in boxes cover the 14 brief lines, take dropdown choices and hints from the prompt, keep alignment, leave blanks blank, change nothing else and tolerate edited prompts.');

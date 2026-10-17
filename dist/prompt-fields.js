@@ -1,6 +1,6 @@
 (function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory();else root.RepoPromptFields=factory()})(globalThis,function(){
 'use strict';
-// Fill-in boxes for one prompt: Motion film director. Its brief block holds 14 lines such as
+// Fill-in boxes for the hand-defined text prompts (Motion film director and the six from migration 0037). Each brief block holds lines such as
 //   mode:        [showreel | product | launch-story | explainer]
 // Each line becomes a labelled box (a dropdown where the choices are fixed) and the bracketed text becomes its hint.
 // The boxes read the real prompt text, so editing the prompt in Administration keeps working. A line left blank stays
@@ -20,7 +20,89 @@ const SPECS={
   {key:'sound',label:'Sound',type:'select'},
   {key:'autonomy',label:'Autonomy',type:'select'},
   {key:'toolchain',label:'Toolchain',type:'text'},
-  {key:'sign-off',label:'Sign-off',type:'text'}]}};
+  {key:'sign-off',label:'Sign-off',type:'text'}]},
+ 'siteshelf/landing-page-builder':{block:'brief',fields:[
+  {key:'product',label:'Product',type:'text'},
+  {key:'audience',label:'Audience',type:'area'},
+  {key:'goal',label:'Goal',type:'select'},
+  {key:'call to action',label:'Call to action',type:'text'},
+  {key:'tone',label:'Tone',type:'text'},
+  {key:'brand',label:'Brand',type:'area'},
+  {key:'proof',label:'Proof',type:'area'},
+  {key:'sections',label:'Sections',type:'area'},
+  {key:'style',label:'Style',type:'area'},
+  {key:'stack',label:'Stack',type:'select'},
+  {key:'motion',label:'Motion',type:'select'},
+  {key:'language',label:'Language',type:'text'},
+  {key:'autonomy',label:'Autonomy',type:'select'}]},
+ 'siteshelf/app-from-spec':{block:'brief',fields:[
+  {key:'app',label:'App',type:'text'},
+  {key:'users',label:'Users',type:'area'},
+  {key:'core flows',label:'Core flows',type:'area'},
+  {key:'data',label:'Data',type:'area'},
+  {key:'platform',label:'Platform',type:'select'},
+  {key:'stack',label:'Stack',type:'text'},
+  {key:'auth',label:'Sign-in',type:'select'},
+  {key:'design',label:'Design',type:'area'},
+  {key:'scope',label:'Scope',type:'select'},
+  {key:'integrations',label:'Integrations',type:'text'},
+  {key:'constraints',label:'Constraints',type:'area'},
+  {key:'testing',label:'Testing',type:'select'},
+  {key:'autonomy',label:'Autonomy',type:'select'}]},
+ 'siteshelf/brand-identity-kit':{block:'brief',fields:[
+  {key:'business',label:'Business',type:'text'},
+  {key:'audience',label:'Audience',type:'area'},
+  {key:'positioning',label:'Positioning',type:'area'},
+  {key:'personality',label:'Personality',type:'text'},
+  {key:'values',label:'Values',type:'area'},
+  {key:'competitors',label:'Competitors',type:'area'},
+  {key:'name',label:'Name',type:'select'},
+  {key:'logo',label:'Logo',type:'select'},
+  {key:'palette',label:'Palette',type:'text'},
+  {key:'typography',label:'Typography',type:'text'},
+  {key:'voice',label:'Voice',type:'area'},
+  {key:'applications',label:'Applications',type:'text'},
+  {key:'deliverable',label:'Deliverable',type:'select'}]},
+ 'siteshelf/social-content-engine':{block:'brief',fields:[
+  {key:'brand',label:'Brand',type:'area'},
+  {key:'goal',label:'Goal',type:'select'},
+  {key:'channels',label:'Channels',type:'text'},
+  {key:'period',label:'Period',type:'text'},
+  {key:'frequency',label:'Frequency',type:'text'},
+  {key:'pillars',label:'Pillars',type:'area'},
+  {key:'voice',label:'Voice',type:'area'},
+  {key:'assets',label:'Assets',type:'area'},
+  {key:'offers',label:'Offers',type:'area'},
+  {key:'questions',label:'Audience questions',type:'area'},
+  {key:'formats',label:'Formats',type:'text'},
+  {key:'avoid',label:'Avoid',type:'area'},
+  {key:'measure',label:'Measures',type:'text'}]},
+ 'siteshelf/explainer-video-script':{block:'brief',fields:[
+  {key:'topic',label:'Topic',type:'text'},
+  {key:'viewer',label:'Viewer',type:'area'},
+  {key:'outcome',label:'Outcome',type:'area'},
+  {key:'length',label:'Length',type:'text'},
+  {key:'format',label:'Format',type:'select'},
+  {key:'style',label:'Style',type:'select'},
+  {key:'voice',label:'Voice',type:'select'},
+  {key:'tone',label:'Tone',type:'text'},
+  {key:'facts',label:'Facts',type:'area'},
+  {key:'brand',label:'Brand',type:'area'},
+  {key:'music',label:'Music',type:'select'},
+  {key:'end card',label:'End card',type:'text'}]},
+ 'siteshelf/market-research-brief':{block:'brief',fields:[
+  {key:'topic',label:'Topic',type:'text'},
+  {key:'decision',label:'Decision',type:'area'},
+  {key:'audience',label:'Readers',type:'text'},
+  {key:'region',label:'Region',type:'text'},
+  {key:'segments',label:'Segments',type:'area'},
+  {key:'competitors',label:'Competitors',type:'area'},
+  {key:'horizon',label:'Time horizon',type:'text'},
+  {key:'sources',label:'Sources',type:'area'},
+  {key:'depth',label:'Depth',type:'select'},
+  {key:'format',label:'Format',type:'select'},
+  {key:'must answer',label:'Must answer',type:'area'},
+  {key:'constraints',label:'Constraints',type:'area'}]}};
 const STORE='reposhelf.promptfields.v1',LINE=/^([a-z][a-z -]*):(\s+)\[(.*)\]\s*$/;
 const oneLine=v=>String(v??'').replace(/\s*[\r\n]+\s*/g,' ').trim();
 // Finds the field lines inside the block, in order. Lines that no longer look like "key: [hint]" are left alone.

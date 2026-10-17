@@ -2,6 +2,8 @@ import {QUOTED,PAGE} from '../tests/fixtures/prompts.mjs';
 import {spawn} from 'node:child_process';import {readFile} from 'node:fs/promises';import {existsSync} from 'node:fs';import assert from 'node:assert/strict';import {chromium} from 'playwright';
 const port=4399,base=`http://127.0.0.1:${port}`,server=spawn(process.execPath,['scripts/serve.mjs'],{env:{...process.env,PORT:String(port)},stdio:['ignore','pipe','inherit']});let browser;
 const sql=await readFile(new URL('../supabase/migrations/202610170036_text_prompts.sql',import.meta.url),'utf8'),TAG='$reposhelf_prompt$',from=sql.indexOf(TAG)+TAG.length,PROMPT=sql.slice(from,sql.indexOf(TAG,from)).replace(/\n$/,'');
+const more=await readFile(new URL('../supabase/migrations/202610170037_more_fill_in_prompts.sql',import.meta.url),'utf8'),MORE=[...more.matchAll(/\$rs_([a-z_]+)\$([\s\S]*?)\n\$rs_\1\$/g)].map(m=>({id:m[1].replace(/_/g,'-'),text:m[2]})),TITLES={'landing-page-builder':'Landing page builder','app-from-spec':'App builder from a spec','brand-identity-kit':'Brand identity kit','social-content-engine':'Social content calendar','explainer-video-script':'Explainer video script and storyboard','market-research-brief':'Market research brief'};
+let showMore=false;
 const list=[
  {source:'siteshelf',id:'motion-film-director',title:'Motion film director',category:'Video & motion',description:'A brief-to-MP4 prompt.',type:'free',kind:'text',thumbnail:null,credit:null},
  {source:'siteshelf',id:'budget-planner',title:'Budget planner',category:'Tools',description:'Plan a month.',type:'free',kind:'page',thumbnail:null,credit:null}];
@@ -19,9 +21,9 @@ try{
   if(u.pathname==='/api/analytics')return route.fulfill({json:{configured:false}});
   if(u.pathname==='/api/prompts'){
    const area=u.searchParams.get('area')||'list';
-   if(area==='list')return route.fulfill({json:{items:list}});
+   if(area==='list')return route.fulfill({json:{items:showMore?list.concat(MORE.map(m=>({source:'siteshelf',id:m.id,title:TITLES[m.id],category:'Websites & apps',description:'Fill-in prompt.',type:'free',kind:'text',thumbnail:null,credit:null}))):list}});
    if(area==='preview')return route.fulfill({json:{html:PAGE,createdAt:'2026-10-05T00:00:00Z'}});
-   if(area==='bundle'){const id=u.searchParams.get('id');bundles.push(id);if(!signedIn)return route.fulfill({status:401,json:{error:{code:'sign_in_required',message:'Sign in'}}});return route.fulfill({json:id==='motion-film-director'?{title:'Motion film director',prompt:PROMPT,html:null,kind:'text'}:{title:'Budget planner',prompt:QUOTED,html:PAGE}})}
+   if(area==='bundle'){const id=u.searchParams.get('id');bundles.push(id);if(!signedIn)return route.fulfill({status:401,json:{error:{code:'sign_in_required',message:'Sign in'}}});const extra=MORE.find(m=>m.id===id);if(extra)return route.fulfill({json:{title:TITLES[id],prompt:extra.text,html:null,kind:'text'}});return route.fulfill({json:id==='motion-film-director'?{title:'Motion film director',prompt:PROMPT,html:null,kind:'text'}:{title:'Budget planner',prompt:QUOTED,html:PAGE}})}
    if(area==='admin-list')return route.fulfill({json:{items:adminRows,runs:[]}});
    if(area==='admin-create'){const body=route.request().postDataJSON();created.push(body);const id=body.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');adminRows.unshift({source:'siteshelf',source_id:id,title:body.title,category:body.category||null,type:'free',kind:'text',published:body.published,is_new:false,created_at:new Date().toISOString()});return route.fulfill({json:{ok:true,source:'siteshelf',id}})}
   }
@@ -99,6 +101,20 @@ try{
  // signed out: the prompt and its boxes stay behind the sign-in lock
  signedIn=false;const out=await context.newPage();out.on('pageerror',noteError);await out.goto(base+'/prompts.html');await out.waitForSelector('.prompt-card');await out.waitForFunction(()=>RepoAccount.ready);
  await out.locator('.prompt-card',{hasText:'Motion film director'}).click();await out.waitForSelector('.prompt-lock');assert.equal(await out.locator('.prompt-fields').count(),0);assert.equal(await out.getByText('<brief>').count(),0);assert(!bundles.slice(-1).includes('x'));
+
+ // the six more fill-in prompts: each opens with boxes for every brief line, dropdowns where the choices are fixed, a live preview and a copy of the finished prompt
+ assert.equal(MORE.length,6);showMore=true;signedIn=true;const all=await context.newPage();all.on('pageerror',noteError);await all.goto(base+'/prompts.html');await all.waitForSelector('.prompt-card');await all.waitForFunction(()=>RepoAccount.ready&&RepoAccount.user);
+ for(const m of MORE){
+  await all.locator('.prompt-card',{hasText:TITLES[m.id]}).first().click();await all.locator('#prompt-dialog').waitFor();await all.waitForSelector('#panel-prompt .prompt-fields');
+  const fields=await all.locator('#panel-prompt .prompt-field').count(),selects=await all.locator('#panel-prompt .prompt-field select').count();
+  assert(fields>=12,m.id+' shows a box for every brief line');assert(selects>=1,m.id+' has dropdowns');
+  assert.equal(await all.locator('#panel-prompt .prompt-customise').count(),0,m.id+' uses its own boxes, not the automatic customiser');
+  await all.locator('#panel-prompt .prompt-field input[type=text]').first().fill('Zeta Test');
+  const sel=all.locator('#panel-prompt .prompt-field select').first();const opt=await sel.locator('option').nth(1).getAttribute('value');await sel.selectOption(opt);
+  await all.locator('#panel-prompt .prompt-preview summary').click();const shown=await all.locator('#panel-prompt .prompt-preview pre').textContent();
+  assert(shown.includes('Zeta Test')&&shown.includes(opt),m.id+' preview reflects the boxes');assert(!/\n[a-z -]+:\s+\[/.test(shown.split('<brief>')[1].split('</brief>')[0]),m.id+' leaves no placeholders');
+  await all.locator('#prompt-close').click();await all.evaluate(k=>{try{localStorage.removeItem('reposhelf.promptfields.v1')}catch{}});
+ }
  // administration: New prompt creates a text prompt
  signedIn=true;admin=true;const adm=await context.newPage();adm.on('pageerror',noteError);await adm.goto(base+'/admin.html?tab=prompts');await adm.waitForFunction(()=>RepoAccount.ready&&RepoAccount.user?.admin);
  await adm.waitForSelector('#prompts-new',{state:'visible'});await adm.waitForSelector('#prompts-rows tr');
@@ -108,5 +124,5 @@ try{
  assert.deepEqual(created,[{title:'Launch teaser',category:'Video & motion',description:'',prompt:'Make a teaser.',published:true}]);assert(await adm.locator('#prompts-rows tr',{hasText:'Launch teaser'}).isVisible());
  await adm.locator('#prompts-rows tr',{hasText:'Budget planner'}).getByRole('button',{name:/^Edit/}).click();assert.equal(await adm.locator('#prompt-edit-title').textContent(),'Edit prompt');
  assert.equal(errors.length,0,errors.join('\n'));
- console.log('PASS: text prompt card and Prompt-only view, 14 fill-in boxes with dropdowns and hints, live preview and finished-prompt copy, remembered and clearable values, mobile layout, unchanged page prompts, sign-in lock and the admin New prompt form.');
+ console.log('PASS: the six more fill-in prompts open with boxes, dropdowns and a live preview; text prompt card and Prompt-only view, 14 fill-in boxes with dropdowns and hints, live preview and finished-prompt copy, remembered and clearable values, mobile layout, unchanged page prompts, sign-in lock and the admin New prompt form.');
 }finally{await browser?.close();server.kill('SIGTERM')}
