@@ -11,12 +11,13 @@ const rows={
   hidden:{id:'33333333-3333-3333-3333-333333333333',source:'siteshelf',source_id:'hidden-one',title:'Hidden',category:'Tools',description:'',type:'free',thumbnail:null,animated_thumbnail:null,source_url:null,created_at:'2026-10-04T00:00:00Z',updated_at:null,prompt:SECRET+'-3',published:false}
 };
 const users={member:{id:'00000000-0000-0000-0000-000000000002',identities:[{provider:'github',identity_data:{sub:'102',user_name:'member'}}],user_metadata:{}}};
-const calls=[];
+const calls=[];let missingKind=false;
 const accounts=createAccounts({legal:{active:false},config,fetcher:async(url,opts)=>{
   const u=new URL(url),token=opts.headers.Authorization?.replace('Bearer ',''),json=(data,status=200)=>new Response(JSON.stringify(data),{status,headers:{'Content-Type':'application/json'}});
   calls.push({path:u.pathname,search:u.search,token,apikey:opts.headers.apikey});
   if(u.pathname==='/auth/v1/user')return users[token]?json(users[token]):json({},401);
   const wantsPublished=u.searchParams.get('published')==='eq.true',pick=(r)=>(wantsPublished?r.published:true);
+  if(u.pathname==='/rest/v1/ss_prompts'&&missingKind&&(u.searchParams.get('select')||'').split(',').includes('kind'))return json({code:'42703',message:'column ss_prompts.kind does not exist'},400);
   if(u.pathname==='/rest/v1/ss_prompts'){
     let list=Object.values(rows).filter(pick);
     const src=u.searchParams.get('source'),sid=u.searchParams.get('source_id');
@@ -71,6 +72,12 @@ r=await run('/api/prompts?area=bundle&source=siteshelf&id=motion-film-director')
 const previewCalls=calls.length;r=await run('/api/prompts?area=bundle&source=siteshelf&id=motion-film-director',{token:'member'});
 assert.equal(r.status,200);assert.equal(r.data.kind,'text');assert.equal(r.data.html,null);assert.equal(r.data.prompt,SECRET+'-4');assert.equal(r.data.title,'Motion film director');
 assert(!calls.slice(previewCalls).some(c=>c.path==='/rest/v1/ss_previews'),'no page lookup for a text prompt');
+
+// Before the database update that adds `kind` is applied, the library still works and every prompt is a page prompt.
+missingKind=true;
+r=await run('/api/prompts');assert.equal(r.status,200);assert.equal(r.data.items.length,3);assert(r.data.items.every(i=>i.kind==='page'),'without the column every prompt is a page prompt');assert(!r.body.toString().includes('SECRET-PROMPT'));
+r=await run('/api/prompts?area=bundle&source=sceneai&id=6a61a4ae0cd891fdf74d708a',{token:'member'});assert.equal(r.status,200);assert.equal(r.data.html,PAGE);assert.equal(r.data.prompt,SECRET+'-2');
+missingKind=false;
 
 // 4. Unpublished, unknown and malformed requests fail cleanly, and the browser key never reads the tables.
 assert.equal((await run('/api/prompts?area=detail&source=siteshelf&id=hidden-one',{token:'member'})).status,404);

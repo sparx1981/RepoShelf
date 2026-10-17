@@ -1,7 +1,8 @@
 -- Text prompts and the first one: a prompt that is read and copied rather than rendered as a live page.
 -- `kind` is 'page' for the existing library (a generated page with Live, Prompt and Code views) or 'text' for a
 -- prompt with only the Prompt view. A text prompt can carry fill-in boxes on the website (see dist/prompt-fields.js).
--- Apply BEFORE deploying the matching application update: the library list now selects the new column.
+-- Run it in the Supabase SQL editor at any time: the site works before and after (until it runs, every prompt is a page
+-- prompt and the Motion film director is not listed yet).
 -- Safe to run more than once; the listing is only inserted if it is not there already, so later edits are kept.
 begin;
 alter table public.ss_prompts add column if not exists kind text not null default 'page' check (kind in ('page','text'));

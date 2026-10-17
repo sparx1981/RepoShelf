@@ -38,7 +38,9 @@ function publicCache(res,status,data,seconds){
 }
 
 export function createPromptsHandler({accounts=createAccounts(),github=fetch,studio={item:studioItem,background:backgroundDetail,download:imageDownload}}={}){
-  const rows=(path)=>accounts.request('/rest/v1/'+path,{service:true});
+  // Reads ask for the 'kind' column. If the database update that adds it has not been applied yet, retry without it
+  // (every prompt is then a page prompt) so deploying the site before running the migration cannot break the library.
+  const rows=async path=>{try{return await accounts.request('/rest/v1/'+path,{service:true})}catch(e){if(e.code==='migration_required'&&/,kind(?=[,&]|$)/.test(path))return accounts.request('/rest/v1/'+path.replace(/,kind(?=[,&]|$)/,''),{service:true});throw e}};
   async function find(source,id,columns){
     const [row]=await rows(`ss_prompts?source=eq.${q(source)}&source_id=eq.${q(id)}&published=eq.true&select=${columns}&limit=1`);
     if(!row)fail(404,'not_found','That prompt is not available.');
