@@ -30,7 +30,10 @@ for(const item of showcase){
  assert.ok(thumbs.has(item.id+'.webp'),'Thumbnail '+item.id);assert.ok(pages.has(item.id+'.html'),'Preview page '+item.id);
  // Code quality and safety: self-contained, no network, no eval, no unbounded markup injection.
  const detail=showcaseDetail(item.id);assert.equal(detail.original,true);assert.equal(detail.filename,'component.html');
- const code=detail.code;assert.ok(code.startsWith('<!-- '+SHOWCASE_LICENCE),'Licence notice leads the code: '+item.id);
+ const code=detail.code;assert.ok(code.startsWith('<!-- '+(item.licence||SHOWCASE_LICENCE)),'Licence notice leads the code: '+item.id);
+ // Third-party code (Sea Glass, Apache License 2.0) names its author, says what was changed, links the licence, and ships the full text.
+ if(item.family==='Sea Glass'){assert.match(item.licence,/Sea Glass by mttmcknn/);assert.match(item.licence,/Apache License 2\.0/);assert.match(item.licence,/Changed for RepoShelf/);assert.match(detail.licence,/Apache License\s+Version 2\.0, January 2004/);assert.match(detail.licence,/Changes made by RepoShelf/);assert.match(detail.credit,/Sea Glass by mttmcknn/)}
+ else assert.ok(detail.licence.startsWith('RepoShelf showcase components licence'),'RepoShelf items keep the RepoShelf licence: '+item.id);
  assert.ok(code.includes(BASE_CSS.slice(0,60)),'Standalone: includes the design tokens '+item.id);
  assert.doesNotMatch(item.js+item.html+item.css,/\beval\(|new Function|document\.write|fetch\(|XMLHttpRequest|WebSocket|localStorage|https?:\/\/(?!www\.w3\.org)/i,'No network, storage or dynamic code in '+item.id);
  assert.doesNotMatch(item.js,/innerHTML\s*=|outerHTML\s*=/,'No HTML injection in '+item.id);
