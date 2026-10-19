@@ -6,7 +6,12 @@ export async function waitForCollector({fetcher=fetch,now=Date.now,sleep=ms=>new
  const after=notBefore?Date.parse(notBefore):scheduled.getTime();if(!Number.isFinite(after))throw Error('Invalid collector start time');
  const deadline=now()+timeoutMs;
  while(now()<deadline){
-  const response=await fetcher('https://api.github.com/repos/sparx1981/reposhelf-x-collector/actions/workflows/collect.yml/runs?branch=main&per_page=20',{headers:{Accept:'application/vnd.github+json','User-Agent':'RepoShelf-X-chain'},redirect:'error',signal:AbortSignal.timeout(15000)});
+  // Signed in with the workflow's token: the anonymous allowance (60 calls an hour per address) is shared with every other job on the runner's
+  // address and ran out, which failed an import after it had already waited an hour for its turn (HTTP 403).
+  const headers={Accept:'application/vnd.github+json','User-Agent':'RepoShelf-X-chain',...(process.env.GITHUB_TOKEN?{Authorization:'Bearer '+process.env.GITHUB_TOKEN}:{})};
+  const response=await fetcher('https://api.github.com/repos/sparx1981/reposhelf-x-collector/actions/workflows/collect.yml/runs?branch=main&per_page=20',{headers,redirect:'error',signal:AbortSignal.timeout(15000)});
+  // A rate limit or a server hiccup is waited out like any other pending state; anything else is a real failure.
+  if([403,429,500,502,503,504].includes(response.status)){await sleep(30000);continue}
   if(!response.ok)throw Error('Cannot read collector history: HTTP '+response.status);
   const data=await response.json();if(!Array.isArray(data.workflow_runs))throw Error('Invalid collector history');
   const run=data.workflow_runs.find(r=>Date.parse(r.created_at)>=after-5000);

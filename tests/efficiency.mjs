@@ -28,5 +28,11 @@ let waited=0,clock=Date.parse('2026-10-09T06:20:00Z');const completed={id:22,cre
 assert.equal((await waitForCollector({now:()=>clock,sleep:async ms=>{clock+=ms},fetcher:async()=>Response.json({workflow_runs:[waited++?completed:{...completed,status:'queued'}, {id:21,created_at:'2026-10-09T02:00:00Z',status:'completed',conclusion:'success'}]})})).id,22,'Scheduled import waits for today’s collector rather than an older manual run');
 await assert.rejects(waitForCollector({now:()=>clock,fetcher:async()=>Response.json({workflow_runs:[{...completed,conclusion:'failure'}]})}),/did not succeed/);
 await assert.rejects(waitForCollector({now:()=>clock,timeoutMs:1,sleep:async ms=>{clock+=ms},fetcher:async()=>Response.json({workflow_runs:[]})}),/timed out/);
+// A rate-limited history read (HTTP 403) is retried, not fatal, and the request is signed in with the workflow token.
+{let calls=0,seen=null;const before=process.env.GITHUB_TOKEN;process.env.GITHUB_TOKEN='workflow-token';
+ const run=await waitForCollector({now:()=>clock,sleep:async ms=>{clock+=ms},fetcher:async(url,options)=>{calls++;seen=options.headers;return calls<3?new Response('rate limited',{status:403}):Response.json({workflow_runs:[completed]})}});
+ assert.equal(run.id,22);assert.equal(calls,3,'two rate-limited answers were waited out');assert.equal(seen.Authorization,'Bearer workflow-token','the history read is signed in');
+ if(before===undefined)delete process.env.GITHUB_TOKEN;else process.env.GITHUB_TOKEN=before;
+ await assert.rejects(waitForCollector({now:()=>clock,fetcher:async()=>new Response('gone',{status:404})}),/HTTP 404/,'a real error still fails at once')}
 let paidDispatches=0;const importing=createXWorkflowControl({token:'test',fetcher:async url=>{if(url.endsWith('/dispatches'))paidDispatches++;return Response.json({workflow_runs:url.includes('x-intake.yml')?[{status:'in_progress'}]:[]})}});assert.equal((await importing.scan()).requested,false);assert.equal(paidDispatches,0);
 console.log('PASS: exact ribbons, shared REST/MCP authentication, cached X status, successful collector chaining, failure/timeouts, duplicate import protection and public submission fallback.');
