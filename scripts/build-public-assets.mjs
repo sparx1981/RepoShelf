@@ -4,11 +4,12 @@ import {fileURLToPath} from 'node:url';
 import {transform,build} from 'esbuild';
 import sharp from 'sharp';
 import {createRequire} from 'node:module';
+import {readPreviewWanted} from '../lib/preview-wanted.mjs';
 const require=createRequire(import.meta.url),B=require('../dist/browse.js'),Q=require('../dist/quality.js');
 const root=new URL('../',import.meta.url),dist=new URL('dist/',root);
 export async function generatePreviewVariants(){
  const base=new URL('previews/',dist),output=new URL('variants/',base),manifest={};await mkdir(output,{recursive:true});
- const index=JSON.parse(await readFile(new URL('data/browse/index.json',root),'utf8')),evidenceAt=Q.evidenceTime(index.snapshots?.catalog),selection=B.select(index.repositories.filter(r=>Q.publishedEligible(r,evidenceAt)),{storefront:true,limit:48,evidenceAt},{rows:[]}),wanted=new Set([...selection.items,...selection.shelfItems].flatMap(r=>(r.screenshots||[]).map(s=>s.src.replace('previews/',''))));
+ const list=await readPreviewWanted(root);if(!list){console.log('Responsive previews: no list of storefront screenshots saved yet; the saved copies are kept.');return}const wanted=new Set(list);
  const names=(await readdir(base)).filter(n=>wanted.has(n)&&/^[a-f0-9]{24}(?:-provider)?\.jpg$/.test(n));let position=0;async function worker(){while(position<names.length){const name=names[position++];
   const original=new URL(name,base),source=await stat(original),versions=[];
   for(const width of [320,640,960]){const target=name.replace('.jpg',`-${width}.webp`),file=new URL(target,output);let current;try{current=await stat(file)}catch{}

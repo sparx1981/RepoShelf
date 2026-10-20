@@ -8,7 +8,7 @@ import {createDemoPool} from '../scripts/demo-pool.mjs';
 import {runDemoProbe} from '../scripts/demo-probe-runner.mjs';
 import {publicUrlGuard,recordDemoResult} from '../scripts/demo-health.mjs';
 import {diagnoseSync} from '../lib/sync-diagnostics.mjs';
-const remoteRepos=cwd=>execFileSync('git',['ls-tree','--name-only','origin/main','dist/'],{cwd,encoding:'utf8'}).split('\n').filter(n=>/^dist\/catalog\.part-\d\d\.json\.gz$/.test(n)).flatMap(n=>JSON.parse(decompress(execFileSync('git',['show','origin/main:'+n],{cwd,maxBuffer:64*1024*1024})).toString()).repositories);
+const remoteRepos=cwd=>execFileSync('git',['ls-tree','--name-only','origin/main','dist/'],{cwd,encoding:'utf8'}).split('\n').filter(n=>/^dist\/catalog\.part-\d\d\.json(\.gz)?$/.test(n)).flatMap(n=>{const bytes=execFileSync('git',['show','origin/main:'+n],{cwd,maxBuffer:64*1024*1024});return JSON.parse((n.endsWith('.gz')?decompress(bytes):bytes).toString()).repositories});
 const temp=await mkdtemp(join(tmpdir(),'reposhelf-reliability-'));
 let subprocesses=true;try{execFileSync(process.execPath,['-e','process.stdout.write("ready")'])}catch(e){if(e.code==='EPERM'&&!process.env.CI){subprocesses=false;console.log('Local sandbox blocks subprocess verification; full checks run in GitHub Actions.')}else throw e}
 try{

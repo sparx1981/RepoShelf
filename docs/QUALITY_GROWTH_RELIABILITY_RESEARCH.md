@@ -104,3 +104,15 @@ Current checkout (what a fresh clone fetches): 3.6 GB in 235,000 files, 77% of i
 **Combined effect of the options, per day:** today about 400 MB, heading for about 650 MB as screenshots reach their weekly cycle. Stored uncompressed: -85 MB. Not committing the browse index and admin summary: -70 to -90 MB. Skipping recaptures that look the same: -100 to -250 MB. Together about 50-100 MB a day.
 
 Not free: storing screenshots outside git. Supabase Storage (1 GB), Vercel Blob (1 GB) and similar free tiers are smaller than the 2.8 GB already held, and Cloudflare R2's free tier needs a payment method on file.
+
+### Built on the branch (git-growth fixes)
+
+1. **Packed catalogue and search terms are plain JSON** (`lib/data-packing.mjs`, `lib/readme-terms.mjs`). Parts are `dist/catalog.part-NN.json`, `dist/spaces.part-NN.json` and `data/readme-terms/part-NN.json` (largest 7.0 MB on the real catalogue). Gzip parts written by earlier runs are still read, and the next pack or shard write replaces them. The public-data pruning, the live check and the publication comparison know both names, so the raw catalogue still cannot be published. The quality snapshot stays gzip for now: it is read from the checkpoint branch at runtime and is 114 MB raw, over GitHub's file limit unless split.
+2. **The browsing index is no longer committed** (`.gitignore`, 78,193 files removed from the index; the files stay on disk). The only thing the build read from it was the list of storefront screenshots needing small responsive copies, which is now `data/preview-wanted.json` (413 names, the same number the production build reports), written by each publication and never a reason to publish by itself. With the index absent, the build step still finds all 413.
+3. **Recaptured screenshots that look the same are not saved again** (`scripts/preview-similarity.mjs`, used by `scripts/capture-previews.mjs`). Checked on 200 real rewritten screenshots: 69% differ by under 2 of 255 on average with under 1% of pixels changed (identical pages with different JPEG noise), and are kept; a page with a new banner (2.5 average, 1.6% of pixels) is not. The record still gets a fresh capture time.
+
+Tests: new `tests/preview-similarity.mjs`; updated `data-packing`, `catalog-publication`, `sync-reliability`, `public-data` and `readme-terms`. Full suite passes (150 PASS lines) and `test:mcp` passes.
+
+**Expected effect:** about 160-250 MB a day less in git once screenshots reach their weekly cycle. The saving from plain parts was measured in a scratch repository and should be confirmed after the first week of publications. The first publication after the switch adds about 100 MB once.
+
+**Rollout:** merge, then watch the next sync's publication and the next Vercel deployment: the sync must write plain parts, the build must find `data/preview-wanted.json`, and the live check must still pass.

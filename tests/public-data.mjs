@@ -7,7 +7,7 @@ import {prune} from '../scripts/prune-public-data.mjs';
 // The complete catalogue holds every record, including unpublished and moderated listings and internal check fields. It is
 // needed while building but must never be published.
 const dir=await mkdtemp(join(tmpdir(),'public-data-'));
-const secret=['catalog.json','spaces.json','catalog.part-00.json.gz','catalog.part-head.json.gz','spaces.part-31.json.gz','spaces.part-head.json.gz'];
+const secret=['catalog.json','spaces.json','catalog.part-00.json','catalog.part-head.json','spaces.part-31.json','spaces.part-head.json','catalog.part-00.json.gz','catalog.part-head.json.gz','spaces.part-31.json.gz','spaces.part-head.json.gz'];
 const keep=['index.html','community.json','discovery.json','growth.json','catalog-health.json','spaces-guide.html','trendshift.json','project-pages.json'];
 for(const name of [...secret,...keep])await writeFile(join(dir,name),'x');
 const removed=await prune(pathToFileURL(dir+'/'));

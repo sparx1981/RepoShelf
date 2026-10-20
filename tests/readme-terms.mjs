@@ -18,7 +18,7 @@ try{
  writer.set('Team/Alpha',['one','two']);writer.set('team/beta',['three']);writer.flush();
  const loaded=loadTerms(join(dir,'data'));
  assert.deepEqual(loaded.get('team/alpha'),['one','two']);assert.deepEqual(loaded.get('team/beta'),['three']);assert.equal(loaded.size,2);
- const files=readdirSync(join(dir,'data/readme-terms'));assert(files.length>=1&&files.length<=2);assert(files.every(f=>/^part-\d\d\.json\.gz$/.test(f)));
+ const files=readdirSync(join(dir,'data/readme-terms'));assert(files.length>=1&&files.length<=2);assert(files.every(f=>/^part-\d\d\.json$/.test(f)));
  assert(TERM_BUCKETS>1);
  const again=createTermsWriter(join(dir,'data'));again.set('team/alpha',['one','two']);assert.equal(again.prune(new Set(['team/alpha'])),1,'Pruning drops projects that left the catalogue');again.flush();
  const pruned=loadTerms(join(dir,'data'));assert.deepEqual([...pruned.keys()],['team/alpha']);

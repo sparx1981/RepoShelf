@@ -18,6 +18,8 @@ node_modules/
 # `node scripts/data-packing.mjs unpack` after a checkout and by `npm run build`.
 /dist/catalog.json
 /dist/spaces.json
+# Everything under data/browse is output of build-browse-index, which every build and publication runs again; it was rewritten in Git daily (about 75 MB).
+/data/browse/
 /data/browse/index.json
 /data/browse/search.json
 /data/browse/identities.json
