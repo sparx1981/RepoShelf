@@ -75,3 +75,32 @@ Both are display-only or sync-internal and tested; nothing hides or shows a list
 - Traffic figures come from a small sample (51 visitors); they show "nearly none", not a rate.
 - The search-engine check could not use `site:`; confirm with Search Console.
 - Recommendations 2–9 change what is public or how the sync runs and have not been built. Nothing was pushed to `main` for this report.
+
+## 7. Git growth in detail (follow-up, 20 October)
+
+Measured on the nine publication commits of 13–20 October (3.6 GB of new compressed objects in eight days, about 0.4 GB a day):
+
+| What | Share | Per day | Why it grows |
+|---|---|---|---|
+| Screenshots (`dist/previews`) | 50% | 100–300 MB | A new JPEG every time a demo is recaptured (about 3,300 existing images rewritten and 2,100 new ones a day; about 35 KB each). Once the backlog drains, every public listing is recaptured weekly: 65,000 × 35 KB ÷ 7 is about **330 MB a day**. |
+| Browse index (`data/browse`, 78,000 files) | 19% | 65–85 MB | Output of `build-browse-index`, which the Vercel build runs again anyway. |
+| Packed catalogue (`dist/catalog.part-*`, `spaces.part-*`) | 14% | 30–85 MB | 32 gzip files rewritten daily. |
+| Search terms (`data/readme-terms`, 32 files) | 6.5% | 43–52 MB | gzip files rewritten daily. |
+| Saved READMEs (`data/readmes`) | 7% | 4–52 MB | New and changed READMEs; needed. |
+| Quality snapshot (`catalogue-quality.json.gz`) | 3% | 10–15 MB | One 15 MB gzip file rewritten daily. |
+
+**The gzip packing is the main avoidable cost.** Git compresses and also stores a changed file as a small difference from its previous version, but a gzip file changes almost completely when any content changes, so no difference can be found. I stored two consecutive days of real files both ways in a scratch repository:
+
+| File | Day-2 cost as gzip (today) | Day-2 cost uncompressed |
+|---|---|---|
+| `dist/catalog.part-05` | 1,484 KB | 132 KB (-91%) |
+| `data/readme-terms/part-08` | 1,804 KB | 116 KB (-94%) |
+| `data/catalogue-quality` | 14,860 KB | 2,156 KB (-85%) |
+
+The first version costs the same either way. `lib/data-packing.mjs` uses gzip because the whole catalogue exceeded GitHub's 100 MB file limit; the catalogue is already split into 32 parts of about 7.7 MB raw, so parts can be stored uncompressed. The quality snapshot (114 MB raw) needs splitting into parts first.
+
+Current checkout (what a fresh clone fetches): 3.6 GB in 235,000 files, 77% of it screenshots.
+
+**Combined effect of the options, per day:** today about 400 MB, heading for about 650 MB as screenshots reach their weekly cycle. Stored uncompressed: -85 MB. Not committing the browse index and admin summary: -70 to -90 MB. Skipping recaptures that look the same: -100 to -250 MB. Together about 50-100 MB a day.
+
+Not free: storing screenshots outside git. Supabase Storage (1 GB), Vercel Blob (1 GB) and similar free tiers are smaller than the 2.8 GB already held, and Cloudflare R2's free tier needs a payment method on file.
