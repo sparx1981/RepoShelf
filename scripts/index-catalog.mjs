@@ -4,7 +4,7 @@ import {recordStageMetrics} from './sync-metrics.mjs';
 import {savedListingControls} from '../lib/listing-policy.mjs';
 import {saveReadmeSnapshot} from './agent-snapshots.mjs';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
-import {checkRepository,dueEntries,repositoryCheckPlan} from './catalog-health.mjs';
+import {checkRepository,dueEntries,repositoryCheckPlan,REPOSITORY_CHECK_CONCURRENCY} from './catalog-health.mjs';
 import {withOverview} from './readme-overviews.mjs';
 import {withProjectInsights} from './project-insights.mjs';
 import {createRequire} from 'node:module';
@@ -31,11 +31,14 @@ repositoryPlan=repositoryCheckPlan(entries,{remaining,authenticated:Boolean(toke
 const dueAll=dueEntries(entries,Date.now(),entries.length);repositoryDue=dueAll.length;const due=dueAll.slice(0,repositoryPlan.limit),deadline=Date.now()+360000;
 if(dueAll.length&&!due.length){repositoryStopReason='api_budget';console.warn('Revalidation deferred to preserve GitHub API headroom.');return true}
 
-// Sequential checks allow us to stop promptly if GitHub rejects authentication or throttles us.
-for(const prior of due){if(Date.now()>=deadline){repositoryStopReason='time_budget';break}const result=await checkRepository(prior,{headers});healthStats.checked++;if(result.notModified)healthStats.notModified=(healthStats.notModified||0)+1;if(result.entry.availability==='unavailable')healthStats.unavailable++;if(result.entry.checkError)healthStats.temporaryFailures++;
+// A few checks run side by side (one at a time was about 0.3 seconds each, so 750 took over three minutes). Each worker stops taking work as soon
+// as GitHub rejects authentication or throttles us, and the checks already in flight keep their results.
+let next=0,paused=false;
+await Promise.all(Array.from({length:REPOSITORY_CHECK_CONCURRENCY},async()=>{while(!paused&&next<due.length){if(Date.now()>=deadline){repositoryStopReason??='time_budget';return}const prior=due[next++];const result=await checkRepository(prior,{headers});healthStats.checked++;if(result.notModified)healthStats.notModified=(healthStats.notModified||0)+1;if(result.entry.availability==='unavailable')healthStats.unavailable++;if(result.entry.checkError)healthStats.temporaryFailures++;
 let entry=result.entry;if(result.data&&entry.availability==='available')entry={...entry,...D.mapRepo(result.data),demo:prior.demo,lastDemoCheckedAt:prior.lastDemoCheckedAt};if((result.data||result.notModified)&&entry.availability==='available')entry=S.recordMetrics(entry);indexed.set(prior.full.toLowerCase(),entry);
 if(entry.full.toLowerCase()!==prior.full.toLowerCase()){indexed.delete(prior.full.toLowerCase());indexed.set(entry.full.toLowerCase(),entry)}
-if(result.stop){repositoryStopReason=result.entry.checkError?.kind||'temporary';console.warn('Revalidation paused; saved records preserved for retry.');return true}}
+if(result.stop&&!paused){paused=true;repositoryStopReason=result.entry.checkError?.kind||'temporary';console.warn('Revalidation paused; saved records preserved for retry.')}}}));
+if(paused)return true;
 console.log(`Revalidation: ${healthStats.checked} checked, ${healthStats.unavailable} unavailable, ${healthStats.temporaryFailures} temporary failures.`);return false}
 
 try{const paused=await revalidate();repositoryPaused=paused;

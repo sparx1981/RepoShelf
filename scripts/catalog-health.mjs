@@ -1,6 +1,12 @@
 // Availability is based on GitHub's repository API, never on a missing README or demo URL.
 // Routine availability rechecks every 48 hours; temporary failures retry sooner.
 export const CHECK_INTERVAL_MS=48*60*60*1000;
+// One run takes about 75 minutes and runs follow each other, so about 14 a day. The cap was 750 a run (about 10,500 a day) while every listing
+// is due every 48 hours (about 37,000 a day for 74,000 listings), so the queue of due checks only ever grew. GitHub's allowance (about 5,000 an
+// hour) is not the limit: the plan below still keeps it in reserve.
+export const RUNS_PER_DAY=14;
+export const REPOSITORY_CHECK_CAP=Number.isInteger(Number(process.env.CATALOG_REVALIDATE_CAP))&&Number(process.env.CATALOG_REVALIDATE_CAP)>0?Number(process.env.CATALOG_REVALIDATE_CAP):2500;
+export const REPOSITORY_CHECK_CONCURRENCY=3;
 export function dueEntries(entries,now=Date.now(),limit=250){return entries.filter(r=>!r.nextCheckAt||Date.parse(r.nextCheckAt)<=now).filter(r=>!r.lastCheckedAt||now-Date.parse(r.lastCheckedAt)>=CHECK_INTERVAL_MS||r.checkError).sort((a,b)=>(Date.parse(a.lastAttemptAt||a.lastCheckedAt)||0)-(Date.parse(b.lastAttemptAt||b.lastCheckedAt)||0)).slice(0,limit)}
 export function repositoryCheckPlan(entries,{remaining=null,authenticated=false,batch='auto'}={}){
  const desired=Math.max(500,Math.ceil(entries.length/10));
@@ -8,8 +14,8 @@ export function repositoryCheckPlan(entries,{remaining=null,authenticated=false,
  if(!Number.isInteger(requested)||requested<0)throw Error('Invalid repository check batch');
  const reserve=authenticated?200:10;
  const allowance=Number.isFinite(remaining)?Math.max(0,Math.floor(remaining)-reserve):authenticated?500:0;
- const limit=Math.min(requested,750,allowance);
- return {limit,desired,allowance,reserve,remaining,checksPerDay:limit*12,dailyCapacitySufficient:limit*12>=entries.length,intervalHours:48};
+ const limit=Math.min(requested,REPOSITORY_CHECK_CAP,allowance);
+ return {limit,desired,allowance,reserve,remaining,checksPerDay:limit*RUNS_PER_DAY,dailyCapacitySufficient:limit*RUNS_PER_DAY>=entries.length/(CHECK_INTERVAL_MS/86400000),intervalHours:48};
 }
 export async function checkRepository(entry,{fetcher=fetch,headers={},now=Date.now()}={}){
 const at=new Date(now).toISOString();

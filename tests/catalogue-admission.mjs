@@ -8,7 +8,12 @@ assert(Q.publishedEligible(good,now));assert.equal(Q.catalogueState(good,now),'p
 assert(!Q.publishedEligible({...good,screenshots:[]},now));
 assert(!Q.publishedEligible({...good,screenshots:[{...good.screenshots[0],url:'https://old.example'}]},now));
 assert(!Q.publishedEligible({...good,demoHealth:{...good.demoHealth,status:'review'}},now));
-assert(!Q.publishedEligible({...good,lastCheckedAt:new Date(now-3*86400000).toISOString()},now));
+assert(Q.publishedEligible({...good,lastCheckedAt:new Date(now-3*86400000).toISOString()},now),'a repository checked three days ago stays listed');
+assert(Q.publishedEligible({...good,lastCheckedAt:new Date(now-7*86400000).toISOString()},now),'and so does one checked exactly seven days ago');
+assert(!Q.publishedEligible({...good,lastCheckedAt:new Date(now-8*86400000).toISOString()},now),'a repository not checked for eight days is held back');
+assert.equal(Q.repositoryNote({...good,lastCheckedAt:new Date(now-1*86400000).toISOString()},now),'','no note while the repository check is within two days');
+assert.match(Q.repositoryNote({...good,lastCheckedAt:new Date(now-5*86400000).toISOString()},now),/last refreshed 5 days ago/,'older details say how old they are');
+assert.equal(Q.catalogueState({...good,lastCheckedAt:new Date(now-5*86400000).toISOString()},now),'published');
 assert(!Q.publishedEligible({...good,demoHealth:{...good.demoHealth,checkedAt:new Date(now-8*86400000).toISOString()}},now));
 const temporary={...good,demoHealth:{...good.demoHealth,error:{reason:'rate_limit'},consecutiveTemporaryFailures:3}};
 assert(Q.publishedEligible(temporary,now),'Temporary errors preserve recent successful evidence');

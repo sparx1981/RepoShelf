@@ -23,8 +23,9 @@ const html=UI.render(data);assert(html.includes('Stars over time'));assert(html.
 assert.equal(CHECK_INTERVAL_MS,48*3600000);assert.equal(dueEntries([{...base,lastCheckedAt:at(47/24)}],now).length,0);assert.equal(dueEntries([{...base,lastCheckedAt:at(2)}],now).length,1);
 assert.equal(repositoryCheckPlan(Array(4200),{remaining:950,authenticated:true}).limit,500);
 assert.equal(repositoryCheckPlan(Array(6500),{remaining:1000,authenticated:true}).limit,650);
-assert.equal(repositoryCheckPlan(Array(10000),{remaining:5000,authenticated:true}).limit,750);
-assert.equal(repositoryCheckPlan(Array(10000),{remaining:5000,authenticated:true}).dailyCapacitySufficient,false,'A growing catalogue exposes capacity shortfall without capping catalogue size');
+assert.equal(repositoryCheckPlan(Array(10000),{remaining:5000,authenticated:true}).limit,1000);
+assert.equal(repositoryCheckPlan(Array(74000),{remaining:5000,authenticated:true}).limit,2500,'A run refreshes at most the cap');
+assert.equal(repositoryCheckPlan(Array(74000),{remaining:5000,authenticated:true}).dailyCapacitySufficient,false,'A growing catalogue exposes capacity shortfall without capping catalogue size');
 assert.equal(repositoryCheckPlan(Array(4200),{remaining:200,authenticated:true}).limit,0,'Reserve API budget');
 assert.equal(repositoryCheckPlan(Array(4200),{remaining:60}).limit,50);
 assert.equal(repositoryCheckPlan(Array(4200),{authenticated:true}).limit,500,'Unknown allowance uses conservative prior batch');

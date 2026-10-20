@@ -2,6 +2,8 @@ import {createRequire} from 'node:module';
 import {createHash} from 'node:crypto';
 const require = createRequire(import.meta.url), Q = require('../dist/quality.js');
 const D=require('../dist/discovery.js');
+// A listing can stay public a few days past its last repository check, but a repository found on X is imported only on current evidence.
+const current = (r, now) => Q.publishedEligible(r, now) && now - Date.parse(r.lastCheckedAt) <= Q.REPOSITORY_FRESH_DAYS * 86400000;
 export const X_SOURCE_CATEGORY = 'As Seen On X.com';
 export function xLinkedDemo(entry,full=entry?.full){const evidence=entry?.demoEvidence;return evidence?.kind==='x_link'&&evidence.url===entry.demo&&evidence.repository?.toLowerCase()===full?.toLowerCase()&&entry.discoveredVia?.some(s=>xSource(s)&&s.url===evidence.postUrl)?D.demoUrl(entry.demo):null;}
 export function xSource(source) {
@@ -10,7 +12,7 @@ export function xSource(source) {
 }
 export function validatedXCandidate(candidate, now = Date.now()) {
   if (!candidate || typeof candidate.full !== 'string' || !/^[a-zA-Z0-9][a-zA-Z0-9-]{0,38}\/[a-zA-Z0-9_.-]{1,100}$/.test(candidate.full) || ['.', '..'].includes(candidate.full.split('/')[1])) return false;
-  if (!Array.isArray(candidate.discoveredVia) || !candidate.discoveredVia.some(xSource) || !Q.publishedEligible(candidate, now)) return false;
+  if (!Array.isArray(candidate.discoveredVia) || !candidate.discoveredVia.some(xSource) || !current(candidate, now)) return false;
   if (Date.parse(candidate.lastCheckedAt) > now || Date.parse(candidate.demoHealth.checkedAt) > now) return false;
   const image = xScreenshot(candidate);
   return Boolean(image && Number.isFinite(Date.parse(image.capturedAt)) && Date.parse(image.capturedAt) <= now);
@@ -44,7 +46,7 @@ export async function importXCandidates(manifest, catalog, {importer, capture, c
       const image = xScreenshot(candidate);
       entry = mergeXProvenance({...entry, demoHealth: candidate.demoHealth, previewCheck: candidate.previewCheck, screenshots: [image, ...(entry.screenshots || []).filter(s => s.kind !== 'demo')].slice(0, 6)}, candidate);
       const allowed = controls([entry]);
-      if (!allowed.length || !Q.publishedEligible(allowed[0], now())) { results.push({full: candidate.full, status: 'moderated_or_stale'}); continue; }
+      if (!allowed.length || !current(allowed[0], now())) { results.push({full: candidate.full, status: 'moderated_or_stale'}); continue; }
       await capture(image.src);
       entries.set(entry.full.toLowerCase(), allowed[0]);
       results.push({full: entry.full, status: 'imported'});

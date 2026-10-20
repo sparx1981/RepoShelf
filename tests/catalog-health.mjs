@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {checkRepository,dueEntries,CHECK_INTERVAL_MS} from '../scripts/catalog-health.mjs';
+import {checkRepository,dueEntries,repositoryCheckPlan,CHECK_INTERVAL_MS,REPOSITORY_CHECK_CAP,RUNS_PER_DAY} from '../scripts/catalog-health.mjs';
 const now=Date.parse('2026-10-03T12:00:00Z');const at=new Date(now).toISOString();
 const prior={full:'owner/project',name:'project',demo:'https://app.pages.dev',availability:'available',lastCheckedAt:'2026-10-01T00:00:00Z',lastAvailableAt:'2026-10-01T00:00:00Z'};
 const response=(status,data={},headers={})=>({status,ok:status>=200&&status<300,headers:new Headers(headers),json:async()=>data});
@@ -17,3 +17,10 @@ const uncertain=await check(response(503),unavailable);assert.equal(uncertain.en
 console.log('PASS: confirmed public repositories are restored; temporary failures do not unhide an unavailable entry');
 const fresh={...prior,lastCheckedAt:at,lastAttemptAt:at};const retry={...prior,checkError:{kind:'temporary'},nextCheckAt:new Date(now+1000).toISOString()};assert.equal(dueEntries([fresh,retry],now).length,0);assert.equal(dueEntries([prior,{full:'older/project'}],now,1)[0].full,'older/project');assert.equal(dueEntries([fresh],now+CHECK_INTERVAL_MS).length,1);
 console.log('PASS: bounded oldest-first daily revalidation respects retry dates');
+const catalogue=Array.from({length:74000},(_,i)=>({full:'o/r'+i}));
+const roomy=repositoryCheckPlan(catalogue,{remaining:4931,authenticated:true});assert.equal(roomy.limit,REPOSITORY_CHECK_CAP,'a run refreshes up to the cap when GitHub has room');assert(roomy.limit>750,'more than the old 750 a run');assert.equal(roomy.checksPerDay,roomy.limit*RUNS_PER_DAY);
+assert.equal(repositoryCheckPlan(catalogue,{remaining:900,authenticated:true}).limit,700,'the allowance, less the reserve, still limits a run');
+assert.equal(repositoryCheckPlan(catalogue,{remaining:100,authenticated:true}).limit,0,'nothing is checked when GitHub has only the reserve left');
+assert.equal(repositoryCheckPlan(catalogue,{remaining:4931,authenticated:true,batch:'300'}).limit,300,'an explicit batch is honoured');
+assert.equal(roomy.dailyCapacitySufficient,roomy.limit*RUNS_PER_DAY>=catalogue.length/2,'capacity is judged against the 48-hour interval');
+console.log('PASS: the repository refresh plan uses GitHub\'s allowance up to a cap and keeps its reserve');
