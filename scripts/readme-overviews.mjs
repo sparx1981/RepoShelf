@@ -7,6 +7,8 @@ const technical = /^(?:install|setup|set up|getting started|quick ?start|usage|h
 function plain(value) {
   return value
     .replace(/!\[[^\]]*\]\([^)]*\)|!\[[^\]]*\]\[[^\]]*\]/g, '')
+    // A linked badge, [![build](image)](page), loses its image above and leaves an empty link behind (934 saved overviews were rows of these).
+    .replace(/\[\s*\]\([^)]*\)/g, '').replace(/\[\s*\]\(?/g, '')
     .replace(/\[([^\]]+)\]\([^)]*\)|\[([^\]]+)\]\[[^\]]*\]/g, (_, a, b) => a || b)
     .replace(/<[^>]*>/g, '')
     .replace(/https?:\/\/\S+/g, '')

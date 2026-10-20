@@ -33,3 +33,13 @@ console.log('PASS: author overviews exclude setup, badges and code; preserve wor
 
 const actualLike=extractOverview('## Getting Started\n\nActual is a local-first personal finance tool, keeping budgets in sync between your devices.\n\nIf you are interested in contributing, please see our guide.\n\n## Contributing\n\n### Feature Requests\nCurrent feature requests can be seen here and voted on by our community.\n\n### Translation\nMake the project accessible by helping to translate it into many languages.');assert.deepEqual(actualLike.paragraphs,['Actual is a local-first personal finance tool, keeping budgets in sync between your devices.']);assert.equal(actualLike.features.length,0);
 const htmlHeading=extractOverview('<h4>Editor | Blog | Documentation | Product news | Social accounts</h4>\n<h2>An open source virtual hand-drawn style whiteboard. Collaborative and end-to-end encrypted.</h2>\n<p>Create beautiful diagrams, wireframes, or whatever you like in your web browser.</p>');assert.equal(htmlHeading.paragraphs.length,2);assert(!JSON.stringify(htmlHeading).includes('Product news'));
+
+{ // Rows of linked badges leave empty links behind once their images are removed; none of that may reach an overview.
+ const badges='[![Release](https://img.shields.io/a.svg)](https://github.com/o/r/releases "Release Nightly") [![Chat](https://img.shields.io/b.svg)](https://chat.example/o) [![Sponsors](https://img.shields.io/c.svg)](#sponsors) [![Docs](https://img.shields.io/d.svg)](https://docs.example/o "Documentation for the library")';
+ const row=extractOverview(`# Tool\n\n${badges}\n\n${intro}`);
+ assert.deepEqual(row.paragraphs,[intro],'a badge row is dropped and the real introduction kept');
+ assert(!JSON.stringify(row).includes('[]('),'no empty-link remnants');
+ const inline=extractOverview(`# Tool\n\n${intro} See [![demo](https://img.example/x.png)](https://demo.example/app) for a tour of every screen in the app.`);
+ assert(inline.paragraphs.every(p=>!/\[\s*\]/.test(p)),'an image link inside a sentence leaves no brackets');
+ console.log('PASS: badge rows and image links leave no empty-link remnants in overviews.');
+}

@@ -17,3 +17,10 @@ test("an About website on an app-hosting domain is the demo when the README name
 test("documentation, marketing and unsafe About websites are not treated as demos",()=>{
  for(const home of ['https://myapp.dev','https://user.readthedocs.io','https://docs.myapp.github.io/','https://user.github.io/docs/intro','https://example.com','https://github.com/owner/repo','http://localhost:3000','https://youtu.be/abc',''])assert.equal(D.extractDemo('No demo link here.',home),null,home);
  assert.equal(D.extractDemo('No demo link here.',null),null)});
+test('emoji shortcodes are dropped from descriptions and the words are kept',()=>{
+ assert.equal(D.cleanDescription(':books: Freely available programming books'),'Freely available programming books');
+ assert.equal(D.cleanDescription('Open source :rocket: home automation'),'Open source home automation');
+ assert.equal(D.cleanDescription('Time 10:30:45 and key:value: stay'),'Time 10:30:45 and key:value: stay','only codes that stand alone are removed');
+ assert.equal(D.mapRepo({full_name:'a/b',name:'b',id:5,description:':fire: Hot stuff'}).description,'Hot stuff');
+ assert.equal(D.mapRepo({full_name:'a/b',name:'b',id:5,description:':fire:'}).description,'Explore this public GitHub project.','a description of only codes falls back to the default');
+});
