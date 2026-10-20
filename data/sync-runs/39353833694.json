@@ -1,0 +1,1342 @@
+{
+  "schema": 4,
+  "work": {
+    "discovery": {
+      "admissionPolicy": "validated-demo-v1",
+      "publication": {
+        "published": 34550,
+        "pending": 32578,
+        "quarantined": 5623,
+        "unavailable": 4671
+      },
+      "workingDemos": 65042,
+      "browserBacklog": {
+        "demo": {
+          "never": 0,
+          "retry": 2013,
+          "repeated": 5539,
+          "complete": 69486
+        },
+        "screenshot": {
+          "never": 0,
+          "retry": 2071,
+          "repeated": 5181,
+          "complete": 65499
+        },
+        "reviewCount": 5711,
+        "reviewReasons": {
+          "login_wall": 279,
+          "empty_page": 2015,
+          "http_401": 71,
+          "probe_timeout": 15,
+          "access_restricted": 226,
+          "challenge": 122,
+          "dns_not_found": 131,
+          "tls_error": 29,
+          "network_or_timeout": 457,
+          "http_412": 26,
+          "http_402": 129,
+          "dns_unresolved": 27,
+          "connection_refused": 39,
+          "unsafe_target": 87,
+          "rate_limit": 109,
+          "application_error": 26,
+          "screenshot_error": 31,
+          "http_503": 1311,
+          "http_530": 21,
+          "uniform_image": 73,
+          "http_522": 19,
+          "http_400": 32,
+          "http_502": 46,
+          "dns_timeout": 66,
+          "http_526": 5,
+          "probe_failed": 2,
+          "http_500": 132,
+          "http_523": 4,
+          "http_404": 62,
+          "http_418": 1,
+          "http_521": 18,
+          "http_451": 58,
+          "probe_invalid_output": 1,
+          "http_454": 4,
+          "http_567": 1,
+          "http_409": 2,
+          "http_525": 4,
+          "http_405": 3,
+          "http_504": 8,
+          "http_520": 2,
+          "http_999": 3,
+          "http_410": 2,
+          "http_501": 1,
+          "page_unavailable": 1,
+          "space_app_not_loaded": 10
+        }
+      },
+      "targets": {
+        "repositoryChecks": 73187,
+        "demoChecks": 73187,
+        "screenshots": 65476
+      },
+      "reasons": [
+        "Demo validation is below 95%."
+      ],
+      "pending": {
+        "repositoryChecks": 55,
+        "demoChecks": 7060,
+        "screenshots": 7252
+      },
+      "available": 77038,
+      "visible": 72751,
+      "repositoryChecks": 76983,
+      "demoChecks": 69978,
+      "screenshots": 65499,
+      "ready": true,
+      "githubBatch": 1500,
+      "spacesBatch": 350,
+      "curatedBatch": 40,
+      "communityBatch": 20
+    },
+    "browser": {
+      "due": true,
+      "eligibilityBased": true,
+      "demoDue": 345,
+      "previewDue": 424,
+      "lastCompletedAt": "2026-10-20T00:47:37.660Z",
+      "nextDueAt": null,
+      "forced": false,
+      "reason": "424 screenshots and 345 demo checks eligible; untouched backlog can run after a recent batch."
+    },
+    "coverageBefore": {
+      "admissionPolicy": "validated-demo-v1",
+      "publication": {
+        "published": 34544,
+        "pending": 32575,
+        "quarantined": 5622,
+        "unavailable": 4671
+      },
+      "workingDemos": 65033,
+      "browserBacklog": {
+        "demo": {
+          "never": 0,
+          "retry": 2013,
+          "repeated": 5538,
+          "complete": 69477
+        },
+        "screenshot": {
+          "never": 0,
+          "retry": 2071,
+          "repeated": 5180,
+          "complete": 65490
+        },
+        "reviewCount": 5710,
+        "reviewReasons": {
+          "login_wall": 279,
+          "empty_page": 2015,
+          "http_401": 71,
+          "probe_timeout": 15,
+          "access_restricted": 225,
+          "challenge": 122,
+          "dns_not_found": 131,
+          "tls_error": 29,
+          "network_or_timeout": 457,
+          "http_412": 26,
+          "http_402": 129,
+          "dns_unresolved": 27,
+          "connection_refused": 39,
+          "unsafe_target": 87,
+          "rate_limit": 109,
+          "application_error": 26,
+          "screenshot_error": 31,
+          "http_503": 1311,
+          "http_530": 21,
+          "uniform_image": 73,
+          "http_522": 19,
+          "http_400": 32,
+          "http_502": 46,
+          "dns_timeout": 66,
+          "http_526": 5,
+          "probe_failed": 2,
+          "http_500": 132,
+          "http_523": 4,
+          "http_404": 62,
+          "http_418": 1,
+          "http_521": 18,
+          "http_451": 58,
+          "probe_invalid_output": 1,
+          "http_454": 4,
+          "http_567": 1,
+          "http_409": 2,
+          "http_525": 4,
+          "http_405": 3,
+          "http_504": 8,
+          "http_520": 2,
+          "http_999": 3,
+          "http_410": 2,
+          "http_501": 1,
+          "page_unavailable": 1,
+          "space_app_not_loaded": 10
+        }
+      },
+      "targets": {
+        "repositoryChecks": 73177,
+        "demoChecks": 73177,
+        "screenshots": 65467
+      },
+      "reasons": [
+        "Demo validation is below 95%."
+      ],
+      "pending": {
+        "repositoryChecks": 55,
+        "demoChecks": 7059,
+        "screenshots": 7251
+      },
+      "available": 77028,
+      "visible": 72741,
+      "repositoryChecks": 76973,
+      "demoChecks": 69969,
+      "screenshots": 65490,
+      "ready": true,
+      "githubBatch": 1500,
+      "spacesBatch": 350,
+      "curatedBatch": 40,
+      "communityBatch": 20
+    },
+    "coverageAfter": {
+      "admissionPolicy": "validated-demo-v1",
+      "publication": {
+        "published": 35548,
+        "pending": 31618,
+        "quarantined": 5654,
+        "unavailable": 4693
+      },
+      "workingDemos": 64811,
+      "browserBacklog": {
+        "demo": {
+          "never": 0,
+          "retry": 1959,
+          "repeated": 5570,
+          "complete": 69597
+        },
+        "screenshot": {
+          "never": 0,
+          "retry": 2001,
+          "repeated": 5211,
+          "complete": 65608
+        },
+        "reviewCount": 5743,
+        "reviewReasons": {
+          "login_wall": 280,
+          "empty_page": 2027,
+          "http_401": 71,
+          "probe_timeout": 15,
+          "access_restricted": 227,
+          "challenge": 122,
+          "dns_not_found": 131,
+          "tls_error": 29,
+          "network_or_timeout": 462,
+          "http_412": 26,
+          "http_402": 129,
+          "dns_unresolved": 27,
+          "connection_refused": 39,
+          "unsafe_target": 87,
+          "rate_limit": 109,
+          "application_error": 26,
+          "screenshot_error": 32,
+          "http_503": 1321,
+          "http_530": 21,
+          "uniform_image": 72,
+          "http_522": 19,
+          "http_400": 32,
+          "http_502": 47,
+          "dns_timeout": 66,
+          "http_526": 5,
+          "probe_failed": 3,
+          "http_500": 132,
+          "http_523": 4,
+          "http_404": 62,
+          "http_418": 1,
+          "http_521": 18,
+          "http_451": 58,
+          "probe_invalid_output": 1,
+          "http_454": 4,
+          "http_567": 1,
+          "http_409": 2,
+          "http_525": 4,
+          "http_405": 4,
+          "http_504": 8,
+          "http_520": 2,
+          "http_999": 3,
+          "http_410": 2,
+          "http_501": 1,
+          "page_unavailable": 1,
+          "space_app_not_loaded": 10
+        }
+      },
+      "targets": {
+        "repositoryChecks": 73270,
+        "demoChecks": 73270,
+        "screenshots": 65538
+      },
+      "reasons": [
+        "Demo validation is below 95%."
+      ],
+      "pending": {
+        "repositoryChecks": 55,
+        "demoChecks": 7035,
+        "screenshots": 7212
+      },
+      "available": 77126,
+      "visible": 72820,
+      "repositoryChecks": 77071,
+      "demoChecks": 70091,
+      "screenshots": 65608,
+      "ready": true,
+      "githubBatch": 1500,
+      "spacesBatch": 350,
+      "curatedBatch": 40,
+      "communityBatch": 20
+    },
+    "qualityGains": {
+      "demoChecks": 122,
+      "screenshots": 118,
+      "workingDemos": -227,
+      "published": 999
+    }
+  },
+  "phase": "complete",
+  "publication": "awaiting_publication",
+  "id": "39353833694",
+  "attempt": 1,
+  "startedAt": "2026-10-20T01:33:56.523Z",
+  "recordedAt": "2026-10-20T02:28:40.311Z",
+  "trigger": "automatic recovery",
+  "status": "success",
+  "counts": {
+    "before": 77412,
+    "after": 77513,
+    "added": 102,
+    "updated": 2145,
+    "removed": 1,
+    "withDemo": 72820
+  },
+  "temporaryFailures": 156,
+  "stages": [
+    {
+      "id": "taxonomy",
+      "name": "Category and subject refresh",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "version": 4,
+        "checked": 77523,
+        "changed": 424,
+        "reviewRequired": 49374,
+        "subjects": {
+          "Self-hosted apps": 1016,
+          "MCP servers & agents": 3173,
+          "Maths & algorithms": 788,
+          "Streaming": 358,
+          "Photography": 164,
+          "Mobile": 2195,
+          "Templates & UI components": 3225,
+          "Automation & workflows": 1561,
+          "Home automation": 87,
+          "Privacy & security": 1048,
+          "Writing & documents": 1064,
+          "Data & dashboards": 3195,
+          "Android": 763,
+          "Apple": 896,
+          "Chatbots & assistants": 1133,
+          "Browser extensions & PWAs": 3587,
+          "Simulation & physics": 738,
+          "Science": 1356,
+          "Animation & motion": 721,
+          "Image, audio & video AI": 1810,
+          "Music & audio": 1112,
+          "3D & graphics": 2422,
+          "Games & game development": 2110,
+          "Portfolios & personal sites": 4136,
+          "Crypto & blockchain": 662,
+          "Architecture & building design": 126,
+          "Maps & geospatial": 435,
+          "Travel": 301,
+          "Fashion": 208,
+          "Health & fitness": 329,
+          "Automotive": 272,
+          "Food & cooking": 565,
+          "Kids": 76
+        },
+        "platforms": {
+          "Android": 763,
+          "iOS & iPadOS": 540,
+          "macOS": 402,
+          "Mobile web": 151
+        },
+        "attempted": 77523,
+        "temporaryFailures": 0
+      },
+      "checked": 77523,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "capture_providers",
+      "name": "Optional screenshot providers",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "schema": 1,
+        "at": "2026-10-20T02:28:18.040Z",
+        "workerKeyConfigured": true,
+        "ready": {
+          "screenshotone": false,
+          "thumio": true,
+          "cloudflare": false
+        },
+        "attempted": 0,
+        "candidates": 0,
+        "reasons": {},
+        "providers": {},
+        "enabled": [
+          "thumio"
+        ]
+      },
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "browser_merge",
+      "name": "Merge parallel browser results",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "cleanup_publish",
+      "name": "Demo-only cleanup checkpoint",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "cleanup",
+      "name": "Demo-only library cleanup",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "compression",
+      "name": "Existing screenshot compression",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 100,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "compression_final",
+      "name": "New screenshot compression",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "sources",
+      "name": "Spaces and curated lists",
+      "status": "success",
+      "temporaryFailures": 4,
+      "details": {
+        "attempted": 533,
+        "sourceYield": {
+          "spaces": {
+            "inspected": 348,
+            "added": 44,
+            "found": 44,
+            "skipped": 133,
+            "pages": 6,
+            "errors": 4,
+            "stopped": "rate_limit"
+          },
+          "curated": {
+            "inspected": 35,
+            "found": 9,
+            "added": 0
+          }
+        },
+        "spacesChecked": 498,
+        "spacesFound": 44,
+        "temporaryFailures": 4
+      },
+      "checked": 533,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 4,
+      "warnings": 0
+    },
+    {
+      "id": "community",
+      "name": "Community discoveries",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "trendshift",
+      "name": "Trendshift trending lists",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "catalog",
+      "name": "GitHub discovery and revalidation",
+      "status": "success",
+      "temporaryFailures": 4,
+      "details": {
+        "repositoryChecks": 750,
+        "repositoryNotModified": 0,
+        "repositoryPaused": false,
+        "repositoryPlan": {
+          "limit": 750,
+          "desired": 6474,
+          "allowance": 4728,
+          "reserve": 200,
+          "remaining": 4928,
+          "checksPerDay": 9000,
+          "dailyCapacitySufficient": false,
+          "intervalHours": 48
+        },
+        "repositoryDue": 30772,
+        "repositorySelected": 750,
+        "repositoryRemainingDue": 29561,
+        "repositoryStopReason": null,
+        "repositoryObserved48h": 35101,
+        "repositoryObserved24h": 17030,
+        "candidateLimit": 1500,
+        "candidatesChecked": 1500,
+        "demosFound": 528,
+        "cacheHits": 1468,
+        "queryYield": [
+          {
+            "query": "\"try online\" in:readme stars:<100 created:2026-01-01..2026-12-31 is:public archived:false fork:false",
+            "page": 2,
+            "inspected": 31,
+            "found": 20,
+            "added": 1,
+            "cacheHits": 69,
+            "errors": 0
+          },
+          {
+            "query": "demo in:readme created:>=2026-07-22 is:public archived:false fork:false",
+            "page": 1,
+            "inspected": 43,
+            "found": 9,
+            "added": 0,
+            "cacheHits": 57,
+            "errors": 0
+          },
+          {
+            "query": "playground in:readme created:>=2026-07-22 is:public archived:false fork:false",
+            "page": 1,
+            "inspected": 25,
+            "found": 15,
+            "added": 0,
+            "cacheHits": 68,
+            "errors": 0
+          },
+          {
+            "query": "\"live preview\" in:readme created:>=2026-07-22 is:public archived:false fork:false",
+            "page": 1,
+            "inspected": 29,
+            "found": 7,
+            "added": 0,
+            "cacheHits": 67,
+            "errors": 0
+          },
+          {
+            "query": "\"try online\" in:readme created:>=2026-07-22 is:public archived:false fork:false",
+            "page": 1,
+            "inspected": 13,
+            "found": 11,
+            "added": 2,
+            "cacheHits": 48,
+            "errors": 0
+          },
+          {
+            "query": "topic:live-demo created:>=2026-07-22 is:public archived:false fork:false",
+            "page": 1,
+            "inspected": 0,
+            "found": 0,
+            "added": 0,
+            "cacheHits": 15,
+            "errors": 0
+          },
+          {
+            "query": "demo in:readme stars:100..999 is:public archived:false fork:false",
+            "page": 1,
+            "inspected": 74,
+            "found": 29,
+            "added": 8,
+            "cacheHits": 26,
+            "errors": 0
+          },
+          {
+            "query": "demo in:readme stars:10..99 is:public archived:false fork:false",
+            "page": 7,
+            "inspected": 65,
+            "found": 18,
+            "added": 10,
+            "cacheHits": 35,
+            "errors": 0
+          },
+          {
+            "query": "demo in:readme stars:10..99 is:public archived:false fork:false",
+            "page": 8,
+            "inspected": 56,
+            "found": 10,
+            "added": 3,
+            "cacheHits": 44,
+            "errors": 0
+          },
+          {
+            "query": "demo in:readme stars:1..9 is:public archived:false fork:false",
+            "page": 3,
+            "inspected": 90,
+            "found": 19,
+            "added": 1,
+            "cacheHits": 10,
+            "errors": 0
+          },
+          {
+            "query": "demo in:readme stars:0 is:public archived:false fork:false",
+            "page": 4,
+            "inspected": 92,
+            "found": 13,
+            "added": 0,
+            "cacheHits": 8,
+            "errors": 0
+          },
+          {
+            "query": "playground in:readme stars:>=1000 is:public archived:false fork:false",
+            "page": 6,
+            "inspected": 31,
+            "found": 17,
+            "added": 1,
+            "cacheHits": 69,
+            "errors": 0
+          },
+          {
+            "query": "playground in:readme stars:100..999 is:public archived:false fork:false",
+            "page": 4,
+            "inspected": 92,
+            "found": 40,
+            "added": 0,
+            "cacheHits": 7,
+            "errors": 0
+          },
+          {
+            "query": "playground in:readme stars:10..99 is:public archived:false fork:false",
+            "page": 6,
+            "inspected": 8,
+            "found": 7,
+            "added": 1,
+            "cacheHits": 92,
+            "errors": 0
+          },
+          {
+            "query": "playground in:readme stars:1..9 is:public archived:false fork:false",
+            "page": 1,
+            "inspected": 87,
+            "found": 22,
+            "added": 4,
+            "cacheHits": 11,
+            "errors": 0
+          },
+          {
+            "query": "\"live preview\" in:readme stars:100..999 is:public archived:false fork:false",
+            "page": 6,
+            "inspected": 21,
+            "found": 4,
+            "added": 0,
+            "cacheHits": 74,
+            "errors": 0
+          },
+          {
+            "query": "\"live preview\" in:readme stars:10..99 is:public archived:false fork:false",
+            "page": 1,
+            "inspected": 45,
+            "found": 12,
+            "added": 3,
+            "cacheHits": 54,
+            "errors": 0
+          },
+          {
+            "query": "\"live preview\" in:readme stars:1..9 is:public archived:false fork:false",
+            "page": 4,
+            "inspected": 84,
+            "found": 12,
+            "added": 0,
+            "cacheHits": 16,
+            "errors": 0
+          },
+          {
+            "query": "\"live preview\" in:readme stars:0 is:public archived:false fork:false",
+            "page": 2,
+            "inspected": 6,
+            "found": 3,
+            "added": 0,
+            "cacheHits": 94,
+            "errors": 0
+          },
+          {
+            "query": "\"try online\" in:readme stars:10..99 is:public archived:false fork:false",
+            "page": 2,
+            "inspected": 30,
+            "found": 23,
+            "added": 0,
+            "cacheHits": 67,
+            "errors": 0
+          },
+          {
+            "query": "\"try online\" in:readme stars:1..9 is:public archived:false fork:false",
+            "page": 4,
+            "inspected": 35,
+            "found": 24,
+            "added": 2,
+            "cacheHits": 60,
+            "errors": 0
+          },
+          {
+            "query": "\"try online\" in:readme stars:0 is:public archived:false fork:false",
+            "page": 9,
+            "inspected": 25,
+            "found": 16,
+            "added": 3,
+            "cacheHits": 75,
+            "errors": 0
+          },
+          {
+            "query": "topic:demo stars:10..99 is:public archived:false fork:false",
+            "page": 1,
+            "inspected": 71,
+            "found": 19,
+            "added": 2,
+            "cacheHits": 28,
+            "errors": 0
+          },
+          {
+            "query": "topic:demo stars:1..9 is:public archived:false fork:false",
+            "page": 5,
+            "inspected": 32,
+            "found": 7,
+            "added": 6,
+            "cacheHits": 68,
+            "errors": 0
+          },
+          {
+            "query": "topic:webapp stars:100..999 is:public archived:false fork:false",
+            "page": 4,
+            "inspected": 12,
+            "found": 7,
+            "added": 1,
+            "cacheHits": 50,
+            "errors": 0
+          },
+          {
+            "query": "topic:webapp stars:10..99 is:public archived:false fork:false",
+            "page": 4,
+            "inspected": 57,
+            "found": 13,
+            "added": 0,
+            "cacheHits": 43,
+            "errors": 0
+          },
+          {
+            "query": "topic:webapp stars:0 is:public archived:false fork:false",
+            "page": 1,
+            "inspected": 21,
+            "found": 3,
+            "added": 0,
+            "cacheHits": 79,
+            "errors": 0
+          },
+          {
+            "query": "topic:pwa stars:100..999 is:public archived:false fork:false",
+            "page": 3,
+            "inspected": 54,
+            "found": 26,
+            "added": 0,
+            "cacheHits": 46,
+            "errors": 0
+          },
+          {
+            "query": "topic:pwa stars:10..99 is:public archived:false fork:false",
+            "page": 10,
+            "inspected": 57,
+            "found": 23,
+            "added": 7,
+            "cacheHits": 43,
+            "errors": 0
+          },
+          {
+            "query": "topic:pwa stars:1..9 is:public archived:false fork:false",
+            "page": 8,
+            "inspected": 87,
+            "found": 38,
+            "added": 3,
+            "cacheHits": 13,
+            "errors": 0
+          },
+          {
+            "query": "topic:pwa stars:0 is:public archived:false fork:false",
+            "page": 1,
+            "inspected": 86,
+            "found": 32,
+            "added": 0,
+            "cacheHits": 14,
+            "errors": 0
+          },
+          {
+            "query": "\"live demo\" in:readme stars:>=1000 is:public archived:false fork:false",
+            "page": 4,
+            "inspected": 36,
+            "found": 25,
+            "added": 0,
+            "cacheHits": 5,
+            "errors": 4
+          },
+          {
+            "query": "\"live demo\" in:readme stars:100..999 is:public archived:false fork:false",
+            "page": 1,
+            "inspected": 1,
+            "found": 1,
+            "added": 0,
+            "cacheHits": 4,
+            "errors": 0
+          },
+          {
+            "query": "\"live demo\" in:readme stars:10..99 is:public archived:false fork:false",
+            "page": 1,
+            "inspected": 1,
+            "found": 1,
+            "added": 0,
+            "cacheHits": 3,
+            "errors": 0
+          },
+          {
+            "query": "\"live demo\" in:readme stars:1..9 is:public archived:false fork:false",
+            "page": 1,
+            "inspected": 0,
+            "found": 0,
+            "added": 0,
+            "cacheHits": 3,
+            "errors": 0
+          },
+          {
+            "query": "\"live demo\" in:readme stars:0 is:public archived:false fork:false",
+            "page": 2,
+            "inspected": 2,
+            "found": 1,
+            "added": 0,
+            "cacheHits": 1,
+            "errors": 0
+          },
+          {
+            "query": "\"demo\" topic:react stars:0 is:public archived:false fork:false",
+            "page": 8,
+            "inspected": 0,
+            "found": 0,
+            "added": 0,
+            "cacheHits": 1,
+            "errors": 0
+          },
+          {
+            "query": "\"demo\" topic:threejs stars:1..9 is:public archived:false fork:false",
+            "page": 2,
+            "inspected": 0,
+            "found": 0,
+            "added": 0,
+            "cacheHits": 1,
+            "errors": 0
+          },
+          {
+            "query": "\"demo\" topic:threejs stars:0 is:public archived:false fork:false",
+            "page": 1,
+            "inspected": 1,
+            "found": 1,
+            "added": 0,
+            "cacheHits": 0,
+            "errors": 0
+          }
+        ],
+        "sourceYield": {
+          "github": {
+            "inspected": 1500,
+            "found": 528,
+            "added": 58,
+            "errors": 4
+          }
+        },
+        "searchQueries": 39,
+        "searchQueryLimit": 40,
+        "searchSpacingMs": 4500,
+        "searchCursor": 55,
+        "searchPaused": null,
+        "temporaryFailures": 4,
+        "durationMs": 341882
+      },
+      "checked": 2250,
+      "unavailableResponses": 3,
+      "inconclusiveChecks": 4,
+      "warnings": 0
+    },
+    {
+      "id": "enrich",
+      "name": "Releases and technologies",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "overviews",
+      "name": "README overviews",
+      "status": "success",
+      "temporaryFailures": 11,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 11
+    },
+    {
+      "id": "context",
+      "name": "Supporting documents",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "ai",
+      "name": "Optional AI overviews",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "browser_cycle",
+      "name": "Two-hour browser cycle",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "due": true,
+        "eligibilityBased": true,
+        "demoDue": 345,
+        "previewDue": 424,
+        "lastCompletedAt": "2026-10-20T00:47:37.660Z",
+        "nextDueAt": null,
+        "forced": false,
+        "reason": "424 screenshots and 345 demo checks eligible; untouched backlog can run after a recent batch."
+      },
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "browser_complete",
+      "name": "Browser cycle saved",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "health",
+      "name": "Demo health",
+      "status": "success",
+      "temporaryFailures": 10,
+      "details": {
+        "mode": "parallel_runner_shards",
+        "complete": true,
+        "reasons": {
+          "http_526": 1,
+          "http_503": 6,
+          "network_or_timeout": 2,
+          "http_404": 24,
+          "login_wall": 1
+        },
+        "examples": [
+          {
+            "project": "captainold/ai-news-radar",
+            "reason": "http_526"
+          },
+          {
+            "project": "hf:soiz1/ComfyUI-Kybalico",
+            "reason": "http_503"
+          },
+          {
+            "project": "JonathE0/chinese-game",
+            "reason": "network_or_timeout"
+          },
+          {
+            "project": "hf:takarajordan/CineDiffusion",
+            "reason": "http_503"
+          },
+          {
+            "project": "motebaya/tiktok-js",
+            "reason": "http_404"
+          },
+          {
+            "project": "juliocarneiro/boilerplate-next-ts",
+            "reason": "http_404"
+          },
+          {
+            "project": "Memkits/proto-shuangpin",
+            "reason": "http_404"
+          },
+          {
+            "project": "MohamedSibaaq/MohamedSibaaq",
+            "reason": "http_404"
+          },
+          {
+            "project": "karlmerhi/Airbnb-clone",
+            "reason": "http_404"
+          },
+          {
+            "project": "bitcoindevkit/bdk-cli",
+            "reason": "http_404"
+          },
+          {
+            "project": "ishandutta2007/Awesome-Text-to-Speech",
+            "reason": "http_404"
+          },
+          {
+            "project": "glorious-codes/glorious-demo",
+            "reason": "login_wall"
+          }
+        ],
+        "shards": 4,
+        "due": 37,
+        "selected": 37,
+        "limit": 310092,
+        "attempted": 37,
+        "working": 3,
+        "captured": 0,
+        "unavailable": 24,
+        "temporaryFailures": 10,
+        "deferred": 0,
+        "remainingDue": 0,
+        "durationMs": 302710,
+        "workerTimeMs": 95874,
+        "progressWarnings": 0,
+        "linksRepaired": 15,
+        "merge": {
+          "applied": 461,
+          "conflicts": 0
+        }
+      },
+      "checked": 37,
+      "unavailableResponses": 24,
+      "inconclusiveChecks": 10,
+      "warnings": 0
+    },
+    {
+      "id": "previews",
+      "name": "Preview screenshots",
+      "status": "success",
+      "temporaryFailures": 127,
+      "details": {
+        "mode": "parallel_runner_shards",
+        "complete": true,
+        "reasons": {
+          "connection_refused": 2,
+          "http_502": 2,
+          "login_wall": 3,
+          "challenge": 4,
+          "http_404": 24,
+          "empty_page": 50,
+          "network_or_timeout": 14,
+          "dns_timeout": 3,
+          "http_500": 4,
+          "http_503": 32,
+          "http_401": 1,
+          "http_405": 1,
+          "unsafe_target": 2,
+          "access_restricted": 4,
+          "dns_not_found": 3,
+          "screenshot_error": 1,
+          "uniform_image": 2,
+          "probe_failed": 1,
+          "tls_error": 1
+        },
+        "examples": [
+          {
+            "project": "manticore-projects/jsqlformatter",
+            "reason": "connection_refused"
+          },
+          {
+            "project": "Jahir509/Jahir509",
+            "reason": "http_502"
+          },
+          {
+            "project": "maksimr/playground-cljs",
+            "reason": "login_wall"
+          },
+          {
+            "project": "skegel13/vue-password",
+            "reason": "challenge"
+          },
+          {
+            "project": "alfg/dropdot",
+            "reason": "http_404"
+          },
+          {
+            "project": "github/remote-input-element",
+            "reason": "empty_page"
+          },
+          {
+            "project": "matchvs/demo-Egret",
+            "reason": "network_or_timeout"
+          },
+          {
+            "project": "all-day-and-night/all-day-and-night",
+            "reason": "dns_timeout"
+          },
+          {
+            "project": "dar4datascience/dar4datascience",
+            "reason": "network_or_timeout"
+          },
+          {
+            "project": "malay-satapathy/threejs_react",
+            "reason": "http_500"
+          },
+          {
+            "project": "sonwh98/datomworld",
+            "reason": "empty_page"
+          },
+          {
+            "project": "thacanadian/Formforge",
+            "reason": "http_404"
+          }
+        ],
+        "shards": 4,
+        "due": 424,
+        "selected": 424,
+        "limit": 310092,
+        "attempted": 424,
+        "working": 273,
+        "captured": 270,
+        "unavailable": 24,
+        "temporaryFailures": 127,
+        "deferred": 0,
+        "remainingDue": 0,
+        "durationMs": 302704,
+        "workerTimeMs": 3346457,
+        "progressWarnings": 0,
+        "linksRepaired": 15,
+        "merge": {
+          "applied": 461,
+          "conflicts": 0
+        }
+      },
+      "checked": 424,
+      "unavailableResponses": 24,
+      "inconclusiveChecks": 127,
+      "warnings": 0
+    },
+    {
+      "id": "growth",
+      "name": "Growth history",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "validate",
+      "name": "Application checks",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "dependencies",
+      "name": "Dependencies",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "priority",
+      "name": "Discovery quality gate",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": {
+        "admissionPolicy": "validated-demo-v1",
+        "publication": {
+          "published": 34550,
+          "pending": 32578,
+          "quarantined": 5623,
+          "unavailable": 4671
+        },
+        "workingDemos": 65042,
+        "browserBacklog": {
+          "demo": {
+            "never": 0,
+            "retry": 2013,
+            "repeated": 5539,
+            "complete": 69486
+          },
+          "screenshot": {
+            "never": 0,
+            "retry": 2071,
+            "repeated": 5181,
+            "complete": 65499
+          },
+          "reviewCount": 5711,
+          "reviewReasons": {
+            "login_wall": 279,
+            "empty_page": 2015,
+            "http_401": 71,
+            "probe_timeout": 15,
+            "access_restricted": 226,
+            "challenge": 122,
+            "dns_not_found": 131,
+            "tls_error": 29,
+            "network_or_timeout": 457,
+            "http_412": 26,
+            "http_402": 129,
+            "dns_unresolved": 27,
+            "connection_refused": 39,
+            "unsafe_target": 87,
+            "rate_limit": 109,
+            "application_error": 26,
+            "screenshot_error": 31,
+            "http_503": 1311,
+            "http_530": 21,
+            "uniform_image": 73,
+            "http_522": 19,
+            "http_400": 32,
+            "http_502": 46,
+            "dns_timeout": 66,
+            "http_526": 5,
+            "probe_failed": 2,
+            "http_500": 132,
+            "http_523": 4,
+            "http_404": 62,
+            "http_418": 1,
+            "http_521": 18,
+            "http_451": 58,
+            "probe_invalid_output": 1,
+            "http_454": 4,
+            "http_567": 1,
+            "http_409": 2,
+            "http_525": 4,
+            "http_405": 3,
+            "http_504": 8,
+            "http_520": 2,
+            "http_999": 3,
+            "http_410": 2,
+            "http_501": 1,
+            "page_unavailable": 1,
+            "space_app_not_loaded": 10
+          }
+        },
+        "targets": {
+          "repositoryChecks": 73187,
+          "demoChecks": 73187,
+          "screenshots": 65476
+        },
+        "reasons": [
+          "Demo validation is below 95%."
+        ],
+        "pending": {
+          "repositoryChecks": 55,
+          "demoChecks": 7060,
+          "screenshots": 7252
+        },
+        "available": 77038,
+        "visible": 72751,
+        "repositoryChecks": 76983,
+        "demoChecks": 69978,
+        "screenshots": 65499,
+        "ready": true,
+        "githubBatch": 1500,
+        "spacesBatch": 350,
+        "curatedBatch": 40,
+        "communityBatch": 20
+      },
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    },
+    {
+      "id": "checkpoint_publish",
+      "name": "Discovery checkpoint",
+      "status": "success",
+      "temporaryFailures": 0,
+      "details": null,
+      "checked": 0,
+      "unavailableResponses": 0,
+      "inconclusiveChecks": 0,
+      "warnings": 0
+    }
+  ],
+  "publishedCommit": null
+}
