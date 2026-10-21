@@ -116,3 +116,11 @@ Tests: new `tests/preview-similarity.mjs`; updated `data-packing`, `catalog-publ
 **Expected effect:** about 160-250 MB a day less in git once screenshots reach their weekly cycle. The saving from plain parts was measured in a scratch repository and should be confirmed after the first week of publications. The first publication after the switch adds about 100 MB once.
 
 **Rollout:** merge, then watch the next sync's publication and the next Vercel deployment: the sync must write plain parts, the build must find `data/preview-wanted.json`, and the live check must still pass.
+
+### Follow-up after the first live sync (21 October)
+
+Run 301, the first sync on the new code, finished successfully. The checkpoint branch holds 66 plain catalogue parts, 32 plain search-term files, no browse files and `data/preview-wanted.json`; the production build is 15 minutes (was 19-24), clones in 2:16 (was 3:04) and still publishes 65,544 listings.
+
+The first publication to `main` after the switch was 503 MB: it includes the one-time baseline of the new plain files (catalogue parts 66 MB, search terms 58 MB) and 8,952 screenshots (305 MB). That commit is not yet a measure of the saving; the next daily publication is.
+
+**A gap found and fixed:** the screenshot similarity check was added to `scripts/capture-previews.mjs`, but the sharded sync saves screenshots in `scripts/run-browser-queues.mjs`, so the check was not applied to the sync's main path. It is now applied there too (a shard that keeps the saved file copies identical bytes back, so Git sees no change). Each browser shard prints how many recaptures were kept.

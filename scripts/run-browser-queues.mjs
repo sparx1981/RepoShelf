@@ -8,6 +8,7 @@ import {recordStageMetrics,readStageMetrics,probeMetrics} from './sync-metrics.m
 import {demoCandidates,recordDemoResult} from './demo-health.mjs';
 import {previewCandidates} from './preview-schedule.mjs';
 import {createDemoPool} from './demo-pool.mjs';
+import {similarPreview} from './preview-similarity.mjs';
 import {runBrowserQueues} from './browser-queues.mjs';
 import {adaptiveBrowsers,browserResources} from './adaptive-browser.mjs';
 import {createDemoLinkRepair} from './repair-demo-links.mjs';
@@ -23,7 +24,7 @@ export async function runQueues(root=new URL('../',import.meta.url),env=process.
  const requested=Number(env.CATALOG_PREVIEW_CONCURRENCY||4);if(!Number.isInteger(requested)||requested<1)throw Error('Invalid browser concurrency');const max=Math.min(4,requested),adaptive=adaptiveBrowsers({max}),pool=poolFactory({max}),publisher=publisherFactory({token:env.GITHUB_TOKEN}),persist=checkpointWriter(files,snapshots);
  const gated=hostGate();const probe=(input,options)=>gated(input.target,()=>Date.now()>=started+budget?Promise.resolve({kind:'temporary',reason:'budget_expired'}):pool.probe(input,{...options,timeout:Math.min(options.timeout,started+budget-Date.now())}));
  const repair=repairFactory({token:env.GITHUB_TOKEN});let repaired=0;const balanced=balancedBrowserWork(previewQueue,healthQueue),laneSpent={admission:0,maintenance:0,repair:0};
- const scratch=await mkdtemp(join(tmpdir(),'reposhelf-browser-'));await mkdir(new URL('dist/previews/',root),{recursive:true});let complete=false,active=0,lastSave=0,resources={},lastResource=0,spent={previews:0,health:0};
+ const scratch=await mkdtemp(join(tmpdir(),'reposhelf-browser-'));await mkdir(new URL('dist/previews/',root),{recursive:true});let keptSimilar=0,complete=false,active=0,lastSave=0,resources={},lastResource=0,spent={previews:0,health:0};
  function progress(){return {schema:1,runId:env.GITHUB_RUN_ID,attempt:Number(env.GITHUB_RUN_ATTEMPT||1),startedAt:new Date(started).toISOString(),updatedAt:new Date().toISOString(),status:complete?'complete':'running',previews:telemetry.previews.summary(started),health:telemetry.health.summary(started),activeWorkers:active,concurrency:adaptive.limit,budgetMs:budget,elapsedMs:Date.now()-started,workerRestarts:pool.stats().workerRestarts}}
  async function save(force=false){if(!force&&Date.now()-lastSave<5000)return;lastSave=Date.now();for(const name of ['previews','health'])await recordStageMetrics(name,{...telemetry[name].summary(started),complete,mode:'shared_time_budget',budgetMs:budget,allocatedWeight:name==='previews'?previewBudget:healthBudget,workerTimeMs:spent[name],adaptive:adaptive.summary(),resources,pool:pool.stats(),progressWarnings:publisher.warnings,linksRepaired:repaired,workLanes:{selected:Object.fromEntries(Object.entries(balanced.queues).map(([k,v])=>[k,v.length])),workerTimeMs:laneSpent}},root)}
  async function sample(){if(Date.now()-lastResource>=5000){resources=await resourceSampler();lastResource=Date.now()}}
@@ -43,7 +44,8 @@ export async function runQueues(root=new URL('../',import.meta.url),env=process.
     }
     Object.assign(r,recordDemoResult(r,result));const success=result.kind==='working'&&Boolean(result.screenshot);
     if(capture||result.screenshot){const prior=r.previewCheck?.url===r.demo?r.previewCheck:null,failures=success?0:(prior?.consecutiveFailures||0)+1;r.previewAttemptAt=new Date().toISOString();r.previewCheck={url:r.demo,attemptedAt:r.previewAttemptAt,consecutiveFailures:failures,status:success?'captured':'retry',reason:success?null:result.reason||'no_screenshot',nextCheckAt:new Date(Date.now()+(success?7*86400000:retryDelay(result.reason,failures))).toISOString()};
-     if(success){await writeFile(new URL('dist/previews/'+filename,root),await readFile(join(scratch,filename)));r.screenshots=[{src:'previews/'+filename,kind:'demo',capturedAt:r.previewAttemptAt,url:r.demo},...(r.screenshots||[]).filter(i=>i.kind!=='demo')].slice(0,6)}
+     if(success){// A recapture that looks the same keeps the saved file, so Git does not store another 50 KB object for it (see preview-similarity.mjs).
+     const saved=new URL('dist/previews/'+filename,root),fresh=await readFile(join(scratch,filename));let before=null;try{before=await readFile(saved)}catch(e){if(e.code!=='ENOENT')throw e}if(await similarPreview(before,fresh))keptSimilar++;else await writeFile(saved,fresh);r.screenshots=[{src:'previews/'+filename,kind:'demo',capturedAt:r.previewAttemptAt,url:r.demo},...(r.screenshots||[]).filter(i=>i.kind!=='demo')].slice(0,6)}
     }
     telemetry[name].record(r.full,result,capture?success:null);await sample();adaptive.observe(result,resources);pool.trim(adaptive.limit);await persist();await save();
     console.log(`${name}: ${telemetry[name].metrics.attempted} attempted, ${telemetry[name].metrics.captured} captured, ${telemetry[name].metrics.working} loaded; concurrency ${adaptive.limit}.`);
@@ -54,6 +56,7 @@ export async function runQueues(root=new URL('../',import.meta.url),env=process.
   pool.close();await persist(true);await save(true);const final=progress();if(!complete)final.status='interrupted';await publisher.publish(final,{force:true});await rm(scratch,{recursive:true,force:true});
  }
  for(const name of ['previews','health']){const m=telemetry[name].metrics;console.log(`${name} finished: ${m.attempted} attempted; ${m.captured} screenshots; ${m.temporaryFailures} awaiting retry.`)}
+ console.log(`${keptSimilar} recaptured screenshots looked the same as the saved picture, so the saved file was kept.`);
  return progress();
 }
 if(process.argv[1]&&pathToFileURL(process.argv[1]).href===import.meta.url){
