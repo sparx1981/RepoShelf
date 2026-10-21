@@ -27,3 +27,12 @@ const posts=[],ingestion={...accounts,origin(){},async user(){return null},async
 const writer=createAnalyticsHandler({accounts:ingestion,catalog:{}}),event={id:'28000000-0000-0000-0000-000000000001',kind:'search',query:'React Templates'},body={consent:true,consentVersion:2,visitor:'28000000-0000-0000-0000-000000000002',session:'28000000-0000-0000-0000-000000000003',events:[event]};
 const result={writeHead(status){this.status=status},end(s){this.body=JSON.parse(s)}};await writer({method:'POST',url:'/api/analytics',headers:{'user-agent':'Browser'},body},result);assert.equal(result.status,202);const stored=posts.find(p=>p.path.includes('ingest_analytics_v2'));assert.equal(stored.body.details[0].term,'react templates');assert(!JSON.stringify(stored.body.events).includes('react'),'No individual event contains query text');assert.equal(stored.body.country,null,'Local callers cannot spoof country headers');
 posts.length=0;await writer({method:'POST',url:'/api/analytics',headers:{'user-agent':'Browser',dnt:'1'},body},result);assert.equal(posts.length,0,'Privacy opt-out prevents counters and term collection');
+{
+ const {referrerHost}=await import('../lib/referrer-analytics.mjs');
+ assert.equal(referrerHost('www.Google.com'),'google.com');assert.equal(referrerHost('news.ycombinator.com'),'news.ycombinator.com');
+ for(const bad of ['www.reposhelf.co.uk','reposhelf.co.uk','reposhelf-x.vercel.app','localhost','10.0.0.1','https://google.com/search?q=secret','a b.com','',null,undefined,42,'x'.repeat(90)+'.com'])assert.equal(referrerHost(bad),null,'Rejected: '+bad);
+ posts.length=0;const landing={id:'28000000-0000-0000-0000-000000000009',kind:'page_view',ref:'www.Reddit.com'},again={id:'28000000-0000-0000-0000-000000000010',kind:'page_view',ref:'https://evil.example/path?token=1'};
+ await writer({method:'POST',url:'/api/analytics',headers:{'user-agent':'Browser'},body:{...body,events:[landing,again]}},result);
+ const sent=posts.find(p=>p.path.includes('ingest_analytics_v2')).body;assert.equal(sent.details[0].ref,'reddit.com');assert.equal(sent.details[1].ref,null,'Full addresses are never stored');assert(!JSON.stringify(sent.events).includes('reddit'),'Referrers stay out of per-event rows');
+ console.log('PASS: referrers are reduced to bare website names, own site and addresses are dropped, and they stay out of event rows.');
+}
