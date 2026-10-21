@@ -46,3 +46,15 @@ assert.equal(requests,1);assert.equal(generated.provider,'Gemini');assert.equal(
 console.log('PASS: demo recovery, delayed confirmation, temporary retention, report safety, public-network guards, page classification, author-evidence requirements, licence guidance and grounded optional AI summaries.');
 
 let readyWaits=0;const delayed={...page({body:''}),waitForFunction:async(fn,arg,options)=>{readyWaits++;assert.equal(options.timeout,8000)}};assert.equal((await inspectDemo(delayed,base.demo)).kind,'working');assert.equal(readyWaits,1);assert.equal((await inspectDemo({...delayed,waitForFunction:async()=>{throw Error('Still blank')}},base.demo)).reason,'empty_page');
+{
+ const {markDuplicateDemos,demoKey,MAX_LISTINGS_PER_DEMO}=await import('../lib/demo-duplicates.mjs'),Q2=(await import('node:module')).createRequire(import.meta.url)('../dist/quality.js');
+ const now=Date.parse('2026-10-21T12:00:00Z'),fresh=new Date(now-86400000).toISOString(),make=(full,stars,demo,extra={})=>({full,stars,demo,availability:'available',lastCheckedAt:fresh,demoHealth:{url:demo,status:'working',checkedAt:fresh},screenshots:[{kind:'demo',src:'/previews/'+'a'.repeat(24)+'.jpg'}],...extra});
+ assert.equal(demoKey('https://WWW.Example.com/app/?x=1#top'),'example.com/app?x=1');assert.equal(demoKey('not a url'),null);
+ const shared='https://template.example.com/',rows=[make('a/one',5,shared),make('a/two',50,shared),make('a/three',20,shared),make('a/four',1,shared),make('a/five',9,shared),make('a/own',2,'https://own.example.com/'),make('a/stale',500,shared,{demoHealth:{url:shared,status:'unavailable',checkedAt:fresh}})];
+ const marked=markDuplicateDemos(rows,now),by=Object.fromEntries(marked.map(r=>[r.full,r]));
+ assert.equal(MAX_LISTINGS_PER_DEMO,3);
+ assert.deepEqual(marked.filter(r=>r.demoDuplicate).map(r=>r.full).sort(),['a/four','a/one'],'The three best-starred eligible listings keep the shared demo; unpublished ones do not use up places');
+ assert(Q2.publishedEligible(by['a/two'],now)&&Q2.publishedEligible(by['a/own'],now)&&!Q2.publishedEligible(by['a/one'],now)&&Q2.catalogueState(by['a/one'],now)==='pending','Demoted listings become pending, not removed');
+ assert.equal(markDuplicateDemos(rows.filter(r=>r.full!=='a/two'),now).filter(r=>r.demoDuplicate).map(r=>r.full).join(),'a/four','Places are recomputed on every build');
+ console.log('PASS: at most three published listings share one demo address; the rest wait unpublished and return when a place frees up.');
+}

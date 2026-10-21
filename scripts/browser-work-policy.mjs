@@ -5,7 +5,8 @@ export function retryDelay(reason,failures){
  if(failures<3)return 2*HOUR;
  if(failures>=4&&['dns_unresolved','tls_error','access_restricted','http_401','http_402','http_451'].includes(reason))return 30*DAY;
  if(['access_restricted','unsafe_target','dns_unresolved','http_401','http_402','http_451'].includes(reason))return 7*DAY;
- return failures>=6?3*DAY:DAY;
+ // Listings that keep failing for ordinary reasons are looked at less and less often, so work goes to listings that can still succeed.
+ return failures>=10?30*DAY:failures>=6?7*DAY:DAY;
 }
 export function browserLane(r){
  const h=r.demoHealth?.url===r.demo?r.demoHealth:null,p=r.previewCheck?.url===r.demo?r.previewCheck:null;
