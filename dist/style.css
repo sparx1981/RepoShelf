@@ -150,7 +150,7 @@ a.nav:hover{color:var(--text)}
 #ribbons>.ribbon:nth-child(n+3){content-visibility:auto;contain-intrinsic-size:auto 380px}
 
 /* Loading never obscures usable navigation or already loaded shelves. */
-.boot-loader.boot-inline{position:static;inset:auto;min-height:0;height:auto;padding:12px;display:flex;flex-direction:row;justify-content:center;gap:12px;background:var(--surface);z-index:auto}.boot-inline .rs-loader{width:22px;height:22px}.boot-inline .boot-loader-text{margin:0}.shelf-loading{min-height:330px;border:1px dashed var(--line);border-radius:8px;padding:24px;color:var(--text-secondary)}.shelf-placeholder{contain-intrinsic-size:auto 380px}
+.boot-loader.boot-inline{position:fixed;inset:auto auto 16px 50%;transform:translateX(-50%);min-height:0;height:auto;padding:10px 18px;display:flex;flex-direction:row;justify-content:center;gap:12px;background:var(--surface);border:1px solid var(--line);border-radius:999px;box-shadow:0 6px 24px rgba(0,0,0,.45);z-index:30;white-space:nowrap}.boot-inline .rs-loader{width:22px;height:22px}.boot-inline .boot-loader-text{margin:0}.shelf-loading{min-height:330px;border:1px dashed var(--line);border-radius:8px;padding:24px;color:var(--text-secondary)}.shelf-placeholder{contain-intrinsic-size:auto 380px}
 
 /* Three menu items must fit on the narrowest phones. */
 @media(max-width:400px){header{gap:10px;padding:0 3%}header nav{min-width:0}.nav{font-size:11.5px;padding:1px 4px}#fork-count{margin-left:3px;padding:2px 4px}header a.nav{padding:1px 4px}}
@@ -159,3 +159,14 @@ a.nav:hover{color:var(--text)}
 
 .hero-controls{display:flex;gap:6px}.hero-control{min-width:36px;min-height:36px;padding:0 10px;border:1px solid var(--line-strong);border-radius:8px;background:var(--surface);color:var(--text);font:inherit;font-size:15px;line-height:1;cursor:pointer}.hero-control:hover{border-color:var(--lime)}.hero-control[aria-pressed="true"]{background:var(--surface-raised);border-color:var(--lime)}
 .fork-button{min-height:24px;padding:6px 8px;margin-right:-8px}
+/* The loading strip was in the page flow (48 px) and its removal moved everything up, so it now floats at the bottom of the screen. Space for what fills in after the first paint, so the links and footer below it do not move (the home page scored a layout shift of 1.2 on mobile, 0.9 on desktop;
+   Google treats above 0.25 as poor). The technology chips and category rail are about 87 px (91 px on wide screens) and 38 px tall once loaded, and the shelves
+   are tens of thousands of pixels tall, so while the loading screen is up the shelves hold a screenful. */
+#channels:empty{min-height:87px}
+.categories:empty{min-height:38px}
+@media(min-width:761px){#channels:empty{min-height:91px}}
+body:has(#boot-loader:not(.done)) #ribbons{min-height:110vh}
+body:has(#boot-loader:not(.done)) .hero-ribbon{min-height:473px}
+@media(min-width:761px){body:has(#boot-loader:not(.done)) .hero-ribbon{min-height:401px}}
+/* The script hides the hero while it loads the catalogue and then shows it again; keep its space (unseen) in between. */
+body:has(#boot-loader:not(.done)) .hero-ribbon[hidden]{display:block!important;visibility:hidden}
