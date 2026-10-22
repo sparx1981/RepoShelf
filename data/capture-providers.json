@@ -1,16 +1,25 @@
 {
   "schema": 1,
-  "at": "2026-10-22T08:09:26.310Z",
+  "at": "2026-10-22T15:35:49.884Z",
   "workerKeyConfigured": true,
   "ready": {
     "screenshotone": false,
     "thumio": true,
     "cloudflare": false
   },
-  "attempted": 0,
+  "attempted": 7,
   "candidates": 0,
-  "reasons": {},
-  "providers": {},
+  "reasons": {
+    "provider_failure": 7
+  },
+  "providers": {
+    "thumio": {
+      "used": 320,
+      "limit": 1000,
+      "period": "2026-10-01",
+      "allowed": true
+    }
+  },
   "enabled": [
     "thumio"
   ]
