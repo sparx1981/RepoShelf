@@ -63,10 +63,19 @@ assert(spotlight.slice(3).every(id=>!picks.includes(id)),'fill-ins are other lis
 assert(spotlight.slice(3).every(id=>Q.featuredEligible(repositories.find(r=>r.full===id),now)),'fill-ins pass the strict check');
 const one=select([{...hero,items:['team/p20']}]).shelves[hero.id];assert.deepEqual(one,['team/p20'],'choosing one listing never adds more');
 const none=select([{...hero,items:['team/p22']}]).shelves[hero.id];assert.equal(none.length,1,'one chosen listing that drops out is replaced by one, not by five');
-const shuffledHero=select([{...hero,shuffle:'load'}],'q').shelves[hero.id];assert(shuffledHero.slice(0,3).every(id=>['team/p20','team/p21','team/p24'].includes(id)),'with shuffle on, picks still come before fill-ins');
+const shuffledHero=select([{...hero,shuffle:'load'}],'q').shelves[hero.id];assert.equal(shuffledHero.length,5,'a rotating spotlight still shows five');assert(shuffledHero.every(id=>Q.featuredEligible(repositories.find(r=>r.full===id),now)||['team/p21'].includes(id)),'rotating picks pass the strict check');assert(shuffledHero.some(id=>['team/p20','team/p21','team/p24'].includes(id)),'hand-picked listings stay in the rotation');assert.equal(new Set(shuffledHero).size,5,'no listing appears twice');
 // Editor's picks never fill in
 const editors={...hero,id:'e-picks',builtin_key:'picks'};assert.deepEqual(select([editors]).shelves[editors.id].sort(),['team/p20','team/p21','team/p24'],"Editor's picks only ever show the picks that qualify");
 // strict rules still apply to automatic rows' own pool
 const community={...popular,id:'e-new',mode:'newest'};repositories[0]=repo(0,{lastCheckedAt:ago(9)});
 assert.doesNotThrow(()=>select([community]));
 console.log('PASS: spotlight picks survive missed checks but not real problems, hidden picks are refilled without exceeding what was chosen, and shuffle reorders only a row\'s own top listings (stable per page load, daily per UTC day).');
+{
+ const E2=(await import('node:module')).createRequire(import.meta.url)('../dist/editorial.js'),make=(prefix,count)=>Array.from({length:count},(_,i)=>({full:prefix+i})),all=[...make('pin',5),...make('best',30),...make('rise',20)],day=n=>E2.spotlight(all,[5,30,20],{now:(20000+n)*86400000}).map(r=>r.full);
+ assert.deepEqual(day(0),day(0),'every visitor sees the same five on the same day');
+ for(let n=0;n<20;n++){const five=day(n);assert.equal(five.length,5);assert.equal(new Set(five).size,5);assert.equal(five.filter(id=>id.startsWith('pin')).length,2,'two hand-picked');assert.equal(five.filter(id=>id.startsWith('best')).length,2,'two established');assert.equal(five.filter(id=>id.startsWith('rise')).length,1,'one rising')}
+ const seen=new Set();for(let n=10;n<25;n++)for(const id of day(n))if(id.startsWith('best'))seen.add(id); // one whole cycle: 30 listings at two a dayassert.equal(seen.size,30,'each established listing is shown once per cycle');
+ assert(day(0).join()!==day(1).join(),'the spotlight changes from one day to the next');
+ assert.deepEqual(E2.spotlight(make('pin',3),[3,0,0],{now:0}).map(r=>r.full).sort(),['pin0','pin1','pin2'],'a short list hands its places on instead of leaving gaps');
+ console.log('PASS: the spotlight rotates daily: two hand-picked, two established and one rising listing, no repeats within a cycle, same for every visitor.');
+}

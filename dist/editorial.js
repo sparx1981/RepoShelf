@@ -19,5 +19,19 @@ function arrange(items,row,{seed='',now=Date.now(),limit=12,manual=false}={}){
  if(!['load','daily'].includes(row.shuffle)||['random','daily'].includes(row.mode))return items;
  return shuffle(manual?items:items.slice(0,limit),{mode:row.shuffle==='daily'?'daily':'random',seed,row:row.id,now});
 }
-return {categories,subjects:T.subjects,categoryNames:T.names,matchesCategory:T.matches,picks,modes,shuffles,defaults,resolve,visible,xRibbonKey,shuffle,arrange};
+// The spotlight shows five projects a day (UTC): two from the hand-picked list, two of the best established listings and one rising newcomer.
+// Each list steps through in its own shuffled order and only starts repeating once it has been used up, so neighbouring days differ.
+function spotlight(items,[pinned,best,rising]=[items.length,0,0],{now=Date.now(),slots=[2,2,1]}={}){
+ const day=Math.floor(now/86400000),lists=[items.slice(0,pinned),items.slice(pinned,pinned+best),items.slice(pinned+best,pinned+best+rising)],seen=new Set(),picks=lists.map(()=>[]);
+ let spare=0;
+ lists.forEach((list,k)=>{const want=slots[k];let got=0;
+  for(let t=0,tries=0;got<want&&list.length&&tries<list.length*2+want;t++,tries++){
+   const index=day*slots[k]+t,cycle=Math.floor(index/list.length),order=[...list].sort((a,b)=>hash(k+':'+cycle+':'+a.full.toLowerCase())-hash(k+':'+cycle+':'+b.full.toLowerCase())),item=order[index%list.length];
+   if(seen.has(item.full))continue;seen.add(item.full);picks[k].push(item);got++}
+  spare+=want-got});
+ // A short list hands its unused places to the next list that still has listings.
+ for(let k=0;spare>0&&k<3;k++)for(const item of lists[k]){if(spare<=0)break;if(!seen.has(item.full)){seen.add(item.full);picks[k].push(item);spare--}}
+ const [a,b,c]=picks;return [a[0],c[0],b[0],a[1],b[1],...a.slice(2),...b.slice(2),...c.slice(1)].filter(Boolean);
+}
+return {categories,subjects:T.subjects,categoryNames:T.names,matchesCategory:T.matches,picks,modes,shuffles,defaults,resolve,visible,xRibbonKey,shuffle,arrange,spotlight};
 });
