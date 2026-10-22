@@ -4,7 +4,7 @@ import {pathToFileURL} from 'node:url';
 export async function waitForCollector({fetcher=fetch,now=Date.now,sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms)),notBefore,timeoutMs=20*60000}={}){
  const scheduled=new Date(now());scheduled.setUTCHours(6,0,0,0);if(scheduled.getTime()>now())scheduled.setUTCDate(scheduled.getUTCDate()-1);
  const after=notBefore?Date.parse(notBefore):scheduled.getTime();if(!Number.isFinite(after))throw Error('Invalid collector start time');
- const deadline=now()+timeoutMs;
+ const deadline=now()+timeoutMs;let latest=null;
  while(now()<deadline){
   // Signed in with the workflow's token: the anonymous allowance (60 calls an hour per address) is shared with every other job on the runner's
   // address and ran out, which failed an import after it had already waited an hour for its turn (HTTP 403).
@@ -19,8 +19,11 @@ export async function waitForCollector({fetcher=fetch,now=Date.now,sleep=ms=>new
    if(run.conclusion!=='success')throw Error('Collector did not succeed; existing candidates were not imported by this chain.');
    return run;
   }
+  latest=data.workflow_runs.find(r=>r.status==='completed'&&r.conclusion==='success'&&now()-Date.parse(r.created_at)<=36*3600000)||latest;
   await sleep(30000);
  }
+ // A manual start whose collector run never came (or came before the requested time) still imports what the last good run validated, rather than failing after twenty minutes. Imports skip listings already saved.
+ if(latest){console.warn('No collector run started after the requested time; using the latest successful run: '+latest.html_url);return latest}
  throw Error('Collector completion timed out; retry the import workflow after checking collection history.');
 }
 if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href){
