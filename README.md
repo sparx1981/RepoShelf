@@ -27,6 +27,8 @@ Open http://localhost:3000. Validate static output with `npm run build`.
 
 Import `sparx1981/RepoShelf` in Vercel. `vercel.json` configures framework Other, build command `npm run build`, and output directory `dist`. The storefront requires no environment variables. The private agent API/MCP endpoints require `REPOSHELF_API_KEY` as documented below. Once linked, pushes to the production branch trigger deployment automatically.
 
+A Vercel cron job (`crons` in `vercel.json`) calls `/api/editorial?action=warm` every four minutes so a function instance stays loaded with the browsing index between visits; a cold instance spends several seconds of CPU reading it. Vercel allows sub-daily cron jobs only on paid plans, so remove that entry before moving the project back to the Hobby plan or the deployment will be rejected.
+
 ## Data and limitations
 
 GitHub uses its unauthenticated public API and applies rate limits. Star/fork counts and dates are fetched from GitHub. Demo discovery recognizes explicit demo or playground links in README files, and scheduled browser checks separately check whether demo pages load. Curated browsing and local tracking work even if the API is unavailable.
