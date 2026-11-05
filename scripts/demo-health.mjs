@@ -2,7 +2,7 @@ import {retryDelay} from './browser-work-policy.mjs';
 import {isIP} from 'node:net';import {lookup} from 'node:dns/promises';
 export const DEMO_PROBE_VERSION=3;
 export function renderRetryNeeded(r){const h=r.demoHealth?.url===r.demo?r.demoHealth:null;return h?.error?.reason==='empty_page'&&h.probeVersion!==DEMO_PROBE_VERSION}
-export const DEMO_CHECK_INTERVAL=7*86400000,DEMO_RETRY_INTERVAL=2*3600000,DEMO_CONFIRM_INTERVAL=6*3600000;
+export const DEMO_CHECK_INTERVAL=21*86400000,DEMO_RETRY_INTERVAL=2*3600000,DEMO_CONFIRM_INTERVAL=6*3600000;
 export function publicIP(input){let ip=input.replace(/^\[|\]$/g,'').toLowerCase();if(ip.startsWith('::ffff:')){const tail=ip.slice(7);if(tail.includes('.'))return publicIP(tail);const parts=tail.split(':');if(parts.length===2){const n=parseInt(parts[0],16)*65536+parseInt(parts[1],16);return publicIP([n>>>24,(n>>>16)&255,(n>>>8)&255,n&255].join('.'))}return false}if(isIP(ip)===6)return /^(?:2[0-9a-f]{3}|3[0-9a-f]{3}):/.test(ip)&&!/^2001:(?:db8|0:|10:|20:)/.test(ip);if(isIP(ip)!==4)return false;const [a,b,c]=ip.split('.').map(Number);return !(a===0||a===10||a===127||a>=224||a===169&&b===254||a===172&&b>=16&&b<=31||a===192&&(b===168||b===0||b===2)||a===100&&b>=64&&b<=127||a===198&&(b===18||b===19||b===51&&c===100)||a===203&&b===0&&c===113)}
 export function publicUrlGuard({resolver=lookup,timeout=3000}={}){
  const cache=new Map(),unsafe={allowed:false,reason:'unsafe_target'};

@@ -14,7 +14,7 @@ assert.deepEqual(Q.featuredIssues(repo(1,{listingControl:'hidden'}),now),['hidde
 assert(Q.featuredIssues(repo(1,{availability:'unavailable'}),now).includes('unavailable'));
 assert.deepEqual(Q.featuredIssues(repo(1,{screenshots:[]}),now),['no_screenshot']);
 assert.deepEqual(Q.featuredIssues(repo(1,{demoHealth:{url:'https://demo1.example.org',status:'review',checkedAt:ago(1)}}),now),['demo_not_working']);
-const stale=repo(1,{lastCheckedAt:ago(5),demoHealth:{url:'https://demo1.example.org',status:'working',checkedAt:ago(10)}});
+const stale=repo(1,{lastCheckedAt:ago(20),demoHealth:{url:'https://demo1.example.org',status:'working',checkedAt:ago(30)}});
 assert.deepEqual(Q.featuredIssues(stale,now),['repository_check_old','demo_check_old'],'strict: old checks hide a listing from automatic fill-ins');
 assert.deepEqual(Q.featuredIssues(stale,now,{lenient:true}),[],'lenient: old checks alone never hide a hand-picked listing');
 assert.deepEqual(Q.featuredIssues(repo(1,{demoHealth:{url:'https://demo1.example.org',status:'working',checkedAt:ago(1),error:'timeout'}}),now,{lenient:true}),[],'a failed latest check does not hide a pick');

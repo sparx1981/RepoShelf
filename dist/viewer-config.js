@@ -3,7 +3,7 @@
 // One definition of how a demo is shown inside RepoShelf, shared by the server (eligibility), the qualification tool
 // (so it tests exactly what visitors get) and the browser (which builds the frame). Changing anything here changes
 // the configuration id, which makes existing qualification evidence stop counting until demos are re-qualified.
-const VERSION=1,MAX_EVIDENCE_AGE_MS=48*3600000,VIEWER_ORIGIN='https://www.reposhelf.co.uk';
+const VERSION=1,MAX_EVIDENCE_AGE_MS=10*86400000,VIEWER_ORIGIN='https://www.reposhelf.co.uk';
 // Deliberately absent: allow-top-navigation and allow-top-navigation-by-user-activation. A click inside a demo must
 // not replace RepoShelf, and demos that need that behaviour open externally.
 const BASE_SANDBOX=['allow-scripts','allow-same-origin','allow-forms','allow-modals'];

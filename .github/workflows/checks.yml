@@ -21,7 +21,7 @@ on:
   # deletion) can skip these checks without any sign of it: the 21 October push that stopped committing the browsing index did. A daily
   # run on main covers that gap; the steps that need a fresh push (waiting for the deployment, the live checks) only run on push events.
   schedule:
-    - cron: '41 4 * * *'
+    - cron: '41 4 * * 1'
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true' # GitHub is retiring Node 20 for JavaScript actions: run them on Node 24 already
 

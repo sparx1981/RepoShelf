@@ -7,7 +7,7 @@ on:
         required: false
         type: string
   schedule:
-    - cron: '*/15 * * * *'
+    - cron: '19 * * * *'
   push:
     branches: [main]
     paths: ['scripts/import-submissions.mjs', 'scripts/submission-imports.mjs', 'scripts/submission-quality.mjs', '.github/workflows/submissions.yml']

@@ -25,11 +25,31 @@ async function readme(repo){for(const path of ['README.md','readme.md','README.M
 async function pool(items,fn,deadline=90000){let i=0;await Promise.all(Array.from({length:6},async()=>{while(i<items.length){const item=items[i++];let timer;try{await Promise.race([fn(item),new Promise((_,reject)=>{timer=setTimeout(()=>reject(Error('no answer within '+deadline/1000+' seconds')),deadline)})])}catch(e){failed++;console.warn(`Skipped ${item?.full_name||'a repository'}: ${e.message}`)}finally{clearTimeout(timer)}}}))}
 const seen=new Set();
 const healthStats={checked:0,unavailable:0,temporaryFailures:0};let repositoryPlan=null,repositoryDue=0,repositoryStopReason=null;
-async function revalidate(){const entries=[...indexed.values()];let remaining=null;
-try{const response=await fetch('https://api.github.com/rate_limit',{headers,signal:AbortSignal.timeout(10000)});if(response.ok){const data=await response.json();const value=data.resources?.core?.remaining;if(Number.isFinite(value))remaining=value}}catch{}
-repositoryPlan=repositoryCheckPlan(entries,{remaining,authenticated:Boolean(token),batch:process.env.CATALOG_REVALIDATE_BATCH||'auto'});
-const dueAll=dueEntries(entries,Date.now(),entries.length);repositoryDue=dueAll.length;const due=dueAll.slice(0,repositoryPlan.limit),deadline=Date.now()+360000;
-if(dueAll.length&&!due.length){repositoryStopReason='api_budget';console.warn('Revalidation deferred to preserve GitHub API headroom.');return true}
+async function rateWindow(){try{const response=await fetch('https://api.github.com/rate_limit',{headers,signal:AbortSignal.timeout(10000)});if(response.ok){const core=(await response.json()).resources?.core;return {remaining:Number.isFinite(core?.remaining)?core.remaining:null,reset:Number.isFinite(core?.reset)?core.reset*1000:null}}}catch{}return {remaining:null,reset:null}}
+// One wave re-reads as many repositories as GitHub's hourly allowance and a six-minute budget allow. That was enough for a sync every two hours. A
+// twice-weekly sync has to cover the same ground in one run, so CATALOG_REVALIDATE_WAVES lets it continue in further waves, waiting for the hourly
+// allowance to reset between them, within CATALOG_REVALIDATE_TOTAL_MS. Unset, nothing changes: one wave with the original budget.
+async function revalidate(){
+ const maxWaves=Math.max(1,Number(process.env.CATALOG_REVALIDATE_WAVES)||1),waveBudget=Number(process.env.CATALOG_REVALIDATE_WAVE_MS)||360000,totalBudget=Number(process.env.CATALOG_REVALIDATE_TOTAL_MS)||waveBudget,startedAt=Date.now();
+ for(let wave=1;wave<=maxWaves;wave++){
+  if(await revalidateWave(wave,waveBudget))return true;
+  // A wave that ran out of its own time budget is not a stop: the next wave carries on. Anything else (throttling, authentication, no allowance) is.
+  if(repositoryStopReason==='time_budget'&&wave<maxWaves)repositoryStopReason=null;
+  if(wave===maxWaves||repositoryStopReason)break;
+  if(!dueEntries([...indexed.values()],Date.now(),1).length)break;
+  const {remaining,reset}=await rateWindow();
+  if(remaining!==null&&remaining<=700){
+   const waitMs=reset?Math.max(0,reset-Date.now())+15000:null;
+   if(waitMs===null||waitMs>75*60000||Date.now()-startedAt+waitMs+waveBudget>totalBudget){repositoryStopReason??='api_budget';break}
+   console.log(`Waiting ${Math.ceil(waitMs/60000)} minutes for GitHub's hourly allowance before revalidation wave ${wave+1}.`);await sleep(waitMs);
+  }else if(Date.now()-startedAt+waveBudget>totalBudget){repositoryStopReason??='time_budget';break}
+ }
+ console.log(`Revalidation: ${healthStats.checked} checked, ${healthStats.unavailable} unavailable, ${healthStats.temporaryFailures} temporary failures.`);return false}
+async function revalidateWave(wave,waveBudget){const entries=[...indexed.values()];let remaining=null;
+({remaining}=await rateWindow());
+const plan=repositoryCheckPlan(entries,{remaining,authenticated:Boolean(token),batch:process.env.CATALOG_REVALIDATE_BATCH||'auto'});if(wave===1)repositoryPlan=plan;
+const dueAll=dueEntries(entries,Date.now(),entries.length);if(wave===1)repositoryDue=dueAll.length;const due=dueAll.slice(0,plan.limit),deadline=Date.now()+waveBudget;
+if(dueAll.length&&!due.length){repositoryStopReason??='api_budget';console.warn('Revalidation deferred to preserve GitHub API headroom.');return wave===1}
 
 // A few checks run side by side (one at a time was about 0.3 seconds each, so 750 took over three minutes). Each worker stops taking work as soon
 // as GitHub rejects authentication or throttles us, and the checks already in flight keep their results.
@@ -39,7 +59,7 @@ let entry=result.entry;if(result.data&&entry.availability==='available')entry={.
 if(entry.full.toLowerCase()!==prior.full.toLowerCase()){indexed.delete(prior.full.toLowerCase());indexed.set(entry.full.toLowerCase(),entry)}
 if(result.stop&&!paused){paused=true;repositoryStopReason=result.entry.checkError?.kind||'temporary';console.warn('Revalidation paused; saved records preserved for retry.')}}}));
 if(paused)return true;
-console.log(`Revalidation: ${healthStats.checked} checked, ${healthStats.unavailable} unavailable, ${healthStats.temporaryFailures} temporary failures.`);return false}
+return false}
 
 try{const paused=await revalidate();repositoryPaused=paused;
 if(Date.parse(rotation.state.nextAllowedAt)>Date.now())searchPaused={...rotation.state.cooldown,nextAllowedAt:rotation.state.nextAllowedAt};

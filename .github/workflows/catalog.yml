@@ -25,7 +25,9 @@ on:
         type: boolean
         default: false
   schedule:
-    - cron: '17 */2 * * *'
+    # Twice a week (Monday and Thursday). Each run is large: it revalidates repositories in several GitHub rate-limit waves and has
+    # a long browser budget, because a listing now stays public for 28 days after its last check (see dist/quality.js).
+    - cron: '17 3 * * 1,4'
   push:
     branches: [main]
     paths:
@@ -119,7 +121,7 @@ jobs:
       WATCHDOG_RECOVERY: ${{ inputs.watchdog_recovery }}
       LAUNCH_EXTRA: ${{ inputs.launch_extra }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 55
+    timeout-minutes: 240
     steps:
       - uses: actions/checkout@v4
         with:
@@ -221,6 +223,11 @@ jobs:
           CATALOG_BATCH_SIZE: ${{ steps.priority.outputs.githubBatch }}
           CATALOG_SEARCH_QUERIES: '40'
           CATALOG_REVALIDATE_BATCH: 'auto'
+          # Re-read up to ~5,000 repositories per GitHub allowance, in up to three waves with a wait for the hourly reset between them.
+          CATALOG_REVALIDATE_CAP: '5000'
+          CATALOG_REVALIDATE_WAVES: '3'
+          CATALOG_REVALIDATE_WAVE_MS: '1200000'
+          CATALOG_REVALIDATE_TOTAL_MS: '9000000'
         run: |
           mkdir -p .sync-logs
           set -o pipefail
@@ -326,7 +333,7 @@ jobs:
     # Pinned: ubuntu-latest moved to 26.04, which Playwright 1.56.1 cannot install browsers on, so every shard failed and
     # the whole sync was reported as failed after moving several GB of artifacts. Every workflow is pinned the same way.
     runs-on: ubuntu-24.04
-    timeout-minutes: 65
+    timeout-minutes: 190
     strategy:
       fail-fast: false
       matrix:
@@ -361,13 +368,13 @@ jobs:
       - name: Validate demos and capture previews with shared browser workers
         id: previews
         continue-on-error: true
-        timeout-minutes: 55
+        timeout-minutes: 175
         env:
           GITHUB_TOKEN: ${{ github.token }}
           BROWSER_SHARD_INDEX: ${{ matrix.shard }}
           BROWSER_RECOVERY_PASSES: ${{ inputs.recovery_passes || '1' }}
-          PREVIEW_BUDGET_MS: '900000'
-          DEMO_CHECK_BUDGET_MS: '600000'
+          PREVIEW_BUDGET_MS: '5400000'
+          DEMO_CHECK_BUDGET_MS: '3600000'
           CATALOG_PREVIEW_CONCURRENCY: '4'
           CATALOG_PREVIEW_BATCH: 'auto'
           DEMO_CHECK_BATCH: 'auto'
@@ -393,7 +400,7 @@ jobs:
     runs-on: ubuntu-24.04
     # Restoring the saved checkpoint alone takes about 12 minutes and grows with the screenshot library, so 15 minutes
     # was ending the job (shown as "cancelled") right after its last step. The limit is a safety net, not a budget.
-    timeout-minutes: 45
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@v4
         with:

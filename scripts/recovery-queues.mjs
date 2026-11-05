@@ -10,7 +10,7 @@ export function recoveryQueues(entries,now=Date.now()){
   // Recovery never overrides an explicit server rate limit or an unsafe URL.
   if(reason==='unsafe_target'||reason==='rate_limit'&&Date.parse(p?.nextCheckAt||h?.nextCheckAt)>now)continue;
   const screenshot=(r.screenshots||[]).some(s=>s.kind==='demo'&&s.src&&(!s.url||s.url===r.demo));
-  const validated=h?.checkedAt&&!h.error&&['working','review'].includes(h.status)&&now-Date.parse(h.checkedAt)<=7*86400000;
+  const validated=h?.checkedAt&&!h.error&&['working','review'].includes(h.status)&&now-Date.parse(h.checkedAt)<=Q.DEMO_LISTING_DAYS*86400000;
   if(!screenshot)queues.previews.push(r);else if(!validated)queues.health.push(r);
  }
  for(const queue of Object.values(queues))queue.sort((a,b)=>Number(Boolean(b.qualityPriority))-Number(Boolean(a.qualityPriority))||(b.stars||b.likes||0)-(a.stars||a.likes||0));

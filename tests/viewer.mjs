@@ -20,14 +20,14 @@ assert.equal(why(state({},[])),'no_evidence');assert.equal(why(state({},[run('ch
 assert.equal(why(state({demo_url:'https://d.example/other'})),'url_changed','evidence belongs to one exact address');
 assert.equal(why(state({scenario_hash:'h2'})),'scenario_changed','editing the scenario invalidates earlier evidence');assert.equal(why(state({scenario_hash:null})),'scenario_changed','a demo without a scenario hash is never eligible');
 assert.equal(why(state({allow_popups:true})),'config_changed','a flag change needs a new qualification');
-assert.equal(why(state({},[run('chromium',{checked_at:hoursAgo(47)})])),'ok');assert.equal(why(state({},[run('chromium',{checked_at:hoursAgo(49)})])),'stale','evidence is good for 48 hours');assert.equal(why(state({},[run('chromium',{checked_at:new Date(now+3600000).toISOString()})])),'stale','a timestamp from the future is not trusted');assert.equal(why(state({},[run('chromium',{checked_at:'nonsense'})])),'stale');
+assert.equal(why(state({},[run('chromium',{checked_at:hoursAgo(9*24)})])),'ok');assert.equal(why(state({},[run('chromium',{checked_at:hoursAgo(11*24)})])),'stale','evidence is good for ten days (qualification runs weekly)');assert.equal(why(state({},[run('chromium',{checked_at:new Date(now+3600000).toISOString()})])),'stale','a timestamp from the future is not trusted');assert.equal(why(state({},[run('chromium',{checked_at:'nonsense'})])),'stale');
 assert.equal(why(state({},[run('chromium',{resolved_url:'https://www.reposhelf.co.uk/'})])),'own_origin','a redirect back to RepoShelf is refused');
 // per-profile: a Chromium pass never hides another browser's failure, and every required profile must pass
 const two=['chromium','firefox'];
 assert.equal(why(state({},[run('chromium'),run('firefox',{result:'failed'})],{required_profiles:two})),'latest_failed','a firefox failure blocks even with a chromium pass');
 assert.equal(why(state({},[run('chromium'),run('webkit',{result:'failed'})])),'latest_failed','a failing profile blocks even when it is not required, until it passes again or an administrator clears it');
 assert.equal(why(state({},[run('chromium')],{required_profiles:two})),'no_evidence','every required profile needs evidence');
-assert.equal(why(state({},[run('chromium'),run('firefox',{checked_at:hoursAgo(60)})],{required_profiles:two})),'stale','every required profile must be fresh');
+assert.equal(why(state({},[run('chromium'),run('firefox',{checked_at:hoursAgo(11*24)})],{required_profiles:two})),'stale','every required profile must be fresh');
 assert.equal(why(state({},[run('chromium'),run('firefox',{scenario_hash:'old'})],{required_profiles:two})),'scenario_changed');
 const both=C.eligibility(state({},[run('chromium',{checked_at:hoursAgo(2)}),run('firefox',{checked_at:hoursAgo(10)})],{required_profiles:two}),now);assert.equal(both.eligible,true);assert.equal(both.checkedAt,hoursAgo(10),'the oldest required run sets the evidence age');
 // ---- scenarios must interact, and assert a result after the last interaction
@@ -64,7 +64,7 @@ db=state({scenario_hash:'edited'});assert.equal((await call('GET','/api/viewer?i
 failing=true;r=await call('GET','/api/viewer?id=team/a');assert.equal(r.status,200);assert.deepEqual(r.data,{eligible:false,reason:'unavailable'},'any backend trouble means the external demo');failing=false;
 // administrators
 assert.equal((await call('GET','/api/viewer?action=list')).code,'forbidden');assert.equal((await call('POST','/api/viewer?action=settings',{body:{enabled:true},admin:true,origin:'https://evil.example'})).code,'origin_not_allowed');
-r=await call('GET','/api/viewer?action=list',{admin:true});assert.equal(r.status,200);assert.equal(r.data.demos[0].eligibility.eligible,true);assert.equal(r.data.config.maxEvidenceAgeHours,48);assert(r.data.config.profiles.includes('webkit'));
+r=await call('GET','/api/viewer?action=list',{admin:true});assert.equal(r.status,200);assert.equal(r.data.demos[0].eligibility.eligible,true);assert.equal(r.data.config.maxEvidenceAgeHours,240);assert(r.data.config.profiles.includes('webkit'));
 for(const bad of [{enabled:'yes'},{},{requiredProfiles:[]},{requiredProfiles:['netscape']},{requiredProfiles:['firefox-mobile']},{requiredProfiles:'chromium'}])assert.equal((await call('POST','/api/viewer?action=settings',{body:bad,admin:true})).code,'invalid_settings',JSON.stringify(bad));
 assert.equal((await call('POST','/api/viewer?action=settings',{body:{enabled:false},admin:true})).data.called,'reposhelf_viewer_settings');r=await call('POST','/api/viewer?action=settings',{body:{requiredProfiles:['chromium','webkit','webkit']},admin:true});assert.deepEqual(calls.at(-1).body.p_required,['chromium','webkit']);assert.equal(calls.at(-1).body.p_enabled,null,'changing profiles does not touch the switch');
 assert.equal((await call('POST','/api/viewer?action=save',{body:{project:'team/a',demoUrl:'http://d.example/',scenario,approved:true},admin:true})).code,'invalid_demo','an http demo cannot be approved');
