@@ -33,18 +33,18 @@ assert.equal((await call(maintenance,{method:'GET',authorization:'Bearer '+key})
 const missing=createMaintenanceHandler({key:'',token:'fixture'});assert.equal((await call(missing)).status,503);
 const unknown=createMaintenanceHandler({key,token:'fixture',now:()=>now,checkpoint:{json:async()=>null},control:{active:async()=>[{id:1}],publish:async()=>{throw Error('Do not publish unknown state')}}});assert.equal((await call(unknown,{authorization:'Bearer '+key})).data.action,'wait');
 let recoveryPosts=0;
-const recovery=createMaintenanceHandler({key,token:'fixture',now:()=>now,checkpoint:{json:async()=>({lastScheduledDay:'2026-10-06'})},control:{active:async()=>[]},fetcher:async(url,options)=>{if(options.method==='POST'){recoveryPosts++;return new Response(null,{status:204})}return Response.json({workflow_runs:[{status:'completed',conclusion:'success',updated_at:'2026-10-06T02:00:00Z'}]})}});
+const recovery=createMaintenanceHandler({key,token:'fixture',now:()=>now,checkpoint:{json:async()=>({lastScheduledDay:'2026-10-06'})},control:{active:async()=>[]},fetcher:async(url,options)=>{if(options.method==='POST'){recoveryPosts++;return new Response(null,{status:204})}return Response.json({workflow_runs:[{status:'completed',conclusion:'success',updated_at:'2026-09-30T02:00:00Z'}]})}});
 assert.equal((await call(recovery,{authorization:'Bearer '+key})).status,202);assert.equal(recoveryPosts,1);
 const catalog=await readFile(new URL('../.github/workflows/catalog.yml',import.meta.url),'utf8'),submission=await readFile(new URL('../.github/workflows/submissions.yml',import.meta.url),'utf8'),daily=await readFile(new URL('../.github/workflows/publication.yml',import.meta.url),'utf8');
-assert(catalog.includes('SYNC_PUBLICATION_PHASE: deferred'));assert(catalog.includes("DEMO_CHECK_BATCH: 'auto'"));assert(catalog.includes("CATALOG_PREVIEW_BATCH: 'auto'"));assert(catalog.includes("PREVIEW_BUDGET_MS: '900000'"));assert(catalog.includes("DEMO_CHECK_BUDGET_MS: '600000'"));
+assert(catalog.includes('SYNC_PUBLICATION_PHASE: deferred'));assert(catalog.includes("DEMO_CHECK_BATCH: 'auto'"));assert(catalog.includes("CATALOG_PREVIEW_BATCH: 'auto'"));assert(catalog.includes("PREVIEW_BUDGET_MS: '5400000'"));assert(catalog.includes("DEMO_CHECK_BUDGET_MS: '3600000'"));assert(catalog.includes("cron: '17 3 * * 1,4'"),'the catalogue sync is scheduled twice a week');assert(catalog.includes("CATALOG_REVALIDATE_WAVES: '3'"));
 assert(submission.includes('SYNC_PUBLICATION_PHASE: deferred'));assert(!submission.includes('git push origin HEAD:main'));assert(daily.includes("cron: '35 6 * * *'"));assert(daily.includes('group: reposhelf-catalog'));
 console.log('PASS: daily idempotence, deferred diagnostics, admin/origin authorization, guarded dispatch, scheduler authentication, independent catch-up and deployment-free maintenance configuration.');
 
 const session={enabled:true,launchAnalyticsEnabled:true,user:null},browse={catalogVersion:'v',indexed:1,items:[],snapshots:{catalog:new Date(now-24*3600000).toISOString()}};
 assert(!storefrontAlerts(session,browse,now).some(a=>a.id==='catalogue-stale'));
-assert(storefrontAlerts(session,{...browse,snapshots:{catalog:new Date(now-31*3600000).toISOString()}},now).some(a=>a.id==='catalogue-stale'));
+assert(storefrontAlerts(session,{...browse,snapshots:{catalog:new Date(now-7*86400000).toISOString()}},now).some(a=>a.id==='catalogue-stale'));
 assert.equal(publicationAlerts([{status:'completed',conclusion:'failure',updated_at:new Date(now).toISOString()}],now)[0].id,'publication-failed');
-assert.equal(publicationAlerts([{status:'completed',conclusion:'success',updated_at:new Date(now-31*3600000).toISOString()}],now)[0].id,'publication-overdue');
+assert.equal(publicationAlerts([{status:'completed',conclusion:'success',updated_at:new Date(now-7*86400000).toISOString()}],now)[0].id,'publication-overdue');
 
 for(const [at,sync,publication] of [
  ['2026-10-05T00:00:00Z','2026-10-05T00:17:00.000Z','2026-10-05T06:35:00.000Z'],

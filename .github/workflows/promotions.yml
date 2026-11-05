@@ -2,7 +2,7 @@ name: Check promotion availability
 on:
   workflow_dispatch:
   schedule:
-    - cron: '43 * * * *'
+    - cron: '43 6 * * *'
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true' # GitHub is retiring Node 20 for JavaScript actions: run them on Node 24 already
 
@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 3
     steps:
       - uses: actions/checkout@v4

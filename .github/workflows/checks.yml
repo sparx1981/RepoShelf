@@ -21,7 +21,7 @@ on:
   # deletion) can skip these checks without any sign of it: the 21 October push that stopped committing the browsing index did. A daily
   # run on main covers that gap; the steps that need a fresh push (waiting for the deployment, the live checks) only run on push events.
   schedule:
-    - cron: '41 4 * * *'
+    - cron: '41 4 * * 1'
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true' # GitHub is retiring Node 20 for JavaScript actions: run them on Node 24 already
 
@@ -30,7 +30,7 @@ permissions:
   statuses: read
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # About 15 minutes of tests and builds, then up to 35 minutes of waiting for Vercel to deploy a push (its builds take a quarter of an hour or more, and can start late) before the live checks.
     timeout-minutes: 55
     services:
@@ -230,7 +230,7 @@ jobs:
   public-discovery:
     needs: check
     if: github.event_name == 'push'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4

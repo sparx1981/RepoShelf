@@ -1,8 +1,7 @@
 name: Bounded launch acceleration
+# The launch milestone (5,000 published listings) was reached long ago, so this check has nothing left to request: it only
+# answered "milestone_reached" 24 times a day. It stays available to run by hand.
 on:
-  schedule:
-    - cron: '47 * * * *'
-    - cron: '17 1-23/2 * * *'
   workflow_dispatch:
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true' # GitHub is retiring Node 20 for JavaScript actions: run them on Node 24 already
@@ -15,7 +14,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 3
     steps:
       - uses: actions/checkout@v4

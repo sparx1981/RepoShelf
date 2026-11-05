@@ -10,7 +10,7 @@ const source={kind:'x',name:'As Seen On X.com',url:'https://x.com/i/web/status/1
 const src='previews/'+createHash('sha256').update(full).digest('hex').slice(0,24)+'.jpg';
 const row={full,name:'App',category:'Productivity',availability:'available',demo,lastCheckedAt:date,demoHealth:{url:demo,status:'working',checkedAt:date},screenshots:[{src,kind:'demo',url:demo,capturedAt:date}],discoveredVia:[source]};
 assert(validatedXCandidate(row,at));
-assert(!validatedXCandidate({...row,lastCheckedAt:new Date(at-49*3600000).toISOString()},at));
+assert(!validatedXCandidate({...row,lastCheckedAt:new Date(at-15*86400000).toISOString()},at));
 assert(!validatedXCandidate({...row,lastCheckedAt:new Date(at+3600000).toISOString()},at));
 assert(!validatedXCandidate({...row,screenshots:[{...row.screenshots[0],src:'previews/../../unsafe.jpg'}]},at));
 assert(!validatedXCandidate({...row,discoveredVia:[{...source,url:'https://x.com.evil.test/user/status/123'}]},at));
@@ -36,7 +36,7 @@ const changed=await importXCandidates(manifest,{repositories:[]},{...options,imp
 assert.equal(changed.catalog.repositories.length,0);assert.equal(screenshots,1);
 const failedImage=await importXCandidates(manifest,{repositories:[]},{...options,capture:async()=>{throw Error('invalid jpeg')}});
 assert.equal(failedImage.catalog.repositories.length,0);
-const stale=await importXCandidates({schema:1,repositories:[{...row,lastCheckedAt:new Date(at-49*3600000).toISOString()}]},{repositories:[]},options);
+const stale=await importXCandidates({schema:1,repositories:[{...row,lastCheckedAt:new Date(at-15*86400000).toISOString()}]},{repositories:[]},options);
 assert.equal(stale.results.length,0);
 const linked={...row,demoEvidence:{kind:'x_link',url:demo,repository:full,postUrl:source.url}};
 assert.equal(xLinkedDemo(linked),demo+'/');assert.equal(xLinkedDemo(linked,'unrelated/repo'),null);assert.equal(xLinkedDemo({...linked,demoEvidence:{...linked.demoEvidence,postUrl:'https://x.com/i/web/status/999'}}),null);

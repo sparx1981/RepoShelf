@@ -8,7 +8,7 @@ name: Demo viewer qualification
 # administrator page also warns when any approved demo's evidence is missing or older than 36 hours (a missed run).
 on:
   schedule:
-    - cron: '41 5 * * *'
+    - cron: '41 5 * * 1'
   workflow_dispatch:
 
 env:
@@ -24,7 +24,7 @@ concurrency:
 jobs:
   qualify:
     name: qualify (${{ matrix.profile }})
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     strategy:
       fail-fast: false

@@ -1,7 +1,7 @@
 name: Monitor operational health
 on:
   schedule:
-    - cron: '13,43 * * * *'
+    - cron: '13 */3 * * *'
   workflow_dispatch:
   workflow_run:
     workflows: ['Refresh demo catalog', 'Publish saved catalogue']
@@ -23,7 +23,7 @@ concurrency:
 jobs:
   monitor:
     if: github.event_name != 'workflow_run' || github.event.workflow_run.head_repository.full_name == github.repository
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4

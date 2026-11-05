@@ -3,11 +3,15 @@ import {pathToFileURL} from 'node:url';
 
 const repository = 'sparx1981/RepoShelf';
 const workflow = 'catalog.yml';
-// The two-hour rhythm is measured from when runs start, not when they finish, so a 50-minute run
-// does not stretch the cycle to three hours.
-const graceMs = 2 * 3600000;
-const cooldownMs = 2 * 3600000;
-const failedRetryMs = 30 * 60000;
+// The catalogue sync runs twice a week (Monday and Thursday, so up to four days apart). The rhythm is measured from when runs start,
+// not when they finish, so a long run does not stretch the cycle. A missed schedule is recovered once five days have passed.
+export const graceMs = 5 * 86400000;
+// No more than one automatic recovery a day, and a failed run is retried after 6 hours, then 12, then daily. After three failures in a
+// row the watchdog stops: a run that keeps failing needs a person (the health monitor raises an alert) and each attempt moves gigabytes
+// of artifacts, so repeating it all week would only burn runner time. The next scheduled run or a manual run starts it again.
+export const cooldownMs = 24 * 3600000;
+export const failedRetryMs = 6 * 3600000;
+export const maxConsecutiveFailures = 3;
 
 export function recoveryDecision(runs, now = Date.now()) {
   if (!Array.isArray(runs)) throw Error('Invalid maintenance run history.');
@@ -34,6 +38,9 @@ export function recoveryDecision(runs, now = Date.now()) {
     if (!['failure', 'timed_out'].includes(run.conclusion)) break;
     consecutiveFailures++;
   }
+  if (consecutiveFailures >= maxConsecutiveFailures)
+    return {...details, action: 'wait', consecutiveFailures,
+      reason: 'Automatic retries are used up after ' + consecutiveFailures + ' failed runs in a row; the next scheduled or manual sync will try again.'};
   if (consecutiveFailures) {
     const retryMs = Math.min(cooldownMs, failedRetryMs * 2 ** Math.min(consecutiveFailures - 1, 3));
     if (now - lastAttempt < retryMs) return {...details, action: 'wait',
@@ -43,11 +50,11 @@ export function recoveryDecision(runs, now = Date.now()) {
       reason: 'The latest sync failed, its retry backoff elapsed, and no catalogue run is active.'};
   }
   if (lastSuccess !== null && now - lastSuccess <= graceMs)
-    return {...details, action: 'wait', reason: 'A successful sync started within the last two hours.'};
+    return {...details, action: 'wait', reason: 'A successful sync started within the last five days.'};
   if (lastStart !== null && now - lastStart < cooldownMs)
-    return {...details, action: 'wait', reason: 'A recent attempt is within the two-hour retry cooldown.',
+    return {...details, action: 'wait', reason: 'A recent attempt is within the one-day retry cooldown.',
       retryAfter: new Date(lastStart + cooldownMs).toISOString()};
-  return {...details, action: 'dispatch', reason: 'No successful sync started within two hours and no active or recent attempt.'};
+  return {...details, action: 'dispatch', reason: 'No successful sync started within five days and no active or recent attempt.'};
 }
 
 export async function recoverSync({fetcher = fetch, token = process.env.GITHUB_TOKEN, now = Date.now()} = {}) {
@@ -82,7 +89,7 @@ export async function recoverSync({fetcher = fetch, token = process.env.GITHUB_T
   const summary = '## Catalogue sync watchdog\n\n' + decision.reason + '\n\n'
     + 'Last success: ' + (decision.lastSuccessAt || 'none recorded') + '\n'
     + (decision.retryAfter ? '\nRetry permitted after: ' + decision.retryAfter + '\n' : '')
-    + '\nMissed schedules recover after two hours. Failed runs retry after 30 minutes, then back off to at most two hours. Active or queued catalogue runs prevent recovery.\n';
+    + '\nMissed schedules recover after five days. Failed runs retry after 6 hours, then 12, then daily, and stop after three failures in a row. Active or queued catalogue runs prevent recovery.\n';
   if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
   console.log(JSON.stringify(decision));
   return decision;

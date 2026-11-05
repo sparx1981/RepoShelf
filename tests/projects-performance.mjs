@@ -31,7 +31,7 @@ try{
  assert(matchesStorefrontSnapshot(snapshot,options,editorial,[],now));
  assert(!matchesStorefrontSnapshot(snapshot,options,editorial,[{project_id:repos[0].full,visibility:'hidden'}],now),'fresh moderation rejects a stale snapshot');
  assert(!matchesStorefrontSnapshot(snapshot,options,{...editorial,customRows:true},[],now),'changed shelf settings reject the snapshot');
- assert(!matchesStorefrontSnapshot(snapshot,options,editorial,[],now+73*3600000),'aged evidence rejects the snapshot');
+ assert(!matchesStorefrontSnapshot(snapshot,options,editorial,[],now+145*3600000),'aged evidence rejects the snapshot');
  const search=createBrowseService({root,controls:async()=>[]}),rare=await search.search({q:'rarevoice',sort:'relevance'});assert.equal(rare.total,1);assert.equal(rare.items[0].full,repos[900].full);const dataset=await search.publicDataset();assert(!dataset.textLoaded,'first search does not load the monolithic text');assert(dataset.index.repositories.filter(r=>r.searchPrepared).length<300,'only the matching shard is hydrated');
  const original=B.select;let calls=0;B.select=(...args)=>{calls++;return original(...args)};
  try{const paging=createBrowseService({root,controls:async()=>[]}),first=await paging.search({sort:'name',limit:7}),count=calls,second=await paging.search({sort:'name',limit:7,cursor:first.nextCursor});assert.equal(calls,count,'pagination reuses selection/facets');assert.equal(second.items.length,7);assert(!second.items.some(r=>first.items.some(x=>x.full===r.full)));}finally{B.select=original}

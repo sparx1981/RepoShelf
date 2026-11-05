@@ -9,7 +9,7 @@ const call = async (handler, {method = 'POST', auth = 'Bearer ' + KEY} = {}) => 
   return res;
 };
 const noon = '2026-10-07T03:00:00Z', later = '2026-10-07T07:00:00Z';
-const oldSuccess = (time) => ({id: 1, status: 'completed', conclusion: 'success', run_started_at: new Date(Date.parse(time) - 3 * hour).toISOString(), created_at: new Date(Date.parse(time) - 3 * hour).toISOString(), updated_at: new Date(Date.parse(time) - 2 * hour).toISOString()});
+const oldSuccess = (time) => ({id: 1, status: 'completed', conclusion: 'success', run_started_at: new Date(Date.parse(time) - 6 * 24 * hour).toISOString(), created_at: new Date(Date.parse(time) - 6 * 24 * hour).toISOString(), updated_at: new Date(Date.parse(time) - (6 * 24 - 1) * hour).toISOString()});
 
 function github({time, failFirstReads = 0, state = {}} = {}) {
   const log = {reads: 0, posts: 0, failures: 0};
