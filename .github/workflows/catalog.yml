@@ -118,7 +118,7 @@ jobs:
     env:
       WATCHDOG_RECOVERY: ${{ inputs.watchdog_recovery }}
       LAUNCH_EXTRA: ${{ inputs.launch_extra }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 55
     steps:
       - uses: actions/checkout@v4
@@ -323,7 +323,9 @@ jobs:
   browser:
     needs: prepare
     if: always() && needs.prepare.outputs.due == 'true' && needs.prepare.outputs.sha != ''
-    runs-on: ubuntu-latest
+    # Pinned: ubuntu-latest moved to 26.04, which Playwright 1.56.1 cannot install browsers on, so every shard failed and
+    # the whole sync was reported as failed after moving several GB of artifacts. Every workflow is pinned the same way.
+    runs-on: ubuntu-24.04
     timeout-minutes: 65
     strategy:
       fail-fast: false
@@ -388,7 +390,7 @@ jobs:
     if: always() && needs.prepare.outputs.sha != ''
     env:
       WATCHDOG_RECOVERY: ${{ inputs.watchdog_recovery }}
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # Restoring the saved checkpoint alone takes about 12 minutes and grows with the screenshot library, so 15 minutes
     # was ending the job (shown as "cancelled") right after its last step. The limit is a safety net, not a budget.
     timeout-minutes: 45

@@ -23,7 +23,7 @@ jobs:
   # an idle wait does not hold the group (and does not leave this run sitting as the group's single waiting slot).
   collector:
     if: github.event_name == 'schedule' || inputs.not_before != ''
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
       contents: read
@@ -54,7 +54,7 @@ jobs:
     needs: collector
     # The collector job is skipped for a manual run that asks for the existing candidates; that must still import.
     if: always() && (needs.collector.result == 'success' || needs.collector.result == 'skipped')
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 60
     concurrency:
       group: reposhelf-catalog

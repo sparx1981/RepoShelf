@@ -30,7 +30,7 @@ permissions:
   statuses: read
 jobs:
   check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     # About 15 minutes of tests and builds, then up to 35 minutes of waiting for Vercel to deploy a push (its builds take a quarter of an hour or more, and can start late) before the live checks.
     timeout-minutes: 55
     services:
@@ -230,7 +230,7 @@ jobs:
   public-discovery:
     needs: check
     if: github.event_name == 'push'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4

@@ -19,7 +19,7 @@ permissions:
   actions: read
 jobs:
   readiness:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 2
     outputs:
       ready: ${{ steps.queue.outputs.ready }}
@@ -78,7 +78,7 @@ jobs:
     concurrency:
       group: reposhelf-catalog
       cancel-in-progress: false
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 35
     env:
       REPOSHELF_SUBMISSION_SYNC_KEY: ${{ secrets.REPOSHELF_SUBMISSION_SYNC_KEY }}
