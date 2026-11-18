@@ -13,9 +13,9 @@ try{const base='http://127.0.0.1:'+server.address().port;
 }finally{server.close()}
 const quiet=createServer(createEditorialHandler({accounts,browse:{},checkpoint:{json:async()=>null}}));await new Promise(resolve=>quiet.listen(0,'127.0.0.1',resolve));
 try{assert.equal((await fetch('http://127.0.0.1:'+quiet.address().port+'/api/editorial?action=warm')).status,204,'a service without warm-up still answers')}finally{quiet.close()}
-// A new function instance spends seconds of CPU reading the browsing index, so a scheduled call keeps one loaded between visits.
-// Vercel only allows sub-daily crons on paid plans; if the project returns to the Hobby plan this entry has to be removed first.
-const vercel=JSON.parse(await readFile(new URL('../vercel.json',import.meta.url),'utf8')),keepWarm=(vercel.crons||[]).find(job=>job.path==='/api/editorial?action=warm');
-assert(keepWarm,'vercel.json schedules the warm-up so instances are not left to go cold');
-const [minute,...rest]=keepWarm.schedule.split(' '),every=/^\*\/(\d+)$/.exec(minute);assert(every&&Number(every[1])<=5&&rest.every(field=>field==='*'),'the warm-up runs at least every five minutes, all day');
-console.log('PASS: search warm-up answers 204 with no caching, tolerates failures and missing support, accepts GET only, and is scheduled to keep an instance loaded.');
+// The warm-up endpoint stays available for manual use, but is NOT scheduled. A cron every four minutes paid the cold-start CPU cost
+// (reading the browse index) on a timer, and on the Hobby plan that exhausted the 4-hour Fluid Active CPU allowance (Nov 2026).
+const vercel=JSON.parse(await readFile(new URL('../vercel.json',import.meta.url),'utf8'));
+assert(!(vercel.crons||[]).some(job=>job.path.startsWith('/api/editorial?action=warm')),'vercel.json must not schedule the warm-up: it burns Active CPU on the Hobby plan');
+assert(!(vercel.crons||[]).some(job=>!/^\S+ \S+ \* \* \*$/.test(job.schedule)||/^[*]\/\d+ /.test(job.schedule)||/^\* /.test(job.schedule)||/^\S+ [*]/.test(job.schedule)),'no sub-daily crons on the Hobby plan');
+console.log('PASS: search warm-up answers 204 with no caching, tolerates failures and missing support, accepts GET only, and is deliberately not scheduled.');
