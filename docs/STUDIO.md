@@ -1,6 +1,6 @@
 # Studio
 
-`/studio.html` extends RepoShelf with three original tools and 100 procedural backgrounds. It uses vanilla JavaScript, local SVG/canvas rendering and the existing shared profile menu. No new paid service, generation API or serverless function is required.
+`/studio.html` extends RepoShelf with three original tools and 120 procedural backgrounds. It uses vanilla JavaScript, local SVG/canvas rendering and the existing shared profile menu. No new paid service, generation API or serverless function is required.
 
 ## Access
 
@@ -22,7 +22,7 @@ The UI components tab contains the existing searchable component library, live p
 
 ## Background catalogue
 
-Run `npm run studio:build`. The deterministic builder produces 1,500 candidates, selects 100 distinct recipes and writes five contact sheets to `artifacts/studio/`. Review the sheets before accepting changes. The first release was visually reviewed; near-identical grain pairs were corrected by varying their focal position. Static thumbnails are under 20 KB each and total approximately 0.5 MB.
+Run `npm run studio:build`. The deterministic builder produces 1,800 candidates, selects 120 distinct recipes and writes six contact sheets to `artifacts/studio/`. Review the sheets before accepting changes. The first release was visually reviewed; near-identical grain pairs were corrected by varying their focal position. Static thumbnails are under 20 KB each and total approximately 0.5 MB.
 
 Public files are `dist/studio/index.json` and `dist/studio/thumbs/`. Saved resources use `ss:bg/<id>` and appear as Saved resources in My collection. Analytics reuse the existing resource action store.
 
@@ -84,7 +84,7 @@ A fresh contrast checker uses Brand colour for its text and follows brand change
 Text ASCII now samples padded measured glyph bounds instead of a mostly empty 16:9 canvas, reserves at least twelve sampling rows per text line plus outer space, and uses a text-dependent minimum column count (30–120, with a 160 maximum). Fit to preview accounts for both width and height; horizontal overflow at the minimum readable preview size exposes scroll controls. Image sampling keeps its existing aspect-ratio path. A raster regression compares a long phrase against the old full-frame conversion and verifies increased ink-row detail without losing the measured source bounds. Very long text still benefits from explicit line breaks.
 
 ### Live backgrounds
-One hundred and seventy-two original WebGL backgrounds are mixed into the Backgrounds gallery, two live for every static one near the top, in a curated order that leads with the strongest and most varied. They are tagged "Live" and grouped as Live shaders, Live nature, Live geometric, Live tech & retro, Live light & particles, Live materials, Live industrial (including automotive), Live ASCII & dither, Live patterns and Live fluid & light. Each is a fragment shader written for RepoShelf from standard techniques (value-noise fbm, domain warping, Bayer dithering, metaball fields, polar coordinates); no third-party shader source is included. The Motion, SVG patterns and ASCII tabs link to the matching live category.
+One hundred and eighty original WebGL backgrounds are mixed into the Backgrounds gallery, two live for every static one near the top, in a curated order that leads with the strongest and most varied. They are tagged "Live" and grouped as Live shaders, Live nature, Live geometric, Live tech & retro, Live light & particles, Live materials, Live industrial (including automotive), Live ASCII & dither, Live patterns, Live fluid & light and Live simulations. Each is a fragment shader written for RepoShelf from standard techniques (value-noise fbm, domain warping, Bayer dithering, metaball fields, polar coordinates); no third-party shader source is included. The Motion, SVG patterns and ASCII tabs link to the matching live category.
 
 - **Files:** `dist/studio/live-runner.mjs` (the self-contained WebGL runner), `dist/studio/live-prelude.mjs` (shared GLSL helpers: noise, Voronoi, SDF shapes, palette ramp), `dist/studio/live-pack-*.mjs` (one themed pack each: nature, geometric, tech, light, industrial and a second round) plus the first set in `dist/studio/live-shaders.mjs`, which also holds the catalogue order, parameter clamping and exports, and `dist/studio/live.mjs` (the editor). To add one, put its shader and an entry in a pack, run `npm run studio:thumbs`, and look at the contact sheet before keeping it.
 - **Performance:** the runner lowers its render resolution automatically when frames run long (down to about 45%) and raises it again when there is headroom; it also caps the pixel ratio, pauses when hidden or off screen, and draws a still frame for reduced motion. PNG exports always render at full size. The server imports the catalogue, so saves and collection snapshots use the same ids. Thumbnails are rendered from the real shaders by `npm run studio:thumbs` (blurred slightly if a dense pattern would exceed about 28 KB) (needs Playwright with Chromium) and a contact sheet is written to `artifacts/studio-live/` for review.
@@ -94,3 +94,9 @@ One hundred and seventy-two original WebGL backgrounds are mixed into the Backgr
 
 ### More text effects
 Typography text effects add Decrypt, Typewriter, Focus pull, Glitch and Pressure wave animations, plus Moving gradient and Outline looks. They live in the same self-contained SVG renderer as the older effects, so SVG, PNG and animated HTML exports carry them. Typewriter and Decrypt use the stagger control; Glitch uses strength.
+
+### November 2026 review
+
+- **Sweep** (20 backgrounds) is a sixth static family built on the conic type, which the library did not use. The Gradients family's twenty linear backgrounds share a narrow angle range and several pairs are near-identical in structure (lagoon/tide, ember/peach, olive/rose); they are kept unchanged because members may have saved them, and Sweep adds the variety instead. Sweeps end on their first colour so the wrap has no seam. The first five families keep their seeds and recipes; the only change to their published records is the explicit default `speed: 1`.
+- **Live simulations** (8 live backgrounds, `dist/studio/live-pack-sim.mjs`): Smoke Plume, Sandstorm, Falling Sand, Turing Spots, Gas Giant, Murmuration, Ink Drop and Dust Beams, matching the catalogue's simulation focus. Four lead the curated order after Ocean Swell.
+- Every live shader compiles in Chromium (`REPOSHELF_PLAYWRIGHT_MODULE=/path/to/playwright/index.mjs node tests/studio-live.mjs`; note the `.mjs` entry, which the test imports as ESM).

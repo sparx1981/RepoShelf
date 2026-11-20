@@ -6,9 +6,9 @@ import {createAccounts,authReturn} from '../lib/accounts.mjs';
 import {createPromptsHandler} from '../api/prompts.mjs';
 import {createCollectionHandler} from '../api/collection.mjs';
 const index=JSON.parse(await readFile(new URL('../dist/studio/index.json',import.meta.url),'utf8'));
-assert.equal(index.length,100);assert.equal(new Set(index.map(i=>i.id)).size,100);
-assert.equal(new Set(index.map(i=>JSON.stringify(i.recipe))).size,100);
-const thumbs=await readdir(new URL('../dist/studio/thumbs/',import.meta.url));const {liveItems}=await import('../dist/studio/live-shaders.mjs');assert.equal(thumbs.length,100+liveItems.length);for(const item of liveItems)assert.ok(thumbs.includes(item.id+'.webp'),'Live thumbnail exists: '+item.id);
+assert.equal(index.length,120);assert.equal(new Set(index.map(i=>i.id)).size,120);assert.equal(index.filter(i=>i.recipe.type==='conic').length,20,'twenty seamless Sweep backgrounds');assert(index.filter(i=>i.category==='Sweep').every(i=>i.recipe.colors[0]===i.recipe.colors.at(-1)),'sweeps end on their first colour, so there is no seam');
+assert.equal(new Set(index.map(i=>JSON.stringify(i.recipe))).size,120);
+const thumbs=await readdir(new URL('../dist/studio/thumbs/',import.meta.url));const {liveItems}=await import('../dist/studio/live-shaders.mjs');assert.equal(thumbs.length,120+liveItems.length);for(const item of liveItems)assert.ok(thumbs.includes(item.id+'.webp'),'Live thumbnail exists: '+item.id);
 for(const item of index){assert.match(item.id,/^[a-z0-9-]{1,80}$/);assert.ok(item.title&&item.category&&item.recipe);assert.ok((await stat(new URL(`../dist/studio/thumbs/${item.id}.webp`,import.meta.url))).size<20000);const source=svg(item.recipe);assert.ok(!source.includes('NaN'));assert.ok(source.startsWith('<svg'))}
 const a=random(123),b=random(123);for(let i=0;i<20;i++)assert.equal(a(),b());
 assert.ok(!svg(recipe({stops:['bad',Infinity]})).includes('NaN'));
@@ -32,4 +32,4 @@ for(const area of ['studio-access','studio-background']){let r=await run(handler
 accepted=true;let r=await run(handler,'/api/prompts?area=studio-background&id='+index[0].id,{token:'member'});assert.equal(r.status,200);assert.ok(r.data.svg&&r.data.css&&r.data.react&&r.data.tailwind);assert.equal(r.headers['Cache-Control'],'private, no-store');assert.equal((await run(handler,'/api/prompts?area=studio-background&id=../../bad',{token:'member'})).status,400);assert.equal((await run(handler,'/api/prompts?area=studio-background&id=missing-one',{token:'member'})).status,404);
 r=await run(collection,'/api/collection',{token:'member',method:'PUT',body:{id:'ss:bg/'+index[0].id,repo:{name:'forged'}}});assert.equal(r.status,200);const saved=calls.find(c=>c.path.endsWith('reposhelf_save_bookmark'));assert.equal(saved.body.snapshot.name,index[0].title);assert.equal(saved.token,'member');assert.ok(!JSON.stringify(saved.body).includes('forged'));
 assert.equal((await run(collection,'/api/collection',{token:'member',method:'PUT',body:{id:'ss:bg/does-not-exist'}})).status,404);
-console.log('PASS: 100 original backgrounds, bounded previews, colour and ASCII maths, signed-in exports, current legal acceptance, safe collection snapshots and auth return.');
+console.log('PASS: 120 original backgrounds, bounded previews, colour and ASCII maths, signed-in exports, current legal acceptance, safe collection snapshots and auth return.');
