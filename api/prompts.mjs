@@ -10,6 +10,7 @@ import {createAccounts,respond,accountFailure,only,fail,readBody} from '../lib/a
 import {createSceneAiSync} from '../lib/sceneai-sync.mjs';
 import {CREDIT_NAME,createMotionSitesImport,fetchMotionSitesFiles} from '../lib/motionsites-import.mjs';
 import {studioItem,backgroundDetail,imageDownload} from '../lib/studio.mjs';
+import {promptExample} from '../lib/prompt-examples.mjs';
 
 const SOURCES=['siteshelf','sceneai'];
 const LIST_COLUMNS='source,source_id,title,category,description,type,kind,thumbnail,animated_thumbnail,source_url,created_at,updated_at';
@@ -26,7 +27,7 @@ function publicItem(row){
   const own=row.source==='siteshelf',kind=row.kind==='text'?'text':'page';
   return {
     source:row.source,id:row.source_id,title:row.title,category:row.category||'Other',description:row.description||'',type:row.type||'free',kind,
-    thumbnail:own?(kind==='text'?row.thumbnail||null:`/api/prompts?area=thumb&source=${row.source}&id=${row.source_id}${row.updated_at?'&v='+Date.parse(row.updated_at):''}`):row.thumbnail||null,
+    thumbnail:own?(kind==='text'?row.thumbnail||promptExample(row.source_id):`/api/prompts?area=thumb&source=${row.source}&id=${row.source_id}${row.updated_at?'&v='+Date.parse(row.updated_at):''}`):row.thumbnail||null,
     animated:own?null:row.animated_thumbnail||null,
     credit:own?(row.source_url?{name:CREDIT_NAME,url:row.source_url}:null):{name:'SceneAI',url:row.source_url||'https://sceneai.art'},
     updatedAt:row.updated_at||row.created_at
