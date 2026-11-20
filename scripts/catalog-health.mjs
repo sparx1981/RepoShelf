@@ -9,6 +9,17 @@ export const RUNS_PER_DAY=1/7;
 export const REPOSITORY_CHECK_CAP=Number.isInteger(Number(process.env.CATALOG_REVALIDATE_CAP))&&Number(process.env.CATALOG_REVALIDATE_CAP)>0?Number(process.env.CATALOG_REVALIDATE_CAP):2500;
 export const REPOSITORY_CHECK_CONCURRENCY=3;
 export function dueEntries(entries,now=Date.now(),limit=250){return entries.filter(r=>!r.nextCheckAt||Date.parse(r.nextCheckAt)<=now).filter(r=>!r.lastCheckedAt||now-Date.parse(r.lastCheckedAt)>=CHECK_INTERVAL_MS||r.checkError).sort((a,b)=>(Date.parse(a.lastAttemptAt||a.lastCheckedAt)||0)-(Date.parse(b.lastAttemptAt||b.lastCheckedAt)||0)).slice(0,limit)}
+// Due repositories first, then (with spare allowance) the oldest ones checked at least EARLY_CHECK_AGE_MS ago. Without the early fill a run
+// with nothing due used none of its allowance: about 92,000 repositories were checked in the same few days of early November, so they would
+// all fall due, and all expire, in the same week. Re-checking the oldest early spreads that load evenly over the weekly runs.
+export const EARLY_CHECK_AGE_MS=7*24*60*60*1000;
+export function revalidationQueue(entries,now=Date.now(),limit=250){
+ const due=dueEntries(entries,now,limit);if(due.length>=limit)return due;
+ const taken=new Set(due.map(r=>r.full.toLowerCase()));
+ const early=entries.filter(r=>!taken.has(r.full.toLowerCase())&&r.availability!=='unavailable'&&(!r.nextCheckAt||Date.parse(r.nextCheckAt)<=now)&&r.lastCheckedAt&&now-Date.parse(r.lastCheckedAt)>=EARLY_CHECK_AGE_MS)
+  .sort((a,b)=>(Date.parse(a.lastCheckedAt)||0)-(Date.parse(b.lastCheckedAt)||0)).slice(0,limit-due.length);
+ return [...due,...early];
+}
 export function repositoryCheckPlan(entries,{remaining=null,authenticated=false,batch='auto'}={}){
  const desired=Math.max(500,Math.ceil(entries.length/10));
  const requested=batch==='auto'?desired:Number(batch);

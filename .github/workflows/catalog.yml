@@ -154,9 +154,11 @@ jobs:
         run: npm ci --ignore-scripts
       # When this fails the code on main is broken. Nothing after it may change or hand off catalogue data: the conditions below that
       # use always() (so a failed import still saves its progress) also require this step to have succeeded.
+      # The tests guard the data this run is about to change. The full site build (about five minutes) is left to Vercel and the checks
+      # workflow: nothing later in the sync reads its output.
       - name: Validate catalog logic
         id: validate
-        run: npm test && npm run test:mcp && npm run build
+        run: npm test && npm run test:mcp
       - name: Refresh public moderation controls and quality requests
         id: listing_controls
         continue-on-error: true
@@ -364,20 +366,26 @@ jobs:
         id: browser
         run: |
           npm install --no-save --ignore-scripts playwright@1.56.1
-          npx playwright install --with-deps chromium
+          # Ubuntu's package mirrors sometimes answer 503 while the browser's system libraries install; one failed install lost a whole
+          # browser shard's work, so try three times before giving up.
+          for attempt in 1 2 3; do npx playwright install --with-deps chromium && break; if [ "$attempt" = 3 ]; then exit 1; fi; echo "Browser install failed (attempt $attempt); retrying in 30 seconds."; sleep 30; done
       - name: Verify isolated browser workers
         id: verify
         run: node scripts/verify-browser-pool.mjs
       - name: Validate demos and capture previews with shared browser workers
         id: previews
         continue-on-error: true
+        # The worker stops taking new work after PREVIEW_BUDGET_MS + DEMO_CHECK_BUDGET_MS (165 minutes), then writes its results. That last part
+        # used to take 20-25 minutes (a quadratic lookup over the whole catalogue on Node's default heap), and on 19 November it pushed shard 0
+        # past the old 175-minute limit, so all 6,883 of its demo checks were lost. It now takes seconds; the 45 minutes left is a safety margin.
         timeout-minutes: 210
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          NODE_OPTIONS: --max-old-space-size=6144
           BROWSER_SHARD_INDEX: ${{ matrix.shard }}
           BROWSER_RECOVERY_PASSES: ${{ inputs.recovery_passes || '1' }}
           PREVIEW_BUDGET_MS: '5400000'
-          DEMO_CHECK_BUDGET_MS: '5400000'
+          DEMO_CHECK_BUDGET_MS: '4500000'
           CATALOG_PREVIEW_CONCURRENCY: '4'
           CATALOG_PREVIEW_BATCH: 'auto'
           DEMO_CHECK_BATCH: 'auto'
@@ -482,8 +490,21 @@ jobs:
           node scripts/publish-catalog.mjs
           node scripts/launch-cadence.mjs published
           SYNC_PUBLICATION_PHASE=checkpoint node scripts/publish-catalog.mjs
-      - name: Retain sync diagnostics and generated files
-        if: always()
+      # Logs and metrics are always kept. The full recovery bundle (every screenshot and the data folder, several GB and about 13 minutes
+      # to upload) is only needed when something failed: a successful run's data is already saved on the checkpoint branch.
+      - name: Retain sync diagnostics
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: catalog-diagnostics-${{ github.run_id }}-${{ github.run_attempt }}
+          include-hidden-files: true
+          path: |
+            .sync-logs/
+            .sync-metrics/
+            .sync-before.json
+          retention-days: 7
+      - name: Retain sync diagnostics and generated files for recovery
+        if: failure() || cancelled() || needs.prepare.result == 'failure' || needs.browser.result == 'failure' || steps.browser_merge.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
           name: catalog-recovery-${{ github.run_id }}-${{ github.run_attempt }}
