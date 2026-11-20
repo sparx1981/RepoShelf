@@ -1,13 +1,15 @@
 (function(root,factory){if(typeof module==='object'&&module.exports)module.exports=factory();else root.RepoTaxonomy=factory()})(globalThis,function(){
 'use strict';
 // Bump this version whenever rules change. Rules operate on data, never execute it.
-const version=4;
+const version=5;
 const broadCategories=['Design','Developer tools','Productivity','Business','Finance','Education','AI & machine learning','Other'];
 const rules=[
  ['Architecture & building design',/\b(architectural editor|architectural design|building design|interior design|floor[ -]?plans?|building information model(?:ling|ing)?|bim viewer|ifc viewer|cad viewer|text.to.cad|urban planning|building sunlight|bim|ifc|cad)\b/i],
  ['Games & game development',/\b(games?|game engine|game development|game dev|game design|level editor|godot|unity|unreal engine|gameplay|video games?|html5 games?|2d games?|3d games?|tetris)\b/i],
  ['Animation & motion',/\b(animation|motion graphics|skeletal animation|rigging|blender|spritesheet|sprite sheet|vfx|lottie)\b/i],
- ['Simulation & physics',/\b(physics engine|digital twin|fluid dynamics|particle system|simulator|simulation|simulating)\b/i],
+ // Interactive simulations of sand, dust, fluid, water, smoke, gas, clouds and light are a focus of RepoShelf's discovery (see
+ // scripts/discovery-search.mjs FOCUS_SEEDS). Text is normalised first, so topics such as falling-sand arrive as "falling sand".
+ ['Simulation & physics',/\b(physics engines?|physics (?:simulations?|sandbox|playground)|digital twins?|fluid (?:dynamics|simulations?|solvers?|sim)|computational fluid|cfd|navier stokes|lattice boltzmann|smoothed particle hydrodynamics|particle (?:systems?|simulations?|life)|falling sand|sand (?:simulations?|game)|powder (?:game|toy)|smoke (?:simulations?|effects?)|fire simulations?|water (?:simulations?|ripples?)|ocean (?:simulations?|waves)|wave (?:simulations?|equation)|gas (?:simulations?|dynamics)|dust (?:simulations?|particles)|volumetric (?:clouds?|fog|smoke)|cloud (?:simulations?|rendering)|weather simulations?|cloth (?:simulations?|physics)|soft ?body|rigid ?body|n body|gravity (?:simulations?|simulators?)|orbital (?:mechanics|simulations?)|boids|flocking|cellular automat(?:a|on)|game of life|reaction diffusion|physarum|slime mou?ld|erosion simulations?|caustics|light (?:simulations?|transport)|global illumination|path tracing|simulators?|simulations?|simulating)\b/i,t=>!/\b(?:mock(?:ing)? (?:servers?|apis?)|api (?:mocks?|simulators?)|network (?:conditions|throttling) simulat\w*)\b/i.test(t)||/\b(?:physics|fluid|particles?|sand|smoke|water|cloth|gravity)\b/i.test(t)],
  ['Crypto & blockchain',/\b(blockchain|bitcoin|ethereum|web3|defi|solidity|cryptocurrency|metamask)\b/i],
  ['Food & cooking',/\b(food|cooking|meals?|nutrition|restaurant|recipe management|recipe app|recipes app|meal.prep)\b/i],
  ['Automation & workflows',/\b(automation|automate|automating|workflows?|workflow engine|workflow automation|no.code workflow|n8n|zapier|rpa|automated workflows)\b/i],

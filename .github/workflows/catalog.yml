@@ -225,7 +225,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           CATALOG_BATCH_SIZE: ${{ steps.priority.outputs.githubBatch }}
-          CATALOG_SEARCH_QUERIES: '40'
+          # 16 focus searches (simulations) plus 40 from the general rotation; at 4.5 s apart this is about four minutes of searching.
+          CATALOG_SEARCH_QUERIES: '56'
           CATALOG_REVALIDATE_BATCH: 'auto'
           # Re-read up to ~5,000 repositories per GitHub allowance, in up to four waves with a wait for the hourly reset between them
           # (about 20,000 a week, against roughly a quarter of the catalogue falling due each week on a 28-day re-check interval).

@@ -54,3 +54,23 @@ The free plan builds on a 2-CPU, 8 GB machine with a 45-minute limit. The full b
 ## Going back
 
 Restore `cron: '17 3 * * 1,4'` in `catalog.yml`, the daily rule in `lib/publication-policy.mjs`, the windows in `dist/quality.js`, `CHECK_INTERVAL_MS` in `scripts/catalog-health.mjs`, `DEMO_CHECK_INTERVAL` in `scripts/demo-health.mjs`, and the thresholds in `scripts/sync-watchdog.mjs` and `scripts/monitor-health.mjs`. The tests encode the current values.
+
+## Sync efficiency fixes (20 November 2026)
+
+Every sync from 5 November failed. The 19 November run showed why, and what was wasted:
+
+| Problem | Effect | Fix |
+|---|---|---|
+| Browser shards matched results to listings with a linear search over ~110,000 listings for each listing | 20–25 minutes of post-processing per shard; shard 0 hit the 175-minute limit and lost all 6,883 demo checks | Map lookups (about 0.3 s at catalogue scale) and a 6 GB heap for the worker |
+| Chromium's system packages failed to download (Ubuntu mirror 503) | Shard 1 did no work | Every browser install, in every workflow, retries three times |
+| ~92,000 repositories were checked between 1 and 5 November, so nothing was due | Revalidation checked 0 repositories, and every repository would fall due (and expire) in the same week | Spare allowance re-checks the oldest repositories checked at least a week ago, after anything due |
+| Validation rebuilt the whole site | About 5 minutes per run | Tests only; Vercel and the checks workflow build the site |
+| The multi-GB recovery artifact was uploaded on every run | About 13 minutes per run | Full recovery bundle on failure only; logs and metrics always |
+
+Browser budgets are now 90 minutes of screenshots plus 75 minutes of demo checks per shard, inside a 210-minute step.
+
+## Simulation focus
+
+Each sync starts with 16 searches from a focus list of interactive simulations: sand, dust, fluid, water, smoke, gas, clouds, light, cloth, particles, n-body, boids, cellular automata, reaction–diffusion, ray and path tracing (`FOCUS_SEEDS` in `scripts/discovery-search.mjs`, 48 queries in two star bands, so the whole list runs every three weeks). The general rotation keeps its 40 searches (`CATALOG_SEARCH_QUERIES` is 56). Searches that find nothing new three times in a row rest for a week, as before.
+
+The "Simulation & physics" subject recognises these projects from their own name, description and topics (taxonomy version 5). On the current catalogue that raises the count from 1,195 to 1,343 before any new discovery.
