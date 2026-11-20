@@ -7,7 +7,13 @@ assert.equal(new Set(queries).size,queries.length);
 assert(queries.some(q=>q.includes('topic:threejs')));assert(queries.some(q=>q.includes('stars:0')));assert(queries.some(q=>q.includes('created:2020-')));
 const first=searchRotation({},now),task=first.next();first.complete(task,{items:Array(100).fill({}),total_count:2500});
 const saved=first.finish(),second=searchRotation(saved,now);assert.notEqual(second.next().q,task.q,'Closely spaced syncs continue to another query');
-saved.cursor=0;assert.equal(searchRotation(saved,now).next().page,2,'Pagination survives workflow boundaries');
+saved.focusCursor=0;assert.equal(searchRotation(saved,now).next().page,2,'Pagination survives workflow boundaries');
+{// Simulation focus searches lead every sync, then the general rotation continues; a focus query that is resting is skipped.
+const {focusQueries,FOCUS_PER_RUN}=await import('../scripts/discovery-search.mjs'),focus=focusQueries(),run=searchRotation({},now),served=Array.from({length:FOCUS_PER_RUN+3},()=>run.next().q);
+assert(served.slice(0,FOCUS_PER_RUN).every(q=>focus.includes(q)),'focus searches come first');assert(served.slice(FOCUS_PER_RUN).every(q=>queries.includes(q)),'then the general rotation');
+assert(focus.some(q=>q.includes('falling-sand'))&&focus.some(q=>q.includes('fluid'))&&focus.some(q=>q.includes('smoke'))&&focus.some(q=>q.includes('clouds'))&&focus.some(q=>q.includes('light')),'sand, fluid, smoke, cloud and light simulations are searched');
+const next=searchRotation(run.finish(),now).next().q;assert.equal(next,focus[FOCUS_PER_RUN],'the next sync carries on through the focus list');
+const rested=searchRotation({yield:{[focus[0]]:{nextExploreAt:new Date(now+86400000).toISOString()}}},now).next().q;assert.equal(rested,focus[1],'a resting focus search is skipped');}
 const tenth={...task,page:10};first.complete(tenth,{items:Array(100).fill({}),total_count:3000});assert.equal(first.state.pages[task.q],1);
 const retry=searchRotation({},now),failed=retry.next();retry.retry(failed);assert.equal(retry.next().q,failed.q,'Throttled query resumes after its cooldown');
 const primary=searchCooldown({status:403,rateRemaining:'0',rateReset:String((now+120000)/1000)},now);assert.equal(primary.reason,'primary_rate_limit');assert(Date.parse(primary.nextAllowedAt)>now+120000);

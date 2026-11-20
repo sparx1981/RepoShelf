@@ -24,3 +24,16 @@ assert.equal(repositoryCheckPlan(catalogue,{remaining:100,authenticated:true}).l
 assert.equal(repositoryCheckPlan(catalogue,{remaining:4931,authenticated:true,batch:'300'}).limit,300,'an explicit batch is honoured');
 assert.equal(roomy.dailyCapacitySufficient,roomy.limit*RUNS_PER_DAY>=catalogue.length/2,'capacity is judged against the 48-hour interval');
 console.log('PASS: the repository refresh plan uses GitHub\'s allowance up to a cap and keeps its reserve');
+{// Spare allowance re-checks the oldest repositories early, so a catalogue checked all at once does not fall due (and expire) all at once.
+const {revalidationQueue,EARLY_CHECK_AGE_MS,CHECK_INTERVAL_MS:interval}=await import('../scripts/catalog-health.mjs');const now=Date.parse('2026-11-23T03:17:00Z'),day=86400000;
+const row=(name,ageDays,extra={})=>({full:'team/'+name,availability:'available',lastCheckedAt:new Date(now-ageDays*day).toISOString(),...extra});
+const rows=[row('fresh',2),row('week',8),row('older',20),row('due',interval/day+1),row('gone',25,{availability:'unavailable'}),row('waiting',20,{nextCheckAt:new Date(now+day).toISOString()})];
+assert.deepEqual(revalidationQueue(rows,now,10).map(r=>r.full),['team/due','team/older','team/week'],'due first, then the oldest checked at least a week ago');
+assert.deepEqual(revalidationQueue(rows,now,1).map(r=>r.full),['team/due'],'early checks never displace due ones');
+assert.equal(EARLY_CHECK_AGE_MS,7*day);}
+{// Browser shard results are matched by name through a Map: a linear search over the whole catalogue took 20-25 minutes per shard.
+const {browserPatch,applyBrowserPatches}=await import('../scripts/browser-shards.mjs');const n=60000;
+const before=Array.from({length:n},(_,i)=>({full:'Team'+i+'/App',demo:'https://d'+i+'.example',demoHealth:{status:'working'}})),after=before.map((r,i)=>i%3?r:{...r,full:r.full.toLowerCase(),demoHealth:{status:'unavailable'}});
+const started=Date.now(),patches=browserPatch(before,after),stats=applyBrowserPatches(before.map(r=>({...r})),patches);
+assert.equal(patches.length,n/3);assert.deepEqual(stats,{applied:n/3,conflicts:0},'names still match case-insensitively');assert(Date.now()-started<5000,'patching a catalogue-sized shard takes seconds, not minutes');}
+console.log('PASS: spare repository allowance re-checks the oldest early, and browser patches match listings in linear time');

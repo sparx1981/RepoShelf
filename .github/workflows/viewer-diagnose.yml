@@ -45,7 +45,9 @@ jobs:
       - name: Install Chromium
         run: |
           npm install --no-save --ignore-scripts playwright@1.56.1
-          npx playwright install --with-deps chromium
+          # Ubuntu's package mirrors sometimes answer 503 while the browser's system libraries install; one failed install lost a whole
+          # browser shard's work, so try three times before giving up.
+          for attempt in 1 2 3; do npx playwright install --with-deps chromium && break; if [ "$attempt" = 3 ]; then exit 1; fi; echo "Browser install failed (attempt $attempt); retrying in 30 seconds."; sleep 30; done
       - name: Diagnose demos in the viewer
         env:
           SAMPLE: ${{ inputs.sample }}

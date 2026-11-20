@@ -30,7 +30,7 @@ assert(T.matches(override,'Education'));assert(T.matches(override,'Simulation & 
 const result=B.select([classified],{category:'Simulation & physics',demos:false,limit:48});assert.equal(result.total,1);assert.equal(result.facets.categories['Architecture & building design'],1);
 const duplicate=B.select([{...classified,category:'Simulation & physics'}],{demos:false});assert.equal(duplicate.facets.categories['Simulation & physics'],1,'Facet counts do not double-count the same category');
 const existing=E.defaults().find(r=>r.builtin_key==='reposhelf');assert.equal(existing.id,'e0000000-0000-4000-8000-000000000014','Existing editorial IDs stay stable');
-assert.equal(E.defaults().filter(r=>T.subjects.includes(r.category)).length,T.subjects.length);assert.equal(T.subjects.length,34);assert.equal(T.version,4);
+assert.equal(E.defaults().filter(r=>T.subjects.includes(r.category)).length,T.subjects.length);assert.equal(T.subjects.length,34);assert.equal(T.version,5);
 const themes=['Home automation','Maps & geospatial','Photography','Health & fitness','Android','Apple','Mobile','Streaming','Fashion','Science','Kids','Automotive','Travel'];
 for(const label of themes){assert(E.categories.includes(label));assert(E.defaults().some(r=>r.category===label));}
 for(const [description,expected] of [['Android app',['Android','Mobile']],['iOS and macOS application',['Apple','Mobile']],['Video streaming media server',['Streaming']],['Virtual-try-on clothing wardrobe',['Fashion']],['Molecular chemistry laboratory',['Science']],['Learning games for children',['Kids']],['Vehicle diagnostics and OBD telemetry',['Automotive']],['Vacation itinerary trip planner',['Travel']],['Gym workout tracker',['Health & fitness']],['Smart home assistant',['Home automation']],['Geospatial maplibre viewer',['Maps & geospatial']],['Photo management gallery',['Photography']]]){const tags=T.annotate({description}).subjects;for(const label of expected)assert(tags.includes(label),description+' -> '+label);}
@@ -74,3 +74,10 @@ for(const [metadata,excluded] of [
 assert.equal(T.annotate({name:'x',description:'Gradio Space',topics:['mcp-server'],source:'huggingface',full:'hf:team/x'}).subjects.includes('MCP servers & agents'),false,'An automatic Gradio mcp-server topic is not an MCP project');
 assert(T.annotate({name:'x',description:'An MCP server for files',source:'huggingface',full:'hf:team/x'}).subjects.includes('MCP servers & agents'),'A Space that says it is an MCP server is one');
 console.log('PASS versioned overlapping subjects, conservative evidence, Spaces, administrator overrides, facets, stable shelf IDs and idempotent backfill without artificial freshness.');
+
+{// Simulations of sand, fluid, smoke, clouds and light are recognised from their own words and topics; mocked APIs are not simulations.
+const sim=(name,description,topics=[])=>T.annotate({full:'team/'+name,name,description,topics},{force:true}).subjects.includes('Simulation & physics');
+assert(sim('sandspiel','A falling sand game in the browser'));assert(sim('webgl-fluid','Interactive fluid simulation with WebGL'));assert(sim('smoke','Real-time smoke simulation'));
+assert(sim('clouds','Volumetric clouds rendered with ray marching'));assert(sim('light','Path tracing renderer with global illumination'));assert(sim('life','Game of Life playground',['cellular-automata']));
+assert(sim('flock','Boids flocking demo'));assert(sim('cloth','Verlet cloth physics'));assert(!sim('mockapi','Mock API server with a network conditions simulator'));
+console.log('PASS: sand, fluid, smoke, cloud, light and other simulations join Simulation & physics; API mocks do not.');}

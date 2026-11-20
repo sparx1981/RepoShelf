@@ -1,5 +1,7 @@
 # Catalogue sync reliability
 
+> **Update (November 2026):** the sync and publication now run once a week, on Monday, and listings stay public for 48 days after a check. See [WEEKLY_SYNC.md](WEEKLY_SYNC.md).
+
 > **Update:** the catalogue sync now runs twice a week (Monday and Thursday). Where this page says every two hours, 48 hours or seven days, see [TWICE_WEEKLY_SYNC.md](TWICE_WEEKLY_SYNC.md) for the current schedule and freshness windows.
 
 The catalogue workflow requests discovery every two hours, at minute 17 UTC. GitHub schedules can be delayed or skipped; this is a requested interval, not a guaranteed delivery time. Demo health and screenshot batches run once per two-hour UTC window (00:00–02:00, 02:00–04:00, and so on), when there is eligible work. Measuring from UTC windows avoids skipping alternate scheduled runs just because the previous batch finished after its scheduled start. A durable checkpoint (with successful historical reports as its initial fallback) prevents extra discovery runs from repeating browser work. Failed browser cycles stay due for retry. Manual workflow dispatch can select “Refresh demo health and screenshots now” to override the browser interval. GitHub discovery, imports, revalidation and saved documentation happen first. A discovery checkpoint publishes the catalogue, sync report and growth snapshot before optional browser work. The final publication saves demo health, screenshots and the completed report.

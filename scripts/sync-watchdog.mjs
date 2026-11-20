@@ -3,9 +3,9 @@ import {pathToFileURL} from 'node:url';
 
 const repository = 'sparx1981/RepoShelf';
 const workflow = 'catalog.yml';
-// The catalogue sync runs twice a week (Monday and Thursday, so up to four days apart). The rhythm is measured from when runs start,
-// not when they finish, so a long run does not stretch the cycle. A missed schedule is recovered once five days have passed.
-export const graceMs = 5 * 86400000;
+// The catalogue sync runs once a week (Monday, so seven days apart). The rhythm is measured from when runs start,
+// not when they finish, so a long run does not stretch the cycle. A missed schedule is recovered once eight days have passed.
+export const graceMs = 8 * 86400000;
 // No more than one automatic recovery a day, and a failed run is retried after 6 hours, then 12, then daily. After three failures in a
 // row the watchdog stops: a run that keeps failing needs a person (the health monitor raises an alert) and each attempt moves gigabytes
 // of artifacts, so repeating it all week would only burn runner time. The next scheduled run or a manual run starts it again.
@@ -50,11 +50,11 @@ export function recoveryDecision(runs, now = Date.now()) {
       reason: 'The latest sync failed, its retry backoff elapsed, and no catalogue run is active.'};
   }
   if (lastSuccess !== null && now - lastSuccess <= graceMs)
-    return {...details, action: 'wait', reason: 'A successful sync started within the last five days.'};
+    return {...details, action: 'wait', reason: 'A successful sync started within the last eight days.'};
   if (lastStart !== null && now - lastStart < cooldownMs)
     return {...details, action: 'wait', reason: 'A recent attempt is within the one-day retry cooldown.',
       retryAfter: new Date(lastStart + cooldownMs).toISOString()};
-  return {...details, action: 'dispatch', reason: 'No successful sync started within five days and no active or recent attempt.'};
+  return {...details, action: 'dispatch', reason: 'No successful sync started within eight days and no active or recent attempt.'};
 }
 
 export async function recoverSync({fetcher = fetch, token = process.env.GITHUB_TOKEN, now = Date.now()} = {}) {
@@ -89,7 +89,7 @@ export async function recoverSync({fetcher = fetch, token = process.env.GITHUB_T
   const summary = '## Catalogue sync watchdog\n\n' + decision.reason + '\n\n'
     + 'Last success: ' + (decision.lastSuccessAt || 'none recorded') + '\n'
     + (decision.retryAfter ? '\nRetry permitted after: ' + decision.retryAfter + '\n' : '')
-    + '\nMissed schedules recover after five days. Failed runs retry after 6 hours, then 12, then daily, and stop after three failures in a row. Active or queued catalogue runs prevent recovery.\n';
+    + '\nMissed schedules recover after eight days. Failed runs retry after 6 hours, then 12, then daily, and stop after three failures in a row. Active or queued catalogue runs prevent recovery.\n';
   if (process.env.GITHUB_STEP_SUMMARY) await appendFile(process.env.GITHUB_STEP_SUMMARY, summary);
   console.log(JSON.stringify(decision));
   return decision;

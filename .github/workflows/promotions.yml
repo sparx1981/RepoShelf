@@ -1,8 +1,8 @@
 name: Check promotion availability
+# Promotions are switched off: they only ever ran in Stripe test mode for administrators, and RepoShelf stays non-commercial so it can
+# run on Vercel's free plan. The daily schedule (which called the live site) is removed; the check can still be run by hand.
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '43 6 * * *'
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true' # GitHub is retiring Node 20 for JavaScript actions: run them on Node 24 already
 

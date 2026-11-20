@@ -47,7 +47,8 @@ jobs:
       - name: Install browser
         run: |
           npm install --no-save --ignore-scripts playwright@1.56.1
-          npx playwright install --with-deps ${{ matrix.browser }}
+          # Ubuntu's package mirrors sometimes answer 503 while the browser's system libraries install; try three times before giving up.
+          for attempt in 1 2 3; do npx playwright install --with-deps ${{ matrix.browser }} && break; if [ "$attempt" = 3 ]; then exit 1; fi; echo "Browser install failed (attempt $attempt); retrying in 30 seconds."; sleep 30; done
       - name: Qualify approved demos
         env:
           REPOSHELF_SUBMISSION_SYNC_KEY: ${{ secrets.REPOSHELF_SUBMISSION_SYNC_KEY }}

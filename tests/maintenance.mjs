@@ -9,7 +9,7 @@ const call = async (handler, {method = 'POST', auth = 'Bearer ' + KEY} = {}) => 
   return res;
 };
 const noon = '2026-10-07T03:00:00Z', later = '2026-10-07T07:00:00Z';
-const oldSuccess = (time) => ({id: 1, status: 'completed', conclusion: 'success', run_started_at: new Date(Date.parse(time) - 6 * 24 * hour).toISOString(), created_at: new Date(Date.parse(time) - 6 * 24 * hour).toISOString(), updated_at: new Date(Date.parse(time) - (6 * 24 - 1) * hour).toISOString()});
+const oldSuccess = (time) => ({id: 1, status: 'completed', conclusion: 'success', run_started_at: new Date(Date.parse(time) - 9 * 24 * hour).toISOString(), created_at: new Date(Date.parse(time) - 9 * 24 * hour).toISOString(), updated_at: new Date(Date.parse(time) - (9 * 24 - 1) * hour).toISOString()});
 
 function github({time, failFirstReads = 0, state = {}} = {}) {
   const log = {reads: 0, posts: 0, failures: 0};
@@ -28,7 +28,7 @@ assert.equal((await call(createMaintenanceHandler({key: '', token: 'x', now: at(
 assert.equal((await call(build({fetcher: github({time: noon}).fetcher}), {auth: 'Bearer wrong'})).status, 401);
 assert.equal((await call(build({fetcher: github({time: noon}).fetcher}), {method: 'GET'})).status, 405);
 
-// A sync older than two hours is requested.
+// A sync older than the eight-day weekly grace is requested.
 {const {log, fetcher} = github({time: noon}); const r = await call(build({fetcher})); assert.equal(r.status, 202); assert.equal(log.posts, 1)}
 
 // A briefly failing GitHub read no longer turns the whole check into a 503.

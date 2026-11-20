@@ -4,7 +4,7 @@ import {recordStageMetrics} from './sync-metrics.mjs';
 import {savedListingControls} from '../lib/listing-policy.mjs';
 import {saveReadmeSnapshot} from './agent-snapshots.mjs';
 import {readFile,writeFile,mkdir} from 'node:fs/promises';
-import {checkRepository,dueEntries,repositoryCheckPlan,REPOSITORY_CHECK_CONCURRENCY} from './catalog-health.mjs';
+import {checkRepository,dueEntries,revalidationQueue,repositoryCheckPlan,REPOSITORY_CHECK_CONCURRENCY} from './catalog-health.mjs';
 import {withOverview} from './readme-overviews.mjs';
 import {withProjectInsights} from './project-insights.mjs';
 import {createRequire} from 'node:module';
@@ -36,7 +36,7 @@ async function revalidate(){
   // A wave that ran out of its own time budget is not a stop: the next wave carries on. Anything else (throttling, authentication, no allowance) is.
   if(repositoryStopReason==='time_budget'&&wave<maxWaves)repositoryStopReason=null;
   if(wave===maxWaves||repositoryStopReason)break;
-  if(!dueEntries([...indexed.values()],Date.now(),1).length)break;
+  if(!revalidationQueue([...indexed.values()],Date.now(),1).length)break;
   const {remaining,reset}=await rateWindow();
   if(remaining!==null&&remaining<=700){
    const waitMs=reset?Math.max(0,reset-Date.now())+15000:null;
@@ -48,7 +48,7 @@ async function revalidate(){
 async function revalidateWave(wave,waveBudget){const entries=[...indexed.values()];let remaining=null;
 ({remaining}=await rateWindow());
 const plan=repositoryCheckPlan(entries,{remaining,authenticated:Boolean(token),batch:process.env.CATALOG_REVALIDATE_BATCH||'auto'});if(wave===1)repositoryPlan=plan;
-const dueAll=dueEntries(entries,Date.now(),entries.length);if(wave===1)repositoryDue=dueAll.length;const due=dueAll.slice(0,plan.limit),deadline=Date.now()+waveBudget;
+const dueAll=dueEntries(entries,Date.now(),entries.length);if(wave===1)repositoryDue=dueAll.length;const due=revalidationQueue(entries,Date.now(),plan.limit),deadline=Date.now()+waveBudget;
 if(dueAll.length&&!due.length){repositoryStopReason??='api_budget';console.warn('Revalidation deferred to preserve GitHub API headroom.');return wave===1}
 
 // A few checks run side by side (one at a time was about 0.3 seconds each, so 750 took over three minutes). Each worker stops taking work as soon

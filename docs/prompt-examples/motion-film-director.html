@@ -1,0 +1,34 @@
+<!doctype html>
+<!-- Example output of the "Motion film director" prompt, used as its preview image.
+     Brief (fictional): mode = showreel; subject = the craft itself; length = 15 s 16:9 at 60 fps; style = one idea that keeps transforming:
+     ink particles that become a word, then a wave, then the end mark; sound = music + sfx. Shown: the frame at 00:07:12, the contact sheet
+     (one frame every 1.5 s, all drawn by the same code) and the timing track. Everything is drawn here by code; nothing is a stock image. -->
+<html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Showreel — frame 00:07:12</title>
+<style>
+*{box-sizing:border-box}body{margin:0;width:1280px;height:800px;background:#0b0b0e;color:#e9e6df;font-family:Inter,sans-serif;padding:24px 30px;display:grid;grid-template-rows:auto 1fr auto auto;gap:12px}
+.top{display:flex;justify-content:space-between;align-items:center;font:600 12px 'JetBrains Mono';color:#8d8a84;letter-spacing:.5px}.top b{color:#e9e6df}
+.rec{display:inline-block;width:8px;height:8px;border-radius:50%;background:#ff5a36;margin-right:8px}
+.frame{position:relative;border-radius:10px;overflow:hidden;background:#000}canvas{display:block;width:100%;height:100%}
+.hud{position:absolute;left:18px;bottom:14px;font:600 11.5px 'JetBrains Mono';color:rgba(233,230,223,.7)}.safe{position:absolute;inset:6% 4%;border:1px dashed rgba(255,255,255,.14);border-radius:4px}
+.strip{display:grid;grid-template-columns:repeat(10,1fr);gap:6px}.strip canvas{border-radius:5px;aspect-ratio:16/9;height:auto}
+.track{position:relative;height:30px;border-radius:8px;background:#17171c;overflow:hidden;font:600 10.5px 'JetBrains Mono'}
+.seg{position:absolute;top:5px;height:20px;border-radius:5px;padding:3px 7px;color:#0b0b0e;white-space:nowrap;overflow:hidden}.head{position:absolute;top:0;bottom:0;width:2px;background:#ff5a36;left:48%}
+</style></head><body>
+<div class="top"><span><span class="rec"></span><b>SHOWREEL v3</b> · 15 s · 1920×1080 · 60 fps · contact sheet 10 frames</span><span>QA: 0 dropped frames · audio peak −1.2 dBTP · captions n/a</span></div>
+<div class="frame"><canvas id="main" width="1220" height="470"></canvas><div class="safe"></div><div class="hud">00:07:12 · scene 3 “ink becomes wave” · ease out-expo</div></div>
+<div class="strip" id="strip"></div>
+<div class="track"><span class="seg" style="left:0;width:18%;background:#7a8cff">1 · particles gather</span><span class="seg" style="left:18.5%;width:20%;background:#ffd166">2 · they spell “made”</span><span class="seg" style="left:39%;width:24%;background:#ff8a5c">3 · ink becomes wave</span><span class="seg" style="left:63.5%;width:20%;background:#7fe0c3">4 · wave folds to type</span><span class="seg" style="left:84%;width:16%;background:#e9e6df">5 · end mark</span><span class="head"></span></div>
+<script>
+// Deterministic: a seeded flow field moves ink particles; the same function draws every frame of the contact sheet.
+function rng(seed){return()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function draw(ctx,w,h,t){const r=rng(7);ctx.fillStyle='#07070a';ctx.fillRect(0,0,w,h);
+ const g=ctx.createRadialGradient(w*.55,h*.55,10,w*.55,h*.55,w*.7);g.addColorStop(0,'rgba(255,138,92,'+(.10+.2*t)+')');g.addColorStop(1,'rgba(7,7,10,0)');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);
+ const n=Math.round(w*1.6);ctx.globalCompositeOperation='lighter';
+ for(let i=0;i<n;i++){let x=r()*w,y=r()*h;const hue=r();ctx.strokeStyle=hue<.55?'rgba(255,138,92,.22)':hue<.85?'rgba(255,209,102,.18)':'rgba(122,140,255,.2)';ctx.lineWidth=.8+r()*1.2;ctx.beginPath();ctx.moveTo(x,y);
+  for(let s=0;s<22;s++){const wave=Math.sin(x/w*Math.PI*3+t*6)*h*.18*t,target=h*.5+wave;const a=Math.sin(x*.006+y*.004+t*3)*Math.PI*(1-t)+Math.atan2(target-y,w*.05)*t;x+=Math.cos(a)*4*(w/1220);y+=Math.sin(a)*4*(w/1220);ctx.lineTo(x,y)}ctx.stroke()}
+ ctx.globalCompositeOperation='source-over';
+ if(t>.15&&t<.72){const a=Math.min(1,(t-.15)*6)*Math.min(1,(.72-t)*6);ctx.fillStyle='rgba(233,230,223,'+a+')';ctx.font='800 '+Math.round(h*.3)+'px "Inter Display",Inter';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('made',w*.5,h*.46+Math.sin(t*9)*h*.02)}
+ if(t>.86){ctx.fillStyle='#e9e6df';ctx.font='700 '+Math.round(h*.12)+'px "Inter Display",Inter';ctx.textAlign='center';ctx.fillText('made in code.',w*.5,h*.52)}}
+const main=document.getElementById('main');draw(main.getContext('2d'),main.width,main.height,.48);
+const strip=document.getElementById('strip');for(let i=0;i<10;i++){const c=document.createElement('canvas');c.width=192;c.height=108;draw(c.getContext('2d'),192,108,i/9);strip.append(c)}
+</script></body></html>

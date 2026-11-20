@@ -1,14 +1,25 @@
 // Availability is based on GitHub's repository API, never on a missing README or demo URL.
-// Routine availability rechecks every three weeks (listings stay public for 28 days after a check); temporary failures retry sooner.
-export const CHECK_INTERVAL_MS=21*24*60*60*1000;
+// Routine availability rechecks every four weeks (listings stay public for 48 days after a check); temporary failures retry sooner.
+export const CHECK_INTERVAL_MS=28*24*60*60*1000;
 // One run takes about 75 minutes and runs follow each other, so about 14 a day. The cap was 750 a run (about 10,500 a day) while every listing
 // is due every 48 hours (about 37,000 a day for 74,000 listings), so the queue of due checks only ever grew. GitHub's allowance (about 5,000 an
 // hour) is not the limit: the plan below still keeps it in reserve.
-// The catalogue sync now runs twice a week (Monday and Thursday), about 0.29 runs a day. Each run revalidates in several rate-limit waves.
-export const RUNS_PER_DAY=2/7;
+// The catalogue sync now runs once a week (Monday), about 0.14 runs a day. Each run revalidates in several rate-limit waves.
+export const RUNS_PER_DAY=1/7;
 export const REPOSITORY_CHECK_CAP=Number.isInteger(Number(process.env.CATALOG_REVALIDATE_CAP))&&Number(process.env.CATALOG_REVALIDATE_CAP)>0?Number(process.env.CATALOG_REVALIDATE_CAP):2500;
 export const REPOSITORY_CHECK_CONCURRENCY=3;
 export function dueEntries(entries,now=Date.now(),limit=250){return entries.filter(r=>!r.nextCheckAt||Date.parse(r.nextCheckAt)<=now).filter(r=>!r.lastCheckedAt||now-Date.parse(r.lastCheckedAt)>=CHECK_INTERVAL_MS||r.checkError).sort((a,b)=>(Date.parse(a.lastAttemptAt||a.lastCheckedAt)||0)-(Date.parse(b.lastAttemptAt||b.lastCheckedAt)||0)).slice(0,limit)}
+// Due repositories first, then (with spare allowance) the oldest ones checked at least EARLY_CHECK_AGE_MS ago. Without the early fill a run
+// with nothing due used none of its allowance: about 92,000 repositories were checked in the same few days of early November, so they would
+// all fall due, and all expire, in the same week. Re-checking the oldest early spreads that load evenly over the weekly runs.
+export const EARLY_CHECK_AGE_MS=7*24*60*60*1000;
+export function revalidationQueue(entries,now=Date.now(),limit=250){
+ const due=dueEntries(entries,now,limit);if(due.length>=limit)return due;
+ const taken=new Set(due.map(r=>r.full.toLowerCase()));
+ const early=entries.filter(r=>!taken.has(r.full.toLowerCase())&&r.availability!=='unavailable'&&(!r.nextCheckAt||Date.parse(r.nextCheckAt)<=now)&&r.lastCheckedAt&&now-Date.parse(r.lastCheckedAt)>=EARLY_CHECK_AGE_MS)
+  .sort((a,b)=>(Date.parse(a.lastCheckedAt)||0)-(Date.parse(b.lastCheckedAt)||0)).slice(0,limit-due.length);
+ return [...due,...early];
+}
 export function repositoryCheckPlan(entries,{remaining=null,authenticated=false,batch='auto'}={}){
  const desired=Math.max(500,Math.ceil(entries.length/10));
  const requested=batch==='auto'?desired:Number(batch);

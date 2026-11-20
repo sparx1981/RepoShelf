@@ -49,7 +49,7 @@ const mine=r.data.items.find(i=>i.id==='budget-planner'),theirs=r.data.items.fin
 assert.match(mine.thumbnail,/^\/api\/prompts\?area=thumb&source=siteshelf&id=budget-planner&v=\d+$/,'the thumbnail address carries a version, so a replaced picture is fetched again');assert.equal(mine.credit,null);
 assert.deepEqual(theirs.credit,{name:'SceneAI',url:'https://sceneai.art'},'SceneAI prompts are credited and linked back');
 // Text prompts have no generated page: no thumbnail request, and page prompts keep their default kind.
-const film=r.data.items.find(i=>i.id==='motion-film-director');assert.equal(film.kind,'text');assert.equal(film.thumbnail,null,'a text prompt has no stored thumbnail to request');assert.equal(mine.kind,'page');assert.equal(theirs.kind,'page');
+const film=r.data.items.find(i=>i.id==='motion-film-director');assert.equal(film.kind,'text');assert.match(film.thumbnail,/^\/prompt-examples\/motion-film-director\.jpg\?v=[a-f0-9]{10}$/,'a text prompt without its own thumbnail shows its published example output');assert.equal(mine.kind,'page');assert.equal(theirs.kind,'page');
 
 // 2. Guests can see the live page and the thumbnail, but not the prompt or the code.
 r=await run('/api/prompts?area=preview&source=siteshelf&id=budget-planner');assert.equal(r.status,200);assert.equal(r.data.html,PAGE);
@@ -93,3 +93,9 @@ assert(tableCalls.length>0&&tableCalls.every(c=>c.apikey==='server-test-secret'&
 // 5. Sign-in can return to the library.
 assert.equal(authReturn('/prompts.html'),'/prompts.html');assert.equal(authReturn('https://evil.test/prompts.html'),'/');
 console.log('PASS: public list/thumbnail/live page, prompt and code only for signed-in members, unpublished hidden, input validated, tables read only with the server key, SceneAI credited.');
+
+{// Every published example has its image, and a text prompt with no example (or its own thumbnail) keeps the existing behaviour.
+const {PROMPT_EXAMPLES,promptExample}=await import('../lib/prompt-examples.mjs');const {stat}=await import('node:fs/promises');
+for(const id of Object.keys(PROMPT_EXAMPLES)){const size=(await stat(new URL('../dist/prompt-examples/'+id+'.jpg',import.meta.url))).size;assert(size>5000&&size<120000,id+' preview is a real, card-sized image')}
+assert.equal(Object.keys(PROMPT_EXAMPLES).length,7);assert.equal(promptExample('not-a-prompt'),null);assert.equal(promptExample('__proto__'),null);
+console.log('PASS: the seven text prompts show example-output previews; others are unchanged.');}
