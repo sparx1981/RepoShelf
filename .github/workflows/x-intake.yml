@@ -84,5 +84,8 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           X_IMPORT_LIMIT: ${{ inputs.limit || '50' }}
         run: node scripts/import-x.mjs
-      - name: Publish imported X repositories
+      # Saved for the weekly publication (like the sync and submissions) instead of pushing to main, which started a Vercel build every day.
+      - name: Save imported X repositories for the weekly publication
+        env:
+          SYNC_PUBLICATION_PHASE: deferred
         run: node scripts/publish-catalog.mjs

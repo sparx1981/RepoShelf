@@ -18,5 +18,5 @@ try{
  const retry=await scanSubmissions(claims,{repositories:[]},{qualify:async()=>transient,importer:async()=>({...row})});assert.equal(retry.results[0].status,'retry');assert.equal(retry.catalog.repositories.length,1,'Transient records remain saved for repair');
  const rejected=await scanSubmissions(claims,{repositories:[]},{qualify:async()=>({entry:row,details:{status:'rejected',reason:'http_404'}}),importer:async()=>({...row})});assert.equal(rejected.results[0].status,'unavailable');assert.equal(probes,2);
 }finally{await rm(directory,{recursive:true,force:true})}
-assert.equal(nextPublicationAt(Date.parse('2026-10-08T06:34:59Z')),'2026-10-08T06:35:00.000Z');assert.equal(nextPublicationAt(Date.parse('2026-10-08T06:35:00Z')),'2026-10-09T06:35:00.000Z');
+assert.equal(nextPublicationAt(Date.parse('2026-10-12T06:34:59Z')),'2026-10-12T06:35:00.000Z');assert.equal(nextPublicationAt(Date.parse('2026-10-12T06:35:00Z')),'2026-10-19T06:35:00.000Z');assert.equal(nextPublicationAt(Date.parse('2026-10-08T12:00:00Z')),'2026-10-12T06:35:00.000Z','weekly, on Monday');
 console.log('PASS: dedicated demo probes, saved JPEG previews, actual publication eligibility, no-image/transient retry, definitive rejection, private identity separation and next publication boundaries.');

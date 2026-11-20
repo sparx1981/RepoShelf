@@ -4,8 +4,8 @@
 // verified when the catalogue is generated and nothing in a browser can refresh it, so judging it against the
 // current time made listings vanish between daily publications. If the snapshot is older than the grace
 // period (or in the future), freshness falls back to the real clock so stale catalogues are never shown as fresh.
-// Syncs now run twice a week (up to four days apart), so the snapshot stays authoritative for six days.
-const EVIDENCE_GRACE=6*86400000;let evidenceAt=null;
+// The sync and its publication now run once a week (seven days apart), so the snapshot stays authoritative for nine days.
+const EVIDENCE_GRACE=9*86400000;let evidenceAt=null;
 function evidenceTime(updatedAt,now=Date.now(),grace=EVIDENCE_GRACE){const t=Date.parse(updatedAt);return Number.isFinite(t)&&t<=now&&now-t<=grace?t:now}
 function setEvidenceTime(updatedAt){evidenceAt=updatedAt||null}
 const clock=()=>evidenceAt?evidenceTime(evidenceAt):Date.now();
@@ -35,9 +35,10 @@ function capturedDemo(r){return (r.screenshots||[]).some(s=>s.kind==='demo'&&typ
 // How recently the repository itself was checked decides two things. Within REPOSITORY_FRESH_DAYS it is simply current. Up to REPOSITORY_LISTING_DAYS
 // it stays listed, with a note saying how old the details are: a repository rarely vanishes in a month, the demo (which is what a visitor opens) still
 // has to have been checked within DEMO_LISTING_DAYS, and a check that finds it gone or private removes it at once. The number of listings is only ever
-// as large as the number of repositories and demos that can be re-read inside these windows, and the windows are sized for a sync that runs twice a
-// week (each listing is re-checked about every three weeks, so one missed or failed sync does not hide anything).
-const REPOSITORY_FRESH_DAYS=14,REPOSITORY_LISTING_DAYS=28,DEMO_LISTING_DAYS=28,FEATURED_REPOSITORY_DAYS=14,FEATURED_DEMO_DAYS=14;
+// as large as the number of repositories and demos that can be re-read inside these windows, and the windows are sized for a sync that runs once a
+// week (each listing is re-checked about every four weeks; the 48-day window leaves about three weekly syncs of slack, so a missed or failed sync
+// does not hide anything).
+const REPOSITORY_FRESH_DAYS=21,REPOSITORY_LISTING_DAYS=48,DEMO_LISTING_DAYS=48,FEATURED_REPOSITORY_DAYS=14,FEATURED_DEMO_DAYS=14;
 function repositoryAgeDays(r,now=clock()){const t=Date.parse(r.lastCheckedAt);return Number.isFinite(t)?Math.max(0,Math.floor((now-t)/86400000)):null}
 function repositoryNote(r,now=clock()){const days=repositoryAgeDays(r,now);return days!==null&&days>REPOSITORY_FRESH_DAYS?`Repository details were last refreshed ${days} days ago.`:''}
 function publishedEligible(r,now=clock()){const h=demoState(r);return (!r.listingControl||r.listingControl==='visible')&&!r.demoDuplicate&&r.availability==='available'&&Boolean(r.lastCheckedAt)&&now-Date.parse(r.lastCheckedAt)<=REPOSITORY_LISTING_DAYS*86400000&&h?.status==='working'&&Boolean(h.checkedAt)&&now-Date.parse(h.checkedAt)<=DEMO_LISTING_DAYS*86400000&&capturedDemo(r)}

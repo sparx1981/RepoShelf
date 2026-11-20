@@ -1,5 +1,7 @@
 # Twice-weekly sync
 
+> **Update (November 2026):** the sync and publication now run once a week, on Monday, and listings stay public for 48 days after a check. See [WEEKLY_SYNC.md](WEEKLY_SYNC.md).
+
 The catalogue sync used to run every two hours. It now runs **twice a week, Monday and Thursday at 03:17 UTC**, with much larger runs. This page is the source of truth where older documents still describe the two-hour schedule.
 
 ## Why

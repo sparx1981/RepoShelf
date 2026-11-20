@@ -8,13 +8,13 @@ const DAY = 24;
 const success = {id: 1, status: 'completed', conclusion: 'success', updated_at: ago(2 * DAY)};
 const failed = {id: 2, status: 'completed', conclusion: 'failure', updated_at: ago(1)};
 
-assert.equal(graceMs, 5 * 86400000); assert.equal(cooldownMs, 86400000); assert.equal(failedRetryMs, 6 * 3600000); assert.equal(maxConsecutiveFailures, 3);
-assert.equal(recoveryDecision([success], now).action, 'wait', 'A sync two days ago is on schedule for a twice-weekly rhythm');
-assert.equal(recoveryDecision([{...success, updated_at: ago(4 * DAY)}], now).action, 'wait', 'The longest scheduled gap (Thursday to Monday) is not overdue');
-assert.equal(recoveryDecision([{...success, updated_at: ago(5 * DAY + 0.01)}], now).action, 'dispatch', 'A sync that started over five days ago is due');
-assert.equal(recoveryDecision([{...success, updated_at: ago(5 * DAY)}], now).action, 'wait');
-assert.equal(recoveryDecision([{...success, run_started_at: ago(5 * DAY + 3), updated_at: ago(5 * DAY - 2)}], now).action, 'dispatch', 'The rhythm counts from the start of the last run, not its finish');
-assert.equal(recoveryDecision([{...success, run_started_at: ago(4.9 * DAY), updated_at: ago(4.8 * DAY)}], now).action, 'wait');
+assert.equal(graceMs, 8 * 86400000); assert.equal(cooldownMs, 86400000); assert.equal(failedRetryMs, 6 * 3600000); assert.equal(maxConsecutiveFailures, 3);
+assert.equal(recoveryDecision([success], now).action, 'wait', 'A sync two days ago is on schedule for a weekly rhythm');
+assert.equal(recoveryDecision([{...success, updated_at: ago(7 * DAY)}], now).action, 'wait', 'The scheduled gap (Monday to Monday) is not overdue');
+assert.equal(recoveryDecision([{...success, updated_at: ago(8 * DAY + 0.01)}], now).action, 'dispatch', 'A sync that started over eight days ago is due');
+assert.equal(recoveryDecision([{...success, updated_at: ago(8 * DAY)}], now).action, 'wait');
+assert.equal(recoveryDecision([{...success, run_started_at: ago(8 * DAY + 3), updated_at: ago(8 * DAY - 2)}], now).action, 'dispatch', 'The rhythm counts from the start of the last run, not its finish');
+assert.equal(recoveryDecision([{...success, run_started_at: ago(7.9 * DAY), updated_at: ago(7.8 * DAY)}], now).action, 'wait');
 for (const status of ['queued', 'in_progress', 'waiting', 'requested', 'pending'])
   assert.equal(recoveryDecision([success, {id: 3, status}], now).activeRunId, 3);
 assert.equal(recoveryDecision([{...success, updated_at: ago(2 * DAY)}, {...failed, updated_at: ago(7)}], now).action, 'dispatch', 'A failed run is retried once its backoff has passed');
@@ -40,7 +40,7 @@ for (const count of [3, 4, 8]) {
 }
 assert.equal(recoveryDecision([{...failed, conclusion: 'cancelled'}], now).action, 'wait');
 
-const overdue = {...success, updated_at: ago(6 * DAY)};
+const overdue = {...success, updated_at: ago(9 * DAY)};
 let reads = 0, posts = 0, runHistory = [overdue], secondHistory = null;
 const fetcher = async (url, options = {}) => {
   assert.equal(options.redirect, 'error');

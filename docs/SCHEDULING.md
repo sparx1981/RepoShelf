@@ -1,5 +1,7 @@
 # Syncing, publication and independent recovery
 
+> **Update (November 2026):** the sync and publication now run once a week, on Monday, and listings stay public for 48 days after a check. See [WEEKLY_SYNC.md](WEEKLY_SYNC.md).
+
 > **Update:** the catalogue sync now runs twice a week (Monday and Thursday). Where this page says every two hours, 48 hours or seven days, see [TWICE_WEEKLY_SYNC.md](TWICE_WEEKLY_SYNC.md) for the current schedule and freshness windows.
 
 Catalogue maintenance is requested every two hours. Each run saves accumulated generated data to `reposhelf-checkpoints`; this branch is excluded from Vercel deployments. Sync log and growth reports read the checkpoint branch without deploying. Repository availability is rechecked every 48 hours. Reusable browser workers validate demos and capture images in one visit, with a fresh isolated browser context for every listing. Browser processes recycle after 50 visits; a hung worker’s entire process group is killed and replaced. Worker environments exclude credentials. HTTP and WebSocket destinations must pass the public-network checks; service workers and downloads remain blocked. Public WebSockets are allowed so interactive demos can finish loading. Blank pages get up to eight additional seconds to render, including visible content inside open Shadow DOM. Entries previously labelled empty receive one fresh attempt when the probe version changes; other retry dates remain in force.

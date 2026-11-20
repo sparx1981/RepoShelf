@@ -4,11 +4,13 @@ on:
     branches: [main]
     paths: ['.github/workflows/publication.yml', 'lib/publication-policy.mjs']
   schedule:
+    # Checked daily, but the scheduled publication is weekly (Monday 06:35 UTC, see lib/publication-policy.mjs): on the other days this
+    # run stops after a few seconds unless that week's Monday publication was missed. Each publication is one Vercel build.
     - cron: '35 6 * * *'
   workflow_dispatch:
     inputs:
       scheduled:
-        description: Daily publication (skip if already handled today)
+        description: Weekly publication (skip if already handled this week)
         type: boolean
         default: false
 env:
@@ -34,9 +36,18 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - name: Check whether the weekly publication is due
+        id: due
+        env:
+          DAILY_PUBLICATION: ${{ github.event_name == 'schedule' || inputs.scheduled }}
+        run: |
+          if [ "$DAILY_PUBLICATION" != "true" ]; then echo "due=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+          node --input-type=module -e "import {readFileSync,appendFileSync} from 'node:fs';import {scheduledPublicationDue} from './lib/publication-policy.mjs';let state=null;try{state=JSON.parse(readFileSync('data/publication.json','utf8'))}catch{}const due=scheduledPublicationDue(state);console.log(due?'The weekly publication is due.':'The weekly publication was already handled this week; nothing to do.');appendFileSync(process.env.GITHUB_OUTPUT,'due='+due+'\n')"
       - name: Restore accumulated generated changes
+        if: steps.due.outputs.due == 'true'
         run: node scripts/publish-catalog.mjs restore
       - name: Publish the latest saved catalogue
+        if: steps.due.outputs.due == 'true'
         env:
           DAILY_PUBLICATION: ${{ github.event_name == 'schedule' || inputs.scheduled }}
         run: |
