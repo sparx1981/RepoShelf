@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Chip-burst checkbox preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,520px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.sv{position:relative;display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:center;padding:28px 12px;min-height:150px}
+.sv-p{position:absolute;width:7px;height:7px;border-radius:50%;pointer-events:none;z-index:5}
+.sv-p.chip{border-radius:2px;width:8px;height:5px}
+.sv-p.dust{width:10px;height:10px;opacity:.7}
+.sv-w{position:absolute;pointer-events:none;z-index:6;font:900 italic 22px/1 system-ui,sans-serif;letter-spacing:.04em;color:var(--sc-accent);-webkit-text-stroke:1.5px var(--sc-fg);paint-order:stroke fill;white-space:nowrap}
+.sv{flex-direction:column;align-items:stretch;max-width:340px;margin:auto}
+.sv label{display:flex;align-items:center;gap:14px;padding:12px 16px;border:1px solid var(--sc-line);border-radius:14px;background:var(--sc-surface);cursor:pointer}
+.sv input{position:absolute;opacity:0;pointer-events:none}
+.sv-bx{display:grid;place-items:center;width:26px;height:26px;border-radius:8px;border:2px solid var(--sc-line);background:var(--sc-bg);transition:background .2s,border-color .2s}
+.sv-bx svg{width:16px;height:16px;fill:none;stroke:var(--sc-accent-fg);stroke-width:3.4;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:22;stroke-dashoffset:22;transition:stroke-dashoffset .3s .08s}
+.sv input:checked+.sv-bx{background:var(--sc-accent);border-color:var(--sc-accent)}.sv input:checked+.sv-bx svg{stroke-dashoffset:0}
+.sv input:focus-visible+.sv-bx{outline:2px solid var(--sc-accent);outline-offset:3px}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="sv"><label><input type="checkbox"><span class="sv-bx"><svg viewBox="0 0 16 16"><path d="M3 8.5l3.2 3.2L13 4.5"/></svg></span>Ship the build</label><label><input type="checkbox" checked><span class="sv-bx"><svg viewBox="0 0 16 16"><path d="M3 8.5l3.2 3.2L13 4.5"/></svg></span>Write the notes</label><label><input type="checkbox"><span class="sv-bx"><svg viewBox="0 0 16 16"><path d="M3 8.5l3.2 3.2L13 4.5"/></svg></span>Tell the team</label></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling,h=root.querySelector('.sv');
+var rm=matchMedia('(prefers-reduced-motion:reduce)').matches;
+function fly(p,a,t){p.animate(a,{duration:t,easing:'cubic-bezier(.2,.8,.3,1)'}).onfinish=function(){p.remove()}}
+function burst(h,x,y,o){if(rm)return;o=o||{};var n=o.n||9,r=o.r||38,i,a,d,p;for(i=0;i<n;i++){a=o.arc?o.arc[0]+(o.arc[1]-o.arc[0])*i/Math.max(1,n-1):i/n*6.283;d=r*(.6+Math.random()*.7);p=document.createElement('i');p.className='sv-p '+(o.shape||'');p.style.left=x+'px';p.style.top=y+'px';p.style.background=o.c||'var(--sc-accent)';h.appendChild(p);fly(p,[{transform:'translate(-50%,-50%) rotate(0) scale(1)',opacity:1},{transform:'translate(calc(-50% + '+Math.cos(a)*d+'px),calc(-50% + '+Math.sin(a)*d+'px)) rotate(200deg) scale(.2)',opacity:0}],o.t||560)}}
+function word(h,x,y,t,rot){if(rm)return;var s=document.createElement('b');s.className='sv-w';s.textContent=t;s.style.left=x+'px';s.style.top=y+'px';h.appendChild(s);rot=rot||-8;s.animate([{transform:'translate(-50%,-50%) rotate('+rot+'deg) scale(.3)',opacity:0},{transform:'translate(-50%,-90%) rotate('+rot+'deg) scale(1.2)',opacity:1,offset:.25},{transform:'translate(-50%,-150%) rotate('+rot+'deg) scale(1)',opacity:0}],{duration:760,easing:'ease-out'}).onfinish=function(){s.remove()}}
+function mid(h,el){var a=h.getBoundingClientRect(),b=el.getBoundingClientRect();return[b.left-a.left+b.width/2,b.top-a.top+b.height/2]}
+function squash(el,a,t){if(rm)return;el.animate(a,{duration:t||420,easing:'cubic-bezier(.3,1.6,.5,1)'})}
+root.querySelectorAll('input').forEach(function(i){i.addEventListener('change',function(){var b=i.nextElementSibling,c=mid(h,b);if(i.checked){squash(b,[{transform:'scale(.8)'},{transform:'scale(1.18)'},{transform:'scale(1)'}],380);burst(h,c[0],c[1],{n:8,r:30,shape:'chip'})}})})})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

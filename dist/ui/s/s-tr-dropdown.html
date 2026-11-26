@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dropdown menu preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,520px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.tr{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:28px 12px;min-height:200px}
+.tr-btn{padding:11px 22px;border:2px solid var(--sc-accent);border-radius:12px;background:var(--sc-accent);color:var(--sc-accent-fg);font-weight:700;cursor:pointer;transition:transform .15s}
+.tr-btn:active{transform:scale(.96)}
+.tr-btn.ghost{background:transparent;color:var(--sc-fg);border-color:var(--sc-line)}
+.tr{justify-content:flex-start;padding-top:36px}
+.tr-dd{position:relative}
+.tr-mn{position:absolute;top:calc(100% + 8px);left:0;min-width:200px;padding:6px;border-radius:14px;background:var(--sc-bg);border:1px solid var(--sc-line);box-shadow:0 14px 34px rgba(0,0,0,.25);transform-origin:0 0;transform:scale(.9);opacity:0;visibility:hidden;transition:transform .26s cubic-bezier(.2,.8,.2,1),opacity .2s,visibility 0s .26s}
+.tr-mn.open{transform:none;opacity:1;visibility:visible;transition-delay:0s}
+.tr-mn button{display:block;width:100%;text-align:left;padding:9px 12px;border:0;border-radius:9px;background:none;cursor:pointer;opacity:0;transform:translateY(6px);transition:opacity .22s,transform .26s cubic-bezier(.2,.8,.2,1),background .15s}
+.tr-mn.open button{opacity:1;transform:none;transition-delay:calc(var(--i)*30ms+40ms)}
+.tr-mn button:hover,.tr-mn button:focus-visible{background:var(--sc-surface)}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="tr"><div class="tr-dd"><button class="tr-btn" aria-haspopup="menu" aria-expanded="false">Actions</button><div class="tr-mn" role="menu"><button role="menuitem" style="--i:0">Rename</button><button role="menuitem" style="--i:1">Duplicate</button><button role="menuitem" style="--i:2">Move to shelf</button><button role="menuitem" style="--i:3">Delete</button></div></div></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling,h=root.querySelector('.tr');
+var b=root.querySelector('.tr-btn'),m=root.querySelector('.tr-mn'),items=[].slice.call(m.children);
+function set(v){m.classList.toggle('open',v);b.setAttribute('aria-expanded',String(v));if(v)items[0].focus()}
+b.addEventListener('click',function(){set(!m.classList.contains('open'))});document.addEventListener('click',function(e){if(!root.contains(e.target))set(false)});
+root.addEventListener('keydown',function(e){var i=items.indexOf(document.activeElement);if(e.key==='Escape'){set(false);b.focus()}if(e.key==='ArrowDown'&&i>-1){e.preventDefault();items[(i+1)%items.length].focus()}if(e.key==='ArrowUp'&&i>-1){e.preventDefault();items[(i+items.length-1)%items.length].focus()}});
+items.forEach(function(i){i.addEventListener('click',function(){set(false);b.focus()})});})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

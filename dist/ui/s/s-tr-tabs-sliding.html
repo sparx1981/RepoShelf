@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sliding tabs preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,520px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.tr{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:28px 12px;min-height:200px}
+.tr-btn{padding:11px 22px;border:2px solid var(--sc-accent);border-radius:12px;background:var(--sc-accent);color:var(--sc-accent-fg);font-weight:700;cursor:pointer;transition:transform .15s}
+.tr-btn:active{transform:scale(.96)}
+.tr-btn.ghost{background:transparent;color:var(--sc-fg);border-color:var(--sc-line)}
+.tr-tl{position:relative;display:flex;gap:6px;border-bottom:1px solid var(--sc-line)}
+.tr-tb{padding:10px 16px;border:0;background:none;font-weight:700;color:var(--sc-muted);cursor:pointer;transition:color .2s}
+.tr-tb[aria-selected=true]{color:var(--sc-fg)}
+.tr-in{position:absolute;bottom:-1px;height:2px;background:var(--sc-accent);transition:left .35s cubic-bezier(.2,.8,.2,1),width .35s cubic-bezier(.2,.8,.2,1)}
+.tr-pn{width:min(340px,92%);min-height:56px;overflow:hidden;color:var(--sc-muted);text-align:center}
+.tr-pn p{margin:0;animation:trPn .38s cubic-bezier(.2,.8,.2,1)}
+@keyframes trPn{from{opacity:0;transform:translateX(calc(var(--dir,1)*28px))}}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="tr"><div class="tr-tl" role="tablist" aria-label="Sections"><i class="tr-in"></i><button class="tr-tb" role="tab" aria-selected="true">Overview</button><button class="tr-tb" role="tab" aria-selected="false" tabindex="-1">Activity</button><button class="tr-tb" role="tab" aria-selected="false" tabindex="-1">Settings</button></div><div class="tr-pn" role="tabpanel"><p>Overview: everything at a glance.</p></div></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling,h=root.querySelector('.tr');
+var tabs=[].slice.call(root.querySelectorAll('.tr-tb')),ind=root.querySelector('.tr-in'),pn=root.querySelector('.tr-pn'),txt=['Overview: everything at a glance.','Activity: what changed and when.','Settings: tune it to taste.'],cur=0;
+function move(){var t=tabs[cur];ind.style.left=t.offsetLeft+'px';ind.style.width=t.offsetWidth+'px'}
+function pick(i){var d=i>cur?1:-1;cur=i;tabs.forEach(function(t,k){t.setAttribute('aria-selected',String(k===i));t.tabIndex=k===i?0:-1});pn.style.setProperty('--dir',d);var p=document.createElement('p');p.textContent=txt[i];pn.textContent='';pn.appendChild(p);move()}
+tabs.forEach(function(t,i){t.addEventListener('click',function(){pick(i)});t.addEventListener('keydown',function(e){var d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;if(d){var n=(i+d+tabs.length)%tabs.length;pick(n);tabs[n].focus()}})});
+move();if(document.fonts&&document.fonts.ready)document.fonts.ready.then(move);})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

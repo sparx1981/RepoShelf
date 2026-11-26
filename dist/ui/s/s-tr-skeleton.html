@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Skeleton to content preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,520px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.tr{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:28px 12px;min-height:200px}
+.tr-btn{padding:11px 22px;border:2px solid var(--sc-accent);border-radius:12px;background:var(--sc-accent);color:var(--sc-accent-fg);font-weight:700;cursor:pointer;transition:transform .15s}
+.tr-btn:active{transform:scale(.96)}
+.tr-btn.ghost{background:transparent;color:var(--sc-fg);border-color:var(--sc-line)}
+.tr-cd{position:relative;width:min(340px,92%);padding:18px;border:1px solid var(--sc-line);border-radius:18px;background:var(--sc-surface);min-height:120px}
+.tr-sk,.tr-ct{display:grid;grid-template-columns:48px 1fr;gap:6px 14px;align-items:center}
+.tr-sk{position:absolute;inset:18px;transition:opacity .3s}
+.tr-ct>*{opacity:0;transform:translateY(6px);transition:opacity .35s,transform .4s cubic-bezier(.2,.8,.2,1);transition-delay:calc(var(--i)*90ms)}
+.tr-cd.ready .tr-ct>*{opacity:1;transform:none}.tr-cd.ready .tr-sk{opacity:0}
+.tr-av{grid-row:span 3;width:48px;height:48px;border-radius:50%;background:var(--sc-accent);display:grid;place-items:center;color:var(--sc-accent-fg);font-weight:800}
+.tr-ct b{font-size:16px}.tr-ct span{color:var(--sc-muted);font-size:14px}
+.tr-sb{display:block;height:12px;border-radius:6px;background:linear-gradient(100deg,var(--sc-line) 30%,var(--sc-bg) 50%,var(--sc-line) 70%) 0 0/300% 100%;animation:trSh 1.2s linear infinite}
+.tr-sb.av{grid-row:span 3;width:48px;height:48px;border-radius:50%}
+@keyframes trSh{to{background-position:-300% 0}}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="tr"><div class="tr-cd" aria-busy="true"><div class="tr-sk" aria-hidden="true"><i class="tr-sb av"></i><i class="tr-sb" style="width:60%"></i><i class="tr-sb"></i><i class="tr-sb" style="width:80%"></i></div><div class="tr-ct"><div class="tr-av" style="--i:0">AK</div><b style="--i:1">Aiko Kobayashi</b><span style="--i:2">Motion designer, Osaka</span><span style="--i:3">Cuts frames for a living.</span></div></div><button class="tr-btn ghost">Reload</button></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling,h=root.querySelector('.tr');
+var cd=root.querySelector('.tr-cd'),tm;
+function load(){clearTimeout(tm);cd.classList.remove('ready');cd.setAttribute('aria-busy','true');tm=setTimeout(function(){cd.classList.add('ready');cd.setAttribute('aria-busy','false')},1400)}
+root.querySelector('button').addEventListener('click',load);load();})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

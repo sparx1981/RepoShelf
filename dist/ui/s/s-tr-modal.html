@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Modal open and close preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,520px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.tr{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:28px 12px;min-height:200px}
+.tr-btn{padding:11px 22px;border:2px solid var(--sc-accent);border-radius:12px;background:var(--sc-accent);color:var(--sc-accent-fg);font-weight:700;cursor:pointer;transition:transform .15s}
+.tr-btn:active{transform:scale(.96)}
+.tr-btn.ghost{background:transparent;color:var(--sc-fg);border-color:var(--sc-line)}
+.tr{overflow:hidden}
+.tr-bd{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.45);backdrop-filter:blur(0);opacity:0;visibility:hidden;transition:opacity .28s cubic-bezier(.2,.8,.2,1),backdrop-filter .28s cubic-bezier(.2,.8,.2,1),visibility 0s .28s}
+.tr-bd.open{opacity:1;visibility:visible;backdrop-filter:blur(4px);transition-delay:0s}
+.tr-dl{width:min(320px,88%);padding:22px;border-radius:18px;background:var(--sc-bg);border:1px solid var(--sc-line);transform:translateY(12px) scale(.94);transition:transform .34s cubic-bezier(.2,.8,.2,1)}
+.tr-bd.open .tr-dl{transform:none}
+.tr-dl h3{margin:0 0 6px}.tr-dl p{margin:0 0 16px;color:var(--sc-muted)}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="tr"><button class="tr-btn">Open dialog</button><div class="tr-bd"><div class="tr-dl" role="dialog" aria-modal="true" aria-labelledby="trm" tabindex="-1"><h3 id="trm">Delete this shelf?</h3><p>You can restore it for thirty days.</p><button class="tr-btn ghost">Close</button></div></div></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling,h=root.querySelector('.tr');
+var open=root.querySelector('.tr-btn'),bd=root.querySelector('.tr-bd'),dl=root.querySelector('.tr-dl'),close=dl.querySelector('button');
+function set(v){bd.classList.toggle('open',v);if(v)dl.focus();else open.focus()}
+open.addEventListener('click',function(){set(true)});close.addEventListener('click',function(){set(false)});bd.addEventListener('click',function(e){if(e.target===bd)set(false)});root.addEventListener('keydown',function(e){if(e.key==='Escape')set(false)});})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

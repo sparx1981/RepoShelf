@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Smooth accordion preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,520px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.tr{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:28px 12px;min-height:200px}
+.tr-btn{padding:11px 22px;border:2px solid var(--sc-accent);border-radius:12px;background:var(--sc-accent);color:var(--sc-accent-fg);font-weight:700;cursor:pointer;transition:transform .15s}
+.tr-btn:active{transform:scale(.96)}
+.tr-btn.ghost{background:transparent;color:var(--sc-fg);border-color:var(--sc-line)}
+.tr-ac{width:min(400px,94%);border:1px solid var(--sc-line);border-radius:16px;overflow:hidden;background:var(--sc-surface)}
+.tr-ai+.tr-ai{border-top:1px solid var(--sc-line)}
+.tr-ah{display:flex;justify-content:space-between;align-items:center;width:100%;padding:15px 18px;border:0;background:none;font-weight:700;cursor:pointer;text-align:left}
+.tr-ah svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.4;transition:transform .36s cubic-bezier(.2,.8,.2,1)}
+.tr-ah[aria-expanded=true] svg{transform:rotate(180deg)}
+.tr-ap{display:grid;grid-template-rows:0fr;transition:grid-template-rows .38s cubic-bezier(.2,.8,.2,1)}
+.tr-ah[aria-expanded=true]+.tr-ap{grid-template-rows:1fr}
+.tr-ap>div{overflow:hidden;min-height:0}
+.tr-ap p{margin:0;padding:0 18px 16px;color:var(--sc-muted);opacity:0;transition:opacity .25s}
+.tr-ah[aria-expanded=true]+.tr-ap p{opacity:1;transition-delay:.12s}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="tr"><div class="tr-ac"><div class="tr-ai"><button class="tr-ah" aria-expanded="true" aria-controls="ta1">What is a shelf?<svg viewBox="0 0 16 16"><path d="M3 6l5 5 5-5"/></svg></button><div class="tr-ap" id="ta1"><div><p>A shelf is a named collection of projects you can reorder and share.</p></div></div></div><div class="tr-ai"><button class="tr-ah" aria-expanded="false" aria-controls="ta2">Can I share one?<svg viewBox="0 0 16 16"><path d="M3 6l5 5 5-5"/></svg></button><div class="tr-ap" id="ta2"><div><p>Yes. Send the link and anyone can browse it without an account.</p></div></div></div><div class="tr-ai"><button class="tr-ah" aria-expanded="false" aria-controls="ta3">Is it free?<svg viewBox="0 0 16 16"><path d="M3 6l5 5 5-5"/></svg></button><div class="tr-ap" id="ta3"><div><p>Browsing and saving are free.</p></div></div></div></div></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling,h=root.querySelector('.tr');
+var hs=[].slice.call(root.querySelectorAll('.tr-ah'));hs.forEach(function(b){b.addEventListener('click',function(){var o=b.getAttribute('aria-expanded')==='true';hs.forEach(function(x){x.setAttribute('aria-expanded','false')});b.setAttribute('aria-expanded',String(!o))})})})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>
