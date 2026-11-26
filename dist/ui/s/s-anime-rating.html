@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pop-in rating preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,520px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.sv{position:relative;display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:center;padding:28px 12px;min-height:150px}
+.sv-p{position:absolute;width:7px;height:7px;border-radius:50%;pointer-events:none;z-index:5}
+.sv-p.chip{border-radius:2px;width:8px;height:5px}
+.sv-p.dust{width:10px;height:10px;opacity:.7}
+.sv-w{position:absolute;pointer-events:none;z-index:6;font:900 italic 22px/1 system-ui,sans-serif;letter-spacing:.04em;color:var(--sc-accent);-webkit-text-stroke:1.5px var(--sc-fg);paint-order:stroke fill;white-space:nowrap}
+.sv-st{display:flex;gap:6px}
+.sv-s{width:44px;height:44px;border:0;background:none;padding:0;cursor:pointer;color:var(--sc-line);transition:color .2s}
+.sv-s svg{width:100%;height:100%;fill:currentColor}
+.sv-s.on{color:#f5b301}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="sv"><div class="sv-st" role="radiogroup" aria-label="Rating"><button class="sv-s" role="radio" aria-checked="false" aria-label="1 star"><svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6.2 6.6.8-4.9 4.6 1.3 6.6L12 17.4 6.1 20.7l1.3-6.6L2.5 9.5l6.6-.8z"/></svg></button><button class="sv-s" role="radio" aria-checked="false" aria-label="2 stars"><svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6.2 6.6.8-4.9 4.6 1.3 6.6L12 17.4 6.1 20.7l1.3-6.6L2.5 9.5l6.6-.8z"/></svg></button><button class="sv-s" role="radio" aria-checked="false" aria-label="3 stars"><svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6.2 6.6.8-4.9 4.6 1.3 6.6L12 17.4 6.1 20.7l1.3-6.6L2.5 9.5l6.6-.8z"/></svg></button><button class="sv-s" role="radio" aria-checked="false" aria-label="4 stars"><svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6.2 6.6.8-4.9 4.6 1.3 6.6L12 17.4 6.1 20.7l1.3-6.6L2.5 9.5l6.6-.8z"/></svg></button><button class="sv-s" role="radio" aria-checked="false" aria-label="5 stars"><svg viewBox="0 0 24 24"><path d="M12 2.5l2.9 6.2 6.6.8-4.9 4.6 1.3 6.6L12 17.4 6.1 20.7l1.3-6.6L2.5 9.5l6.6-.8z"/></svg></button></div></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling,h=root.querySelector('.sv');
+var rm=matchMedia('(prefers-reduced-motion:reduce)').matches;
+function fly(p,a,t){p.animate(a,{duration:t,easing:'cubic-bezier(.2,.8,.3,1)'}).onfinish=function(){p.remove()}}
+function burst(h,x,y,o){if(rm)return;o=o||{};var n=o.n||9,r=o.r||38,i,a,d,p;for(i=0;i<n;i++){a=o.arc?o.arc[0]+(o.arc[1]-o.arc[0])*i/Math.max(1,n-1):i/n*6.283;d=r*(.6+Math.random()*.7);p=document.createElement('i');p.className='sv-p '+(o.shape||'');p.style.left=x+'px';p.style.top=y+'px';p.style.background=o.c||'var(--sc-accent)';h.appendChild(p);fly(p,[{transform:'translate(-50%,-50%) rotate(0) scale(1)',opacity:1},{transform:'translate(calc(-50% + '+Math.cos(a)*d+'px),calc(-50% + '+Math.sin(a)*d+'px)) rotate(200deg) scale(.2)',opacity:0}],o.t||560)}}
+function word(h,x,y,t,rot){if(rm)return;var s=document.createElement('b');s.className='sv-w';s.textContent=t;s.style.left=x+'px';s.style.top=y+'px';h.appendChild(s);rot=rot||-8;s.animate([{transform:'translate(-50%,-50%) rotate('+rot+'deg) scale(.3)',opacity:0},{transform:'translate(-50%,-90%) rotate('+rot+'deg) scale(1.2)',opacity:1,offset:.25},{transform:'translate(-50%,-150%) rotate('+rot+'deg) scale(1)',opacity:0}],{duration:760,easing:'ease-out'}).onfinish=function(){s.remove()}}
+function mid(h,el){var a=h.getBoundingClientRect(),b=el.getBoundingClientRect();return[b.left-a.left+b.width/2,b.top-a.top+b.height/2]}
+function squash(el,a,t){if(rm)return;el.animate(a,{duration:t||420,easing:'cubic-bezier(.3,1.6,.5,1)'})}
+var st=[].slice.call(root.querySelectorAll('.sv-s'));
+function paint(n){st.forEach(function(s,i){s.classList.toggle('on',i<n)})}
+st.forEach(function(s,i){s.addEventListener('mouseenter',function(){paint(i+1)});s.addEventListener('mouseleave',function(){paint(st.filter(function(x){return x.getAttribute('aria-checked')==='true'}).length?+st.filter(function(x){return x.getAttribute('aria-checked')==='true'})[0].dataset.n:0)});s.dataset.n=i+1;
+s.addEventListener('click',function(){st.forEach(function(x,k){x.setAttribute('aria-checked',String(k===i))});paint(i+1);st.forEach(function(x,k){if(k<=i&&!rm)x.animate([{transform:'scale(.7)'},{transform:'scale(1.3)'},{transform:'scale(1)'}],{duration:380,delay:k*70,easing:'cubic-bezier(.3,1.6,.5,1)'})});if(i===4){var c=mid(h,s);setTimeout(function(){burst(h,c[0],c[1],{n:14,r:58,c:'#f5b301'});word(h,c[0],c[1]-24,'PERFECT!')},320)}})});})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

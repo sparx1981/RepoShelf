@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stacking toasts preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,520px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.tr{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:28px 12px;min-height:200px}
+.tr-btn{padding:11px 22px;border:2px solid var(--sc-accent);border-radius:12px;background:var(--sc-accent);color:var(--sc-accent-fg);font-weight:700;cursor:pointer;transition:transform .15s}
+.tr-btn:active{transform:scale(.96)}
+.tr-btn.ghost{background:transparent;color:var(--sc-fg);border-color:var(--sc-line)}
+.tr{justify-content:flex-start;overflow:hidden;min-height:240px}
+.tr-ts{position:absolute;left:0;right:0;bottom:12px;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none}
+.tr-t{pointer-events:auto;display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:12px;background:var(--sc-fg);color:var(--sc-bg);font-weight:600;font-size:14px;max-height:60px;animation:trIn .38s cubic-bezier(.2,.8,.2,1)}
+.tr-t button{border:0;background:none;color:inherit;opacity:.7;cursor:pointer;font-size:16px}
+.tr-t.out{opacity:0;max-height:0;padding-block:0;margin-top:-8px;transition:all .3s cubic-bezier(.2,.8,.2,1)}
+@keyframes trIn{from{opacity:0;transform:translateY(24px) scale(.95)}}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="tr"><button class="tr-btn">Add a toast</button><div class="tr-ts" aria-live="polite"></div></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling,h=root.querySelector('.tr');
+var ts=root.querySelector('.tr-ts'),n=0;
+function drop(t){if(!t.parentNode)return;t.classList.add('out');setTimeout(function(){t.remove()},320)}
+root.querySelector('.tr-btn').addEventListener('click',function(){n++;var t=document.createElement('div');t.className='tr-t';t.setAttribute('role','status');var s=document.createElement('span');s.textContent='Saved draft #'+n;var c=document.createElement('button');c.setAttribute('aria-label','Dismiss');c.textContent='\u00d7';c.addEventListener('click',function(){drop(t)});t.appendChild(s);t.appendChild(c);ts.appendChild(t);while(ts.children.length>3)ts.firstElementChild.remove();setTimeout(function(){drop(t)},3000)});})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

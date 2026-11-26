@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Origin-aware tooltip preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,520px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.tr{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:28px 12px;min-height:200px}
+.tr-btn{padding:11px 22px;border:2px solid var(--sc-accent);border-radius:12px;background:var(--sc-accent);color:var(--sc-accent-fg);font-weight:700;cursor:pointer;transition:transform .15s}
+.tr-btn:active{transform:scale(.96)}
+.tr-btn.ghost{background:transparent;color:var(--sc-fg);border-color:var(--sc-line)}
+.tr-row{display:flex;gap:12px}
+.tr-tw{position:relative}
+.tr-ib{width:44px;height:44px;border:1px solid var(--sc-line);border-radius:12px;background:var(--sc-surface);cursor:pointer;font-size:18px}
+.tr-tp{position:absolute;bottom:calc(100% + 10px);left:50%;translate:-50% 0;transform-origin:50% 100%;padding:6px 10px;border-radius:8px;background:var(--sc-fg);color:var(--sc-bg);font-size:12px;font-weight:600;white-space:nowrap;opacity:0;transform:scale(.9);filter:blur(3px);pointer-events:none;transition:opacity .16s,transform .22s cubic-bezier(.2,.8,.2,1),filter .2s}
+.tr-tw.on .tr-tp{opacity:1;transform:none;filter:none}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="tr"><div class="tr-row"><span class="tr-tw"><button class="tr-ib" aria-label="Bookmark" aria-describedby="tt1">★</button><span class="tr-tp" id="tt1" role="tooltip">Save to shelf</span></span><span class="tr-tw"><button class="tr-ib" aria-label="Share" aria-describedby="tt2">↗</button><span class="tr-tp" id="tt2" role="tooltip">Share link</span></span><span class="tr-tw"><button class="tr-ib" aria-label="Settings" aria-describedby="tt3">⚙</button><span class="tr-tp" id="tt3" role="tooltip">Settings</span></span></div></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling,h=root.querySelector('.tr');
+var ws=[].slice.call(root.querySelectorAll('.tr-tw')),timer,warm=false,cool;
+function show(w){clearTimeout(timer);var go=function(){ws.forEach(function(x){x.classList.toggle('on',x===w)});warm=true;clearTimeout(cool)};if(warm)go();else timer=setTimeout(go,120)}
+function hide(){clearTimeout(timer);ws.forEach(function(x){x.classList.remove('on')});clearTimeout(cool);cool=setTimeout(function(){warm=false},300)}
+ws.forEach(function(w){var b=w.firstElementChild;w.addEventListener('mouseenter',function(){show(w)});w.addEventListener('mouseleave',hide);b.addEventListener('focus',function(){show(w)});b.addEventListener('blur',hide);b.addEventListener('keydown',function(e){if(e.key==='Escape')hide()})})})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>

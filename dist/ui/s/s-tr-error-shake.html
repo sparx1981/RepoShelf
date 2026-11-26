@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Error shake preview</title>
+<style>html,body{margin:0}body{min-height:100vh}.sc-stage{min-height:100vh;display:grid;grid-template-columns:minmax(0,1fr);place-items:center;padding:28px 20px;background:var(--sc-bg)}.sc-stage>.sc{width:min(100%,520px);background:transparent}</style>
+<style>
+.sc{--sc-bg:#ffffff;--sc-fg:#111113;--sc-muted:#6b7280;--sc-line:#e4e4e7;--sc-surface:#f5f5f7;--sc-accent:#6d5ef5;--sc-accent-fg:#ffffff;--sc-ring:rgba(109,94,245,.35);color:var(--sc-fg);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;box-sizing:border-box}
+.sc *,.sc *::before,.sc *::after{box-sizing:inherit}
+.sc[data-theme=dark]{--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}
+@media (prefers-color-scheme:dark){.sc:not([data-theme=light]){--sc-bg:#0b0b0d;--sc-fg:#f4f4f5;--sc-muted:#a1a1aa;--sc-line:#2a2a30;--sc-surface:#16161a;--sc-accent:#a597ff;--sc-accent-fg:#0b0b0d;--sc-ring:rgba(165,151,255,.4)}}
+:where(.sc) button{font:inherit;color:inherit}
+:where(.sc) :focus-visible{outline:2px solid var(--sc-accent);outline-offset:3px}
+@media (prefers-reduced-motion:reduce){.sc *,.sc *::before,.sc *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important}}
+.tr{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:28px 12px;min-height:200px}
+.tr-btn{padding:11px 22px;border:2px solid var(--sc-accent);border-radius:12px;background:var(--sc-accent);color:var(--sc-accent-fg);font-weight:700;cursor:pointer;transition:transform .15s}
+.tr-btn:active{transform:scale(.96)}
+.tr-btn.ghost{background:transparent;color:var(--sc-fg);border-color:var(--sc-line)}
+.tr-fm{display:flex;flex-direction:column;gap:8px;width:min(320px,92%)}
+.tr-fm input{padding:13px 14px;font:500 16px system-ui,sans-serif;color:var(--sc-fg);background:var(--sc-surface);border:2px solid var(--sc-line);border-radius:12px;transition:border-color .2s}
+.tr-fm input:focus-visible{outline:2px solid var(--sc-accent);outline-offset:2px}
+.tr-fm input[aria-invalid=true]{border-color:#e5484d}
+.tr-fm input.shake{animation:trSk .4s}
+.tr-er{color:#e5484d;font-size:13px;font-weight:600;max-height:0;opacity:0;overflow:hidden;transition:max-height .3s cubic-bezier(.2,.8,.2,1),opacity .25s}
+.tr-er.on{max-height:30px;opacity:1}
+@keyframes trSk{20%{transform:translateX(-9px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(3px)}}
+</style></head>
+<body><div class="sc-stage sc" id="stage"><div class="sc" id="demo">
+<div class="tr"><form class="tr-fm" novalidate><label><span style="position:absolute;opacity:0">Email</span><input type="email" placeholder="you@example.com" style="width:100%"></label><div class="tr-er" role="alert">Enter a valid email address.</div><button class="tr-btn">Subscribe</button></form></div>
+</div>
+<script>
+(function(){var root=document.currentScript.previousElementSibling,h=root.querySelector('.tr');
+var f=root.querySelector('form'),i=f.querySelector('input'),er=f.querySelector('.tr-er'),ok=function(){return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(i.value)};
+f.addEventListener('submit',function(e){e.preventDefault();if(ok())return;i.setAttribute('aria-invalid','true');er.classList.add('on');i.classList.remove('shake');void i.offsetWidth;i.classList.add('shake')});
+i.addEventListener('input',function(){if(ok()){i.removeAttribute('aria-invalid');er.classList.remove('on')}});})();
+</script>
+</div>
+<script>
+(function(){var q=new URLSearchParams(location.search).get('theme'),stage=document.getElementById('stage'),demo=document.getElementById('demo');var t=q==='dark'?'dark':'light';stage.dataset.theme=t;demo.dataset.theme=t})();
+</script></body></html>
